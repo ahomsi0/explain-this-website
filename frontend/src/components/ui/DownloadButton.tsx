@@ -3,19 +3,17 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { AnalysisResult } from "../../types/analysis";
 
-// ─── Palette ──────────────────────────────────────────────────────────────────
-const BRAND  = [124, 58,  237] as const; // violet-600
-const BRAND2 = [99,  102, 241] as const; // indigo-500
-const DARK   = [15,  20,  35 ] as const; // near-black
-const CARD   = [22,  28,  48 ] as const; // card bg
-const CARD2  = [28,  36,  60 ] as const; // alt row
-const BORDER = [45,  50,  80 ] as const; // subtle border
-const LIGHT  = [148, 155, 180] as const; // muted text
-const WHITE  = [230, 232, 245] as const; // off-white
-const GREEN  = [16,  185, 129] as const;
-const AMBER  = [245, 158, 11 ] as const;
-const ROSE   = [244, 63,  94 ] as const;
-const TEAL   = [20,  184, 166] as const;
+// ─── Palette (zinc monochrome — mirrors the UI) ───────────────────────────────
+const BG     = [9,   9,  11 ] as const; // zinc-950
+const CARD   = [24,  24,  27 ] as const; // zinc-900
+const CARD2  = [32,  32,  36 ] as const; // zinc-850 (alt rows)
+const BORDER = [39,  39,  42 ] as const; // zinc-800
+const MUTED  = [82,  82,  91 ] as const; // zinc-600
+const DIM    = [113, 113, 122] as const; // zinc-500
+const TEXT   = [244, 244, 245] as const; // zinc-100
+const GREEN  = [52,  211, 153] as const; // emerald-400
+const AMBER  = [251, 191,  36] as const; // amber-400
+const RED    = [248, 113, 113] as const; // red-400
 
 function rgb(c: readonly [number, number, number]): [number, number, number] {
   return [...c] as [number, number, number];
@@ -24,7 +22,7 @@ function rgb(c: readonly [number, number, number]): [number, number, number] {
 function statusColor(s: string): [number, number, number] {
   if (s === "pass")    return rgb(GREEN);
   if (s === "warning") return rgb(AMBER);
-  return rgb(ROSE);
+  return rgb(RED);
 }
 
 function statusLabel(s: string) {
@@ -52,10 +50,10 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-violet-600 hover:bg-violet-500 text-white transition-colors disabled:opacity-50"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors disabled:opacity-50"
     >
       {loading ? (
-        <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        <span className="w-3 h-3 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
       ) : (
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -75,19 +73,19 @@ function buildPDF(result: AnalysisResult) {
   const H    = 297;
   const M    = 16;
   const CW   = W - M * 2;
-  const FOOT = 18; // footer reserved height
+  const FOOT = 18;
   let   y    = 0;
 
   // ── Pre-computed scores ────────────────────────────────────────────────────
-  const seoPass   = result.seoChecks.filter((c) => c.status === "pass").length;
-  const seoWarn   = result.seoChecks.filter((c) => c.status === "warning").length;
-  const seoFail   = result.seoChecks.filter((c) => c.status === "fail").length;
-  const seoTotal  = result.seoChecks.length;
-  const seoScore  = seoTotal > 0 ? Math.round((seoPass / seoTotal) * 100) : 0;
-  const ux        = result.ux;
-  const uxSignals = [ux.hasCTA, ux.hasForms, ux.hasSocialProof, ux.hasTrustSignals, ux.hasContactInfo, ux.mobileReady];
+  const seoPass    = result.seoChecks.filter((c) => c.status === "pass").length;
+  const seoWarn    = result.seoChecks.filter((c) => c.status === "warning").length;
+  const seoFail    = result.seoChecks.filter((c) => c.status === "fail").length;
+  const seoTotal   = result.seoChecks.length;
+  const seoScore   = seoTotal > 0 ? Math.round((seoPass / seoTotal) * 100) : 0;
+  const ux         = result.ux;
+  const uxSignals  = [ux.hasCTA, ux.hasForms, ux.hasSocialProof, ux.hasTrustSignals, ux.hasContactInfo, ux.mobileReady];
   const uxSigCount = uxSignals.filter(Boolean).length;
-  const uxScore   = Math.round((uxSigCount / uxSignals.length) * 100);
+  const uxScore    = Math.round((uxSigCount / uxSignals.length) * 100);
   const issueCount = result.weakPoints.length;
   const techCount  = result.techStack.length;
   const recCount   = result.recommendations.length;
@@ -98,15 +96,9 @@ function buildPDF(result: AnalysisResult) {
   const lowConf    = result.techStack.filter((t) => t.confidence === "low").length;
 
   // ── Helpers ────────────────────────────────────────────────────────────────
-
-  // Paint the dark background — called on every page, including autoTable overflow pages
   function pageBackground() {
-    doc.setFillColor(...rgb(DARK));
+    doc.setFillColor(...rgb(BG));
     doc.rect(0, 0, W, H, "F");
-    doc.setFillColor(...rgb(BRAND));
-    doc.rect(0, 0, W * 0.4, 2.5, "F");
-    doc.setFillColor(...rgb(BRAND2));
-    doc.rect(W * 0.4, 0, W * 0.6, 2.5, "F");
   }
 
   function pageFooter(pageNum: number, total: number) {
@@ -115,7 +107,7 @@ function buildPDF(result: AnalysisResult) {
     doc.line(M, H - 13, W - M, H - 13);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...rgb(LIGHT));
+    doc.setTextColor(...rgb(MUTED));
     doc.text("Explain This Website", M, H - 8);
     const displayUrl = result.url.length > 55 ? result.url.slice(0, 52) + "..." : result.url;
     doc.text(displayUrl, W / 2, H - 8, { align: "center" });
@@ -132,75 +124,88 @@ function buildPDF(result: AnalysisResult) {
     if (y + needed > H - FOOT) addPage();
   }
 
-  // The didDrawPage callback — fixes white overflow pages from autoTable
   function onDrawPage() {
     pageBackground();
   }
 
-  function sectionHeader(title: string, color: readonly [number, number, number] = BRAND) {
+  // Zinc-style section header — uppercase zinc-600 label on a zinc-900 pill
+  function sectionHeader(title: string) {
     checkPage(18);
     doc.setFillColor(...rgb(CARD));
-    doc.roundedRect(M, y, CW, 10, 2, 2, "F");
-    doc.setFillColor(...rgb(color));
-    doc.roundedRect(M, y, 3.5, 10, 1, 1, "F");
-    doc.setFontSize(8.5);
+    doc.roundedRect(M, y, CW, 9, 1.5, 1.5, "F");
+    doc.setDrawColor(...rgb(BORDER));
+    doc.setLineWidth(0.2);
+    doc.roundedRect(M, y, CW, 9, 1.5, 1.5, "S");
+    // Left accent bar
+    doc.setFillColor(...rgb(MUTED));
+    doc.roundedRect(M, y, 3, 9, 1, 1, "F");
+    doc.setFontSize(7.5);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...rgb(WHITE));
-    doc.text(title.toUpperCase(), M + 8, y + 6.5);
+    doc.setTextColor(...rgb(DIM));
+    doc.text(title.toUpperCase(), M + 7.5, y + 6);
     y += 13;
   }
 
   function scoreBar(score: number, labelLeft: string, labelRight: string) {
-    const trackH = 6;
-    const color  = score >= 80 ? rgb(GREEN) : score >= 50 ? rgb(AMBER) : rgb(ROSE);
+    const trackH = 5.5;
+    const color  = score >= 80 ? rgb(GREEN) : score >= 50 ? rgb(AMBER) : rgb(RED);
     doc.setFillColor(...rgb(BORDER));
     doc.roundedRect(M, y, CW, trackH, 1.5, 1.5, "F");
     doc.setFillColor(...color);
     doc.roundedRect(M, y, Math.max(6, CW * (score / 100)), trackH, 1.5, 1.5, "F");
     doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...rgb(WHITE));
-    doc.text(labelLeft, M + 3, y + 4.3);
-    doc.setTextColor(...rgb(LIGHT));
-    doc.text(labelRight, W - M - 3, y + 4.3, { align: "right" });
+    doc.setTextColor(...rgb(TEXT));
+    doc.text(labelLeft, M + 3, y + 4);
+    doc.setTextColor(...rgb(DIM));
+    doc.text(labelRight, W - M - 3, y + 4, { align: "right" });
     y += trackH + 6;
   }
 
-  // ── Page 1: Cover ─────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Page 1: Cover
+  // ═══════════════════════════════════════════════════════════════════════════
   pageBackground();
 
-  // Logo
+  // Thin emerald top stripe (the single accent color in the zinc UI)
+  doc.setFillColor(...rgb(GREEN));
+  doc.rect(0, 0, W, 1.5, "F");
+
+  // Magnifying-glass logo in zinc tones
   const lx = W / 2, ly = 52;
-  doc.setFillColor(44, 28, 90);
+  doc.setFillColor(...rgb(CARD));
   doc.roundedRect(lx - 15, ly - 15, 30, 30, 6, 6, "F");
-  doc.setDrawColor(...rgb(BRAND));
-  doc.setLineWidth(0.7);
+  doc.setDrawColor(...rgb(BORDER));
+  doc.setLineWidth(0.5);
   doc.roundedRect(lx - 15, ly - 15, 30, 30, 6, 6, "S");
-  doc.setDrawColor(200, 180, 255);
+  // Glass circle
+  doc.setDrawColor(...rgb(DIM));
   doc.setLineWidth(2);
   doc.circle(lx - 2.5, ly - 1, 7, "S");
+  // Handle
   doc.setLineWidth(2.5);
   doc.line(lx + 3.5, ly + 5, lx + 9, ly + 10.5);
-  doc.setFillColor(170, 140, 255);
+  // Emerald dot inside lens
+  doc.setFillColor(...rgb(GREEN));
   doc.circle(lx - 2.5, ly - 1, 2, "F");
 
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(...rgb(WHITE));
+  doc.setTextColor(...rgb(TEXT));
   doc.text("Website Analysis Report", W / 2, 90, { align: "center" });
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...rgb(BRAND));
+  doc.setTextColor(...rgb(DIM));
   const displayUrl = result.url.length > 60 ? result.url.slice(0, 57) + "..." : result.url;
   doc.text(displayUrl, W / 2, 101, { align: "center" });
 
-  doc.setFontSize(8);
-  doc.setTextColor(...rgb(LIGHT));
+  doc.setFontSize(7.5);
+  doc.setTextColor(...rgb(MUTED));
   doc.text(`Generated: ${new Date(result.fetchedAt).toLocaleString()}`, W / 2, 110, { align: "center" });
 
   doc.setDrawColor(...rgb(BORDER));
-  doc.setLineWidth(0.3);
+  doc.setLineWidth(0.25);
   doc.line(M + 15, 116, W - M - 15, 116);
 
   // 6-stat grid (3×2)
@@ -210,13 +215,15 @@ function buildPDF(result: AnalysisResult) {
   const gapY     = 4;
   const statW    = (CW - gapX * (statCols - 1)) / statCols;
   const statH    = 21;
-  const stats    = [
-    { label: "SEO Score",      value: `${seoScore}/100`,  color: seoScore  >= 80 ? GREEN : seoScore  >= 50 ? AMBER : ROSE },
-    { label: "UX Score",       value: `${uxScore}/100`,   color: uxScore   >= 80 ? GREEN : uxScore   >= 50 ? AMBER : ROSE },
-    { label: "Tech Detected",  value: `${techCount}`,     color: BRAND2 },
-    { label: "Issues Found",   value: `${issueCount}`,    color: issueCount === 0 ? GREEN : issueCount <= 3 ? AMBER : ROSE },
-    { label: "Words on Page",  value: `${ps.wordCount.toLocaleString()}`, color: TEAL },
-    { label: "Recommendations",value: `${recCount}`,      color: [52, 211, 153] as const },
+
+  const scoreValColor = (score: number) => score >= 80 ? GREEN : score >= 50 ? AMBER : RED;
+  const stats = [
+    { label: "SEO Score",       value: `${seoScore}/100`,  color: scoreValColor(seoScore) },
+    { label: "UX Score",        value: `${uxScore}/100`,   color: scoreValColor(uxScore)  },
+    { label: "Tech Detected",   value: `${techCount}`,     color: TEXT },
+    { label: "Issues Found",    value: `${issueCount}`,    color: issueCount === 0 ? GREEN : issueCount <= 3 ? AMBER : RED },
+    { label: "Words on Page",   value: ps.wordCount.toLocaleString(), color: TEXT },
+    { label: "Recommendations", value: `${recCount}`,      color: TEXT },
   ];
 
   stats.forEach((s, i) => {
@@ -224,36 +231,41 @@ function buildPDF(result: AnalysisResult) {
     const row = Math.floor(i / statCols);
     const sx  = M + col * (statW + gapX);
     const sy  = statY + row * (statH + gapY);
-    doc.setFillColor(...rgb(CARD2));
+    doc.setFillColor(...rgb(CARD));
     doc.roundedRect(sx, sy, statW, statH, 3, 3, "F");
-    doc.setDrawColor(...rgb(s.color));
-    doc.setLineWidth(0.4);
+    doc.setDrawColor(...rgb(BORDER));
+    doc.setLineWidth(0.2);
     doc.roundedRect(sx, sy, statW, statH, 3, 3, "S");
-    doc.setFontSize(13.5);
+    doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...rgb(s.color));
     doc.text(s.value, sx + statW / 2, sy + 11, { align: "center" });
-    doc.setFontSize(6.3);
+    doc.setFontSize(6);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...rgb(LIGHT));
+    doc.setTextColor(...rgb(MUTED));
     doc.text(s.label, sx + statW / 2, sy + 17, { align: "center" });
   });
 
   // Overview box
-  const ov        = result.overview;
-  const statRows  = Math.ceil(stats.length / statCols);
-  const ovY       = statY + statRows * statH + (statRows - 1) * gapY + 8;
-  const ovH       = 62;
+  const ov       = result.overview;
+  const statRows = Math.ceil(stats.length / statCols);
+  const ovY      = statY + statRows * statH + (statRows - 1) * gapY + 8;
+  const ovH      = 62;
   doc.setFillColor(...rgb(CARD));
-  doc.roundedRect(M, ovY, CW, ovH, 4, 4, "F");
+  doc.roundedRect(M, ovY, CW, ovH, 3, 3, "F");
   doc.setDrawColor(...rgb(BORDER));
-  doc.setLineWidth(0.25);
-  doc.roundedRect(M, ovY, CW, ovH, 4, 4, "S");
+  doc.setLineWidth(0.2);
+  doc.roundedRect(M, ovY, CW, ovH, 3, 3, "S");
 
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(...rgb(LIGHT));
+  doc.setTextColor(...rgb(MUTED));
   doc.text("PAGE OVERVIEW", M + 5, ovY + 7);
+
+  // Thin separator under label
+  doc.setDrawColor(...rgb(BORDER));
+  doc.setLineWidth(0.2);
+  doc.line(M + 5, ovY + 9.5, M + CW - 5, ovY + 9.5);
 
   const ovFields: [string, string][] = [
     ["Title",       ov.title       || "(no title)"],
@@ -262,14 +274,20 @@ function buildPDF(result: AnalysisResult) {
     ["Page Weight", ov.pageLoadHint.charAt(0).toUpperCase() + ov.pageLoadHint.slice(1)],
   ];
 
-  let fy = ovY + 14;
+  let fy = ovY + 16;
   for (const [key, val] of ovFields) {
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...rgb(LIGHT));
+    doc.setTextColor(...rgb(MUTED));
     doc.text(key, M + 5, fy);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...rgb(WHITE));
+    // Color-code Page Weight value
+    if (key === "Page Weight") {
+      const pwColor = val === "Lightweight" ? rgb(GREEN) : val === "Medium" ? rgb(AMBER) : rgb(RED);
+      doc.setTextColor(...pwColor);
+    } else {
+      doc.setTextColor(...rgb(TEXT));
+    }
     const wrapped = doc.splitTextToSize(val, CW - 43);
     const lines   = wrapped.slice(0, key === "Description" ? 2 : 1);
     doc.text(lines, M + 38, fy);
@@ -282,7 +300,7 @@ function buildPDF(result: AnalysisResult) {
   doc.line(M, H - 13, W - M, H - 13);
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...rgb(LIGHT));
+  doc.setTextColor(...rgb(MUTED));
   doc.text("Explain This Website — explainthewebsite.dev", W / 2, H - 8, { align: "center" });
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -290,11 +308,11 @@ function buildPDF(result: AnalysisResult) {
   // ═══════════════════════════════════════════════════════════════════════════
   addPage();
 
-  sectionHeader("Detected Tech Stack", BRAND2);
+  sectionHeader("Detected Tech Stack");
 
   if (techCount === 0) {
     doc.setFontSize(9);
-    doc.setTextColor(...rgb(LIGHT));
+    doc.setTextColor(...rgb(MUTED));
     doc.text("No technologies detected.", M, y);
     y += 10;
   } else {
@@ -316,11 +334,11 @@ function buildPDF(result: AnalysisResult) {
       margin: { left: M, right: M, bottom: FOOT + 2 },
       head: [["Category", "Technology", "Confidence"]],
       body: rows,
-      headStyles: { fillColor: [30, 22, 60], textColor: rgb(LIGHT), fontSize: 8, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
-      bodyStyles: { fillColor: rgb(CARD), textColor: rgb(WHITE), fontSize: 8.5, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
+      headStyles: { fillColor: rgb(BG), textColor: rgb(DIM), fontSize: 7.5, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
+      bodyStyles: { fillColor: rgb(CARD), textColor: rgb(TEXT), fontSize: 8.5, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
       alternateRowStyles: { fillColor: rgb(CARD2) },
       columnStyles: {
-        0: { cellWidth: 32, textColor: rgb(LIGHT), fontSize: 7.5 },
+        0: { cellWidth: 32, textColor: rgb(DIM), fontSize: 7.5 },
         1: { fontStyle: "bold" },
         2: { cellWidth: 28, halign: "center", fontSize: 7.5 },
       },
@@ -329,7 +347,7 @@ function buildPDF(result: AnalysisResult) {
       didParseCell(data) {
         if (data.column.index === 2 && data.section === "body") {
           const conf = data.cell.raw as string;
-          data.cell.styles.textColor = conf === "high" ? rgb(GREEN) : conf === "medium" ? rgb(AMBER) : rgb(LIGHT);
+          data.cell.styles.textColor = conf === "high" ? rgb(GREEN) : conf === "medium" ? rgb(AMBER) : rgb(MUTED);
         }
       },
     });
@@ -337,7 +355,7 @@ function buildPDF(result: AnalysisResult) {
   }
 
   checkPage(55);
-  sectionHeader("SEO Audit", BRAND);
+  sectionHeader("SEO Audit");
   scoreBar(seoScore, `SEO Score: ${seoScore}/100`, `${seoPass} pass  ·  ${seoWarn} warn  ·  ${seoFail} fail`);
 
   autoTable(doc, {
@@ -345,13 +363,13 @@ function buildPDF(result: AnalysisResult) {
     margin: { left: M, right: M, bottom: FOOT + 2 },
     head: [["Check", "Status", "Detail"]],
     body: result.seoChecks.map((c) => [c.label, statusLabel(c.status), c.detail]),
-    headStyles: { fillColor: [30, 22, 60], textColor: rgb(LIGHT), fontSize: 8, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
-    bodyStyles: { fillColor: rgb(CARD), textColor: rgb(WHITE), fontSize: 8, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
+    headStyles: { fillColor: rgb(BG), textColor: rgb(DIM), fontSize: 7.5, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
+    bodyStyles: { fillColor: rgb(CARD), textColor: rgb(TEXT), fontSize: 8, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
     alternateRowStyles: { fillColor: rgb(CARD2) },
     columnStyles: {
       0: { cellWidth: 38, fontStyle: "bold", fontSize: 7.5 },
       1: { cellWidth: 18, halign: "center", fontStyle: "bold", fontSize: 7.5 },
-      2: { fontSize: 7.5, textColor: rgb(LIGHT) },
+      2: { fontSize: 7.5, textColor: rgb(DIM) },
     },
     theme: "plain",
     didDrawPage: onDrawPage,
@@ -368,16 +386,16 @@ function buildPDF(result: AnalysisResult) {
   // ═══════════════════════════════════════════════════════════════════════════
   addPage();
 
-  sectionHeader("Conversion & UX Signals", [99, 170, 241]);
+  sectionHeader("Conversion & UX Signals");
   scoreBar(uxScore, `UX Score: ${uxScore}/100`, `${uxSigCount} of ${uxSignals.length} signals present`);
 
   const uxRows: [string, string, string][] = [
-    ["Call-to-Action",    ux.hasCTA    ? "YES" : "NO", ux.hasCTA    ? `${ux.ctaCount} CTA button${ux.ctaCount !== 1 ? "s" : ""} detected`          : "No CTAs found — add clear action buttons"],
-    ["Lead Capture Form", ux.hasForms  ? "YES" : "NO", ux.hasForms  ? `${ux.formCount} form${ux.formCount !== 1 ? "s" : ""} detected`              : "No forms found — consider a contact or lead form"],
-    ["Social Proof",      ux.hasSocialProof  ? "YES" : "NO", ux.hasSocialProof  ? "Reviews, testimonials, or social indicators found"              : "No social proof — add reviews or testimonials"],
-    ["Trust Signals",     ux.hasTrustSignals ? "YES" : "NO", ux.hasTrustSignals ? "SSL badges, security mentions, or guarantees detected"          : "No trust signals — add security/guarantee indicators"],
-    ["Contact Info",      ux.hasContactInfo  ? "YES" : "NO", ux.hasContactInfo  ? "Email or phone number found on page"                             : "No contact info — add email/phone for credibility"],
-    ["Mobile Responsive", ux.mobileReady     ? "YES" : "NO", ux.mobileReady     ? "Viewport meta tag present — mobile-ready"                        : "Missing viewport tag — not optimised for mobile"],
+    ["Call-to-Action",    ux.hasCTA    ? "YES" : "NO", ux.hasCTA    ? `${ux.ctaCount} CTA button${ux.ctaCount !== 1 ? "s" : ""} detected`     : "No CTAs found — add clear action buttons"],
+    ["Lead Capture Form", ux.hasForms  ? "YES" : "NO", ux.hasForms  ? `${ux.formCount} form${ux.formCount !== 1 ? "s" : ""} detected`          : "No forms found — consider a contact or lead form"],
+    ["Social Proof",      ux.hasSocialProof  ? "YES" : "NO", ux.hasSocialProof  ? "Reviews, testimonials, or social indicators found"          : "No social proof — add reviews or testimonials"],
+    ["Trust Signals",     ux.hasTrustSignals ? "YES" : "NO", ux.hasTrustSignals ? "SSL badges, security mentions, or guarantees detected"      : "No trust signals — add security/guarantee indicators"],
+    ["Contact Info",      ux.hasContactInfo  ? "YES" : "NO", ux.hasContactInfo  ? "Email or phone number found on page"                        : "No contact info — add email/phone for credibility"],
+    ["Mobile Responsive", ux.mobileReady     ? "YES" : "NO", ux.mobileReady     ? "Viewport meta tag present — mobile-ready"                  : "Missing viewport tag — not optimised for mobile"],
   ];
 
   autoTable(doc, {
@@ -385,19 +403,19 @@ function buildPDF(result: AnalysisResult) {
     margin: { left: M, right: M, bottom: FOOT + 2 },
     head: [["Signal", "Present", "Detail"]],
     body: uxRows,
-    headStyles: { fillColor: [30, 22, 60], textColor: rgb(LIGHT), fontSize: 8, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
-    bodyStyles: { fillColor: rgb(CARD), textColor: rgb(WHITE), fontSize: 8, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 5, bottom: 5, left: 5, right: 5 } },
+    headStyles: { fillColor: rgb(BG), textColor: rgb(DIM), fontSize: 7.5, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
+    bodyStyles: { fillColor: rgb(CARD), textColor: rgb(TEXT), fontSize: 8, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 5, bottom: 5, left: 5, right: 5 } },
     alternateRowStyles: { fillColor: rgb(CARD2) },
     columnStyles: {
       0: { cellWidth: 40, fontStyle: "bold", fontSize: 7.5 },
       1: { cellWidth: 20, halign: "center", fontStyle: "bold", fontSize: 8 },
-      2: { fontSize: 7.5, textColor: rgb(LIGHT) },
+      2: { fontSize: 7.5, textColor: rgb(DIM) },
     },
     theme: "plain",
     didDrawPage: onDrawPage,
     didParseCell(data) {
       if (data.column.index === 1 && data.section === "body") {
-        data.cell.styles.textColor = data.cell.raw === "YES" ? rgb(GREEN) : rgb(ROSE);
+        data.cell.styles.textColor = data.cell.raw === "YES" ? rgb(GREEN) : rgb(RED);
       }
     },
   });
@@ -405,16 +423,16 @@ function buildPDF(result: AnalysisResult) {
 
   // ── Page Stats ─────────────────────────────────────────────────────────────
   checkPage(55);
-  sectionHeader("Page Statistics", TEAL);
+  sectionHeader("Page Statistics");
 
   const psRows: [string, string, string][] = [
-    ["Word Count",      ps.wordCount.toLocaleString(),                             `~${readMins} min read`],
-    ["Images",          String(ps.imageCount),                                     ps.imageCount === 0 ? "No images found" : "Total img elements"],
-    ["Scripts",         String(ps.scriptCount),                                    ps.scriptCount > 15 ? "High — may slow page load" : ps.scriptCount > 8 ? "Moderate" : "Lean"],
-    ["Internal Links",  String(ps.internalLinks),                                  "Links to pages on same domain"],
-    ["External Links",  String(ps.externalLinks),                                  "Links to other websites"],
-    ["Heading Structure", `H1:${ps.h1Count}  H2:${ps.h2Count}  H3:${ps.h3Count}`, ps.h1Count === 1 ? "Good — single H1" : ps.h1Count === 0 ? "Missing H1" : "Multiple H1s detected"],
-    ["Tech Stack Size", `${techCount} tool${techCount !== 1 ? "s" : ""} (${highConf} high / ${medConf} med / ${lowConf} low)`, "Detected by signature matching"],
+    ["Word Count",        ps.wordCount.toLocaleString(),                              `~${readMins} min read`],
+    ["Images",            String(ps.imageCount),                                      ps.imageCount === 0 ? "No images found" : "Total img elements"],
+    ["Scripts",           String(ps.scriptCount),                                     ps.scriptCount > 15 ? "High — may slow page load" : ps.scriptCount > 8 ? "Moderate" : "Lean"],
+    ["Internal Links",    String(ps.internalLinks),                                   "Links to pages on same domain"],
+    ["External Links",    String(ps.externalLinks),                                   "Links to other websites"],
+    ["Heading Structure", `H1:${ps.h1Count}  H2:${ps.h2Count}  H3:${ps.h3Count}`,   ps.h1Count === 1 ? "Good — single H1" : ps.h1Count === 0 ? "Missing H1" : "Multiple H1s detected"],
+    ["Tech Stack Size",   `${techCount} tool${techCount !== 1 ? "s" : ""} (${highConf} high / ${medConf} med / ${lowConf} low)`, "Detected by signature matching"],
   ];
 
   autoTable(doc, {
@@ -422,22 +440,33 @@ function buildPDF(result: AnalysisResult) {
     margin: { left: M, right: M, bottom: FOOT + 2 },
     head: [["Metric", "Value", "Context"]],
     body: psRows,
-    headStyles: { fillColor: [30, 22, 60], textColor: rgb(LIGHT), fontSize: 8, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
-    bodyStyles: { fillColor: rgb(CARD), textColor: rgb(WHITE), fontSize: 8, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 4.5, bottom: 4.5, left: 5, right: 5 } },
+    headStyles: { fillColor: rgb(BG), textColor: rgb(DIM), fontSize: 7.5, fontStyle: "bold", cellPadding: { top: 4, bottom: 4, left: 5, right: 5 } },
+    bodyStyles: { fillColor: rgb(CARD), textColor: rgb(TEXT), fontSize: 8, lineColor: rgb(BORDER), lineWidth: 0.2, cellPadding: { top: 4.5, bottom: 4.5, left: 5, right: 5 } },
     alternateRowStyles: { fillColor: rgb(CARD2) },
     columnStyles: {
-      0: { cellWidth: 40, fontStyle: "bold", fontSize: 7.5 },
-      1: { cellWidth: 48, fontSize: 8, textColor: rgb(WHITE) },
-      2: { fontSize: 7.5, textColor: rgb(LIGHT) },
+      0: { cellWidth: 40, fontStyle: "bold", fontSize: 7.5, textColor: rgb(DIM) },
+      1: { cellWidth: 48, fontSize: 8, textColor: rgb(TEXT) },
+      2: { fontSize: 7.5, textColor: rgb(DIM) },
     },
     theme: "plain",
     didDrawPage: onDrawPage,
+    didParseCell(data) {
+      // Color-code script count value
+      if (data.column.index === 1 && data.section === "body" && data.row.index === 2) {
+        const v = ps.scriptCount;
+        data.cell.styles.textColor = v > 15 ? rgb(AMBER) : rgb(TEXT);
+      }
+      // Color-code H1
+      if (data.column.index === 1 && data.section === "body" && data.row.index === 5) {
+        data.cell.styles.textColor = ps.h1Count === 1 ? rgb(GREEN) : ps.h1Count === 0 ? rgb(RED) : rgb(AMBER);
+      }
+    },
   });
   y = lastAutoTableY(doc) + 12;
 
   // ── Weak Points ────────────────────────────────────────────────────────────
   checkPage(22);
-  sectionHeader("Weak Points", ROSE);
+  sectionHeader("Weak Points");
 
   if (result.weakPoints.length === 0) {
     doc.setFontSize(9);
@@ -447,15 +476,16 @@ function buildPDF(result: AnalysisResult) {
   } else {
     for (const [i, point] of result.weakPoints.entries()) {
       checkPage(14);
-      doc.setFillColor(...rgb(AMBER));
+      // Numbered pill in red-400
+      doc.setFillColor(...rgb(RED));
       doc.circle(M + 3.5, y + 1.5, 3.5, "F");
       doc.setFontSize(7);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...rgb(DARK));
+      doc.setTextColor(...rgb(BG));
       doc.text(String(i + 1), M + 3.5, y + 3, { align: "center" });
       doc.setFontSize(8.5);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(...rgb(WHITE));
+      doc.setTextColor(...rgb(TEXT));
       const lines = doc.splitTextToSize(point, CW - 12);
       doc.text(lines, M + 10, y + 2);
       y += lines.length * 5.5 + 6;
@@ -465,24 +495,25 @@ function buildPDF(result: AnalysisResult) {
 
   // ── Recommendations ────────────────────────────────────────────────────────
   checkPage(22);
-  sectionHeader("Recommendations", GREEN);
+  sectionHeader("Recommendations");
 
   if (result.recommendations.length === 0) {
     doc.setFontSize(9);
-    doc.setTextColor(...rgb(LIGHT));
+    doc.setTextColor(...rgb(MUTED));
     doc.text("No recommendations at this time.", M, y);
   } else {
     for (const [i, rec] of result.recommendations.entries()) {
       checkPage(16);
-      doc.setFillColor(...rgb(BRAND));
+      // Numbered pill in emerald-400
+      doc.setFillColor(...rgb(GREEN));
       doc.circle(M + 3.5, y + 1.5, 3.5, "F");
       doc.setFontSize(7);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...rgb(WHITE));
+      doc.setTextColor(...rgb(BG));
       doc.text(String(i + 1), M + 3.5, y + 3, { align: "center" });
       doc.setFontSize(8.5);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(...rgb(WHITE));
+      doc.setTextColor(...rgb(TEXT));
       const lines = doc.splitTextToSize(rec, CW - 12);
       doc.text(lines, M + 10, y + 2);
       if (i < result.recommendations.length - 1) {
