@@ -18,7 +18,7 @@ export function CopyButton({ result }: { result: AnalysisResult }) {
   };
 
   return (
-    <button onClick={handleCopy} className="btn-secondary">
+    <button onClick={handleCopy} className="btn-ghost text-sm border border-white/8 hover:border-white/15">
       {copied ? (
         <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         <span className="text-emerald-400">Copied!</span></>

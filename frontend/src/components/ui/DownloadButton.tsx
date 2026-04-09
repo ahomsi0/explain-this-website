@@ -49,7 +49,7 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
   };
 
   return (
-    <button onClick={handleDownload} disabled={loading} className="btn-primary">
+    <button onClick={handleDownload} disabled={loading} className="btn-primary text-sm">
       {loading ? (
         <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
       ) : (

@@ -1,26 +1,20 @@
 export function RecommendationsCard({ recommendations }: { recommendations: string[] }) {
   return (
-    <div className="card card-accent-rose">
-      <div className="card-header">
-        <span className="card-icon bg-violet-950/60 text-violet-400">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-        </span>
-        <span className="card-title">Recommendations</span>
+    <div className="rounded-xl border border-white/8 bg-white/4 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-slate-200">Recommendations</h3>
         {recommendations.length > 0 && (
-          <span className="ml-auto text-xs text-slate-500">{recommendations.length} action{recommendations.length !== 1 ? "s" : ""}</span>
+          <span className="text-xs text-slate-500">{recommendations.length} action{recommendations.length !== 1 ? "s" : ""}</span>
         )}
       </div>
 
       {recommendations.length === 0 ? (
-        <p className="text-sm text-slate-500 text-center py-6">No recommendations at this time.</p>
+        <p className="text-sm text-slate-500">No recommendations at this time.</p>
       ) : (
-        <ol className="space-y-4">
+        <ol className="space-y-0">
           {recommendations.map((rec, i) => (
-            <li key={i} className="flex items-start gap-3 py-2.5 border-b border-slate-700/40 last:border-0">
-              <span className="flex-shrink-0 text-xs font-semibold text-slate-600 w-4 mt-0.5">{i + 1}.</span>
+            <li key={i} className="flex items-start gap-3 py-3 border-b border-white/5 last:border-0">
+              <span className="text-xs font-medium text-slate-600 w-4 shrink-0 mt-0.5">{i + 1}.</span>
               <span className="text-sm text-slate-300 leading-relaxed">{rec}</span>
             </li>
           ))}

@@ -1,62 +1,62 @@
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import type { Overview, PageLoadHint } from "../../types/analysis";
 
-const loadHint: Record<PageLoadHint, { label: string; dot: string; badge: string }> = {
-  lightweight: { label: "Lightweight",   dot: "bg-emerald-400", badge: "bg-emerald-950/50 text-emerald-300 border-emerald-700/40" },
-  medium:      { label: "Medium weight", dot: "bg-amber-400",   badge: "bg-amber-950/50  text-amber-300  border-amber-700/40"  },
-  heavy:       { label: "Heavy page",    dot: "bg-rose-400",    badge: "bg-rose-950/50   text-rose-300   border-rose-700/40"   },
+const loadConfig: Record<PageLoadHint, { label: string; variant: "emerald" | "amber" | "rose" }> = {
+  lightweight: { label: "Lightweight",  variant: "emerald" },
+  medium:      { label: "Medium",       variant: "amber"   },
+  heavy:       { label: "Heavy",        variant: "rose"    },
 };
 
-export function OverviewCard({ overview, url, fetchedAt }: { overview: Overview; url: string; fetchedAt: string }) {
-  const hint = loadHint[overview.pageLoadHint];
+export function OverviewCard({ overview, url, fetchedAt }: {
+  overview: Overview; url: string; fetchedAt: string;
+}) {
+  const load = loadConfig[overview.pageLoadHint];
 
   return (
-    <div className="card card-accent-violet">
-      <div className="flex items-center gap-4">
-        {/* Favicon */}
+    <div className="rounded-xl border border-white/8 bg-white/4 p-5">
+      <div className="flex items-start gap-4">
+        {/* Favicon or placeholder */}
         {overview.favicon ? (
           <img src={overview.favicon} alt="favicon"
-            className="w-10 h-10 rounded-xl object-contain border border-slate-600 flex-shrink-0"
+            className="w-9 h-9 rounded-lg object-contain shrink-0 mt-0.5"
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
           />
         ) : (
-          <div className="w-10 h-10 rounded-xl bg-violet-950/60 border border-violet-800/30 flex items-center justify-center flex-shrink-0 text-violet-400">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <div className="w-9 h-9 rounded-lg bg-white/6 border border-white/8 flex items-center justify-center shrink-0 mt-0.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
           </div>
         )}
 
-        {/* Title + URL */}
         <div className="flex-1 min-w-0">
-          <h2 className="text-base font-bold text-slate-100 truncate">
-            {overview.title || <span className="text-slate-500 italic font-normal">No page title</span>}
+          <h2 className="font-semibold text-slate-100 truncate leading-snug">
+            {overview.title || <span className="text-slate-500 font-normal italic">No title</span>}
           </h2>
           <a href={url} target="_blank" rel="noopener noreferrer"
-            className="text-sm text-violet-400 hover:text-violet-300 hover:underline truncate block mt-0.5">
+            className="text-sm text-slate-500 hover:text-violet-400 transition-colors truncate block mt-0.5">
             {url}
           </a>
         </div>
 
-        {/* Right badges */}
-        <div className="flex-shrink-0 flex items-center gap-2 flex-wrap justify-end">
-          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${hint.badge}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${hint.dot}`} />
-            {hint.label}
-          </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant={load.variant}>{load.label}</Badge>
           {overview.language && (
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-700/50 text-slate-400 border border-slate-600/40">
-              {overview.language.toUpperCase()}
-            </span>
+            <Badge variant="slate">{overview.language.toUpperCase()}</Badge>
           )}
         </div>
       </div>
 
-      {/* Description — only if present, compact */}
       {overview.description && (
-        <p className="mt-3 text-sm text-slate-400 leading-relaxed border-t border-slate-700/40 pt-3">
-          {overview.description}
-        </p>
+        <>
+          <Separator className="my-3.5" />
+          <p className="text-sm text-slate-400 leading-relaxed">{overview.description}</p>
+        </>
       )}
 
-      <p className="mt-2 text-xs text-slate-600">
+      <p className="text-xs text-slate-600 mt-3">
         Analyzed {new Date(fetchedAt).toLocaleString()}
       </p>
     </div>

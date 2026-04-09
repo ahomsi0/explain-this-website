@@ -1,101 +1,78 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 14%;
+    --card-foreground: 213 31% 91%;
+    --border: 217 33% 22%;
+    --input: 217 33% 22%;
+    --primary: 263 70% 58%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 217 33% 18%;
+    --accent-foreground: 213 31% 91%;
+    --ring: 263 70% 58%;
+    --radius: 0.75rem;
+  }
+
+  * { box-sizing: border-box; }
 
   body {
     font-family: "Inter", system-ui, sans-serif;
-    /* slate-900 — soft dark, not pitch black */
-    @apply bg-slate-900 text-slate-100 antialiased;
+    background-color: hsl(222 47% 9%);
+    color: hsl(213 31% 91%);
+    @apply antialiased;
   }
 
   #root { @apply min-h-screen; }
 }
 
 @layer components {
-  /* ── Cards ── */
-  .card {
-    @apply bg-slate-800/70 rounded-2xl border border-slate-700/30 p-6
-           transition-shadow duration-200;
-  }
-
-  .card-header {
-    @apply flex items-center gap-3 mb-5;
-  }
-
-  .card-icon {
-    @apply w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0;
-  }
-
-  .card-title {
-    @apply text-xs font-semibold text-slate-400 uppercase tracking-widest;
-  }
-
-  /* ── Buttons ── */
   .btn {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
            transition-all duration-150 cursor-pointer select-none;
   }
-
   .btn-primary {
-    @apply btn text-white bg-gradient-to-r from-violet-600 to-indigo-600
-           hover:from-violet-500 hover:to-indigo-500
-           shadow-md shadow-violet-900/30 active:scale-95;
+    @apply btn text-white bg-violet-600 hover:bg-violet-500 active:scale-95;
   }
-
-  .btn-secondary {
-    @apply btn text-slate-300 bg-slate-700 border border-slate-600
-           hover:bg-slate-600 hover:text-white active:scale-95;
-  }
-
   .btn-ghost {
-    @apply btn text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 active:scale-95;
+    @apply btn text-slate-400 hover:text-slate-200 hover:bg-white/5 active:scale-95;
   }
 }
 
-/* ── Gradient text ── */
+/* Hero background */
+.hero-bg {
+  background-color: hsl(222 47% 9%);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(124, 58, 237, 0.15) 0%, transparent 60%);
+}
+
+/* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #93c5fd 100%);
+  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 60%, #93c5fd 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ── Hero background — softer violet glow ── */
-.hero-bg {
-  background-color: #0b1120;
-  background-image:
-    radial-gradient(ellipse 80% 60% at 50% -5%,  rgba(124, 58, 237, 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 80% 15%,  rgba(99,  102, 241, 0.09) 0%, transparent 50%);
-}
-
-/* ── Glowing divider ── */
-.glow-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent);
-}
-
-/* ── Animated steps ── */
+/* Step animation */
 @keyframes stepFadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.step-item { animation: stepFadeIn 0.35s ease both; }
+.step-item { animation: stepFadeIn 0.3s ease both; }
 
-/* ── Card glow accents — colored shadow that respects rounded corners ── */
-.card-accent-violet  { box-shadow: 0 0 0 1px rgba(124, 58,  237, 0.25), 0 4px 24px -4px rgba(124, 58,  237, 0.18); }
-.card-accent-blue    { box-shadow: 0 0 0 1px rgba(59,  130, 246, 0.25), 0 4px 24px -4px rgba(59,  130, 246, 0.18); }
-.card-accent-emerald { box-shadow: 0 0 0 1px rgba(16,  185, 129, 0.25), 0 4px 24px -4px rgba(16,  185, 129, 0.18); }
-.card-accent-amber   { box-shadow: 0 0 0 1px rgba(245, 158, 11,  0.25), 0 4px 24px -4px rgba(245, 158, 11,  0.18); }
-.card-accent-rose    { box-shadow: 0 0 0 1px rgba(244, 63,  94,  0.25), 0 4px 24px -4px rgba(244, 63,  94,  0.18); }
-.card-accent-indigo  { box-shadow: 0 0 0 1px rgba(99,  102, 241, 0.25), 0 4px 24px -4px rgba(99,  102, 241, 0.18); }
-.card-accent-teal    { box-shadow: 0 0 0 1px rgba(20,  184, 166, 0.25), 0 4px 24px -4px rgba(20,  184, 166, 0.18); }
-
-/* ── Score bar track ── */
-.score-track {
-  @apply h-2 w-full bg-slate-700 rounded-full overflow-hidden;
+/* Glowing divider */
+.glow-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
 }

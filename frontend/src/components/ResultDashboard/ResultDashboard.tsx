@@ -1,3 +1,4 @@
+import { Separator } from "@/components/ui/separator";
 import type { AnalysisResult } from "../../types/analysis";
 import { OverviewCard }        from "../cards/OverviewCard";
 import { TechStackCard }       from "../cards/TechStackCard";
@@ -10,30 +11,24 @@ import { CopyButton }          from "../ui/CopyButton";
 import { DownloadButton }      from "../ui/DownloadButton";
 
 function computeScores(result: AnalysisResult) {
-  const pass    = result.seoChecks.filter((c) => c.status === "pass").length;
+  const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
   const seoScore = result.seoChecks.length ? Math.round((pass / result.seoChecks.length) * 100) : 0;
-  const uxSignals = [result.ux.hasCTA, result.ux.hasForms, result.ux.hasSocialProof, result.ux.hasTrustSignals, result.ux.hasContactInfo, result.ux.mobileReady];
-  const uxScore   = Math.round((uxSignals.filter(Boolean).length / uxSignals.length) * 100);
+  const uxSigs   = [result.ux.hasCTA, result.ux.hasForms, result.ux.hasSocialProof, result.ux.hasTrustSignals, result.ux.hasContactInfo, result.ux.mobileReady];
+  const uxScore  = Math.round((uxSigs.filter(Boolean).length / uxSigs.length) * 100);
   return { seoScore, uxScore };
 }
 
-function scoreColor(score: number) {
-  if (score >= 80) return "text-emerald-400";
-  if (score >= 50) return "text-amber-400";
-  return "text-rose-400";
+function scoreColor(n: number) {
+  return n >= 80 ? "text-emerald-400" : n >= 50 ? "text-amber-400" : "text-rose-400";
 }
 
-function StatCard({ label, value, suffix, sub, valueClass = "text-slate-100" }: {
-  label: string; value: string | number; suffix?: string; sub?: string; valueClass?: string;
+function StatItem({ label, value, valueClass = "text-slate-100" }: {
+  label: string; value: string | number; valueClass?: string;
 }) {
   return (
-    <div className="bg-slate-800/70 border border-slate-700/50 rounded-xl p-4">
-      <p className="text-[11px] font-medium text-slate-500 mb-2">{label}</p>
-      <p className={`text-2xl font-bold leading-none ${valueClass}`}>
-        {value}
-        {suffix && <span className="text-sm font-normal text-slate-600 ml-0.5">{suffix}</span>}
-      </p>
-      {sub && <p className="text-xs text-slate-600 mt-1.5">{sub}</p>}
+    <div className="flex flex-col items-center gap-0.5">
+      <span className={`text-xl font-bold leading-none ${valueClass}`}>{value}</span>
+      <span className="text-xs text-slate-500">{label}</span>
     </div>
   );
 }
@@ -43,17 +38,12 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
   const issueCount = result.weakPoints.length;
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-5 pb-20">
+    <div className="w-full max-w-5xl mx-auto px-5 pb-20">
 
-      {/* ── Sticky action bar ── */}
-      <div className="sticky top-0 z-10 bg-slate-900/90 backdrop-blur-sm border-b border-slate-700/50 -mx-5 px-5 py-3 mb-7 flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <span className="text-xs font-medium text-slate-300 truncate">{result.url}</span>
-          <span className="flex-shrink-0 text-xs text-emerald-400 bg-emerald-900/30 border border-emerald-700/50 px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap">
-            ✓ Done
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
+      {/* Sticky action bar */}
+      <div className="sticky top-0 z-10 backdrop-blur-md bg-slate-900/80 border-b border-white/6 -mx-5 px-5 py-3 mb-6 flex items-center gap-3 flex-wrap">
+        <span className="text-sm text-slate-400 truncate flex-1 min-w-0">{result.url}</span>
+        <div className="flex items-center gap-2 shrink-0">
           <CopyButton result={result} />
           <DownloadButton result={result} />
           <button onClick={onReset} className="btn-ghost text-sm">
@@ -65,40 +55,43 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
         </div>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
 
-        {/* ── Row 1: Overview ── */}
+        {/* Overview */}
         <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} />
 
-        {/* ── Row 2: Stats strip ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="SEO Score"    value={seoScore} suffix="/100"
-            valueClass={scoreColor(seoScore)}
-            sub={seoScore >= 80 ? "Good" : seoScore >= 50 ? "Needs work" : "Critical"} />
-          <StatCard label="UX Score"     value={uxScore}  suffix="/100"
-            valueClass={scoreColor(uxScore)}
-            sub={uxScore >= 70 ? "Good" : uxScore >= 40 ? "Needs work" : "Weak"} />
-          <StatCard label="Technologies" value={result.techStack.length}
-            sub={result.techStack.length > 0 ? "detected" : "none found"} />
-          <StatCard label="Issues Found" value={issueCount}
-            valueClass={issueCount === 0 ? "text-emerald-400" : issueCount <= 3 ? "text-amber-400" : "text-rose-400"}
-            sub={issueCount === 0 ? "All clear" : `${issueCount} to fix`} />
+        {/* Stats strip */}
+        <div className="rounded-xl border border-white/8 bg-white/4 px-6 py-4 flex items-center justify-around gap-4">
+          <StatItem label="SEO Score"    value={`${seoScore}/100`}              valueClass={scoreColor(seoScore)} />
+          <Separator orientation="vertical" className="h-8" />
+          <StatItem label="UX Score"     value={`${uxScore}/100`}               valueClass={scoreColor(uxScore)} />
+          <Separator orientation="vertical" className="h-8" />
+          <StatItem label="Technologies" value={result.techStack.length} />
+          <Separator orientation="vertical" className="h-8" />
+          <StatItem label="Issues"       value={issueCount}
+            valueClass={issueCount === 0 ? "text-emerald-400" : issueCount <= 3 ? "text-amber-400" : "text-rose-400"} />
+          {result.pageStats && (
+            <>
+              <Separator orientation="vertical" className="h-8" />
+              <StatItem label="Words" value={result.pageStats.wordCount.toLocaleString()} />
+            </>
+          )}
         </div>
 
-        {/* ── Row 3: SEO + Tech + Conversion ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        {/* SEO + Tech & Conversion */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
           <SeoAuditCard seoChecks={result.seoChecks} />
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
             <TechStackCard techStack={result.techStack} />
             <ConversionCard ux={result.ux} />
           </div>
         </div>
 
-        {/* ── Row 4: Page Stats (full width) ── */}
+        {/* Page Stats */}
         {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
 
-        {/* ── Row 5: Weak Points + Recommendations ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        {/* Weak Points + Recommendations */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
           <WeakPointsCard weakPoints={result.weakPoints} />
           <RecommendationsCard recommendations={result.recommendations} />
         </div>
