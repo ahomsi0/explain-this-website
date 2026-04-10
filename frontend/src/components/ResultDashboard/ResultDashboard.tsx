@@ -101,9 +101,14 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
               <Metric label="Words" value={result.pageStats.wordCount.toLocaleString()} />
             </>
           )}
-          <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
-          <Metric label="Reading Level" value={result.contentStats.readingLevel.charAt(0).toUpperCase() + result.contentStats.readingLevel.slice(1)}
-            valueClass={result.contentStats.readingLevel === "simple" ? "text-emerald-400" : result.contentStats.readingLevel === "moderate" ? "text-amber-400" : "text-red-400"} />
+          {result.contentStats && (
+            <>
+              <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
+              <Metric label="Reading Level"
+                value={result.contentStats.readingLevel.charAt(0).toUpperCase() + result.contentStats.readingLevel.slice(1)}
+                valueClass={result.contentStats.readingLevel === "simple" ? "text-emerald-400" : result.contentStats.readingLevel === "moderate" ? "text-amber-400" : "text-red-400"} />
+            </>
+          )}
         </div>
       </div>
 
@@ -126,7 +131,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
         {/* Right col: Page Stats + Content + Recommendations */}
         <div className="flex flex-col gap-4">
           {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
-          <ContentCard contentStats={result.contentStats} />
+          {result.contentStats && <ContentCard contentStats={result.contentStats} />}
           <RecommendationsCard recommendations={result.recommendations} />
         </div>
 

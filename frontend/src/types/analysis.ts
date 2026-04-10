@@ -77,7 +77,7 @@ export interface AnalysisResult {
   seoChecks: SEOCheck[];
   ux: UXResult;
   pageStats?: PageStats;
-  contentStats: ContentStats;
+  contentStats?: ContentStats;
   weakPoints: string[];
   recommendations: string[];
 }
