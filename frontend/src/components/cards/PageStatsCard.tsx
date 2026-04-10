@@ -89,7 +89,7 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <p className="text-xs font-semibold text-emerald-500 uppercase tracking-wider mb-4">Page Stats</p>
+      <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider mb-4">Page Stats</p>
 
       <div className="grid grid-cols-3 gap-x-4 gap-y-5">
         {structureMetrics.map((m) => (

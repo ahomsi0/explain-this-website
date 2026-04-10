@@ -31,7 +31,7 @@ export function SeoAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-emerald-500 uppercase tracking-wider">SEO Audit</p>
+        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">SEO Audit</p>
         <div className="flex items-center gap-3 text-[11px]">
           <span className="text-zinc-600"><span className="text-emerald-400 font-semibold">{pass}</span> pass</span>
           <span className="text-zinc-600"><span className="text-amber-400 font-semibold">{warning}</span> warn</span>

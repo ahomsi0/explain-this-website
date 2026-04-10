@@ -2,7 +2,7 @@ export function WeakPointsCard({ weakPoints }: { weakPoints: string[] }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Weak Points</p>
+        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Weak Points</p>
         {weakPoints.length > 0 && (
           <span className="text-[11px] text-zinc-600">{weakPoints.length} issue{weakPoints.length !== 1 ? "s" : ""}</span>
         )}

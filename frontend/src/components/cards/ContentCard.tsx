@@ -9,7 +9,7 @@ const levelColor = {
 export function ContentCard({ contentStats }: { contentStats: ContentStats }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <p className="text-xs font-semibold text-emerald-500 uppercase tracking-wider mb-4">Content Analysis</p>
+      <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider mb-4">Content Analysis</p>
 
       <div className="flex items-center gap-3 mb-4">
         <div className="flex flex-col gap-1 flex-1">

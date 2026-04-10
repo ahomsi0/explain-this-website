@@ -13,7 +13,7 @@ export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Tech Stack</p>
+        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Tech Stack</p>
         <span className="text-[11px] text-zinc-600">{techStack.length} detected</span>
       </div>
 
