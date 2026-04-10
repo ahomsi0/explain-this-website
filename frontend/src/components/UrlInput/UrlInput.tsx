@@ -35,14 +35,16 @@ export function UrlInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) =>
           onChange={(e) => { setValue(e.target.value); setError(""); }}
           placeholder="Enter a URL to analyze..."
           disabled={isLoading}
-          className="flex-1 px-3 py-3.5 text-sm bg-transparent text-zinc-100 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
+          className="flex-1 px-3 py-3.5 text-[16px] sm:text-sm bg-transparent text-zinc-100 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
           autoComplete="url"
           spellCheck={false}
+          autoCapitalize="none"
+          autoCorrect="off"
         />
         <button
           type="submit"
           disabled={isLoading}
-          className="m-1.5 px-4 py-2 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="m-1.5 px-4 py-2.5 sm:py-2 rounded-md bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           {isLoading ? "Analyzing…" : "Analyze"}
         </button>

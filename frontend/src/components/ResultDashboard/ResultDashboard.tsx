@@ -29,8 +29,8 @@ function Metric({ label, value, valueClass = "text-zinc-100" }: {
   label: string; value: string | number; valueClass?: string;
 }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-[11px] text-zinc-600 uppercase tracking-wider font-medium">{label}</span>
+    <div className="flex flex-col gap-0.5 shrink-0">
+      <span className="text-[11px] text-zinc-600 uppercase tracking-wider font-medium whitespace-nowrap">{label}</span>
       <span className={`text-lg font-semibold leading-none ${valueClass}`}>{value}</span>
     </div>
   );
@@ -72,7 +72,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
               </svg>
-              New
+              <span className="hidden sm:inline">New</span>
             </button>
           </div>
         </div>
@@ -80,7 +80,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
 
       {/* ── Metrics strip ── */}
       <div className="border-b border-zinc-800 bg-zinc-900/40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-8 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-5 sm:gap-8 overflow-x-auto scrollbar-none">
           <Metric label="SEO Score"    value={`${seoScore}/100`} valueClass={scoreColor(seoScore)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
           <Metric label="UX Score"     value={`${uxScore}/100`}  valueClass={scoreColor(uxScore)} />
@@ -110,7 +110,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
       </div>
 
       {/* ── Main content ── */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-5 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
 
         {/* Left col: SEO Audit + Weak Points */}
         <div className="flex flex-col gap-4">

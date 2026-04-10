@@ -63,7 +63,7 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       )}
-      PDF
+      <span className="hidden sm:inline">PDF</span>
     </button>
   );
 }
