@@ -40,17 +40,60 @@ var cookieBannerSignals = []string{
 }
 
 var liveChatSignals = []string{
-	"crisp.chat", "client.crisp.chat",
-	"intercom", "widget.intercom.io",
-	"js.driftt.com", "drift.com/",
-	"tawk.to", "tawk_api",
+	// Crisp
+	"crisp.chat", "client.crisp.chat", "$crisp",
+	// Intercom
+	"intercom", "widget.intercom.io", "intercomcdn",
+	// Drift
+	"js.driftt.com", "drift.com/", "driftt.com",
+	// Tawk.to
+	"tawk.to", "tawk_api", "embed.tawk.to",
+	// Tidio
 	"tidio", "code.tidio.co",
-	"freshchat", "wchat.freshchat.com",
-	"zopim", "zendesk",
-	"livechat.com", "cdn.livechatinc.com",
-	"helpscout", "beacon-v2",
-	"olark", "smartsupp",
-	"hubspot", "js.hs-scripts.com",
+	// Freshchat / Freshdesk
+	"freshchat", "wchat.freshchat.com", "freshdesk", "freshworks",
+	// Zendesk / Zopim
+	"zopim", "zendesk", "zdassets.com",
+	// LiveChat
+	"livechat.com", "cdn.livechatinc.com", "livechatinc",
+	// HelpScout Beacon
+	"helpscout", "beacon-v2", "beacon.helpscout",
+	// Olark
+	"olark",
+	// Smartsupp
+	"smartsupp",
+	// HubSpot chat
+	"js.hs-scripts.com", "hubspot",
+	// Chatwoot
+	"chatwoot",
+	// Gist
+	"getgist.com",
+	// Zoho SalesIQ
+	"salesiq.zoho.com", "zoho.com/salesiq",
+	// LiveAgent
+	"liveagent",
+	// Re:amaze
+	"reamaze",
+	// Podium
+	"podium.com",
+	// Qualified
+	"qualified.com",
+	// Chatra
+	"chatra.io",
+	// UserLike
+	"userlike.com",
+	// Pure Chat
+	"purechat.com",
+	// SnapEngage
+	"snapengage",
+	// Comm100
+	"comm100",
+	// Kayako
+	"kayako",
+	// Generic chat widget markers often left in HTML
+	"chat-widget", "chat_widget", "livechat-widget",
+	"chat-bubble", "chatbubble", "chat-launcher",
+	"__lc", "lc_chat", "lc2",
 }
 
 var phoneRegex = regexp.MustCompile(`\+?[\d][\d\s\-\(\)]{7,}`)
