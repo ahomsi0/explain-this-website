@@ -98,9 +98,9 @@ func analyzeContent(text string) model.ContentStats {
 	// ── Reading level ────────────────────────────────────────────────────────
 	// Generous thresholds — website copy is naturally more fragmented than prose.
 	switch {
-	case cs.AvgSentenceLen == 0 || cs.AvgSentenceLen <= 16:
+	case cs.AvgSentenceLen == 0 || cs.AvgSentenceLen <= 22:
 		cs.ReadingLevel = "simple"
-	case cs.AvgSentenceLen <= 25:
+	case cs.AvgSentenceLen <= 35:
 		cs.ReadingLevel = "moderate"
 	default:
 		cs.ReadingLevel = "advanced"
