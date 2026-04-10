@@ -80,11 +80,13 @@ func analyzeContent(text string) model.ContentStats {
 	}
 
 	// ── Average sentence length ──────────────────────────────────────────────
+	// Only count sentences with 8+ words to filter out nav items, button labels,
+	// headings, and other short UI fragments that skew the average upward.
 	sentences := sentenceEnder.Split(text, -1)
 	totalWords, sentenceCount := 0, 0
 	for _, s := range sentences {
 		wc := len(strings.Fields(s))
-		if wc > 2 {
+		if wc >= 8 {
 			totalWords += wc
 			sentenceCount++
 		}
@@ -94,10 +96,11 @@ func analyzeContent(text string) model.ContentStats {
 	}
 
 	// ── Reading level ────────────────────────────────────────────────────────
+	// Generous thresholds — website copy is naturally more fragmented than prose.
 	switch {
-	case cs.AvgSentenceLen == 0 || cs.AvgSentenceLen <= 12:
+	case cs.AvgSentenceLen == 0 || cs.AvgSentenceLen <= 16:
 		cs.ReadingLevel = "simple"
-	case cs.AvgSentenceLen <= 20:
+	case cs.AvgSentenceLen <= 25:
 		cs.ReadingLevel = "moderate"
 	default:
 		cs.ReadingLevel = "advanced"
