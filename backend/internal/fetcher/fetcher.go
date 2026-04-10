@@ -1,15 +1,38 @@
 package fetcher
 
 import (
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"time"
+
+	"golang.org/x/net/publicsuffix"
 )
+
+// browserHeaders mimics a real Chrome 124 navigation request.
+// Order matters — some WAFs fingerprint header order.
+var browserHeaders = [][2]string{
+	{"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"},
+	{"Accept-Language", "en-US,en;q=0.9"},
+	{"Accept-Encoding", "gzip, deflate"},
+	{"Cache-Control", "max-age=0"},
+	{"Upgrade-Insecure-Requests", "1"},
+	{"Sec-Fetch-Dest", "document"},
+	{"Sec-Fetch-Mode", "navigate"},
+	{"Sec-Fetch-Site", "none"},
+	{"Sec-Fetch-User", "?1"},
+	{"Connection", "keep-alive"},
+}
+
+const chromeUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+	"AppleWebKit/537.36 (KHTML, like Gecko) " +
+	"Chrome/124.0.0.0 Safari/537.36"
 
 // FetchHTML retrieves the raw HTML of the given URL.
 func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, error) {
@@ -17,12 +40,17 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, e
 		return "", err
 	}
 
+	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+
 	client := &http.Client{
+		Jar:     jar,
 		Timeout: 15 * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 5 {
 				return fmt.Errorf("too many redirects — the site may require a login")
 			}
+			// Carry browser headers through redirects.
+			req.Header.Set("User-Agent", chromeUA)
 			return nil
 		},
 	}
@@ -32,10 +60,10 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, e
 		return "", fmt.Errorf("could not build request: %w", err)
 	}
 
-	// Identify as a browser to improve compatibility with sites that check User-Agent.
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; ExplainWebsite/1.0; +https://explainthewebsite.dev)")
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Set("User-Agent", chromeUA)
+	for _, h := range browserHeaders {
+		req.Header.Set(h[0], h[1])
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -52,26 +80,49 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, e
 		return "", fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s) — try the homepage instead", ct)
 	}
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBytes))
+	body, err := readBody(resp, maxBytes)
 	if err != nil {
 		return "", fmt.Errorf("failed reading page content: %w", err)
 	}
 
-	return string(body), nil
+	return body, nil
+}
+
+// readBody handles gzip-encoded responses (since we request gzip explicitly,
+// Go's transport won't auto-decompress for us).
+func readBody(resp *http.Response, maxBytes int64) (string, error) {
+	var reader io.Reader = resp.Body
+
+	if strings.EqualFold(resp.Header.Get("Content-Encoding"), "gzip") {
+		gz, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("could not decompress response: %w", err)
+		}
+		defer gz.Close()
+		reader = gz
+	}
+
+	b, err := io.ReadAll(io.LimitReader(reader, maxBytes))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 // friendlyStatusError maps HTTP status codes to plain-English messages.
 func friendlyStatusError(status int, targetURL string) error {
 	switch {
-	case status == 200 || (status >= 200 && status < 300):
-		return nil // success
+	case status >= 200 && status < 300:
+		return nil
 
 	case status == 301 || status == 302 || status == 303 || status == 307 || status == 308:
-		// Shouldn't happen since we follow redirects, but just in case.
 		return fmt.Errorf("the site redirected too many times — it may require a login")
 
-	case status == 401 || status == 403:
-		return fmt.Errorf("access denied (HTTP %d) — this site blocks automated requests", status)
+	case status == 401:
+		return fmt.Errorf("this page requires a login (HTTP 401) — try the public homepage instead")
+
+	case status == 403:
+		return fmt.Errorf("access denied (HTTP 403) — this site has strict bot protection (e.g. Cloudflare). Try a different page or the root domain")
 
 	case status == 404:
 		return fmt.Errorf("page not found (404) — check the URL and try again")
@@ -81,7 +132,7 @@ func friendlyStatusError(status int, targetURL string) error {
 
 	case status == 999:
 		// LinkedIn's custom bot-blocking code.
-		return fmt.Errorf("this site actively blocks automated requests (HTTP 999) — LinkedIn, Instagram, and similar platforms do not allow analysis")
+		return fmt.Errorf("this site actively blocks automated requests (HTTP 999) — LinkedIn, Instagram, and similar platforms cannot be analyzed")
 
 	case status >= 500:
 		return fmt.Errorf("the target site returned a server error (HTTP %d) — it may be temporarily down", status)
