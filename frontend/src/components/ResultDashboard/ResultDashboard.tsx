@@ -7,6 +7,7 @@ import { ConversionCard }      from "../cards/ConversionCard";
 import { WeakPointsCard }      from "../cards/WeakPointsCard";
 import { RecommendationsCard } from "../cards/RecommendationsCard";
 import { PageStatsCard }       from "../cards/PageStatsCard";
+import { ContentCard }         from "../cards/ContentCard";
 import { CopyButton }          from "../ui/CopyButton";
 import { DownloadButton }      from "../ui/DownloadButton";
 
@@ -45,7 +46,6 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
       {/* ── Top bar ── */}
       <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
-          {/* Logo */}
           <div className="flex items-center gap-2 shrink-0">
             <div className="w-5 h-5 rounded bg-violet-600 flex items-center justify-center">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,6 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
 
           <Separator orientation="vertical" className="h-4 bg-zinc-800" />
 
-          {/* Analyzed URL */}
           <div className="flex-1 min-w-0 flex items-center gap-2">
             <span className="text-xs text-zinc-500 shrink-0">Analyzing</span>
             <span className="text-xs font-medium text-zinc-300 truncate">{hostname}</span>
@@ -66,7 +65,6 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
             </span>
           </div>
 
-          {/* Actions */}
           <div className="flex items-center gap-2 shrink-0">
             <CopyButton result={result} />
             <DownloadButton result={result} />
@@ -103,28 +101,32 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
               <Metric label="Words" value={result.pageStats.wordCount.toLocaleString()} />
             </>
           )}
+          <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
+          <Metric label="Reading Level" value={result.contentStats.readingLevel.charAt(0).toUpperCase() + result.contentStats.readingLevel.slice(1)}
+            valueClass={result.contentStats.readingLevel === "simple" ? "text-emerald-400" : result.contentStats.readingLevel === "moderate" ? "text-amber-400" : "text-red-400"} />
         </div>
       </div>
 
       {/* ── Main content ── */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-5 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
 
-        {/* Left col: SEO Audit */}
+        {/* Left col: SEO Audit + Weak Points */}
         <div className="flex flex-col gap-4">
           <SeoAuditCard seoChecks={result.seoChecks} />
           <WeakPointsCard weakPoints={result.weakPoints} />
         </div>
 
-        {/* Middle col: Overview + Tech + UX */}
+        {/* Middle col: Overview + Tech + Conversion */}
         <div className="flex flex-col gap-4">
           <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} />
           <TechStackCard techStack={result.techStack} />
           <ConversionCard ux={result.ux} />
         </div>
 
-        {/* Right col: Page Stats + Recommendations */}
+        {/* Right col: Page Stats + Content + Recommendations */}
         <div className="flex flex-col gap-4">
           {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
+          <ContentCard contentStats={result.contentStats} />
           <RecommendationsCard recommendations={result.recommendations} />
         </div>
 

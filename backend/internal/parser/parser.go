@@ -22,14 +22,16 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 		return model.AnalysisResult{}, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
+	visibleText := extractVisibleText(doc)
+
 	overview := extractOverview(doc, rawHTML)
 	tech := detectTech(rawHTML)
-	seoChecks := auditSEO(doc)
+	seoChecks := auditSEO(doc, rawHTML, sourceURL)
 	ux := analyzeUX(doc, rawHTML)
-	pageStats := computePageStats(doc, sourceURL)
+	pageStats := computePageStats(doc, sourceURL, rawHTML)
+	contentStats := analyzeContent(visibleText)
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
 
-	// Ensure slices are never null in JSON (always at least an empty array).
 	if tech == nil {
 		tech = []model.TechItem{}
 	}
@@ -38,6 +40,9 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 	}
 	if recommendations == nil {
 		recommendations = []string{}
+	}
+	if contentStats.TopKeywords == nil {
+		contentStats.TopKeywords = []string{}
 	}
 
 	return model.AnalysisResult{
@@ -48,13 +53,37 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 		SEOChecks:       seoChecks,
 		UX:              ux,
 		PageStats:       pageStats,
+		ContentStats:    contentStats,
 		WeakPoints:      weakPoints,
 		Recommendations: recommendations,
 	}, nil
 }
 
-// computePageStats collects structural metrics from the parsed HTML tree.
-func computePageStats(doc *html.Node, sourceURL string) model.PageStats {
+// extractVisibleText collects all user-visible text from the parsed HTML tree.
+func extractVisibleText(doc *html.Node) string {
+	var sb strings.Builder
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if n.Type == html.TextNode && n.Parent != nil {
+			parent := strings.ToLower(n.Parent.Data)
+			if parent != "script" && parent != "style" && parent != "noscript" {
+				t := strings.TrimSpace(n.Data)
+				if t != "" {
+					sb.WriteString(t)
+					sb.WriteByte(' ')
+				}
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+	walk(doc)
+	return sb.String()
+}
+
+// computePageStats collects structural and performance metrics from the HTML tree.
+func computePageStats(doc *html.Node, sourceURL, rawHTML string) model.PageStats {
 	stats := model.PageStats{}
 
 	var sourceHost string
@@ -62,23 +91,66 @@ func computePageStats(doc *html.Node, sourceURL string) model.PageStats {
 		sourceHost = u.Hostname()
 	}
 
+	var textLen int
+	inHead := false
+
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
 		if n.Type == html.ElementNode {
 			tag := strings.ToLower(n.Data)
+
+			// Track head scope for render-blocking detection
+			if tag == "head" {
+				inHead = true
+				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					walk(c)
+				}
+				inHead = false
+				return
+			}
+
 			switch tag {
 			case "img":
 				stats.ImageCount++
-			case "script":
-				if getAttr(n, "src") != "" || n.FirstChild != nil {
-					stats.ScriptCount++
+				if strings.ToLower(getAttr(n, "loading")) == "lazy" {
+					stats.LazyImageCount++
 				}
+
+			case "script":
+				src := getAttr(n, "src")
+				if src != "" || n.FirstChild != nil {
+					stats.ScriptCount++
+					if inHead && getAttr(n, "defer") == "" && getAttr(n, "async") == "" {
+						stats.RenderBlockingScripts++
+					}
+					srcLower := strings.ToLower(src)
+					if strings.Contains(srcLower, "kit.fontawesome.com") {
+						stats.FontCount++
+					}
+				}
+
+			case "link":
+				rel := strings.ToLower(getAttr(n, "rel"))
+				href := getAttr(n, "href")
+				hrefLower := strings.ToLower(href)
+				if rel == "stylesheet" {
+					stats.StylesheetCount++
+				}
+				if (rel == "preload" && strings.ToLower(getAttr(n, "as")) == "font") ||
+					strings.Contains(hrefLower, "fonts.googleapis.com") ||
+					strings.Contains(hrefLower, "fonts.bunny.net") ||
+					strings.Contains(hrefLower, "use.typekit.net") ||
+					strings.Contains(hrefLower, "use.fontawesome.com") {
+					stats.FontCount++
+				}
+
 			case "h1":
 				stats.H1Count++
 			case "h2":
 				stats.H2Count++
 			case "h3":
 				stats.H3Count++
+
 			case "a":
 				href := getAttr(n, "href")
 				if href == "" || strings.HasPrefix(href, "#") ||
@@ -95,10 +167,18 @@ func computePageStats(doc *html.Node, sourceURL string) model.PageStats {
 					}
 				}
 			}
+
+			// Count elements with inline style attributes
+			if getAttr(n, "style") != "" {
+				stats.InlineStyleCount++
+			}
+
 		} else if n.Type == html.TextNode && n.Parent != nil {
 			parentTag := strings.ToLower(n.Parent.Data)
 			if parentTag != "script" && parentTag != "style" && parentTag != "noscript" {
+				trimmed := strings.TrimSpace(n.Data)
 				stats.WordCount += len(strings.Fields(n.Data))
+				textLen += len(trimmed)
 			}
 		}
 
@@ -107,6 +187,15 @@ func computePageStats(doc *html.Node, sourceURL string) model.PageStats {
 		}
 	}
 	walk(doc)
+
+	// Content-to-code ratio
+	if htmlLen := len(rawHTML); htmlLen > 0 && textLen > 0 {
+		ratio := textLen * 100 / htmlLen
+		if ratio > 100 {
+			ratio = 100
+		}
+		stats.ContentToCodeRatio = ratio
+	}
 
 	return stats
 }
@@ -128,7 +217,6 @@ func extractOverview(doc *html.Node, rawHTML string) model.Overview {
 			case "html":
 				lang := getAttr(n, "lang")
 				if lang != "" {
-					// Normalise to language code only (e.g. "en-US" → "en").
 					parts := strings.SplitN(lang, "-", 2)
 					o.Language = parts[0]
 				}
@@ -156,7 +244,6 @@ func extractOverview(doc *html.Node, rawHTML string) model.Overview {
 	}
 	walk(doc)
 
-	// Estimate page weight as a proxy for load speed.
 	size := len(rawHTML)
 	switch {
 	case size < 50_000:

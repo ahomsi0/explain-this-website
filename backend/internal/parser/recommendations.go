@@ -69,6 +69,16 @@ func generateRecommendations(seoChecks []model.SEOCheck, ux model.UXResult) (wea
 		recommendations = append(recommendations, "Remove the noindex directive if this page should be indexed by search engines")
 	}
 
+	if seo["https"] == "fail" {
+		weakPoints = append(weakPoints, "Site not served over HTTPS — insecure and penalised by search engines and browsers")
+		recommendations = append(recommendations, "Migrate to HTTPS with an SSL/TLS certificate — it's a confirmed Google ranking signal")
+	}
+
+	if seo["mixed_content"] == "warning" {
+		weakPoints = append(weakPoints, "Mixed content detected — HTTP resources on an HTTPS page trigger browser security warnings")
+		recommendations = append(recommendations, "Update all resource URLs (images, scripts, stylesheets) to use HTTPS")
+	}
+
 	// --- UX / Conversion weak points ---
 	if !ux.HasCTA {
 		weakPoints = append(weakPoints, "No clear call-to-action detected — visitors may not know what to do next")

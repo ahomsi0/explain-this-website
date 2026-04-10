@@ -8,7 +8,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-// CTA keyword list — checked against the visible text of <a> and <button> elements.
 var ctaKeywords = []string{
 	"buy", "get started", "sign up", "signup", "try", "free trial",
 	"start", "book", "order", "subscribe", "contact us", "learn more",
@@ -18,13 +17,40 @@ var ctaKeywords = []string{
 
 var socialProofKeywords = []string{
 	"review", "testimonial", "rated", "customers", "clients", "trust pilot",
-	"trustpilot", "verified", "stars", "rating", "★", "⭐", "g2 crowd", "capterra",
+	"trustpilot", "verified", "stars", "rating", "g2 crowd", "capterra",
 	"4.", "5.", "/5", "out of 5",
 }
 
 var trustKeywords = []string{
 	"guarantee", "secure", "ssl", "certified", "award", "accredited",
 	"privacy", "safe", "money back", "refund", "100%", "no risk", "verified",
+}
+
+var newsletterKeywords = []string{
+	"newsletter", "subscribe", "subscription", "mailing list",
+	"email updates", "get updates", "stay updated", "join our list",
+	"weekly digest", "updates in your inbox",
+}
+
+var cookieBannerSignals = []string{
+	"cookieconsent", "cookie-consent", "cookie-notice", "cookie-banner",
+	"onetrust", "cookiebot", "cc-window", "gdpr-cookie", "cookie-law",
+	"cookie_consent", "cookie-accept", "js-cookie", "cookie-popup",
+	"we use cookies", "accept cookies", "cookie preferences",
+}
+
+var liveChatSignals = []string{
+	"crisp.chat", "client.crisp.chat",
+	"intercom", "widget.intercom.io",
+	"js.driftt.com", "drift.com/",
+	"tawk.to", "tawk_api",
+	"tidio", "code.tidio.co",
+	"freshchat", "wchat.freshchat.com",
+	"zopim", "zendesk",
+	"livechat.com", "cdn.livechatinc.com",
+	"helpscout", "beacon-v2",
+	"olark", "smartsupp",
+	"hubspot", "js.hs-scripts.com",
 }
 
 var phoneRegex = regexp.MustCompile(`\+?[\d][\d\s\-\(\)]{7,}`)
@@ -35,14 +61,14 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 
 	walkUX(doc, &result)
 
-	// Check for contact info via mailto/tel links (already captured in walkUX)
-	// and also in raw HTML for phone numbers.
 	lower := strings.ToLower(rawHTML)
+
+	// Phone numbers in raw HTML
 	if phoneRegex.MatchString(lower) {
 		result.HasContactInfo = true
 	}
 
-	// Trust signals: scan raw HTML for keywords (faster than tree walking).
+	// Trust signals
 	for _, kw := range trustKeywords {
 		if strings.Contains(lower, kw) {
 			result.HasTrustSignals = true
@@ -50,11 +76,38 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 		}
 	}
 
-	// Social proof: scan raw HTML.
+	// Social proof
 	for _, kw := range socialProofKeywords {
 		if strings.Contains(lower, kw) {
 			result.HasSocialProof = true
 			break
+		}
+	}
+
+	// Cookie/GDPR banner
+	for _, sig := range cookieBannerSignals {
+		if strings.Contains(lower, sig) {
+			result.HasCookieBanner = true
+			break
+		}
+	}
+
+	// Live chat widget
+	for _, sig := range liveChatSignals {
+		if strings.Contains(lower, sig) {
+			result.HasLiveChat = true
+			break
+		}
+	}
+
+	// Newsletter signup: email input + subscribe/newsletter context
+	hasEmailInput := strings.Contains(lower, `type="email"`) || strings.Contains(lower, `type='email'`)
+	if hasEmailInput {
+		for _, kw := range newsletterKeywords {
+			if strings.Contains(lower, kw) {
+				result.HasNewsletterSignup = true
+				break
+			}
 		}
 	}
 
@@ -79,12 +132,26 @@ func walkUX(n *html.Node, result *model.UXResult) {
 					break
 				}
 			}
-			// Detect contact info via href.
 			if tag == "a" {
 				href := strings.ToLower(getAttr(n, "href"))
 				if strings.HasPrefix(href, "mailto:") || strings.HasPrefix(href, "tel:") {
 					result.HasContactInfo = true
 				}
+				// Privacy policy link
+				if strings.Contains(href, "privacy") || strings.Contains(text, "privacy policy") {
+					result.HasPrivacyPolicy = true
+				}
+			}
+
+		case "video":
+			result.HasVideoContent = true
+
+		case "iframe":
+			src := strings.ToLower(getAttr(n, "src"))
+			if strings.Contains(src, "youtube.com") || strings.Contains(src, "youtu.be") ||
+				strings.Contains(src, "vimeo.com") || strings.Contains(src, "wistia.com") ||
+				strings.Contains(src, "loom.com") {
+				result.HasVideoContent = true
 			}
 
 		case "meta":

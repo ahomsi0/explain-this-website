@@ -87,7 +87,8 @@ function buildPDF(result: AnalysisResult) {
   const issueCount = result.weakPoints.length;
   const techCount  = result.techStack.length;
   const recCount   = result.recommendations.length;
-  const ps         = result.pageStats ?? { wordCount: 0, imageCount: 0, internalLinks: 0, externalLinks: 0, scriptCount: 0, h1Count: 0, h2Count: 0, h3Count: 0 };
+  const ps         = result.pageStats ?? { wordCount: 0, imageCount: 0, internalLinks: 0, externalLinks: 0, scriptCount: 0, h1Count: 0, h2Count: 0, h3Count: 0, stylesheetCount: 0, inlineStyleCount: 0, lazyImageCount: 0, fontCount: 0, renderBlockingScripts: 0, contentToCodeRatio: 0 };
+  const cs         = result.contentStats;
   const readMins   = Math.max(1, Math.round(ps.wordCount / 200));
   const highConf   = result.techStack.filter(t => t.confidence === "high").length;
   const medConf    = result.techStack.filter(t => t.confidence === "medium").length;
@@ -220,6 +221,7 @@ function buildPDF(result: AnalysisResult) {
     { label: "Technologies",    value: `${techCount}`,                color: TEXT },
     { label: "Issues Found",    value: `${issueCount}`,               color: issueCount === 0 ? GREEN : issueCount <= 3 ? AMBER : RED },
     { label: "Words on Page",   value: ps.wordCount.toLocaleString(), color: TEXT },
+    { label: "Reading Level",   value: cs ? cs.readingLevel.charAt(0).toUpperCase() + cs.readingLevel.slice(1) : "—", color: cs?.readingLevel === "simple" ? GREEN : cs?.readingLevel === "moderate" ? AMBER : RED },
     { label: "Recommendations", value: `${recCount}`,                 color: TEXT },
   ];
   for (const row of summaryRows) {
@@ -342,12 +344,17 @@ function buildPDF(result: AnalysisResult) {
       startY: y,
       head: [["Signal", "Present", "Detail"]],
       body: [
-        ["Call-to-Action",    ux.hasCTA          ? "YES" : "NO", san(ux.hasCTA          ? `${ux.ctaCount} CTA button${ux.ctaCount !== 1 ? "s" : ""} detected`  : "No CTAs found - add clear action buttons")],
-        ["Lead Capture Form", ux.hasForms        ? "YES" : "NO", san(ux.hasForms        ? `${ux.formCount} form${ux.formCount !== 1 ? "s" : ""} detected`      : "No forms - consider a contact or lead form")],
-        ["Social Proof",      ux.hasSocialProof  ? "YES" : "NO", san(ux.hasSocialProof  ? "Reviews, testimonials, or social indicators found"                  : "No social proof - add reviews or testimonials")],
-        ["Trust Signals",     ux.hasTrustSignals ? "YES" : "NO", san(ux.hasTrustSignals ? "SSL badges, security mentions, or guarantees detected"              : "No trust signals - add security/guarantee badges")],
-        ["Contact Info",      ux.hasContactInfo  ? "YES" : "NO", san(ux.hasContactInfo  ? "Email or phone number found on page"                               : "No contact info - add email/phone for credibility")],
-        ["Mobile Responsive", ux.mobileReady     ? "YES" : "NO", san(ux.mobileReady     ? "Viewport meta tag present - mobile-ready"                          : "Missing viewport tag - not optimised for mobile")],
+        ["Call-to-Action",    ux.hasCTA              ? "YES" : "NO", san(ux.hasCTA              ? `${ux.ctaCount} CTA button${ux.ctaCount !== 1 ? "s" : ""} detected`  : "No CTAs found - add clear action buttons")],
+        ["Lead Capture Form", ux.hasForms            ? "YES" : "NO", san(ux.hasForms            ? `${ux.formCount} form${ux.formCount !== 1 ? "s" : ""} detected`      : "No forms - consider a contact or lead form")],
+        ["Social Proof",      ux.hasSocialProof      ? "YES" : "NO", san(ux.hasSocialProof      ? "Reviews, testimonials, or social indicators found"                  : "No social proof - add reviews or testimonials")],
+        ["Trust Signals",     ux.hasTrustSignals     ? "YES" : "NO", san(ux.hasTrustSignals     ? "SSL badges, security mentions, or guarantees detected"              : "No trust signals - add security/guarantee badges")],
+        ["Contact Info",      ux.hasContactInfo      ? "YES" : "NO", san(ux.hasContactInfo      ? "Email or phone number found on page"                               : "No contact info - add email/phone for credibility")],
+        ["Mobile Responsive", ux.mobileReady         ? "YES" : "NO", san(ux.mobileReady         ? "Viewport meta tag present - mobile-ready"                          : "Missing viewport tag - not optimised for mobile")],
+        ["Cookie Banner",     ux.hasCookieBanner     ? "YES" : "NO", ux.hasCookieBanner     ? "Consent UI detected"       : "No cookie consent detected"],
+        ["Live Chat",         ux.hasLiveChat         ? "YES" : "NO", ux.hasLiveChat         ? "Chat widget detected"      : "No live chat widget found"],
+        ["Video Content",     ux.hasVideoContent     ? "YES" : "NO", ux.hasVideoContent     ? "Video content detected"    : "No video content found"],
+        ["Newsletter",        ux.hasNewsletterSignup ? "YES" : "NO", ux.hasNewsletterSignup ? "Email signup detected"     : "No newsletter signup found"],
+        ["Privacy Policy",    ux.hasPrivacyPolicy    ? "YES" : "NO", ux.hasPrivacyPolicy    ? "Policy link found"         : "No privacy policy link found"],
       ],
       columnStyles: {
         0: { cellWidth: 40, fontStyle: "bold" },
@@ -372,13 +379,18 @@ function buildPDF(result: AnalysisResult) {
       startY: y,
       head: [["Metric", "Value", "Context"]],
       body: [
-        ["Word Count",        ps.wordCount.toLocaleString(),                              `~${readMins} min read`],
-        ["Images",            String(ps.imageCount),                                      ps.imageCount === 0 ? "No images found" : "Total img elements"],
-        ["Scripts",           String(ps.scriptCount),                                     ps.scriptCount > 15 ? "High — may slow page load" : ps.scriptCount > 8 ? "Moderate" : "Lean"],
-        ["Internal Links",    String(ps.internalLinks),                                   "Links to pages on same domain"],
-        ["External Links",    String(ps.externalLinks),                                   "Links to other websites"],
-        ["Heading Structure", `H1:${ps.h1Count}  H2:${ps.h2Count}  H3:${ps.h3Count}`,   ps.h1Count === 1 ? "Good — single H1" : ps.h1Count === 0 ? "Missing H1" : "Multiple H1s"],
-        ["Tech Stack Size",   `${techCount} tool${techCount !== 1 ? "s" : ""} (${highConf} high · ${medConf} med · ${lowConf} low)`, "Detected by signature matching"],
+        ["Word Count",            ps.wordCount.toLocaleString(),                                          `~${readMins} min read`],
+        ["Images",                `${ps.imageCount} (${ps.lazyImageCount} lazy)`,                        ps.imageCount === 0 ? "No images" : "img elements"],
+        ["Scripts",               String(ps.scriptCount),                                                 ps.scriptCount > 15 ? "High - may slow load" : ps.scriptCount > 8 ? "Moderate" : "Lean"],
+        ["Internal Links",        String(ps.internalLinks),                                               "Same domain"],
+        ["External Links",        String(ps.externalLinks),                                               "Other websites"],
+        ["Heading Structure",     `H1:${ps.h1Count}  H2:${ps.h2Count}  H3:${ps.h3Count}`,               ps.h1Count === 1 ? "Good - single H1" : ps.h1Count === 0 ? "Missing H1" : "Multiple H1s"],
+        ["Stylesheets",           String(ps.stylesheetCount),                                             ps.stylesheetCount > 10 ? "High - consider consolidating" : "OK"],
+        ["Fonts",                 String(ps.fontCount),                                                   ps.fontCount === 0 ? "System fonts only" : ps.fontCount > 4 ? "Many loaded" : "OK"],
+        ["Render Blocking",       String(ps.renderBlockingScripts),                                       "Scripts in <head> without defer/async"],
+        ["Inline Styles",         String(ps.inlineStyleCount),                                            ps.inlineStyleCount > 50 ? "High - prefer CSS classes" : "OK"],
+        ["Content Ratio",         `${ps.contentToCodeRatio}%`,                                            ps.contentToCodeRatio < 10 ? "Low - heavy markup" : ps.contentToCodeRatio > 40 ? "Great" : "OK"],
+        ["Tech Stack",            `${techCount} detected (${highConf}h ${medConf}m ${lowConf}l)`,        "Signature matching"],
       ],
       columnStyles: {
         0: { cellWidth: 40, fontStyle: "bold", textColor: rgb(DIM) },
@@ -391,10 +403,41 @@ function buildPDF(result: AnalysisResult) {
             data.cell.styles.textColor = ps.scriptCount > 15 ? rgb(AMBER) : rgb(TEXT);
           if (data.row.index === 5) // H1
             data.cell.styles.textColor = ps.h1Count === 1 ? rgb(GREEN) : ps.h1Count === 0 ? rgb(RED) : rgb(AMBER);
+          if (data.row.index === 8) // Render blocking
+            data.cell.styles.textColor = ps.renderBlockingScripts > 3 ? rgb(RED) : ps.renderBlockingScripts > 0 ? rgb(AMBER) : rgb(GREEN);
+          if (data.row.index === 10) // Content ratio
+            data.cell.styles.textColor = ps.contentToCodeRatio < 10 ? rgb(AMBER) : rgb(TEXT);
         }
       },
     });
     y = lastY(doc) + 10;
+  }
+
+  // ── Content Analysis ───────────────────────────────────────────────────────
+  if (cs) {
+    need(20);
+    section("Content Analysis");
+
+    const levelColor = cs.readingLevel === "simple" ? GREEN : cs.readingLevel === "moderate" ? AMBER : RED;
+    doc.setFontSize(7.5); doc.setFont("helvetica", "normal");
+    doc.setTextColor(...rgb(DIM));
+    doc.text("Reading Level: ", M, y);
+    let cx = M + doc.getTextWidth("Reading Level: ");
+    doc.setFont("helvetica", "bold"); doc.setTextColor(...rgb(levelColor));
+    doc.text(cs.readingLevel.charAt(0).toUpperCase() + cs.readingLevel.slice(1), cx, y);
+    cx += doc.getTextWidth(cs.readingLevel.charAt(0).toUpperCase() + cs.readingLevel.slice(1));
+    doc.setFont("helvetica", "normal"); doc.setTextColor(...rgb(MUTED));
+    doc.text(`   Avg sentence: ${cs.avgSentenceLen} words`, cx, y);
+    y += 8;
+
+    if (cs.topKeywords.length > 0) {
+      doc.setFontSize(7); doc.setFont("helvetica", "bold");
+      doc.setTextColor(...rgb(MUTED));
+      doc.text("Top Keywords:", M, y);
+      doc.setFont("helvetica", "normal"); doc.setTextColor(...rgb(TEXT));
+      doc.text(cs.topKeywords.join("  ·  "), M + 30, y);
+      y += 8;
+    }
   }
 
   // ── Weak Points ────────────────────────────────────────────────────────────

@@ -19,7 +19,7 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
   const readMins   = Math.max(1, Math.round(pageStats.wordCount / 200));
   const totalLinks = pageStats.internalLinks + pageStats.externalLinks;
 
-  const metrics = [
+  const structureMetrics = [
     {
       label: "Words",
       value: pageStats.wordCount.toLocaleString(),
@@ -28,12 +28,13 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
     {
       label: "Images",
       value: pageStats.imageCount,
+      sub: pageStats.imageCount > 0 ? `${pageStats.lazyImageCount} lazy` : undefined,
     },
     {
       label: "Scripts",
       value: pageStats.scriptCount,
       sub: pageStats.scriptCount > 15 ? "high load" : pageStats.scriptCount > 8 ? "moderate" : "lean",
-      valueClass: pageStats.scriptCount > 15 ? "text-amber-400" : "text-slate-100",
+      valueClass: pageStats.scriptCount > 15 ? "text-amber-400" : "text-zinc-100",
     },
     {
       label: "Links",
@@ -53,14 +54,56 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
     },
   ];
 
+  const performanceMetrics = [
+    {
+      label: "Stylesheets",
+      value: pageStats.stylesheetCount,
+      sub: pageStats.stylesheetCount > 10 ? "high" : "ok",
+      valueClass: pageStats.stylesheetCount > 10 ? "text-amber-400" : "text-zinc-100",
+    },
+    {
+      label: "Fonts",
+      value: pageStats.fontCount,
+      sub: pageStats.fontCount > 4 ? "many loaded" : pageStats.fontCount === 0 ? "system only" : "ok",
+      valueClass: pageStats.fontCount > 4 ? "text-amber-400" : "text-zinc-100",
+    },
+    {
+      label: "Inline Styles",
+      value: pageStats.inlineStyleCount,
+      sub: pageStats.inlineStyleCount > 50 ? "high" : "ok",
+      valueClass: pageStats.inlineStyleCount > 50 ? "text-amber-400" : "text-zinc-100",
+    },
+    {
+      label: "Render Blocking",
+      value: pageStats.renderBlockingScripts,
+      sub: "scripts in <head>",
+      valueClass: pageStats.renderBlockingScripts > 3 ? "text-red-400" : pageStats.renderBlockingScripts > 0 ? "text-amber-400" : "text-emerald-400",
+    },
+    {
+      label: "Content Ratio",
+      value: `${pageStats.contentToCodeRatio}%`,
+      sub: pageStats.contentToCodeRatio < 10 ? "low — heavy markup" : pageStats.contentToCodeRatio > 40 ? "great" : "ok",
+      valueClass: pageStats.contentToCodeRatio < 10 ? "text-amber-400" : "text-zinc-100",
+    },
+  ];
+
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
       <p className="text-[11px] font-medium text-zinc-600 uppercase tracking-wider mb-4">Page Stats</p>
 
       <div className="grid grid-cols-3 gap-x-4 gap-y-5">
-        {metrics.map((m) => (
+        {structureMetrics.map((m) => (
           <Metric key={m.label} {...m} />
         ))}
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-zinc-800">
+        <p className="text-[10px] font-medium text-zinc-700 uppercase tracking-wider mb-3">Performance</p>
+        <div className="grid grid-cols-3 gap-x-4 gap-y-5">
+          {performanceMetrics.map((m) => (
+            <Metric key={m.label} {...m} />
+          ))}
+        </div>
       </div>
     </div>
   );

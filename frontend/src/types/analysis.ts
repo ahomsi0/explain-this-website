@@ -3,6 +3,7 @@ export type Confidence = "high" | "medium" | "low";
 export type SEOStatus = "pass" | "warning" | "fail";
 export type AnalysisStatus = "idle" | "loading" | "error" | "success";
 export type PageLoadHint = "lightweight" | "medium" | "heavy";
+export type ReadingLevel = "simple" | "moderate" | "advanced";
 
 export interface TechItem {
   name: string;
@@ -26,6 +27,7 @@ export interface Overview {
 }
 
 export interface UXResult {
+  // Conversion signals
   hasCTA: boolean;
   ctaCount: number;
   hasForms: boolean;
@@ -34,9 +36,16 @@ export interface UXResult {
   hasTrustSignals: boolean;
   hasContactInfo: boolean;
   mobileReady: boolean;
+  // Trust & engagement
+  hasCookieBanner: boolean;
+  hasLiveChat: boolean;
+  hasVideoContent: boolean;
+  hasNewsletterSignup: boolean;
+  hasPrivacyPolicy: boolean;
 }
 
 export interface PageStats {
+  // Content structure
   wordCount: number;
   imageCount: number;
   internalLinks: number;
@@ -45,6 +54,19 @@ export interface PageStats {
   h1Count: number;
   h2Count: number;
   h3Count: number;
+  // Performance
+  stylesheetCount: number;
+  inlineStyleCount: number;
+  lazyImageCount: number;
+  fontCount: number;
+  renderBlockingScripts: number;
+  contentToCodeRatio: number;
+}
+
+export interface ContentStats {
+  topKeywords: string[];
+  avgSentenceLen: number;
+  readingLevel: ReadingLevel;
 }
 
 export interface AnalysisResult {
@@ -55,6 +77,7 @@ export interface AnalysisResult {
   seoChecks: SEOCheck[];
   ux: UXResult;
   pageStats?: PageStats;
+  contentStats: ContentStats;
   weakPoints: string[];
   recommendations: string[];
 }

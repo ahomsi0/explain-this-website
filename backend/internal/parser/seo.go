@@ -20,15 +20,17 @@ type seoState struct {
 	ogTitle           string
 	ogDesc            string
 	ogImage           string
-	hasSchemaJSON     bool // <script type="application/ld+json">
-	hasMicrodata      bool // itemscope attribute
+	hasSchemaJSON     bool
+	hasMicrodata      bool
+	hasHreflang       bool
+	hasSitemapLink    bool
 }
 
 // auditSEO walks the HTML node tree once and returns a list of SEO checks.
-func auditSEO(doc *html.Node) []model.SEOCheck {
+func auditSEO(doc *html.Node, rawHTML, sourceURL string) []model.SEOCheck {
 	state := &seoState{}
 	walkSEO(doc, state)
-	return buildChecks(state)
+	return buildChecks(state, rawHTML, sourceURL)
 }
 
 func walkSEO(n *html.Node, s *seoState) {
@@ -67,8 +69,16 @@ func walkSEO(n *html.Node, s *seoState) {
 			}
 
 		case "link":
-			if strings.ToLower(getAttr(n, "rel")) == "canonical" {
+			rel := strings.ToLower(getAttr(n, "rel"))
+			switch rel {
+			case "canonical":
 				s.canonicalURL = getAttr(n, "href")
+			case "sitemap":
+				s.hasSitemapLink = true
+			case "alternate":
+				if getAttr(n, "hreflang") != "" {
+					s.hasHreflang = true
+				}
 			}
 
 		case "h1":
@@ -87,7 +97,6 @@ func walkSEO(n *html.Node, s *seoState) {
 			}
 		}
 
-		// Check for Microdata anywhere in the tree.
 		if getAttr(n, "itemscope") != "" || getAttr(n, "itemtype") != "" {
 			s.hasMicrodata = true
 		}
@@ -98,8 +107,27 @@ func walkSEO(n *html.Node, s *seoState) {
 	}
 }
 
-func buildChecks(s *seoState) []model.SEOCheck {
+func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 	checks := []model.SEOCheck{}
+
+	// HTTPS
+	isHTTPS := strings.HasPrefix(strings.ToLower(sourceURL), "https://")
+	if isHTTPS {
+		checks = append(checks, model.SEOCheck{ID: "https", Label: "HTTPS", Status: "pass", Detail: "Site is served over HTTPS"})
+	} else {
+		checks = append(checks, model.SEOCheck{ID: "https", Label: "HTTPS", Status: "fail", Detail: "Site is not using HTTPS — insecure and a negative ranking signal"})
+	}
+
+	// Mixed content (only relevant on HTTPS pages)
+	if isHTTPS {
+		lower := strings.ToLower(rawHTML)
+		hasMixed := strings.Contains(lower, `src="http://`) || strings.Contains(lower, `src='http://`)
+		if hasMixed {
+			checks = append(checks, model.SEOCheck{ID: "mixed_content", Label: "Mixed Content", Status: "warning", Detail: "HTTP resources found on HTTPS page — may trigger browser security warnings"})
+		} else {
+			checks = append(checks, model.SEOCheck{ID: "mixed_content", Label: "Mixed Content", Status: "pass", Detail: "No mixed content detected"})
+		}
+	}
 
 	// Title
 	switch {
@@ -110,7 +138,7 @@ func buildChecks(s *seoState) []model.SEOCheck {
 			Detail: fmt.Sprintf("Title is very short (%d chars): %q", len(s.titleText), s.titleText)})
 	case len(s.titleText) > 60:
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "warning",
-			Detail: fmt.Sprintf("Title may be truncated in SERPs (%d chars, recommended ≤60): %q", len(s.titleText), truncate(s.titleText, 50))})
+			Detail: fmt.Sprintf("Title may be truncated in SERPs (%d chars, recommended <=60): %q", len(s.titleText), truncate(s.titleText, 50))})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "pass",
 			Detail: fmt.Sprintf("%q (%d chars)", truncate(s.titleText, 50), len(s.titleText))})
@@ -122,10 +150,10 @@ func buildChecks(s *seoState) []model.SEOCheck {
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "fail", Detail: "No meta description found — search snippet will be auto-generated"})
 	case len(s.metaDesc) < 70:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "warning",
-			Detail: fmt.Sprintf("Description is short (%d chars, recommended 120–160)", len(s.metaDesc))})
+			Detail: fmt.Sprintf("Description is short (%d chars, recommended 120-160)", len(s.metaDesc))})
 	case len(s.metaDesc) > 160:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "warning",
-			Detail: fmt.Sprintf("Description may be truncated (%d chars, recommended ≤160)", len(s.metaDesc))})
+			Detail: fmt.Sprintf("Description may be truncated (%d chars, recommended <=160)", len(s.metaDesc))})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "pass",
 			Detail: fmt.Sprintf("%d chars", len(s.metaDesc))})
@@ -144,7 +172,7 @@ func buildChecks(s *seoState) []model.SEOCheck {
 	case s.h1Count == 0:
 		checks = append(checks, model.SEOCheck{ID: "h1_count", Label: "H1 Heading", Status: "fail", Detail: "No H1 heading found on the page"})
 	case s.h1Count == 1:
-		checks = append(checks, model.SEOCheck{ID: "h1_count", Label: "H1 Heading", Status: "pass", Detail: "Exactly one H1 found — good"})
+		checks = append(checks, model.SEOCheck{ID: "h1_count", Label: "H1 Heading", Status: "pass", Detail: "Exactly one H1 found"})
 	case s.h1Count <= 3:
 		checks = append(checks, model.SEOCheck{ID: "h1_count", Label: "H1 Heading", Status: "warning",
 			Detail: fmt.Sprintf("Multiple H1 tags found (%d) — only one is recommended", s.h1Count)})
@@ -200,12 +228,12 @@ func buildChecks(s *seoState) []model.SEOCheck {
 		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "pass",
 			Detail: fmt.Sprintf("%s schema detected", schemaType)})
 	} else {
-		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "fail", Detail: "No JSON-LD or Microdata schema found — missing rich snippet opportunities"})
+		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "fail", Detail: "No JSON-LD or Microdata found — missing rich snippet opportunities"})
 	}
 
 	// Viewport
 	if s.metaViewport {
-		checks = append(checks, model.SEOCheck{ID: "viewport", Label: "Viewport Meta Tag", Status: "pass", Detail: "Viewport tag present — good for mobile"})
+		checks = append(checks, model.SEOCheck{ID: "viewport", Label: "Viewport Meta Tag", Status: "pass", Detail: "Viewport tag present"})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "viewport", Label: "Viewport Meta Tag", Status: "fail", Detail: "No viewport meta tag — page may not render well on mobile"})
 	}
@@ -214,7 +242,21 @@ func buildChecks(s *seoState) []model.SEOCheck {
 	if s.metaRobotsNoindex {
 		checks = append(checks, model.SEOCheck{ID: "robots", Label: "Robots Directive", Status: "fail", Detail: "Page has noindex — it will not appear in search results"})
 	} else {
-		checks = append(checks, model.SEOCheck{ID: "robots", Label: "Robots Directive", Status: "pass", Detail: "No noindex directive found — page is indexable"})
+		checks = append(checks, model.SEOCheck{ID: "robots", Label: "Robots Directive", Status: "pass", Detail: "No noindex directive — page is indexable"})
+	}
+
+	// Hreflang
+	if s.hasHreflang {
+		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "pass", Detail: "Multilingual/regional targeting configured"})
+	} else {
+		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "warning", Detail: "No hreflang tags — add if you target multiple languages or regions"})
+	}
+
+	// Sitemap link
+	if s.hasSitemapLink {
+		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap Link", Status: "pass", Detail: "Sitemap <link> tag found in <head>"})
+	} else {
+		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap Link", Status: "warning", Detail: "No <link rel=\"sitemap\"> found — helps crawlers discover your sitemap"})
 	}
 
 	return checks
@@ -234,5 +276,5 @@ func truncate(s string, max int) string {
 	if len(s) <= max {
 		return s
 	}
-	return s[:max] + "…"
+	return s[:max] + "..."
 }
