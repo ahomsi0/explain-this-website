@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
 import { OverviewCard }        from "../cards/OverviewCard";
 import { TechStackCard }       from "../cards/TechStackCard";
@@ -47,11 +48,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
       <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
-            <div className="w-5 h-5 rounded bg-violet-600 flex items-center justify-center">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-            </div>
+            <LogoMark size={22} />
             <span className="text-xs font-semibold text-zinc-400 hidden sm:block">Explain This Website</span>
           </div>
 

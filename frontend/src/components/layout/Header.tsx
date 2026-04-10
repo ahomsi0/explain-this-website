@@ -1,9 +1,11 @@
+import { LogoMark } from "../ui/Logo";
+
 export function Header() {
   return (
     <header className="hero-bg text-center pt-24 pb-16 px-6">
       {/* Logo mark */}
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 text-white text-2xl mb-7 shadow-lg shadow-violet-900/30 ring-1 ring-violet-500/20">
-        🔬
+      <div className="inline-flex mb-7">
+        <LogoMark size={64} />
       </div>
 
       <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
