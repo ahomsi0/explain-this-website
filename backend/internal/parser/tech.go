@@ -39,7 +39,7 @@ var techPatterns = []techPattern{
 	{name: "BigCommerce", category: "ecommerce", confidence: "high",
 		patterns: []string{"bigcommerce.com", "bigcommercecdn.com"}},
 	{name: "Magento", category: "ecommerce", confidence: "high",
-		patterns: []string{"magento", "mage.cookies", "x-magento-init", "mage-init", "mage/bootstrap"}},
+		patterns: []string{"x-magento-init", "mage/bootstrap", "mage.cookies", "mage-init"}},
 
 	// JS Frameworks
 	{name: "Next.js", category: "framework", confidence: "high",
