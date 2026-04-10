@@ -67,7 +67,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
             <DownloadButton result={result} />
             <button
               onClick={onReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-violet-400 hover:text-violet-200 hover:bg-violet-950 border border-violet-800 hover:border-violet-600 transition-colors"
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
