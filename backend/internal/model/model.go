@@ -9,6 +9,55 @@ type TechItem struct {
 	Confidence string `json:"confidence"` // high, medium, low
 }
 
+// IntentSummary describes the inferred purpose and audience of the website.
+type IntentSummary struct {
+	Category    string `json:"category"`    // ecommerce, saas, portfolio, blog, landing, service, corporate, general
+	Label       string `json:"label"`       // human-readable e.g. "E-commerce Store"
+	Description string `json:"description"` // one-sentence explanation
+}
+
+// CustomerView evaluates the page from a first-time visitor's perspective.
+type CustomerView struct {
+	OfferClear bool     `json:"offerClear"`
+	CTAClear   bool     `json:"ctaClear"`
+	TrustLevel string   `json:"trustLevel"` // strong, moderate, weak
+	Statements []string `json:"statements"` // "As a visitor, I..."
+}
+
+// ConversionScores breaks conversion readiness into four focused sub-scores (0–100).
+type ConversionScores struct {
+	Overall      int    `json:"overall"`
+	Clarity      int    `json:"clarity"`
+	Trust        int    `json:"trust"`
+	CTAStrength  int    `json:"ctaStrength"`
+	Friction     int    `json:"friction"`
+	ClarityNote  string `json:"clarityNote"`
+	TrustNote    string `json:"trustNote"`
+	CTANote      string `json:"ctaNote"`
+	FrictionNote string `json:"frictionNote"`
+}
+
+// FirstImpression rates how clear and compelling the page feels in the first few seconds.
+type FirstImpression struct {
+	Score       int    `json:"score"`       // 0–10
+	Label       string `json:"label"`       // Poor / Weak / Fair / Good / Strong
+	Explanation string `json:"explanation"`
+}
+
+// PrioritizedIssue is a problem ranked by likely real-world impact.
+type PrioritizedIssue struct {
+	Rank   int    `json:"rank"`
+	Issue  string `json:"issue"`
+	Impact string `json:"impact"` // SEO, Conversion, Performance, Accessibility, Trust
+	Why    string `json:"why"`
+}
+
+// ELI5Item is a plain-language rewrite of a technical finding.
+type ELI5Item struct {
+	Technical string `json:"technical"`
+	Simple    string `json:"simple"`
+}
+
 // SEOCheck represents the result of a single SEO audit check.
 type SEOCheck struct {
 	ID      string   `json:"id"`
@@ -86,6 +135,15 @@ type AnalysisResult struct {
 	ContentStats    ContentStats `json:"contentStats"`
 	WeakPoints      []string     `json:"weakPoints"`
 	Recommendations []string     `json:"recommendations"`
+	// Insight layer
+	Intent            IntentSummary      `json:"intent"`
+	CustomerView      CustomerView       `json:"customerView"`
+	ConversionScores  ConversionScores   `json:"conversionScores"`
+	FirstImpression   FirstImpression    `json:"firstImpression"`
+	BiggestOpportunity string            `json:"biggestOpportunity"`
+	CompetitorInsight  string            `json:"competitorInsight"`
+	PrioritizedIssues  []PrioritizedIssue `json:"prioritizedIssues"`
+	ELI5               []ELI5Item         `json:"eli5"`
 }
 
 // ErrorResponse is returned on any failure.

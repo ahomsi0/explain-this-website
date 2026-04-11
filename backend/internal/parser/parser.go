@@ -45,17 +45,45 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 		contentStats.TopKeywords = []string{}
 	}
 
+	// Build insight layer
+	seoIndex := indexSEO(seoChecks)
+	isHTTPS := strings.HasPrefix(strings.ToLower(sourceURL), "https://")
+
+	intent := inferIntent(overview, tech, ux, pageStats, rawHTML)
+	customerView := buildCustomerView(overview, ux, seoIndex, pageStats, isHTTPS)
+	convScores := computeConversionScores(ux, seoIndex, pageStats, isHTTPS, contentStats.ReadingLevel)
+	firstImpression := computeFirstImpression(overview, ux, seoIndex, pageStats, isHTTPS)
+	biggestOpp := findBiggestOpportunity(seoIndex, ux, pageStats)
+	competitorInsight := buildCompetitorInsight(intent, tech, ux, pageStats)
+	prioritized := buildPrioritizedIssues(seoIndex, ux, pageStats, isHTTPS)
+	eli5 := buildELI5(seoIndex, ux)
+
+	if prioritized == nil {
+		prioritized = []model.PrioritizedIssue{}
+	}
+	if eli5 == nil {
+		eli5 = []model.ELI5Item{}
+	}
+
 	return model.AnalysisResult{
-		URL:             sourceURL,
-		FetchedAt:       time.Now().UTC(),
-		Overview:        overview,
-		TechStack:       tech,
-		SEOChecks:       seoChecks,
-		UX:              ux,
-		PageStats:       pageStats,
-		ContentStats:    contentStats,
-		WeakPoints:      weakPoints,
-		Recommendations: recommendations,
+		URL:                sourceURL,
+		FetchedAt:          time.Now().UTC(),
+		Overview:           overview,
+		TechStack:          tech,
+		SEOChecks:          seoChecks,
+		UX:                 ux,
+		PageStats:          pageStats,
+		ContentStats:       contentStats,
+		WeakPoints:         weakPoints,
+		Recommendations:    recommendations,
+		Intent:             intent,
+		CustomerView:       customerView,
+		ConversionScores:   convScores,
+		FirstImpression:    firstImpression,
+		BiggestOpportunity: biggestOpp,
+		CompetitorInsight:  competitorInsight,
+		PrioritizedIssues:  prioritized,
+		ELI5:               eli5,
 	}, nil
 }
 

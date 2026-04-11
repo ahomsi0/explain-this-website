@@ -71,6 +71,49 @@ export interface ContentStats {
   readingLevel: ReadingLevel;
 }
 
+export interface IntentSummary {
+  category: string;
+  label: string;
+  description: string;
+}
+
+export interface CustomerView {
+  offerClear: boolean;
+  ctaClear: boolean;
+  trustLevel: "strong" | "moderate" | "weak";
+  statements: string[];
+}
+
+export interface ConversionScores {
+  overall: number;
+  clarity: number;
+  trust: number;
+  ctaStrength: number;
+  friction: number;
+  clarityNote: string;
+  trustNote: string;
+  ctaNote: string;
+  frictionNote: string;
+}
+
+export interface FirstImpression {
+  score: number;  // 0–10
+  label: string;  // Poor / Weak / Fair / Good / Strong
+  explanation: string;
+}
+
+export interface PrioritizedIssue {
+  rank: number;
+  issue: string;
+  impact: string;
+  why: string;
+}
+
+export interface ELI5Item {
+  technical: string;
+  simple: string;
+}
+
 export interface AnalysisResult {
   url: string;
   fetchedAt: string;
@@ -82,6 +125,14 @@ export interface AnalysisResult {
   contentStats?: ContentStats;
   weakPoints: string[];
   recommendations: string[];
+  intent: IntentSummary;
+  customerView: CustomerView;
+  conversionScores: ConversionScores;
+  firstImpression: FirstImpression;
+  biggestOpportunity: string;
+  competitorInsight: string;
+  prioritizedIssues: PrioritizedIssue[];
+  eli5: ELI5Item[];
 }
 
 export interface AnalysisError {

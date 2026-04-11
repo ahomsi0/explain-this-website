@@ -1,16 +1,21 @@
 import { Separator } from "@/components/ui/separator";
 import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
-import { OverviewCard }        from "../cards/OverviewCard";
-import { TechStackCard }       from "../cards/TechStackCard";
-import { SeoAuditCard }        from "../cards/SeoAuditCard";
-import { ConversionCard }      from "../cards/ConversionCard";
-import { WeakPointsCard }      from "../cards/WeakPointsCard";
-import { RecommendationsCard } from "../cards/RecommendationsCard";
-import { PageStatsCard }       from "../cards/PageStatsCard";
-import { ContentCard }         from "../cards/ContentCard";
-import { CopyButton }          from "../ui/CopyButton";
-import { DownloadButton }      from "../ui/DownloadButton";
+import { OverviewCard }          from "../cards/OverviewCard";
+import { TechStackCard }         from "../cards/TechStackCard";
+import { SeoAuditCard }          from "../cards/SeoAuditCard";
+import { ConversionCard }        from "../cards/ConversionCard";
+import { ConversionScoreCard }   from "../cards/ConversionScoreCard";
+import { WeakPointsCard }        from "../cards/WeakPointsCard";
+import { RecommendationsCard }   from "../cards/RecommendationsCard";
+import { PageStatsCard }         from "../cards/PageStatsCard";
+import { ContentCard }           from "../cards/ContentCard";
+import { InsightCard }           from "../cards/InsightCard";
+import { CustomerViewCard }      from "../cards/CustomerViewCard";
+import { PrioritizedIssuesCard } from "../cards/PrioritizedIssuesCard";
+import { ELI5Card }              from "../cards/ELI5Card";
+import { CopyButton }            from "../ui/CopyButton";
+import { DownloadButton }        from "../ui/DownloadButton";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -23,6 +28,10 @@ function computeScores(result: AnalysisResult) {
 
 function scoreColor(n: number) {
   return n >= 80 ? "text-emerald-400" : n >= 50 ? "text-amber-400" : "text-red-400";
+}
+
+function impressionColor(n: number) {
+  return n >= 8 ? "text-emerald-400" : n >= 6 ? "text-amber-400" : n >= 4 ? "text-orange-400" : "text-red-400";
 }
 
 function Metric({ label, value, valueClass = "text-zinc-100" }: {
@@ -81,16 +90,22 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
       {/* ── Metrics strip ── */}
       <div className="border-b border-zinc-800 bg-zinc-900/40">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-5 sm:gap-8 overflow-x-auto scrollbar-none">
-          <Metric label="SEO Score"    value={`${seoScore}/100`} valueClass={scoreColor(seoScore)} />
+          <Metric label="SEO Score"       value={`${seoScore}/100`} valueClass={scoreColor(seoScore)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
-          <Metric label="UX Score"     value={`${uxScore}/100`}  valueClass={scoreColor(uxScore)} />
+          <Metric label="UX Score"        value={`${uxScore}/100`}  valueClass={scoreColor(uxScore)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
-          <Metric label="Tech Detected" value={result.techStack.length} />
+          <Metric label="1st Impression"  value={`${result.firstImpression.score}/10`}
+            valueClass={impressionColor(result.firstImpression.score)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
-          <Metric label="Issues"        value={issueCount}
+          <Metric label="Conversion"      value={`${result.conversionScores.overall}/100`}
+            valueClass={scoreColor(result.conversionScores.overall)} />
+          <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
+          <Metric label="Tech Detected"   value={result.techStack.length} />
+          <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
+          <Metric label="Issues"          value={issueCount}
             valueClass={issueCount === 0 ? "text-emerald-400" : issueCount <= 3 ? "text-amber-400" : "text-red-400"} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
-          <Metric label="Page Weight"   value={result.overview.pageLoadHint.charAt(0).toUpperCase() + result.overview.pageLoadHint.slice(1)}
+          <Metric label="Page Weight"     value={result.overview.pageLoadHint.charAt(0).toUpperCase() + result.overview.pageLoadHint.slice(1)}
             valueClass={result.overview.pageLoadHint === "lightweight" ? "text-emerald-400" : result.overview.pageLoadHint === "medium" ? "text-amber-400" : "text-red-400"} />
           {result.pageStats && (
             <>
@@ -112,21 +127,30 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
       {/* ── Main content ── */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
 
-        {/* Left col: SEO Audit + Weak Points */}
+        {/* Left col: SEO + What's Hurting You + Weak Points */}
         <div className="flex flex-col gap-4">
           <SeoAuditCard seoChecks={result.seoChecks} />
+          <PrioritizedIssuesCard issues={result.prioritizedIssues} />
           <WeakPointsCard weakPoints={result.weakPoints} />
         </div>
 
-        {/* Middle col: Overview + Tech + Conversion */}
+        {/* Middle col: Site Intelligence + Overview + Tech + Conversion */}
         <div className="flex flex-col gap-4">
+          <InsightCard
+            intent={result.intent}
+            biggestOpportunity={result.biggestOpportunity}
+            competitorInsight={result.competitorInsight}
+          />
           <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} />
           <TechStackCard techStack={result.techStack} />
           <ConversionCard ux={result.ux} />
         </div>
 
-        {/* Right col: Page Stats + Content + Recommendations */}
+        {/* Right col: Customer View + Conversion Scores + ELI5 + Stats + Recommendations */}
         <div className="flex flex-col gap-4">
+          <CustomerViewCard customerView={result.customerView} />
+          <ConversionScoreCard scores={result.conversionScores} />
+          {result.eli5.length > 0 && <ELI5Card items={result.eli5} />}
           {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
           {result.contentStats && <ContentCard contentStats={result.contentStats} />}
           <RecommendationsCard recommendations={result.recommendations} />
