@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
@@ -17,8 +16,6 @@ import { PrioritizedIssuesCard } from "../cards/PrioritizedIssuesCard";
 import { ELI5Card }              from "../cards/ELI5Card";
 import { CopyButton }            from "../ui/CopyButton";
 import { DownloadButton }        from "../ui/DownloadButton";
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -48,54 +45,26 @@ function Metric({ label, value, valueClass = "text-zinc-100" }: {
   );
 }
 
-// ── Tab definitions ───────────────────────────────────────────────────────────
-
-type TabId = "overview" | "audit" | "issues";
-
-const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  {
-    id: "overview",
-    label: "Overview",
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-      </svg>
-    ),
-  },
-  {
-    id: "audit",
-    label: "Audit",
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-      </svg>
-    ),
-  },
-  {
-    id: "issues",
-    label: "Issues & Fixes",
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-      </svg>
-    ),
-  },
-];
-
-// ── Main component ────────────────────────────────────────────────────────────
+function ColHeader({ label, description }: { label: string; description: string }) {
+  return (
+    <div className="mb-1">
+      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">{label}</p>
+      <p className="text-[11px] text-zinc-700 mt-0.5">{description}</p>
+    </div>
+  );
+}
 
 export function ResultDashboard({ result, onReset }: { result: AnalysisResult; onReset: () => void }) {
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
   const { seoScore, uxScore } = computeScores(result);
   const issueCount = result.weakPoints.length;
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-zinc-950">
 
       {/* ── Top bar ── */}
       <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
-        <div className="max-w-[1600px] mx-auto px-4 h-12 flex items-center gap-4">
+        <div className="max-w-[1600px] mx-auto px-6 h-12 flex items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <LogoMark size={22} />
             <span className="text-xs font-semibold text-zinc-400 hidden sm:block">Explain This Website</span>
@@ -129,7 +98,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
 
       {/* ── Metrics strip ── */}
       <div className="border-b border-zinc-800 bg-zinc-900/40">
-        <div className="max-w-[1600px] mx-auto px-4 py-4 flex items-center gap-5 sm:gap-8 overflow-x-auto scrollbar-none">
+        <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center gap-5 sm:gap-8 overflow-x-auto scrollbar-none">
           <Metric label="SEO Score"      value={`${seoScore}/100`}  valueClass={scoreColor(seoScore)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
           <Metric label="UX Score"       value={`${uxScore}/100`}   valueClass={scoreColor(uxScore)} />
@@ -164,68 +133,41 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
         </div>
       </div>
 
-      {/* ── Tab bar ── */}
-      <div className="sticky top-12 z-10 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
-        <div className="max-w-[1600px] mx-auto px-4 flex">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "text-violet-400 border-violet-500"
-                  : "text-zinc-500 border-transparent hover:text-zinc-300 hover:border-zinc-700"
-              }`}
-            >
-              <span className={activeTab === tab.id ? "text-violet-400" : "text-zinc-600"}>{tab.icon}</span>
-              {tab.label}
-              {/* Badge: issue count on Issues tab */}
-              {tab.id === "issues" && issueCount > 0 && (
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                  activeTab === tab.id ? "bg-violet-900/60 text-violet-300" : "bg-zinc-800 text-zinc-500"
-                }`}>
-                  {issueCount}
-                </span>
-              )}
-            </button>
-          ))}
+      {/* ── 3-column grid ── */}
+      <main className="flex-1 max-w-[1600px] mx-auto w-full px-6 py-6
+                       grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-start">
+
+        {/* ── Col 1: Site Profile ── */}
+        <div className="flex flex-col gap-3">
+          <ColHeader label="Site Profile" description="What this site is and who it's for" />
+          <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} />
+          <InsightCard
+            intent={result.intent}
+            biggestOpportunity={result.biggestOpportunity}
+            competitorInsight={result.competitorInsight}
+          />
+          <CustomerViewCard customerView={result.customerView} />
+          {result.eli5.length > 0 && <ELI5Card items={result.eli5} />}
         </div>
-      </div>
 
-      {/* ── Tab content ── */}
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-5 flex flex-col gap-4">
+        {/* ── Col 2: Performance ── */}
+        <div className="flex flex-col gap-3">
+          <ColHeader label="Performance" description="How well it scores across key dimensions" />
+          <ConversionScoreCard scores={result.conversionScores} />
+          <SeoAuditCard seoChecks={result.seoChecks} />
+          <ConversionCard ux={result.ux} />
+          <TechStackCard techStack={result.techStack} />
+          {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
+          {result.contentStats && <ContentCard contentStats={result.contentStats} />}
+        </div>
 
-        {activeTab === "overview" && (
-          <>
-            <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} />
-            <InsightCard
-              intent={result.intent}
-              biggestOpportunity={result.biggestOpportunity}
-              competitorInsight={result.competitorInsight}
-            />
-            <CustomerViewCard customerView={result.customerView} />
-            {result.eli5.length > 0 && <ELI5Card items={result.eli5} />}
-          </>
-        )}
-
-        {activeTab === "audit" && (
-          <>
-            <ConversionScoreCard scores={result.conversionScores} />
-            <SeoAuditCard seoChecks={result.seoChecks} />
-            <ConversionCard ux={result.ux} />
-            <TechStackCard techStack={result.techStack} />
-            {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
-            {result.contentStats && <ContentCard contentStats={result.contentStats} />}
-          </>
-        )}
-
-        {activeTab === "issues" && (
-          <>
-            <PrioritizedIssuesCard issues={result.prioritizedIssues} />
-            <WeakPointsCard weakPoints={result.weakPoints} />
-            <RecommendationsCard recommendations={result.recommendations} />
-          </>
-        )}
+        {/* ── Col 3: Action Plan ── */}
+        <div className="flex flex-col gap-3">
+          <ColHeader label="Action Plan" description="What's broken and how to fix it" />
+          <PrioritizedIssuesCard issues={result.prioritizedIssues} />
+          <WeakPointsCard weakPoints={result.weakPoints} />
+          <RecommendationsCard recommendations={result.recommendations} />
+        </div>
 
       </main>
     </div>
