@@ -69,9 +69,8 @@ export function LoadingSpinner({ url }: { url: string }) {
           </div>
         </div>
 
-        {/* Stage list */}
-        <div className="flex justify-center w-full">
-        <div className="flex flex-col gap-2">
+        {/* Stage list — fixed width so items-center on parent can truly center it */}
+        <div className="flex flex-col gap-2 w-56">
           {STAGES.map((stage, i) => {
             const done    = i < stageIdx;
             const current = i === stageIdx;
@@ -95,7 +94,7 @@ export function LoadingSpinner({ url }: { url: string }) {
                 </div>
 
                 {/* Label */}
-                <span className={`text-xs transition-colors duration-300 w-48 ${
+                <span className={`text-xs transition-colors duration-300 ${
                   done    ? "text-zinc-600"
                   : current ? "text-zinc-200 font-medium"
                   : "text-zinc-700"
@@ -106,7 +105,6 @@ export function LoadingSpinner({ url }: { url: string }) {
               </div>
             );
           })}
-        </div>
         </div>
 
       </div>
