@@ -41,30 +41,76 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
   );
 }
 
+type Status = "good" | "warn" | "bad";
+
+function statusDot(s: Status) {
+  return s === "good" ? "bg-emerald-500" : s === "warn" ? "bg-amber-500" : "bg-red-500";
+}
+function statusText(s: Status) {
+  return s === "good" ? "text-emerald-400" : s === "warn" ? "text-amber-400" : "text-red-400";
+}
+
+function EfficiencyRow({ label, value, note, status }: {
+  label: string; value: string | number; note: string; status: Status;
+}) {
+  return (
+    <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 last:border-0">
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(status)}`} />
+      <span className="text-xs text-zinc-300 flex-1">{label}</span>
+      <span className={`text-xs font-semibold tabular-nums ${statusText(status)}`}>{value}</span>
+      <span className="text-[11px] text-zinc-600 w-28 text-right">{note}</span>
+    </div>
+  );
+}
+
 export function PagePerfCard({ pageStats }: { pageStats: PageStats }) {
-  const metrics = [
-    { label: "Stylesheets",     value: pageStats.stylesheetCount,
-      sub: pageStats.stylesheetCount > 10 ? "high" : "ok",
-      valueClass: pageStats.stylesheetCount > 10 ? "text-amber-400" : "text-zinc-100" },
-    { label: "Fonts",           value: pageStats.fontCount,
-      sub: pageStats.fontCount > 4 ? "many loaded" : pageStats.fontCount === 0 ? "system only" : "ok",
-      valueClass: pageStats.fontCount > 4 ? "text-amber-400" : "text-zinc-100" },
-    { label: "Inline Styles",   value: pageStats.inlineStyleCount,
-      sub: pageStats.inlineStyleCount > 50 ? "high" : "ok",
-      valueClass: pageStats.inlineStyleCount > 50 ? "text-amber-400" : "text-zinc-100" },
-    { label: "Render Blocking", value: pageStats.renderBlockingScripts,
-      sub: "scripts in <head>",
-      valueClass: pageStats.renderBlockingScripts > 3 ? "text-red-400" : pageStats.renderBlockingScripts > 0 ? "text-amber-400" : "text-emerald-400" },
-    { label: "Content Ratio",   value: `${pageStats.contentToCodeRatio}%`,
-      sub: pageStats.contentToCodeRatio < 10 ? "low — heavy markup" : pageStats.contentToCodeRatio > 40 ? "great" : "ok",
-      valueClass: pageStats.contentToCodeRatio < 10 ? "text-amber-400" : "text-zinc-100" },
+  const rows: { label: string; value: string | number; note: string; status: Status }[] = [
+    {
+      label: "Render-blocking scripts",
+      value: pageStats.renderBlockingScripts,
+      note: pageStats.renderBlockingScripts === 0 ? "none — great" : pageStats.renderBlockingScripts <= 3 ? "slows first paint" : "delays page load",
+      status: pageStats.renderBlockingScripts === 0 ? "good" : pageStats.renderBlockingScripts <= 3 ? "warn" : "bad",
+    },
+    {
+      label: "Stylesheets loaded",
+      value: pageStats.stylesheetCount,
+      note: pageStats.stylesheetCount <= 5 ? "lean" : pageStats.stylesheetCount <= 10 ? "moderate" : "too many requests",
+      status: pageStats.stylesheetCount <= 5 ? "good" : pageStats.stylesheetCount <= 10 ? "warn" : "bad",
+    },
+    {
+      label: "Web fonts",
+      value: pageStats.fontCount,
+      note: pageStats.fontCount === 0 ? "system fonts only" : pageStats.fontCount <= 3 ? "reasonable" : "heavy font load",
+      status: pageStats.fontCount <= 3 ? "good" : "warn",
+    },
+    {
+      label: "Inline styles",
+      value: pageStats.inlineStyleCount,
+      note: pageStats.inlineStyleCount <= 20 ? "minimal" : pageStats.inlineStyleCount <= 50 ? "moderate" : "bloated markup",
+      status: pageStats.inlineStyleCount <= 20 ? "good" : pageStats.inlineStyleCount <= 50 ? "warn" : "bad",
+    },
+    {
+      label: "Content-to-code ratio",
+      value: `${pageStats.contentToCodeRatio}%`,
+      note: pageStats.contentToCodeRatio >= 30 ? "lean markup" : pageStats.contentToCodeRatio >= 15 ? "acceptable" : "markup-heavy page",
+      status: pageStats.contentToCodeRatio >= 30 ? "good" : pageStats.contentToCodeRatio >= 15 ? "warn" : "bad",
+    },
   ];
+
+  const goodCount = rows.filter((r) => r.status === "good").length;
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider mb-4">Page Performance</p>
-      <div className="grid grid-cols-3 gap-x-4 gap-y-5">
-        {metrics.map((m) => <Metric key={m.label} {...m} />)}
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Load Efficiency</p>
+        <span className="text-[11px] text-zinc-600">
+          <span className={goodCount === rows.length ? "text-emerald-400" : goodCount >= 3 ? "text-amber-400" : "text-red-400"}>
+            {goodCount}/{rows.length}
+          </span> passing
+        </span>
+      </div>
+      <div>
+        {rows.map((r) => <EfficiencyRow key={r.label} {...r} />)}
       </div>
     </div>
   );
