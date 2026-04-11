@@ -21,25 +21,30 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 	hasEcommerceTech := hasTechCat(tech, "ecommerce")
 
 	// ── E-commerce ────────────────────────────────────────────────────────────
-	// Requires platform tech OR at least two explicit cart/purchase mechanics.
+	// "view cart" / "checkout" alone are NOT sufficient — WooCommerce and
+	// similar plugins inject these into every WordPress site header/footer even
+	// when there are no active products.  We require "add to cart" (only present
+	// on actual product pages) as a necessary condition alongside the tech signal.
+	hasAddToCart := anyIn(lower, "add to cart", "add to bag", "remove from cart")
+	hasCheckoutFlow := anyIn(lower, "proceed to checkout", "go to checkout", "view cart", "shopping cart")
+	hasPurchaseCTA := anyIn(lower, "buy now", "shop now", "order now") &&
+		anyIn(lower, "free shipping", "ships in", "in stock", "out of stock", "add to wishlist")
+
 	ecom := 0
-	if hasEcommerceTech {
-		ecom += 5 // Shopify / WooCommerce / Magento etc. is definitive
-	}
-	if anyIn(lower, "add to cart", "add to bag", "remove from cart") {
-		ecom += 4 // cart mechanics are unambiguous
-	}
-	if anyIn(lower, "proceed to checkout", "go to checkout", "view cart", "shopping cart") {
-		ecom += 3
-	}
-	if anyIn(lower, "buy now", "shop now", "order now") && anyIn(lower, "price", "shipping", "delivery") {
-		ecom += 2 // purchase CTA + fulfilment language together
+	if hasEcommerceTech && hasAddToCart {
+		ecom += 6 // platform + product page — definitive active store
+	} else if hasEcommerceTech && hasPurchaseCTA {
+		ecom += 5 // platform + purchase language with fulfilment signals
+	} else if hasAddToCart && hasCheckoutFlow {
+		ecom += 5 // full cart flow without platform (custom store)
+	} else if hasAddToCart {
+		ecom += 4 // product pages present but checkout not yet confirmed
 	}
 	if ecom >= 5 {
 		return model.IntentSummary{
 			Category:    "ecommerce",
 			Label:       "E-commerce Store",
-			Description: "This appears to be an e-commerce store — it has cart mechanics and/or a recognised e-commerce platform.",
+			Description: "This appears to be an e-commerce store — it has active product pages with cart mechanics.",
 		}
 	}
 

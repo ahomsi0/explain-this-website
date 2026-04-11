@@ -70,7 +70,7 @@ export function LoadingSpinner({ url }: { url: string }) {
         </div>
 
         {/* Stage list */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-fit mx-auto">
           {STAGES.map((stage, i) => {
             const done    = i < stageIdx;
             const current = i === stageIdx;
