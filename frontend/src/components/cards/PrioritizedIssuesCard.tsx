@@ -43,7 +43,7 @@ export function PrioritizedIssuesCard({ issues }: { issues: PrioritizedIssue[] }
                     {item.impact}
                   </span>
                 </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">{item.why}</p>
+                <p className="text-[11px] text-zinc-500 leading-relaxed">{item.why}</p>
               </div>
             </div>
           );

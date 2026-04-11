@@ -32,7 +32,7 @@ export function InsightCard({
           <span className="text-base leading-none">{icon}</span>
           <span className="text-sm font-semibold text-zinc-100">{intent.label}</span>
         </div>
-        <p className="text-xs text-zinc-400 leading-relaxed">{intent.description}</p>
+        <p className="text-xs text-zinc-500 leading-relaxed">{intent.description}</p>
       </div>
 
       <div className="h-px bg-zinc-800" />
@@ -48,7 +48,7 @@ export function InsightCard({
       {/* Competitor insight */}
       <div className="flex flex-col gap-1.5">
         <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Market Positioning</p>
-        <p className="text-xs text-zinc-400 leading-relaxed italic">{competitorInsight}</p>
+        <p className="text-xs text-zinc-500 leading-relaxed italic">{competitorInsight}</p>
       </div>
     </div>
   );

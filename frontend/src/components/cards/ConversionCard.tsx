@@ -5,7 +5,7 @@ function Row({ label, present, detail }: { label: string; present: boolean; deta
     <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 last:border-0">
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${present ? "bg-emerald-500" : "bg-zinc-700"}`} />
       <span className="text-xs text-zinc-400 w-32 shrink-0">{label}</span>
-      <span className="text-xs text-zinc-400 truncate">{detail}</span>
+      <span className="text-xs text-zinc-500 truncate">{detail}</span>
     </div>
   );
 }

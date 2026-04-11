@@ -15,7 +15,7 @@ export function ELI5Card({ items }: { items: ELI5Item[] }) {
       <div className="flex flex-col gap-3">
         {items.map((item, i) => (
           <div key={i} className="flex flex-col gap-1 pl-3 border-l-2 border-zinc-800">
-            <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">{item.technical}</p>
+            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">{item.technical}</p>
             <p className="text-xs text-zinc-400 leading-relaxed">{item.simple}</p>
           </div>
         ))}

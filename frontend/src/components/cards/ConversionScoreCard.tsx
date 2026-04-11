@@ -28,7 +28,7 @@ function ScoreRow({
           style={{ width: `${score}%` }}
         />
       </div>
-      {note && <p className="text-[11px] text-zinc-400 leading-snug">{note}</p>}
+      {note && <p className="text-[11px] text-zinc-500 leading-snug">{note}</p>}
     </div>
   );
 }
