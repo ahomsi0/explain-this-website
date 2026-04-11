@@ -32,7 +32,7 @@ export function OverviewCard({ overview, url, fetchedAt }: {
             {overview.title || <span className="text-zinc-600 font-normal">No title</span>}
           </p>
           <a href={url} target="_blank" rel="noopener noreferrer"
-            className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors truncate block mt-0.5">
+            className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors truncate block mt-0.5">
             {url}
           </a>
         </div>
@@ -50,12 +50,12 @@ export function OverviewCard({ overview, url, fetchedAt }: {
       </div>
 
       {overview.description && (
-        <p className="mt-3 text-xs text-zinc-500 leading-relaxed border-t border-zinc-800 pt-3">
+        <p className="mt-3 text-xs text-zinc-400 leading-relaxed border-t border-zinc-800 pt-3">
           {overview.description}
         </p>
       )}
 
-      <p className="mt-3 text-[11px] text-zinc-700">
+      <p className="mt-3 text-[11px] text-zinc-500">
         {new Date(fetchedAt).toLocaleString()}
       </p>
     </div>

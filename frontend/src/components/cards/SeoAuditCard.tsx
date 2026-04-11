@@ -24,7 +24,7 @@ function CheckRow({ check }: { check: SEOCheck }) {
             <span className="text-xs font-medium text-zinc-200">{check.label}</span>
             <span className={`text-[10px] font-semibold ${s.label}`}>{s.text}</span>
           </div>
-          <p className="text-xs text-zinc-600 mt-0.5 leading-relaxed">{check.detail}</p>
+          <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">{check.detail}</p>
         </div>
         {hasDetails && (
           <svg

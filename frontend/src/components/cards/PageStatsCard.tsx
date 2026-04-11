@@ -8,9 +8,9 @@ function Metric({ label, value, sub, valueClass = "text-zinc-100" }: {
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">{label}</span>
       <span className={`text-xl font-semibold leading-none ${valueClass}`}>{value}</span>
-      {sub && <span className="text-[11px] text-zinc-600">{sub}</span>}
+      {sub && <span className="text-[11px] text-zinc-400">{sub}</span>}
     </div>
   );
 }
@@ -58,7 +58,7 @@ function EfficiencyRow({ label, value, note, status }: {
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(status)}`} />
       <span className="text-xs text-zinc-300 flex-1">{label}</span>
       <span className={`text-xs font-semibold tabular-nums ${statusText(status)}`}>{value}</span>
-      <span className="text-[11px] text-zinc-600 w-28 text-right">{note}</span>
+      <span className="text-[11px] text-zinc-400 w-28 text-right">{note}</span>
     </div>
   );
 }

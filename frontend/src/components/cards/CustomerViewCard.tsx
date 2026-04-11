@@ -32,7 +32,7 @@ export function CustomerViewCard({ customerView }: { customerView: CustomerView 
       <div className="flex flex-col gap-2.5">
         {customerView.statements.map((stmt, i) => (
           <div key={i} className="flex items-start gap-2">
-            <span className="text-zinc-700 mt-0.5 shrink-0 text-[10px]">›</span>
+            <span className="text-zinc-500 mt-0.5 shrink-0 text-[10px]">›</span>
             <p className="text-xs text-zinc-400 leading-relaxed">{stmt}</p>
           </div>
         ))}
