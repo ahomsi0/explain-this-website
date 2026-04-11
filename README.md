@@ -55,7 +55,7 @@ go run main.go
 
 ```bash
 cd frontend
-cp .env.example .env.local  # set VITE_API_BASE_URL=http://localhost:8080
+cp .env.example .env.local  # set VITE_API_URL=http://localhost:8080
 npm install
 npm run dev
 # App available at http://localhost:5173
@@ -172,7 +172,7 @@ Returns `{"status":"ok"}`.
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:8080` | Backend API base URL |
+| `VITE_API_URL` | `http://localhost:8080` | Backend API base URL |
 | `VITE_USE_MOCK` | `false` | Use mock data instead of real backend |
 
 ---

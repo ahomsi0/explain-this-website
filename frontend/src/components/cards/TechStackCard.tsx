@@ -2,9 +2,9 @@ import type { TechItem } from "../../types/analysis";
 
 const catLabel: Record<string, string> = {
   cms: "CMS", ecommerce: "E-commerce", builder: "Builder",
-  framework: "Framework", analytics: "Analytics", cdn: "CDN",
+  framework: "Framework", analytics: "Analytics", cdn: "CDN", media: "Media",
 };
-const catOrder = ["cms", "ecommerce", "builder", "framework", "analytics", "cdn"];
+const catOrder = ["cms", "ecommerce", "builder", "framework", "analytics", "cdn", "media"];
 
 export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
   const grouped: Record<string, TechItem[]> = {};
