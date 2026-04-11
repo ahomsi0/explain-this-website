@@ -13,7 +13,7 @@ export function ELI5Card({ items }: { items: ELI5Item[] }) {
         className="w-full flex items-center justify-between group"
       >
         <div className="flex items-center gap-2">
-          <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Explain Like I'm 5</p>
+          <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Website Summary</p>
           <span className="text-[10px] font-medium text-zinc-600 bg-zinc-800 px-1.5 py-0.5 rounded">
             {items.length} findings
           </span>
