@@ -94,7 +94,7 @@ export function LoadingSpinner({ url }: { url: string }) {
                 </div>
 
                 {/* Label */}
-                <span className={`text-xs transition-colors duration-300 ${
+                <span className={`text-xs transition-colors duration-300 w-48 ${
                   done    ? "text-zinc-600"
                   : current ? "text-zinc-200 font-medium"
                   : "text-zinc-700"

@@ -106,7 +106,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
           <Metric label="1st Impression" value={`${result.firstImpression.score}/10`}
             valueClass={impressionColor(result.firstImpression.score)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
-          <Metric label="Conversion"     value={`${result.conversionScores.overall}/100`}
+          <Metric label="Conv. Score"     value={`${result.conversionScores.overall}/100`}
             valueClass={scoreColor(result.conversionScores.overall)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
           <Metric label="Tech Detected"  value={result.techStack.length} />

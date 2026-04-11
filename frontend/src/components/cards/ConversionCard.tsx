@@ -17,7 +17,7 @@ export function ConversionCard({ ux }: { ux: UXResult }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Conversion & UX</p>
+        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">UX Signals</p>
         <span className={`font-semibold text-sm ${score >= 70 ? "text-emerald-400" : score >= 40 ? "text-amber-400" : "text-red-400"}`}>
           {score}<span className="text-zinc-600 font-normal text-xs">/100</span>
         </span>
