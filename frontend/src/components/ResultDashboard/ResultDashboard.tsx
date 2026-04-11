@@ -135,7 +135,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
 
       {/* ── 3-column grid ── */}
       <main className="flex-1 max-w-[1600px] mx-auto w-full px-6 py-6
-                       grid grid-cols-1 md:grid-cols-[1fr_1.6fr_1fr] gap-x-6 gap-y-4 items-start">
+                       grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 items-start">
 
         {/* ── Col 1: Site Profile ── */}
         <div className="flex flex-col gap-3">
