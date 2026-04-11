@@ -70,6 +70,7 @@ export function LoadingSpinner({ url }: { url: string }) {
         </div>
 
         {/* Stage list */}
+        <div className="flex justify-center w-full">
         <div className="flex flex-col gap-2">
           {STAGES.map((stage, i) => {
             const done    = i < stageIdx;
@@ -105,6 +106,7 @@ export function LoadingSpinner({ url }: { url: string }) {
               </div>
             );
           })}
+        </div>
         </div>
 
       </div>
