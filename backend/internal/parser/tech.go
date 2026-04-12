@@ -308,6 +308,8 @@ var techPatterns = []techPattern{
 		patterns: []string{"player.twitch.tv", "embed.twitch.tv"}},
 
 	// Additional CDN/Hosting
+	{name: "Replit", category: "cdn", confidence: "high",
+		patterns: []string{".replit.app", ".repl.co"}},
 	{name: "GitHub Pages", category: "cdn", confidence: "medium",
 		patterns: []string{".github.io/"}},
 	{name: "Render", category: "cdn", confidence: "medium",
@@ -339,6 +341,7 @@ type aiBuilderPattern struct {
 
 var aiBuilderPatterns = []aiBuilderPattern{
 	{name: "Framer", patterns: []string{"framerusercontent.com", "framer.com/m/", "framer.website", `"generator" content="framer`}},
+	{name: "Replit", patterns: []string{".replit.app", ".repl.co", "replit.com/@", `generator" content="replit`}},
 	{name: "Durable", patterns: []string{"durable.co", "durable.site", `generator" content="durable`}},
 	{name: "10Web", patterns: []string{"10web.io", `generator" content="10web`}},
 	{name: "Hostinger Website Builder", patterns: []string{"hostingersite.com", "zyrosite.com", `generator" content="zyro`}},
@@ -353,6 +356,11 @@ var aiBuilderPatterns = []aiBuilderPattern{
 	{name: "Strikingly", patterns: []string{"strikingly.com", "s.strikingly.com"}},
 	{name: "Ucraft", patterns: []string{"ucraft.com", "ucraft.net"}},
 	{name: "Hocoos", patterns: []string{"hocoos.com"}},
+	{name: "Bolt (StackBlitz)", patterns: []string{"bolt.new", "stackblitz.io", "webcontainer.io"}},
+	{name: "v0 (Vercel)", patterns: []string{"v0.dev/chat", `generator" content="v0`}},
+	{name: "Lovable", patterns: []string{"lovable.app", "lovable.dev", `generator" content="lovable`}},
+	{name: "Cursor", patterns: []string{`generator" content="cursor`}},
+	{name: "Windsurf", patterns: []string{`generator" content="windsurf`}},
 }
 
 // genericAISignals are patterns that suggest AI-generated/assisted content without identifying a specific builder.
