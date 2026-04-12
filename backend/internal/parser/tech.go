@@ -54,7 +54,16 @@ var techPatterns = []techPattern{
 	{name: "Nuxt.js", category: "framework", confidence: "high",
 		patterns: []string{"__nuxt", "/_nuxt/", "nuxt.js"}},
 	{name: "React", category: "framework", confidence: "medium",
-		patterns: []string{"react.production.min.js", "data-reactroot", "data-reactid", "__reactFiber", "react-dom"}},
+		// data-reactroot / __reactFiber only appear post-JS execution; also detect via CDN/bundle patterns
+		patterns: []string{"react.production.min.js", "data-reactroot", "data-reactid", "__reactFiber", "react-dom",
+			"unpkg.com/react", "cdn.jsdelivr.net/npm/react", "/react@"}},
+	// Vite dev server — definitive signals, never appear on non-Vite sites
+	{name: "Vite", category: "framework", confidence: "high",
+		patterns: []string{"/@vite/client", "/@react-refresh", "vite/modulepreload-polyfill"}},
+	// Vite production build — modulepreload + hashed /assets/ chunk filenames together are
+	// a strong signal; neither alone is sufficient
+	{name: "Vite", category: "framework", confidence: "medium",
+		patterns: []string{`rel="modulepreload"`, `/assets/`}, requireAll: true},
 	{name: "Vue", category: "framework", confidence: "medium",
 		patterns: []string{"vue.min.js", "vue.runtime", "__vue__", "vue@"}},
 	{name: "Angular", category: "framework", confidence: "medium",
