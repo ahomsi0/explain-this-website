@@ -84,6 +84,7 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 		CompetitorInsight:  competitorInsight,
 		PrioritizedIssues:  prioritized,
 		ELI5:               eli5,
+		AIDetection:        DetectAIBuilder(rawHTML),
 	}, nil
 }
 

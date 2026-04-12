@@ -123,6 +123,14 @@ type ContentStats struct {
 	ReadingLevel   string   `json:"readingLevel"` // simple, moderate, advanced
 }
 
+// AIDetection reports whether the site was built with an AI website builder.
+type AIDetection struct {
+	IsAIBuilt  bool     `json:"isAIBuilt"`
+	Confidence string   `json:"confidence"` // "high", "medium"
+	Builder    string   `json:"builder"`    // e.g. "Framer", "Durable", or ""
+	Signals    []string `json:"signals"`
+}
+
 // AnalysisResult is the full response returned by POST /api/analyze.
 type AnalysisResult struct {
 	URL             string       `json:"url"`
@@ -144,6 +152,7 @@ type AnalysisResult struct {
 	CompetitorInsight  string            `json:"competitorInsight"`
 	PrioritizedIssues  []PrioritizedIssue `json:"prioritizedIssues"`
 	ELI5               []ELI5Item         `json:"eli5"`
+	AIDetection        AIDetection        `json:"aiDetection"`
 }
 
 // ErrorResponse is returned on any failure.

@@ -140,7 +140,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
         {/* ── Col 1: Site Profile ── */}
         <div className="flex flex-col gap-3">
           <ColHeader label="Site Profile" description="What this site is and who it's for" />
-          <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} />
+          <OverviewCard overview={result.overview} url={result.url} fetchedAt={result.fetchedAt} aiDetection={result.aiDetection} />
           {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
           {result.contentStats && <ContentCard contentStats={result.contentStats} />}
           <InsightCard

@@ -1,4 +1,4 @@
-import type { Overview, PageLoadHint } from "../../types/analysis";
+import type { Overview, PageLoadHint, AIDetection } from "../../types/analysis";
 
 const loadLabel: Record<PageLoadHint, { text: string; cls: string }> = {
   lightweight: { text: "Lightweight", cls: "text-emerald-400 bg-emerald-950 border-emerald-900" },
@@ -6,8 +6,8 @@ const loadLabel: Record<PageLoadHint, { text: string; cls: string }> = {
   heavy:       { text: "Heavy",       cls: "text-red-400    bg-red-950    border-red-900"    },
 };
 
-export function OverviewCard({ overview, url, fetchedAt }: {
-  overview: Overview; url: string; fetchedAt: string;
+export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
+  overview: Overview; url: string; fetchedAt: string; aiDetection?: AIDetection;
 }) {
   const load = loadLabel[overview.pageLoadHint];
 
@@ -45,6 +45,13 @@ export function OverviewCard({ overview, url, fetchedAt }: {
         {overview.language && (
           <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-zinc-800 text-zinc-500 bg-zinc-900">
             {overview.language.toUpperCase()}
+          </span>
+        )}
+        {aiDetection?.isAIBuilt && (
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-violet-800 text-violet-400 bg-violet-950 flex items-center gap-1">
+            <span>🤖</span>
+            <span>{aiDetection.builder ? `Built with ${aiDetection.builder}` : "AI-assisted"}</span>
+            {aiDetection.confidence === "medium" && <span className="text-violet-600">?</span>}
           </span>
         )}
       </div>

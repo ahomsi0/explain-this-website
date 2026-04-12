@@ -128,4 +128,10 @@ export const mockAnalysisResult: AnalysisResult = {
     { technical: "Images missing alt text", simple: "Some images on your page have no text description. People who can't see images — including visually impaired visitors and Google's image search — rely on those descriptions." },
     { technical: "No Open Graph tags", simple: "When someone shares your page on Facebook, LinkedIn, or WhatsApp, there's no preview image or description — just a plain link. OG tags are what create the card preview people expect to see." },
   ],
+  aiDetection: {
+    isAIBuilt: true,
+    confidence: "high" as const,
+    builder: "Framer",
+    signals: ["framerusercontent.com"],
+  },
 };

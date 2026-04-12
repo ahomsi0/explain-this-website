@@ -1,4 +1,4 @@
-export type TechCategory = "cms" | "framework" | "analytics" | "cdn" | "builder" | "ecommerce" | "media";
+export type TechCategory = "cms" | "framework" | "analytics" | "cdn" | "builder" | "ecommerce" | "media" | "ai-builder";
 export type Confidence = "high" | "medium" | "low";
 export type SEOStatus = "pass" | "warning" | "fail";
 export type AnalysisStatus = "idle" | "loading" | "error" | "success";
@@ -114,6 +114,13 @@ export interface ELI5Item {
   simple: string;
 }
 
+export interface AIDetection {
+  isAIBuilt: boolean;
+  confidence: "high" | "medium";
+  builder: string;
+  signals: string[];
+}
+
 export interface AnalysisResult {
   url: string;
   fetchedAt: string;
@@ -133,6 +140,7 @@ export interface AnalysisResult {
   competitorInsight: string;
   prioritizedIssues: PrioritizedIssue[];
   eli5: ELI5Item[];
+  aiDetection: AIDetection;
 }
 
 export interface AnalysisError {
