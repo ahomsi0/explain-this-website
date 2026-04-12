@@ -440,7 +440,7 @@ func computeConversionScores(ux model.UXResult, seo map[string]string, stats mod
 		friction = 0
 	}
 	if len(frictionReasons) == 0 {
-		frictionReasons = append(frictionReasons, "no significant friction detected")
+		frictionReasons = append(frictionReasons, "smooth experience, no major friction")
 	}
 	frictionNote := describeScore(friction, frictionReasons)
 

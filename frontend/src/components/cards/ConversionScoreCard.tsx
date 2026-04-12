@@ -33,14 +33,23 @@ function ScoreRow({
   );
 }
 
+function overallLabel(n: number) {
+  if (n >= 80) return "Strong";
+  if (n >= 65) return "Good";
+  if (n >= 45) return "Fair";
+  if (n >= 25) return "Weak";
+  return "Poor";
+}
+
 export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
   const overall = scoreColor(scores.overall);
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Conversion Readiness</p>
-        <div className="flex items-baseline gap-0.5">
+        <div className="flex items-baseline gap-1.5">
+          <span className={`text-xs font-medium ${overall.text}`}>{overallLabel(scores.overall)}</span>
           <span className={`text-2xl font-bold ${overall.text}`}>{scores.overall}</span>
           <span className="text-xs text-zinc-600">/100</span>
         </div>
@@ -58,7 +67,8 @@ export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
         <ScoreRow label="Clarity"      score={scores.clarity}     note={scores.clarityNote}  />
         <ScoreRow label="Trust"        score={scores.trust}       note={scores.trustNote}    />
         <ScoreRow label="CTA Strength" score={scores.ctaStrength} note={scores.ctaNote}      />
-        <ScoreRow label="Friction"     score={scores.friction}    note={scores.frictionNote} />
+        {/* "Ease" = inverse of friction — higher score means less friction, better UX */}
+        <ScoreRow label="Ease"         score={scores.friction}    note={scores.frictionNote} />
       </div>
     </div>
   );

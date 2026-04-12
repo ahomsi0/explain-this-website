@@ -48,7 +48,7 @@ function Metric({ label, value, valueClass = "text-zinc-100" }: {
 function ColHeader({ label, description }: { label: string; description: string }) {
   return (
     <div className="mb-1">
-      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">{label}</p>
+      <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">{label}</h2>
       <p className="text-[11px] text-zinc-700 mt-0.5">{description}</p>
     </div>
   );
@@ -67,7 +67,9 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
         <div className="max-w-[1600px] mx-auto px-6 h-12 flex items-center gap-4">
           <div className="flex items-center gap-2 shrink-0">
             <LogoMark size={22} />
-            <span className="text-xs font-semibold text-zinc-400 hidden sm:block">Explain This Website</span>
+            {/* h1 visible on desktop; sr-only version ensures crawlers always see it */}
+            <h1 className="text-xs font-semibold text-zinc-400 hidden sm:block">Explain This Website</h1>
+            <span className="sr-only">Explain This Website — Website Analysis Report</span>
           </div>
 
           <Separator orientation="vertical" className="h-4 bg-zinc-800" />
