@@ -53,13 +53,23 @@ var techPatterns = []techPattern{
 		patterns: []string{"_next/static", "__NEXT_DATA__", "/_next/"}},
 	{name: "Nuxt.js", category: "framework", confidence: "high",
 		patterns: []string{"__nuxt", "/_nuxt/", "nuxt.js"}},
-	{name: "React", category: "framework", confidence: "medium",
-		// data-reactroot / __reactFiber only appear post-JS execution; also detect via CDN/bundle patterns
-		patterns: []string{"react.production.min.js", "data-reactroot", "data-reactid", "__reactFiber", "react-dom",
-			"unpkg.com/react", "cdn.jsdelivr.net/npm/react", "/react@"}},
+	{name: "React", category: "framework", confidence: "high",
+		patterns: []string{
+			// CDN / explicit script src
+			"react.production.min.js", "react.development.js",
+			"unpkg.com/react", "cdn.jsdelivr.net/npm/react", "/react@",
+			// SSR / static render attributes
+			"data-reactroot", "data-reactid", "data-react-helmet",
+			// Vite dev HMR — react-refresh is React-specific
+			"/@react-refresh",
+			// CRA bundle output — /static/js/ is the CRA default output path
+			"/static/js/main.", "/static/js/bundle.", "/static/js/vendors~",
+			// Common React runtime globals that SSR'd pages sometimes inline
+			"__reactFiber", "react-dom",
+		}},
 	// Vite dev server — definitive signals, never appear on non-Vite sites
 	{name: "Vite", category: "framework", confidence: "high",
-		patterns: []string{"/@vite/client", "/@react-refresh", "vite/modulepreload-polyfill"}},
+		patterns: []string{"/@vite/client", "vite/modulepreload-polyfill"}},
 	// Vite production build — modulepreload + hashed /assets/ chunk filenames together are
 	// a strong signal; neither alone is sufficient
 	{name: "Vite", category: "framework", confidence: "medium",
