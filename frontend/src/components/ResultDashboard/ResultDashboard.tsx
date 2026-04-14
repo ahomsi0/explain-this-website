@@ -3,7 +3,7 @@ import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
 import { OverviewCard }          from "../cards/OverviewCard";
 import { TechStackCard }         from "../cards/TechStackCard";
-import { SeoAuditCard }          from "../cards/SeoAuditCard";
+import { SEOAuditCard }          from "../cards/SeoAuditCard";
 import { ConversionCard, TrustEngagementCard } from "../cards/ConversionCard";
 import { ConversionScoreCard }   from "../cards/ConversionScoreCard";
 import { WeakPointsCard }        from "../cards/WeakPointsCard";
@@ -161,7 +161,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
           </div>
           <ConversionScoreCard scores={result.conversionScores} />
-          <SeoAuditCard seoChecks={result.seoChecks} />
+          <SEOAuditCard seoChecks={result.seoChecks} />
           <div className="grid grid-cols-2 gap-3">
             <ConversionCard ux={result.ux} />
             <TrustEngagementCard ux={result.ux} />

@@ -4,9 +4,20 @@ import "time"
 
 // TechItem represents a detected technology on the analyzed page.
 type TechItem struct {
-	Name       string `json:"name"`
-	Category   string `json:"category"`   // cms, framework, analytics, cdn, builder, ecommerce
-	Confidence string `json:"confidence"` // high, medium, low
+	Name       string       `json:"name"`
+	Category   string       `json:"category"`   // cms, framework, analytics, cdn, builder, ecommerce
+	Confidence string       `json:"confidence"` // high, medium, low
+	RuleID     string       `json:"ruleId,omitempty"`
+	Score      int          `json:"score,omitempty"` // 0-100 internal confidence score
+	Signals    []TechSignal `json:"signals,omitempty"`
+}
+
+// TechSignal explains why a technology was detected.
+type TechSignal struct {
+	Pattern      string `json:"pattern"`
+	Match        string `json:"match"`
+	EvidenceType string `json:"evidenceType"` // explicit, indirect, weak
+	Source       string `json:"source"`       // first-party, third-party, unknown
 }
 
 // IntentSummary describes the inferred purpose and audience of the website.
@@ -39,8 +50,8 @@ type ConversionScores struct {
 
 // FirstImpression rates how clear and compelling the page feels in the first few seconds.
 type FirstImpression struct {
-	Score       int    `json:"score"`       // 0–10
-	Label       string `json:"label"`       // Poor / Weak / Fair / Good / Strong
+	Score       int    `json:"score"` // 0–10
+	Label       string `json:"label"` // Poor / Weak / Fair / Good / Strong
 	Explanation string `json:"explanation"`
 }
 
@@ -62,7 +73,7 @@ type ELI5Item struct {
 type SEOCheck struct {
 	ID      string   `json:"id"`
 	Label   string   `json:"label"`
-	Status  string   `json:"status"`           // pass, warning, fail
+	Status  string   `json:"status"` // pass, warning, fail
 	Detail  string   `json:"detail"`
 	Details []string `json:"details,omitempty"` // optional evidence items shown in expanded view
 }
@@ -144,12 +155,12 @@ type AnalysisResult struct {
 	WeakPoints      []string     `json:"weakPoints"`
 	Recommendations []string     `json:"recommendations"`
 	// Insight layer
-	Intent            IntentSummary      `json:"intent"`
-	CustomerView      CustomerView       `json:"customerView"`
-	ConversionScores  ConversionScores   `json:"conversionScores"`
-	FirstImpression   FirstImpression    `json:"firstImpression"`
-	BiggestOpportunity string            `json:"biggestOpportunity"`
-	CompetitorInsight  string            `json:"competitorInsight"`
+	Intent             IntentSummary      `json:"intent"`
+	CustomerView       CustomerView       `json:"customerView"`
+	ConversionScores   ConversionScores   `json:"conversionScores"`
+	FirstImpression    FirstImpression    `json:"firstImpression"`
+	BiggestOpportunity string             `json:"biggestOpportunity"`
+	CompetitorInsight  string             `json:"competitorInsight"`
 	PrioritizedIssues  []PrioritizedIssue `json:"prioritizedIssues"`
 	ELI5               []ELI5Item         `json:"eli5"`
 	AIDetection        AIDetection        `json:"aiDetection"`

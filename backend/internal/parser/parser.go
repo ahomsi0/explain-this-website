@@ -25,7 +25,7 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 	visibleText := extractVisibleText(doc)
 
 	overview := extractOverview(doc, rawHTML)
-	tech := detectTech(rawHTML)
+	tech := detectTech(rawHTML, sourceURL)
 	seoChecks := auditSEO(doc, rawHTML, sourceURL)
 	ux := analyzeUX(doc, rawHTML)
 	pageStats := computePageStats(doc, sourceURL, rawHTML)

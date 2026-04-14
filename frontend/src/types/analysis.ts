@@ -9,6 +9,16 @@ export interface TechItem {
   name: string;
   category: TechCategory;
   confidence: Confidence;
+  ruleId?: string;
+  score?: number;
+  signals?: TechSignal[];
+}
+
+export interface TechSignal {
+  pattern: string;
+  match: string;
+  evidenceType: "explicit" | "indirect" | "weak";
+  source: "first-party" | "third-party" | "unknown";
 }
 
 export interface SEOCheck {

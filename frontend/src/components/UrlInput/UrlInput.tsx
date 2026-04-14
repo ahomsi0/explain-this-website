@@ -7,7 +7,7 @@ function isValidUrl(value: string): boolean {
   } catch { return false; }
 }
 
-export function UrlInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) => void; isLoading: boolean }) {
+export function URLInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) => void; isLoading: boolean }) {
   const [value, setValue]   = useState("");
   const [error, setError]   = useState("");
 

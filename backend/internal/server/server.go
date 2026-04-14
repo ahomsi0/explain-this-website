@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"runtime/debug"
 	"strings"
 
@@ -65,24 +66,23 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 //   - "https://foo.com"      → single origin
 //   - "https://a.com,https://b.com" → comma-separated list of allowed origins
 func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
-	allowed := strings.Split(allowedOrigin, ",")
-	for i, o := range allowed {
-		allowed[i] = strings.TrimSpace(o)
+	allowed := parseAllowedOrigins(allowedOrigin)
+	allowAll := false
+	for _, o := range allowed {
+		if o == "*" {
+			allowAll = true
+			break
+		}
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		if allowedOrigin == "*" {
+		if allowAll {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
-		} else {
-			for _, o := range allowed {
-				if o == origin {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Set("Vary", "Origin")
-					break
-				}
-			}
+		} else if isOriginAllowed(allowed, origin) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
 		}
 
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
@@ -94,4 +94,75 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func parseAllowedOrigins(raw string) []string {
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		normalized := normalizeOrigin(p)
+		if normalized != "" {
+			out = append(out, normalized)
+		}
+	}
+	return out
+}
+
+func normalizeOrigin(origin string) string {
+	return strings.TrimSuffix(strings.TrimSpace(origin), "/")
+}
+
+func isOriginAllowed(allowed []string, origin string) bool {
+	origin = normalizeOrigin(origin)
+	if origin == "" {
+		return false
+	}
+
+	for _, o := range allowed {
+		if o == origin {
+			return true
+		}
+	}
+
+	originURL, err := url.Parse(origin)
+	if err != nil || originURL.Scheme == "" || originURL.Host == "" {
+		return false
+	}
+	if !isLoopbackHost(originURL.Hostname()) {
+		return false
+	}
+
+	for _, candidate := range allowed {
+		candidateURL, err := url.Parse(candidate)
+		if err != nil || candidateURL.Scheme == "" || candidateURL.Host == "" {
+			continue
+		}
+		if candidateURL.Scheme != originURL.Scheme {
+			continue
+		}
+		if defaultPort(candidateURL) != defaultPort(originURL) {
+			continue
+		}
+		if isLoopbackHost(candidateURL.Hostname()) {
+			return true
+		}
+	}
+	return false
+}
+
+func defaultPort(u *url.URL) string {
+	if p := u.Port(); p != "" {
+		return p
+	}
+	switch strings.ToLower(u.Scheme) {
+	case "https":
+		return "443"
+	default:
+		return "80"
+	}
+}
+
+func isLoopbackHost(host string) bool {
+	normalized := strings.ToLower(strings.Trim(host, "[]"))
+	return normalized == "localhost" || normalized == "127.0.0.1" || normalized == "::1"
 }

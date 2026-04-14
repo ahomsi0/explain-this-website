@@ -50,7 +50,7 @@ function CheckRow({ check }: { check: SEOCheck }) {
   );
 }
 
-export function SeoAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
+export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
   const pass    = seoChecks.filter((c) => c.status === "pass").length;
   const warning = seoChecks.filter((c) => c.status === "warning").length;
   const fail    = seoChecks.filter((c) => c.status === "fail").length;

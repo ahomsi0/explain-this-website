@@ -8,10 +8,11 @@ export function formatReport(result: AnalysisResult): string {
   // ── Helpers ──────────────────────────────────────────────────────────────────
   const yn  = (b: boolean) => b ? "Yes" : "No";
   const pct = (n: number)  => `${n}/100`;
+  const confidenceLabel = (value: string) => value === "low" ? "possible" : value;
 
   // ── Sections ──────────────────────────────────────────────────────────────────
   const techList = result.techStack.length
-    ? result.techStack.map((t) => `  • ${t.name} (${t.category}, ${t.confidence})`).join("\n")
+    ? result.techStack.map((t) => `  • ${t.name} (${t.category}, ${confidenceLabel(t.confidence)})`).join("\n")
     : "  No technologies detected";
 
   const seoSummary = result.seoChecks

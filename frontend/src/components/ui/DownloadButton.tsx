@@ -24,6 +24,9 @@ function statusColor(s: string): [number, number, number] {
 function statusLabel(s: string) {
   return s === "pass" ? "PASS" : s === "warning" ? "WARN" : "FAIL";
 }
+function confidenceLabel(c: string) {
+  return c === "low" ? "possible" : c;
+}
 // Replace non-latin1 characters that cause jsPDF to fall back to Courier
 function san(s: string): string {
   return s
@@ -32,7 +35,9 @@ function san(s: string): string {
     .replace(/\u2013/g, "-")           // en dash
     .replace(/\u2014/g, "--")          // em dash
     .replace(/\u2026/g, "...")         // ellipsis
-    .replace(/[^\x00-\xFF]/g, "?");    // anything else outside latin1
+    .split("")
+    .map((ch) => (ch.codePointAt(0) ?? 0) > 0xff ? "?" : ch)
+    .join("");                          // anything else outside latin1
 }
 function lastY(doc: jsPDF): number {
   return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
@@ -267,7 +272,7 @@ function buildPDF(result: AnalysisResult) {
     const rows: [string, string, string][] = [];
     for (const cat of catOrder) {
       if (!grouped[cat]) continue;
-      for (const t of grouped[cat]) rows.push([catLabels[cat] ?? cat, t.name, t.confidence]);
+      for (const t of grouped[cat]) rows.push([catLabels[cat] ?? cat, t.name, confidenceLabel(t.confidence)]);
     }
     const p0 = doc.getNumberOfPages();
     ztable(p0, {

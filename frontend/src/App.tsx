@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAnalysis } from "./hooks/useAnalysis";
-import { UrlInput } from "./components/UrlInput/UrlInput";
+import { URLInput } from "./components/UrlInput/UrlInput";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBanner } from "./components/ui/ErrorBanner";
 import { ResultDashboard } from "./components/ResultDashboard/ResultDashboard";
@@ -11,6 +11,19 @@ export default function App() {
   const [currentUrl, setCurrentUrl] = useState("");
 
   const handleAnalyze = (url: string) => { setCurrentUrl(url); analyze(url); };
+  const isBotProtectionError = !!error && (
+    error.toLowerCase().includes("bot protection") ||
+    error.toLowerCase().includes("http 403") ||
+    error.toLowerCase().includes("http 999") ||
+    error.toLowerCase().includes("actively blocks")
+  );
+  const handleTryAgain = () => {
+    if (!currentUrl) {
+      reset();
+      return;
+    }
+    analyze(currentUrl);
+  };
 
   return (
     <div className="min-h-screen" style={{ background: "hsl(0 0% 4%)" }}>
@@ -33,7 +46,7 @@ export default function App() {
 
             {/* URL input */}
             <div className="mt-10">
-              <UrlInput onAnalyze={handleAnalyze} isLoading={false} />
+              <URLInput onAnalyze={handleAnalyze} isLoading={false} />
             </div>
           </div>
         </div>
@@ -41,7 +54,14 @@ export default function App() {
 
       {status === "loading" && <LoadingSpinner url={currentUrl} />}
 
-      {status === "error" && <ErrorBanner message={error!} onRetry={reset} />}
+      {status === "error" && (
+        <ErrorBanner
+          message={error!}
+          isBotProtectionError={isBotProtectionError}
+          onTryAgain={isBotProtectionError && currentUrl ? handleTryAgain : undefined}
+          onTryAnotherUrl={reset}
+        />
+      )}
 
       {status === "success" && result && (
         <ResultDashboard result={result} onReset={reset} />

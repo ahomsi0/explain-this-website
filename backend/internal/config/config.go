@@ -22,8 +22,8 @@ func Load() Config {
 
 	return Config{
 		Port:            getEnv("PORT", "8080"),
-		AllowedOrigin:   getEnv("ALLOWED_ORIGIN", "http://localhost:5173"),
-		FetchTimeoutSec: getEnvInt("FETCH_TIMEOUT_SEC", 10),
+		AllowedOrigin:   getEnv("ALLOWED_ORIGIN", "http://localhost:5173,http://127.0.0.1:5173"),
+		FetchTimeoutSec: getEnvInt("FETCH_TIMEOUT_SEC", 60),
 		MaxBodyBytes:    getEnvInt64("MAX_BODY_BYTES", 5*1024*1024),
 	}
 }

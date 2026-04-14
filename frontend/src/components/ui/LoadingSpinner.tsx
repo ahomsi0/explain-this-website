@@ -17,6 +17,7 @@ const STAGE_DURATION = 900; // ms per stage
 export function LoadingSpinner({ url }: { url: string }) {
   const [stageIdx, setStageIdx] = useState(0);
   const [displayPct, setDisplayPct] = useState(0);
+  const [isSlow, setIsSlow] = useState(false);
 
   // Advance through stages
   useEffect(() => {
@@ -35,6 +36,12 @@ export function LoadingSpinner({ url }: { url: string }) {
     const t = setTimeout(() => setDisplayPct((p) => Math.min(p + step, target)), 30);
     return () => clearTimeout(t);
   }, [stageIdx, displayPct]);
+
+  // Show a friendly reassurance for slow/protected websites.
+  useEffect(() => {
+    const t = setTimeout(() => setIsSlow(true), 10000);
+    return () => clearTimeout(t);
+  }, []);
 
   const hostname = (() => {
     try { return new URL(url).hostname; } catch { return url; }
@@ -69,13 +76,20 @@ export function LoadingSpinner({ url }: { url: string }) {
           </div>
         </div>
 
-        {/* Stage list — fixed width so items-center on parent can truly center it */}
-        <div className="flex flex-col gap-2 w-56">
+        {/* Stage list — content-width centered block with stable local dots slot */}
+        <div className="w-fit max-w-full self-center ml-6 flex flex-col items-start gap-2">
+          {/* Reserve width upfront so showing the slow/protected row does not shift the block */}
+          <div aria-hidden className="invisible h-0 overflow-hidden inline-flex items-center gap-2.5">
+            <span className="w-4 h-4 shrink-0" />
+            <span className="text-xs font-medium text-left">Handling slow/protected site</span>
+            <span className="w-4 text-xs text-left">...</span>
+          </div>
+
           {STAGES.map((stage, i) => {
             const done    = i < stageIdx;
             const current = i === stageIdx;
             return (
-              <div key={stage.label} className="flex items-center gap-3">
+              <div key={stage.label} className="inline-flex items-center gap-2.5">
                 {/* Icon */}
                 <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
                   done    ? "bg-emerald-500/20 border border-emerald-600"
@@ -94,17 +108,31 @@ export function LoadingSpinner({ url }: { url: string }) {
                 </div>
 
                 {/* Label */}
-                <span className={`text-xs transition-colors duration-300 ${
+                <span className={`text-xs transition-colors duration-300 text-left ${
                   done    ? "text-zinc-600"
-                  : current ? "text-zinc-200 font-medium"
+                  : current ? "text-zinc-200"
                   : "text-zinc-700"
                 }`}>
                   {stage.label}
-                  {current && <span className="ml-1 animate-pulse text-zinc-500">...</span>}
                 </span>
+
+                {/* Keep a fixed local dot-slot so width is stable without pushing far right */}
+                <span className={`w-4 text-xs text-zinc-500 text-left ${current ? "animate-pulse" : "opacity-0"}`}>...</span>
               </div>
             );
           })}
+
+          {isSlow && (
+            <div className="inline-flex items-center gap-2.5 mt-1">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 bg-amber-500/20 border border-amber-500/60">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse" />
+              </div>
+              <span className="text-xs text-amber-300 font-medium text-left">
+                Handling slow/protected site
+              </span>
+              <span className="w-4 text-xs text-amber-500 text-left animate-pulse">...</span>
+            </div>
+          )}
         </div>
 
       </div>

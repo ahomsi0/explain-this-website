@@ -44,7 +44,7 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, e
 
 	client := &http.Client{
 		Jar:     jar,
-		Timeout: 15 * time.Second,
+		Timeout: timeoutFromContext(ctx, 15*time.Second),
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 5 {
 				return fmt.Errorf("too many redirects — the site may require a login")
@@ -210,4 +210,15 @@ func isPrivateIP(ip net.IP) bool {
 		}
 	}
 	return false
+}
+
+func timeoutFromContext(ctx context.Context, fallback time.Duration) time.Duration {
+	if deadline, ok := ctx.Deadline(); ok {
+		remaining := time.Until(deadline)
+		if remaining > 0 {
+			return remaining
+		}
+		return time.Millisecond
+	}
+	return fallback
 }

@@ -1,14 +1,19 @@
 package parser
 
 import (
+	"fmt"
+	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/ahomsi/explain-website/internal/model"
+	"golang.org/x/net/publicsuffix"
 )
 
 type techPattern struct {
-	name       string
-	category   string
+	name     string
+	category string
+	// confidence is a legacy prior used as a tiny bias in scoring.
 	confidence string
 	patterns   []string
 	// requireAll: if true ALL patterns must match (AND logic) instead of any one
@@ -22,11 +27,11 @@ type techPattern struct {
 var techPatterns = []techPattern{
 	// CMS — use path/attribute signals only, never plain words
 	{name: "WordPress", category: "cms", confidence: "high",
-		patterns: []string{"/wp-content/", "/wp-includes/", "wp-json/wp/"}},
+		patterns: []string{`generator" content="wordpress`, "/wp-content/", "/wp-includes/", "wp-json/wp/"}, tagOnly: true},
 	{name: "Drupal", category: "cms", confidence: "high",
-		patterns: []string{"drupal.js", "/sites/default/files/", "Drupal.settings"}},
+		patterns: []string{"drupal.js", "/sites/default/files/", "Drupal.settings"}, tagOnly: true},
 	{name: "Joomla", category: "cms", confidence: "high",
-		patterns: []string{"/media/jui/", "joomla!", "/components/com_"}},
+		patterns: []string{"/media/jui/", "joomla!", "/components/com_"}, tagOnly: true},
 
 	// Page builders / hosted
 	{name: "Wix", category: "builder", confidence: "high",
@@ -70,10 +75,12 @@ var techPatterns = []techPattern{
 	// Vite dev server — definitive signals, never appear on non-Vite sites
 	{name: "Vite", category: "framework", confidence: "high",
 		patterns: []string{"/@vite/client", "vite/modulepreload-polyfill"}},
-	// Vite production build — modulepreload + hashed /assets/ chunk filenames together are
-	// a strong signal; neither alone is sufficient
+	// Vite production runtime helpers are strong indirect signals.
 	{name: "Vite", category: "framework", confidence: "medium",
-		patterns: []string{`rel="modulepreload"`, `/assets/`}, requireAll: true},
+		patterns: []string{"__vite__mapdeps", "vite:preloaderror", "/node_modules/.vite/"}},
+	// Broad web-bundle heuristic kept as low confidence only.
+	{name: "Vite", category: "framework", confidence: "low",
+		patterns: []string{`rel="modulepreload"`, `/assets/`}, requireAll: true, tagOnly: true},
 	{name: "Vue", category: "framework", confidence: "medium",
 		patterns: []string{"vue.min.js", "vue.runtime", "__vue__", "vue@"}},
 	{name: "Angular", category: "framework", confidence: "medium",
@@ -419,41 +426,439 @@ func DetectAIBuilder(rawHTML string) model.AIDetection {
 	return model.AIDetection{IsAIBuilt: false}
 }
 
-// detectTech performs substring matching on the raw (lowercased) HTML string.
-func detectTech(rawHTML string) []model.TechItem {
-	lower := strings.ToLower(rawHTML)
-	var found []model.TechItem
-	seen := make(map[string]bool)
+type scoredTech struct {
+	item    model.TechItem
+	score   int // 0-100 internal score used to map confidence labels
+	signals []matchedSignal
+}
 
-	for _, p := range techPatterns {
-		if seen[p.name] {
+type matchedSignal struct {
+	pattern      string
+	match        string
+	evidenceType string // explicit, indirect, weak
+	strength     int
+	source       string // first-party, third-party, unknown
+}
+
+var urlTokenRe = regexp.MustCompile(`https?://[^\s"'<>]+`)
+
+// detectTech performs substring matching and maps an internal 0-100 score to
+// a confidence label (high/medium/low) for each detected technology.
+func detectTech(rawHTML string, sourceURL string) []model.TechItem {
+	lower := strings.ToLower(rawHTML)
+	tagSource := onlyTags(lower)
+	sourceRoot := sourceSiteRoot(sourceURL)
+
+	byName := make(map[string]scoredTech)
+	order := make([]string, 0, len(techPatterns))
+
+	for i, p := range techPatterns {
+		matchSource := lower
+		if p.tagOnly {
+			matchSource = tagSource
+		}
+
+		signals := matchPatternSignals(matchSource, p, sourceRoot)
+		if len(signals) == 0 {
 			continue
 		}
-		matched := false
-		if p.requireAll {
-			matched = true
-			for _, pat := range p.patterns {
-				if !strings.Contains(lower, strings.ToLower(pat)) {
-					matched = false
-					break
-				}
-			}
-		} else {
-			for _, pat := range p.patterns {
-				if strings.Contains(lower, strings.ToLower(pat)) {
-					matched = true
-					break
-				}
-			}
-		}
-		if matched {
-			found = append(found, model.TechItem{
+
+		score := computeTechScore(p, signals)
+		candidate := scoredTech{
+			item: model.TechItem{
 				Name:       p.name,
 				Category:   p.category,
-				Confidence: p.confidence,
-			})
-			seen[p.name] = true
+				Confidence: confidenceFromScore(score),
+				RuleID:     techRuleID(i, p),
+				Score:      score,
+				Signals:    toModelSignals(signals),
+			},
+			score:   score,
+			signals: signals,
+		}
+
+		prev, exists := byName[p.name]
+		if !exists {
+			byName[p.name] = candidate
+			order = append(order, p.name)
+			continue
+		}
+		if candidate.score > prev.score {
+			byName[p.name] = candidate
 		}
 	}
+
+	found := make([]model.TechItem, 0, len(byName))
+	for _, name := range order {
+		found = append(found, byName[name].item)
+	}
 	return found
+}
+
+func matchPatternSignals(source string, p techPattern, sourceRoot string) []matchedSignal {
+	if len(p.patterns) == 0 {
+		return nil
+	}
+
+	if p.requireAll {
+		signals := make([]matchedSignal, 0, len(p.patterns))
+		for _, pat := range p.patterns {
+			sig, ok := bestPatternSignal(source, pat, sourceRoot)
+			if !ok {
+				return nil
+			}
+			signals = append(signals, sig)
+		}
+		return signals
+	}
+
+	signals := make([]matchedSignal, 0, len(p.patterns))
+	for _, pat := range p.patterns {
+		sig, ok := bestPatternSignal(source, pat, sourceRoot)
+		if ok {
+			signals = append(signals, sig)
+		}
+	}
+	return signals
+}
+
+func bestPatternSignal(source string, pattern string, sourceRoot string) (matchedSignal, bool) {
+	lowerPattern := strings.ToLower(pattern)
+	idx := strings.Index(source, lowerPattern)
+	if idx < 0 {
+		return matchedSignal{}, false
+	}
+
+	strength := signalStrength(lowerPattern)
+	sample := snippetAround(source, idx, len(lowerPattern), 120)
+	best := matchedSignal{
+		pattern:      pattern,
+		match:        sample,
+		evidenceType: evidenceTypeFromStrength(strength),
+		strength:     strength,
+		source:       classifySignalSource(sample, lowerPattern, sourceRoot),
+	}
+
+	// Scan a few additional occurrences to prefer first-party evidence when available.
+	offset := idx + len(lowerPattern)
+	for scans := 0; scans < 4; scans++ {
+		next := strings.Index(source[offset:], lowerPattern)
+		if next < 0 {
+			break
+		}
+		abs := offset + next
+		candidateSample := snippetAround(source, abs, len(lowerPattern), 120)
+		candidate := matchedSignal{
+			pattern:      pattern,
+			match:        candidateSample,
+			evidenceType: evidenceTypeFromStrength(strength),
+			strength:     strength,
+			source:       classifySignalSource(candidateSample, lowerPattern, sourceRoot),
+		}
+		if signalSourceRank(candidate.source) > signalSourceRank(best.source) {
+			best = candidate
+		}
+		offset = abs + len(lowerPattern)
+	}
+
+	return best, true
+}
+
+func computeTechScore(p techPattern, signals []matchedSignal) int {
+	if len(signals) == 0 || len(p.patterns) == 0 {
+		return 0
+	}
+
+	matchedCount := len(signals)
+	maxStrength := signals[0].strength
+	sum := 0
+	strongCount := 0
+	firstPartyCount := 0
+	thirdPartyCount := 0
+	for _, s := range signals {
+		sum += s.strength
+		if s.strength > maxStrength {
+			maxStrength = s.strength
+		}
+		if s.evidenceType == "explicit" {
+			strongCount++
+		}
+		if s.source == "first-party" {
+			firstPartyCount++
+		}
+		if s.source == "third-party" {
+			thirdPartyCount++
+		}
+	}
+	avgStrength := sum / len(signals)
+	coverage := float64(matchedCount) / float64(len(p.patterns))
+
+	// Evidence score:
+	// - strongest matched signal drives most of the score
+	// - average matched strength smooths noisy single matches
+	// - coverage rewards matching a larger share of fingerprints
+	core := (0.7*float64(maxStrength) + 0.3*float64(avgStrength))
+	score := int(core*0.75 + coverage*25.0)
+
+	if p.requireAll && len(p.patterns) > 1 {
+		score += 4
+	}
+	if matchedCount > 1 {
+		score += 3
+	}
+	score += confidenceBias(p.confidence)
+
+	// First-party vs third-party weighting for CMS/framework detections.
+	if p.category == "cms" || p.category == "framework" {
+		if firstPartyCount > 0 {
+			score += 8
+		}
+		if thirdPartyCount == matchedCount {
+			score -= 18
+		}
+	}
+
+	// High confidence for CMS/framework requires explicit fingerprints.
+	if (p.category == "cms" || p.category == "framework") && strongCount == 0 && score > 69 {
+		score = 69
+	}
+
+	// Single third-party CMS hit is highly ambiguous.
+	if p.category == "cms" && matchedCount == 1 && thirdPartyCount == 1 && score > 39 {
+		score = 39
+	}
+
+	// Vite broad bundle heuristic should remain low confidence.
+	if p.name == "Vite" && p.requireAll && score > 39 {
+		score = 39
+	}
+
+	return clampScore(score)
+}
+
+func confidenceFromScore(score int) string {
+	switch {
+	case score >= 70:
+		return "high"
+	case score >= 40:
+		return "medium"
+	default:
+		return "low"
+	}
+}
+
+func confidenceBias(conf string) int {
+	switch conf {
+	case "high":
+		return 3
+	case "low":
+		return -3
+	default:
+		return 0
+	}
+}
+
+func signalStrength(pattern string) int {
+	p := strings.ToLower(strings.TrimSpace(pattern))
+	switch {
+	case isExplicitSignal(p):
+		return 92
+	case isStrongIndirectSignal(p):
+		return 55
+	default:
+		return 24
+	}
+}
+
+func evidenceTypeFromStrength(strength int) string {
+	switch {
+	case strength >= 90:
+		return "explicit"
+	case strength >= 50:
+		return "indirect"
+	default:
+		return "weak"
+	}
+}
+
+func isExplicitSignal(p string) bool {
+	if p == "" {
+		return false
+	}
+
+	if strings.Contains(p, "generator") ||
+		strings.HasPrefix(p, "window.") ||
+		strings.HasPrefix(p, "__") ||
+		strings.Contains(p, "@vite/client") ||
+		strings.Contains(p, ".init") {
+		return true
+	}
+
+	if strings.Contains(p, ".js") && strings.Contains(p, "/") {
+		return true
+	}
+
+	// Unique vendor asset domains are explicit fingerprints.
+	for _, suffix := range []string{".com/", ".net/", ".io/", ".app/", ".dev/", ".co/", ".org/"} {
+		if strings.Contains(p, suffix) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isStrongIndirectSignal(p string) bool {
+	for _, hint := range []string{
+		"data-",
+		"modulepreload",
+		"__vite__mapdeps",
+		"vite:preloaderror",
+		"wp-json/wp/",
+		"/_next/",
+		"/_nuxt/",
+		"chunk",
+		"bundle",
+		"webpack",
+		"ng-version",
+		"/static/js/",
+		"/wp-content/",
+		"/wp-includes/",
+		"astro-",
+	} {
+		if strings.Contains(p, hint) {
+			return true
+		}
+	}
+	return false
+}
+
+func clampScore(score int) int {
+	if score < 0 {
+		return 0
+	}
+	if score > 100 {
+		return 100
+	}
+	return score
+}
+
+func toModelSignals(signals []matchedSignal) []model.TechSignal {
+	out := make([]model.TechSignal, 0, len(signals))
+	for _, s := range signals {
+		out = append(out, model.TechSignal{
+			Pattern:      s.pattern,
+			Match:        s.match,
+			EvidenceType: s.evidenceType,
+			Source:       s.source,
+		})
+	}
+	return out
+}
+
+func techRuleID(index int, p techPattern) string {
+	name := strings.ToLower(strings.ReplaceAll(p.name, " ", "-"))
+	name = strings.ReplaceAll(name, ".", "")
+	name = strings.ReplaceAll(name, "/", "-")
+	return fmt.Sprintf("%s-%s-%03d", name, p.category, index+1)
+}
+
+func sourceSiteRoot(sourceURL string) string {
+	u, err := url.Parse(sourceURL)
+	if err != nil {
+		return ""
+	}
+	return hostRoot(u.Hostname())
+}
+
+func hostRoot(host string) string {
+	if host == "" {
+		return ""
+	}
+	root, err := publicsuffix.EffectiveTLDPlusOne(host)
+	if err != nil || root == "" {
+		return host
+	}
+	return root
+}
+
+func classifySignalSource(sample string, lowerPattern string, sourceRoot string) string {
+	if sourceRoot == "" {
+		return "unknown"
+	}
+
+	urls := urlTokenRe.FindAllString(sample, -1)
+	for _, token := range urls {
+		clean := strings.TrimRight(token, ".,;)]}\"'")
+		u, err := url.Parse(clean)
+		if err != nil || u.Hostname() == "" {
+			continue
+		}
+		if strings.Contains(clean, lowerPattern) {
+			if hostRoot(u.Hostname()) == sourceRoot {
+				return "first-party"
+			}
+			return "third-party"
+		}
+	}
+
+	// Relative paths generally refer to the same site.
+	if strings.HasPrefix(lowerPattern, "/") {
+		return "first-party"
+	}
+	return "unknown"
+}
+
+func signalSourceRank(source string) int {
+	switch source {
+	case "first-party":
+		return 3
+	case "unknown":
+		return 2
+	default:
+		return 1
+	}
+}
+
+func snippetAround(s string, idx int, patternLen int, span int) string {
+	if idx < 0 {
+		return ""
+	}
+	start := idx - span/2
+	if start < 0 {
+		start = 0
+	}
+	end := idx + patternLen + span/2
+	if end > len(s) {
+		end = len(s)
+	}
+	snippet := strings.TrimSpace(s[start:end])
+	if len(snippet) > span {
+		snippet = snippet[:span]
+	}
+	return snippet
+}
+
+// onlyTags returns just the HTML tag content (without text nodes) to support
+// tag-only matching for ambiguous patterns.
+func onlyTags(lowerHTML string) string {
+	var b strings.Builder
+	b.Grow(len(lowerHTML))
+
+	inTag := false
+	for _, r := range lowerHTML {
+		switch r {
+		case '<':
+			inTag = true
+			b.WriteRune(' ')
+		case '>':
+			inTag = false
+			b.WriteRune(' ')
+		default:
+			if inTag {
+				b.WriteRune(r)
+			}
+		}
+	}
+	return b.String()
 }

@@ -11,7 +11,7 @@ Paste any URL and get an instant analysis report covering tech stack detection, 
 | Section | Details |
 |---|---|
 | **Overview** | Page title, meta description, favicon, language, estimated page weight |
-| **Tech Stack** | CMS, frameworks, analytics, CDNs, e-commerce platforms, media embeds (30+ technologies) |
+| **Tech Stack** | CMS, frameworks, analytics, CDNs, e-commerce platforms, media embeds (30+ technologies) + confidence labels (high / medium / low) |
 | **SEO Audit** | 13 checks — HTTPS, mixed content, title/description length, canonical, H1, image alt text, Open Graph, structured data, viewport, robots directive, hreflang, sitemap |
 | **UX & Conversion** | CTAs, forms, social proof, trust signals, contact info, mobile-readiness, cookie banner, live chat, video, newsletter signup, privacy policy |
 | **Page Stats** | Word count, images, internal/external links, scripts, headings (H1–H3), stylesheets, fonts, inline styles, render-blocking scripts, lazy images, content-to-code ratio |
@@ -164,8 +164,8 @@ Returns `{"status":"ok"}`.
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `8080` | Port the API server listens on |
-| `ALLOWED_ORIGIN` | `http://localhost:5173` | CORS allowed origin(s). Accepts `*`, a single origin, or a comma-separated list |
-| `FETCH_TIMEOUT_SEC` | `10` | Seconds before aborting a fetch |
+| `ALLOWED_ORIGIN` | `http://localhost:5173,http://127.0.0.1:5173` | CORS allowed origin(s). Accepts `*`, a single origin, or a comma-separated list |
+| `FETCH_TIMEOUT_SEC` | `60` | Seconds before aborting a fetch |
 | `MAX_BODY_BYTES` | `5242880` (5 MB) | Max response body size |
 
 ### Frontend (`frontend/.env.local`)
