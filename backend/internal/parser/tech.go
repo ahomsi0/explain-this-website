@@ -43,9 +43,18 @@ var techPatterns = []techPattern{
 
 	// E-commerce
 	{name: "Shopify", category: "ecommerce", confidence: "high",
-		// cdn.shopify.com/s/files/ is the store asset CDN — only present on actual Shopify stores.
-		// shopifycloud/consent-tracking is loaded by Shopify partners/integrators, NOT stores — excluded.
-		patterns: []string{"cdn.shopify.com/s/files/", "window.shopify.theme", "shopify_analytics.js", "myshopify.com/cart"}},
+		// shopify-section / shopify-sections are injected into every Shopify store's HTML
+		// regardless of which CDN is used (CloudFront, Shopify's own CDN, etc.).
+		// window.Shopify is a JS global Shopify injects on every storefront.
+		// cdn.shopify.com/s/files/ is the default Shopify asset CDN (absent when a custom CDN fronts the store).
+		patterns: []string{
+			"shopify-section",       // class/id present on every Shopify storefront section
+			"window.shopify",        // JS global injected by Shopify
+			"shopify.shop",          // window.Shopify.shop property
+			"cdn.shopify.com/s/files/", // default Shopify asset CDN
+			"shopify_analytics.js",
+			"myshopify.com/cart",
+		}},
 	{name: "WooCommerce", category: "ecommerce", confidence: "high",
 		patterns: []string{"/wc-api/", "wc_add_to_cart", "wc-block", "woocommerce-js"}},
 	{name: "BigCommerce", category: "ecommerce", confidence: "high",
@@ -58,19 +67,22 @@ var techPatterns = []techPattern{
 		patterns: []string{"_next/static", "__NEXT_DATA__", "/_next/"}},
 	{name: "Nuxt.js", category: "framework", confidence: "high",
 		patterns: []string{"__nuxt", "/_nuxt/", "nuxt.js"}},
+	// React — file/URL-based signals restricted to tag attributes so that tutorials
+	// or documentation pages mentioning "react.production.min.js" in prose don't
+	// trigger a false positive.
 	{name: "React", category: "framework", confidence: "high",
+		tagOnly: true,
 		patterns: []string{
-			// CDN / explicit script src
 			"react.production.min.js", "react.development.js",
 			"unpkg.com/react", "cdn.jsdelivr.net/npm/react", "/react@",
-			// SSR / static render attributes
-			"data-reactroot", "data-reactid", "data-react-helmet",
-			// Vite dev HMR — react-refresh is React-specific
-			"/@react-refresh",
-			// CRA bundle output — /static/js/ is the CRA default output path
 			"/static/js/main.", "/static/js/bundle.", "/static/js/vendors~",
-			// Common React runtime globals that SSR'd pages sometimes inline
-			"__reactFiber", "react-dom",
+		}},
+	// React — DOM attributes and JS runtime globals that only appear in actual
+	// React-rendered output (not reachable via copy-paste in body copy).
+	{name: "React", category: "framework", confidence: "high",
+		patterns: []string{
+			"data-reactroot", "data-reactid", "data-react-helmet",
+			"/@react-refresh", "__reactFiber", "react-dom",
 		}},
 	// Vite dev server — definitive signals, never appear on non-Vite sites
 	{name: "Vite", category: "framework", confidence: "high",
@@ -78,13 +90,21 @@ var techPatterns = []techPattern{
 	// Vite production runtime helpers are strong indirect signals.
 	{name: "Vite", category: "framework", confidence: "medium",
 		patterns: []string{"__vite__mapdeps", "vite:preloaderror", "/node_modules/.vite/"}},
-	// Broad web-bundle heuristic kept as low confidence only.
-	{name: "Vite", category: "framework", confidence: "low",
-		patterns: []string{`rel="modulepreload"`, `/assets/`}, requireAll: true, tagOnly: true},
+	// Note: the former "low" rule (rel="modulepreload" + /assets/) was removed because
+	// it produced false positives on Shopify, Astro, and any framework that serves
+	// assets from /assets/ with modulepreload. The medium/high rules above are sufficient.
+	// Vue — file references tagOnly; runtime globals don't need restriction.
 	{name: "Vue", category: "framework", confidence: "medium",
-		patterns: []string{"vue.min.js", "vue.runtime", "__vue__", "vue@"}},
+		tagOnly: true,
+		patterns: []string{"vue.min.js", "vue@"}},
+	{name: "Vue", category: "framework", confidence: "medium",
+		patterns: []string{"vue.runtime", "__vue__"}},
+	// Angular — file reference tagOnly; ng-version and module paths are specific enough.
 	{name: "Angular", category: "framework", confidence: "medium",
-		patterns: []string{"ng-version", "angular.min.js", "angular/core"}},
+		tagOnly: true,
+		patterns: []string{"angular.min.js"}},
+	{name: "Angular", category: "framework", confidence: "medium",
+		patterns: []string{"ng-version", "angular/core"}},
 	{name: "Svelte", category: "framework", confidence: "high",
 		patterns: []string{"__svelte", "svelte/"}},
 	{name: "Gatsby", category: "framework", confidence: "high",
@@ -143,9 +163,13 @@ var techPatterns = []techPattern{
 		patterns: []string{"cdn.jsdelivr.net"}},
 
 	// UI Frameworks
+	// Bootstrap and jQuery file names are frequently cited in tutorials and
+	// download guides — restrict to tag attributes to avoid body-text false positives.
 	{name: "Bootstrap", category: "framework", confidence: "medium",
+		tagOnly: true,
 		patterns: []string{"bootstrap.min.css", "bootstrap.min.js", "bootstrap@"}},
 	{name: "jQuery", category: "framework", confidence: "medium",
+		tagOnly: true,
 		patterns: []string{"jquery.min.js", "jquery-", "/jquery/"}},
 	{name: "Tailwind CSS", category: "framework", confidence: "medium",
 		patterns: []string{"tailwindcss", "cdn.tailwindcss.com"}},

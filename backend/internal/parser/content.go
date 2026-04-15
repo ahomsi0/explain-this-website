@@ -96,15 +96,40 @@ func analyzeContent(text string) model.ContentStats {
 		cs.AvgSentenceLen = totalWords / sentenceCount
 	}
 
+	// ── Average content-word length (vocabulary complexity proxy) ────────────
+	// We measure the mean length of non-stop, alphabetic words (≥4 chars).
+	// Longer words (e.g. "implementation", "configuration") indicate more
+	// technical or formal writing, independent of sentence length.
+	totalCharLen, wordCount := 0, 0
+	for _, w := range nonAlpha.Split(strings.ToLower(text), -1) {
+		if len(w) >= 4 && !stopWords[w] {
+			totalCharLen += len(w)
+			wordCount++
+		}
+	}
+	avgWordLen := 0
+	if wordCount > 0 {
+		avgWordLen = totalCharLen / wordCount
+	}
+
 	// ── Reading level ────────────────────────────────────────────────────────
-	// Generous thresholds — website copy is naturally more fragmented than prose.
+	// Two-factor classification: sentence length AND vocabulary complexity.
+	// A page with short sentences but long technical words is still "moderate".
+	// Thresholds are generous — website copy is naturally more fragmented than prose.
+	sentLong := cs.AvgSentenceLen > 22   // sentences are long
+	sentVLong := cs.AvgSentenceLen > 32  // sentences are very long
+	wordHard := avgWordLen >= 7          // vocabulary is complex (e.g. avg word ≥ 7 chars)
+
 	switch {
-	case cs.AvgSentenceLen == 0 || cs.AvgSentenceLen <= 22:
+	case cs.AvgSentenceLen == 0:
+		// No qualifying sentences — page is navigation/UI-heavy; treat as simple.
 		cs.ReadingLevel = "simple"
-	case cs.AvgSentenceLen <= 35:
+	case sentVLong || (sentLong && wordHard):
+		cs.ReadingLevel = "advanced"
+	case sentLong || wordHard:
 		cs.ReadingLevel = "moderate"
 	default:
-		cs.ReadingLevel = "advanced"
+		cs.ReadingLevel = "simple"
 	}
 
 	return cs

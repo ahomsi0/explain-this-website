@@ -93,12 +93,18 @@ func walkSEO(n *html.Node, s *seoState) {
 			}
 
 		case "h1":
-			s.h1Count++
-			if text := getTextContent(n); text != "" {
-				s.h1Texts = append(s.h1Texts, truncate(text, 80))
+			if !isHiddenElement(n) {
+				s.h1Count++
+				if text := getTextContent(n); text != "" {
+					s.h1Texts = append(s.h1Texts, truncate(text, 80))
+				}
 			}
 
 		case "img":
+			// Skip decorative images: explicitly marked presentation or hidden from AT.
+			if getAttr(n, "role") == "presentation" || isHiddenElement(n) {
+				break
+			}
 			s.imgTotal++
 			alt := strings.TrimSpace(getAttr(n, "alt"))
 			if alt == "" {
@@ -489,4 +495,21 @@ func truncate(s string, max int) string {
 		return s
 	}
 	return s[:max] + "..."
+}
+
+// isHiddenElement returns true when a node is visually or semantically hidden.
+// We skip such elements in H1 and img audits to avoid false negatives caused
+// by SEO-spam H1s hidden with CSS, or decorative images without alt text.
+func isHiddenElement(n *html.Node) bool {
+	if getAttr(n, "aria-hidden") == "true" {
+		return true
+	}
+	if getAttr(n, "hidden") != "" {
+		return true
+	}
+	style := strings.ToLower(getAttr(n, "style"))
+	return strings.Contains(style, "display:none") ||
+		strings.Contains(style, "display: none") ||
+		strings.Contains(style, "visibility:hidden") ||
+		strings.Contains(style, "visibility: hidden")
 }

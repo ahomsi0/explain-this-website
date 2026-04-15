@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { analyzeWebsite } from "../src/services/analyzeApi";
+import { analyzeWebsite, waitForServerSignal } from "../src/services/analyzeApi";
 
 const fetchMock = vi.fn();
 
@@ -30,5 +30,38 @@ describe("analyzeWebsite", () => {
     });
 
     await expect(analyzeWebsite("")).rejects.toThrow("url is required");
+  });
+});
+
+describe("waitForServerSignal", () => {
+  it("resolves when health endpoint returns OK", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+    });
+
+    await expect(waitForServerSignal(100)).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws when health endpoint returns non-OK", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 503,
+    });
+
+    await expect(waitForServerSignal(100)).rejects.toThrow("Analysis server is unavailable (503)");
+  });
+
+  it("throws a clear timeout error when health check hangs", async () => {
+    fetchMock.mockImplementation((_url: string, init?: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new DOMException("Aborted", "AbortError"));
+        });
+      }),
+    );
+
+    await expect(waitForServerSignal(1)).rejects.toThrow("Analysis server did not respond in time.");
   });
 });

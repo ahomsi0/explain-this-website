@@ -10,7 +10,7 @@ import (
 
 var ctaKeywords = []string{
 	"buy", "get started", "sign up", "signup", "try", "free trial",
-	"start", "book", "order", "subscribe", "contact us", "learn more",
+	"start", "book", "order", "subscribe", "contact us",
 	"shop now", "get demo", "book a demo", "request demo", "download",
 	"register", "join", "claim", "add to cart", "checkout", "get quote",
 }
@@ -18,7 +18,8 @@ var ctaKeywords = []string{
 var socialProofKeywords = []string{
 	"review", "testimonial", "rated", "customers", "clients", "trust pilot",
 	"trustpilot", "verified", "stars", "rating", "g2 crowd", "capterra",
-	"4.", "5.", "/5", "out of 5",
+	// "4." and "5." removed — too broad, matches numbered lists
+	"/5", "out of 5",
 }
 
 var trustKeywords = []string{
@@ -101,7 +102,28 @@ var liveChatSignals = []string{
 	"openchat", "open-chat", "showchat",
 }
 
-var phoneRegex = regexp.MustCompile(`\+?[\d][\d\s\-\(\)]{7,}`)
+// phoneRegex matches digit sequences that look like phone numbers.
+// We require 9–20 characters in the pattern and then validate digit count below.
+var phoneRegex = regexp.MustCompile(`\+?[\d][\d\s\-\(\)]{8,19}`)
+
+// digitCount returns the number of ASCII digit characters in s.
+func digitCount(s string) int {
+	n := 0
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			n++
+		}
+	}
+	return n
+}
+
+// looksLikePhone returns true when a regex match contains 7–15 digits,
+// the range that covers real phone numbers while excluding product codes,
+// ZIP+4 codes, and other numeric strings.
+func looksLikePhone(match string) bool {
+	d := digitCount(match)
+	return d >= 7 && d <= 15
+}
 
 // analyzeUX scans the HTML tree for conversion and UX signals.
 func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
@@ -111,20 +133,30 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 
 	lower := strings.ToLower(rawHTML)
 
-	// Phone numbers in raw HTML
-	if phoneRegex.MatchString(lower) {
-		result.HasContactInfo = true
-	}
-
-	// Trust signals
-	for _, kw := range trustKeywords {
-		if strings.Contains(lower, kw) {
-			result.HasTrustSignals = true
+	// ── Phone numbers ─────────────────────────────────────────────────────────
+	// Validate digit count to avoid matching product IDs, date strings, etc.
+	for _, m := range phoneRegex.FindAllString(lower, -1) {
+		if looksLikePhone(m) {
+			result.HasContactInfo = true
 			break
 		}
 	}
 
-	// Social proof
+	// ── Trust signals ─────────────────────────────────────────────────────────
+	// Require at least 2 distinct trust keywords to reduce false positives from
+	// articles or blog posts that mention a single keyword in passing.
+	trustHits := 0
+	for _, kw := range trustKeywords {
+		if strings.Contains(lower, kw) {
+			trustHits++
+			if trustHits >= 2 {
+				result.HasTrustSignals = true
+				break
+			}
+		}
+	}
+
+	// ── Social proof ──────────────────────────────────────────────────────────
 	for _, kw := range socialProofKeywords {
 		if strings.Contains(lower, kw) {
 			result.HasSocialProof = true
@@ -132,7 +164,7 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 		}
 	}
 
-	// Cookie/GDPR banner
+	// ── Cookie / GDPR banner ──────────────────────────────────────────────────
 	for _, sig := range cookieBannerSignals {
 		if strings.Contains(lower, sig) {
 			result.HasCookieBanner = true
@@ -140,7 +172,7 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 		}
 	}
 
-	// Live chat widget
+	// ── Live chat widget ──────────────────────────────────────────────────────
 	for _, sig := range liveChatSignals {
 		if strings.Contains(lower, sig) {
 			result.HasLiveChat = true
@@ -148,18 +180,50 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 		}
 	}
 
-	// Newsletter signup: email input + subscribe/newsletter context
-	hasEmailInput := strings.Contains(lower, `type="email"`) || strings.Contains(lower, `type='email'`)
-	if hasEmailInput {
-		for _, kw := range newsletterKeywords {
-			if strings.Contains(lower, kw) {
-				result.HasNewsletterSignup = true
-				break
+	// ── Newsletter signup ─────────────────────────────────────────────────────
+	// Require an email input AND a newsletter keyword within ±500 characters of
+	// that input. This avoids flagging contact forms on pages that happen to
+	// mention the word "newsletter" in unrelated body copy.
+	result.HasNewsletterSignup = detectNewsletter(lower)
+
+	return result
+}
+
+// detectNewsletter checks for an email <input> with a newsletter-related keyword
+// appearing within a 500-character window around it.
+func detectNewsletter(lower string) bool {
+	const proximity = 500
+
+	// Find the byte offset of the first email input.
+	emailIdx := -1
+	for _, pat := range []string{`type="email"`, `type='email'`} {
+		if idx := strings.Index(lower, pat); idx != -1 {
+			if emailIdx == -1 || idx < emailIdx {
+				emailIdx = idx
 			}
 		}
 	}
+	if emailIdx < 0 {
+		return false
+	}
 
-	return result
+	// Extract a window around the email input and scan for newsletter keywords.
+	start := emailIdx - proximity
+	if start < 0 {
+		start = 0
+	}
+	end := emailIdx + proximity
+	if end > len(lower) {
+		end = len(lower)
+	}
+	window := lower[start:end]
+
+	for _, kw := range newsletterKeywords {
+		if strings.Contains(window, kw) {
+			return true
+		}
+	}
+	return false
 }
 
 func walkUX(n *html.Node, result *model.UXResult) {

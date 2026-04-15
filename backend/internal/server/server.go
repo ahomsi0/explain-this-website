@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"runtime/debug"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/ahomsi/explain-website/internal/config"
 	"github.com/ahomsi/explain-website/internal/handler"
@@ -35,12 +38,129 @@ func Start(cfg config.Config) error {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	wrapped := recoveryMiddleware(corsMiddleware(cfg.AllowedOrigin, mux))
+	rl := newRateLimiter()
+	wrapped := recoveryMiddleware(
+		securityHeadersMiddleware(
+			rateLimitMiddleware(rl,
+				corsMiddleware(cfg.AllowedOrigin, mux),
+			),
+		),
+	)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("Server listening on %s (CORS origin: %s)", addr, cfg.AllowedOrigin)
 	return http.ListenAndServe(addr, wrapped)
 }
+
+// ── Rate limiter ──────────────────────────────────────────────────────────────
+
+// rateLimiter is a simple per-IP fixed-window counter (no external deps).
+// Limit: 10 requests per minute per IP on the analyze endpoint.
+type rateLimiter struct {
+	mu      sync.Mutex
+	clients map[string]*rlEntry
+}
+
+type rlEntry struct {
+	count   int
+	resetAt time.Time
+}
+
+const (
+	rlMax    = 10
+	rlWindow = time.Minute
+)
+
+func newRateLimiter() *rateLimiter {
+	rl := &rateLimiter{clients: make(map[string]*rlEntry)}
+	// Sweep stale entries every 5 minutes so the map doesn't grow forever.
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			rl.mu.Lock()
+			now := time.Now()
+			for ip, e := range rl.clients {
+				if now.After(e.resetAt) {
+					delete(rl.clients, ip)
+				}
+			}
+			rl.mu.Unlock()
+		}
+	}()
+	return rl
+}
+
+func (rl *rateLimiter) allow(ip string) bool {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	now := time.Now()
+	e, ok := rl.clients[ip]
+	if !ok || now.After(e.resetAt) {
+		rl.clients[ip] = &rlEntry{count: 1, resetAt: now.Add(rlWindow)}
+		return true
+	}
+	e.count++
+	return e.count <= rlMax
+}
+
+// realIP extracts the client IP, honouring X-Forwarded-For from trusted proxies.
+func realIP(r *http.Request) string {
+	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
+		// Leftmost entry is the original client.
+		if ip := strings.TrimSpace(strings.SplitN(fwd, ",", 2)[0]); ip != "" {
+			return ip
+		}
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
+}
+
+func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost && r.URL.Path == "/api/analyze" {
+			if !rl.allow(realIP(r)) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Retry-After", "60")
+				w.WriteHeader(http.StatusTooManyRequests)
+				json.NewEncoder(w).Encode(model.ErrorResponse{
+					Error: "Too many requests — please wait a moment before trying again.",
+				})
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// ── Security headers ──────────────────────────────────────────────────────────
+
+func securityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Prevent MIME sniffing.
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		// Deny framing (clickjacking protection).
+		w.Header().Set("X-Frame-Options", "DENY")
+		// Legacy XSS filter (still honoured by some older browsers).
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		// Limit referrer leakage.
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		// This is a JSON API — no scripts, styles, or media need to load from it.
+		// "default-src 'none'" is the most restrictive valid CSP.
+		w.Header().Set("Content-Security-Policy", "default-src 'none'")
+		// Tell browsers to always use HTTPS for future requests (1 year).
+		// Safe to set even when running behind a TLS-terminating proxy.
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		// Disable browser features this API has no reason to access.
+		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// ── Recovery middleware ───────────────────────────────────────────────────────
 
 // recoveryMiddleware catches any panic inside a handler, logs the stack trace,
 // and returns a clean JSON error response so the frontend never gets a broken connection.
@@ -59,6 +179,8 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// ── CORS middleware ───────────────────────────────────────────────────────────
 
 // corsMiddleware adds the necessary headers to allow the frontend to call the API.
 // ALLOWED_ORIGIN can be:

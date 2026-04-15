@@ -124,7 +124,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 	hasShortContent := stats.WordCount < 500
 	hasManyCtAs := ux.CTACount >= 4
 
-	if hasUrgency {
+	if hasUrgency && (hasNarrowNav || hasManyCtAs) {
 		landing += 4
 	}
 	if hasNarrowNav && hasShortContent && hasManyCtAs {
@@ -328,6 +328,11 @@ func computeConversionScores(ux model.UXResult, seo map[string]string, stats mod
 		clarity += 28
 		clarityReasons = append(clarityReasons, "clear H1 heading present")
 	} else if stats.H1Count == 0 {
+		// Explicit penalty: missing H1 is a meaningful clarity gap, not just neutral.
+		clarity -= 10
+		if clarity < 0 {
+			clarity = 0
+		}
 		clarityReasons = append(clarityReasons, "no H1 heading")
 	}
 	if seo["meta_desc"] == "pass" {

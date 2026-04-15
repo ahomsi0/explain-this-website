@@ -35,14 +35,10 @@ export function useAnalysis(): UseAnalysisReturn {
         await new Promise((resolve) => setTimeout(resolve, 1400));
         data = { ...mockAnalysisResult, url };
       } else {
-        // Drive the "Initializing analysis engine..." step from a real backend signal.
-        // If the probe fails, analyze request still runs and error handling remains unchanged.
-        void waitForServerSignal().then(
-          () => setServerSignaled(true),
-          () => undefined,
-        );
-        data = await analyzeWebsite(url);
+        // Preflight: fail fast if backend is down before starting analysis.
+        await waitForServerSignal();
         setServerSignaled(true);
+        data = await analyzeWebsite(url);
       }
 
       setResult(data);
