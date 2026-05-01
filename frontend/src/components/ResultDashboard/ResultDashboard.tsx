@@ -102,7 +102,15 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
       {/* ── Metrics strip ── */}
       <div className="border-b border-zinc-800 bg-zinc-900/40">
         <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center gap-5 sm:gap-8 overflow-x-auto scrollbar-none">
-          <Metric label="SEO Score"      value={`${seoScore}/100`}  valueClass={scoreColor(seoScore)} />
+          <Metric label="SEO Audit"      value={`${seoScore}/100`}  valueClass={scoreColor(seoScore)} />
+          {result.performance?.mobile?.lighthouse && (
+            <>
+              <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
+              <Metric label="Lighthouse SEO"
+                value={`${result.performance.mobile.lighthouse.seo}/100`}
+                valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />
+            </>
+          )}
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
           <Metric label="UX Score"       value={`${uxScore}/100`}   valueClass={scoreColor(uxScore)} />
           <Separator orientation="vertical" className="h-8 bg-zinc-800 shrink-0" />
