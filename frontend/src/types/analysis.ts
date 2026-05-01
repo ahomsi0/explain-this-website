@@ -131,6 +131,40 @@ export interface AIDetection {
   signals: string[];
 }
 
+export type CWVRating = "good" | "needs-improvement" | "poor";
+
+export interface CoreWebVital {
+  value: number;
+  displayValue: string;
+  rating: CWVRating;
+}
+
+export interface LighthouseScores {
+  performance: number;
+  accessibility: number;
+  bestPractices: number;
+  seo: number;
+}
+
+export interface StrategyData {
+  lighthouse: LighthouseScores;
+  fcp: CoreWebVital;
+  lcp: CoreWebVital;
+  tbt: CoreWebVital;
+  cls: CoreWebVital;
+  speedIndex: CoreWebVital;
+  fieldLcp?: CoreWebVital;
+  fieldCls?: CoreWebVital;
+  fieldInp?: CoreWebVital;
+  fieldFcp?: CoreWebVital;
+}
+
+export interface PerformanceResult {
+  available: boolean;
+  mobile?: StrategyData;
+  desktop?: StrategyData;
+}
+
 export interface AnalysisResult {
   url: string;
   fetchedAt: string;
@@ -151,6 +185,7 @@ export interface AnalysisResult {
   prioritizedIssues: PrioritizedIssue[];
   eli5: ELI5Item[];
   aiDetection: AIDetection;
+  performance?: PerformanceResult;
 }
 
 export interface AnalysisError {

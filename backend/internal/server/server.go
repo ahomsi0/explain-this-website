@@ -24,6 +24,7 @@ func Start(cfg config.Config) error {
 	handlerCfg := handler.Config{
 		FetchTimeoutSec: cfg.FetchTimeoutSec,
 		MaxBodyBytes:    cfg.MaxBodyBytes,
+		PageSpeedAPIKey: cfg.PageSpeedAPIKey,
 	}
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))

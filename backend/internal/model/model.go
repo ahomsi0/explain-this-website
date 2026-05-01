@@ -142,6 +142,44 @@ type AIDetection struct {
 	Signals    []string `json:"signals"`
 }
 
+// CoreWebVital holds a single CWV metric with its value, display string, and rating.
+type CoreWebVital struct {
+	Value        float64 `json:"value"`
+	DisplayValue string  `json:"displayValue"`
+	Rating       string  `json:"rating"` // "good" | "needs-improvement" | "poor"
+}
+
+// LighthouseScores holds the four Lighthouse category scores (0–100).
+type LighthouseScores struct {
+	Performance   int `json:"performance"`
+	Accessibility int `json:"accessibility"`
+	BestPractices int `json:"bestPractices"`
+	SEO           int `json:"seo"`
+}
+
+// StrategyData holds Lighthouse + CWV results for one device strategy.
+type StrategyData struct {
+	Lighthouse LighthouseScores `json:"lighthouse"`
+	FCP        CoreWebVital     `json:"fcp"`
+	LCP        CoreWebVital     `json:"lcp"`
+	TBT        CoreWebVital     `json:"tbt"`
+	CLS        CoreWebVital     `json:"cls"`
+	SpeedIndex CoreWebVital     `json:"speedIndex"`
+	// Field data from real users (CrUX) — omitted when the site has insufficient traffic.
+	FieldLCP *CoreWebVital `json:"fieldLcp,omitempty"`
+	FieldCLS *CoreWebVital `json:"fieldCls,omitempty"`
+	FieldINP *CoreWebVital `json:"fieldInp,omitempty"`
+	FieldFCP *CoreWebVital `json:"fieldFcp,omitempty"`
+}
+
+// PerformanceResult holds real performance data for both mobile and desktop.
+// Either field may be nil if that strategy's API call failed.
+type PerformanceResult struct {
+	Available bool          `json:"available"`
+	Mobile    *StrategyData `json:"mobile,omitempty"`
+	Desktop   *StrategyData `json:"desktop,omitempty"`
+}
+
 // AnalysisResult is the full response returned by POST /api/analyze.
 type AnalysisResult struct {
 	URL             string       `json:"url"`
@@ -164,6 +202,7 @@ type AnalysisResult struct {
 	PrioritizedIssues  []PrioritizedIssue `json:"prioritizedIssues"`
 	ELI5               []ELI5Item         `json:"eli5"`
 	AIDetection        AIDetection        `json:"aiDetection"`
+	Performance        *PerformanceResult `json:"performance,omitempty"`
 }
 
 // ErrorResponse is returned on any failure.

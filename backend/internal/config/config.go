@@ -9,10 +9,11 @@ import (
 
 // Config holds all runtime configuration loaded from environment variables.
 type Config struct {
-	Port            string
-	AllowedOrigin   string
-	FetchTimeoutSec int
-	MaxBodyBytes    int64
+	Port             string
+	AllowedOrigin    string
+	FetchTimeoutSec  int
+	MaxBodyBytes     int64
+	PageSpeedAPIKey  string // optional; enables Google PageSpeed Insights integration
 }
 
 // Load reads .env (if present) and populates Config with sensible defaults.
@@ -25,6 +26,7 @@ func Load() Config {
 		AllowedOrigin:   getEnv("ALLOWED_ORIGIN", "http://localhost:5173,http://127.0.0.1:5173"),
 		FetchTimeoutSec: getEnvInt("FETCH_TIMEOUT_SEC", 60),
 		MaxBodyBytes:    getEnvInt64("MAX_BODY_BYTES", 5*1024*1024),
+		PageSpeedAPIKey: getEnv("PAGESPEED_API_KEY", ""),
 	}
 }
 

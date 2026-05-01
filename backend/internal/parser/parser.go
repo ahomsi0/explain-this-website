@@ -11,11 +11,28 @@ import (
 )
 
 // Parse takes raw HTML and a source URL, runs all sub-analyses, and returns
-// a complete AnalysisResult.
-func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
+// a complete AnalysisResult. pageSpeedKey is optional; when non-empty the
+// PageSpeed Insights API is called concurrently to fetch real CWV data.
+func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.AnalysisResult, error) {
 	if strings.TrimSpace(rawHTML) == "" {
 		return model.AnalysisResult{}, fmt.Errorf("empty HTML response")
 	}
+
+	// Kick off the PageSpeed API call concurrently while we parse HTML.
+	// Only attempted when a key is configured — without one the API quota is zero.
+	type perfResult struct {
+		data *model.PerformanceResult
+		err  error
+	}
+	perfCh := make(chan perfResult, 1)
+	go func() {
+		if pageSpeedKey == "" {
+			perfCh <- perfResult{}
+			return
+		}
+		data, err := fetchPerformance(sourceURL, pageSpeedKey)
+		perfCh <- perfResult{data, err}
+	}()
 
 	doc, err := html.Parse(strings.NewReader(rawHTML))
 	if err != nil {
@@ -65,6 +82,9 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 		eli5 = []model.ELI5Item{}
 	}
 
+	// Collect the concurrent PageSpeed result (nil on any failure — that's fine).
+	perf := (<-perfCh).data
+
 	return model.AnalysisResult{
 		URL:                sourceURL,
 		FetchedAt:          time.Now().UTC(),
@@ -85,6 +105,7 @@ func Parse(rawHTML string, sourceURL string) (model.AnalysisResult, error) {
 		PrioritizedIssues:  prioritized,
 		ELI5:               eli5,
 		AIDetection:        DetectAIBuilder(rawHTML),
+		Performance:        perf,
 	}, nil
 }
 

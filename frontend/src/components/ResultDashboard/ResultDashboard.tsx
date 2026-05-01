@@ -14,6 +14,7 @@ import { InsightCard }           from "../cards/InsightCard";
 import { CustomerViewCard }      from "../cards/CustomerViewCard";
 import { PrioritizedIssuesCard } from "../cards/PrioritizedIssuesCard";
 import { ELI5Card }              from "../cards/ELI5Card";
+import { PerformanceCard }       from "../cards/PerformanceCard";
 import { CopyButton }            from "../ui/CopyButton";
 import { DownloadButton }        from "../ui/DownloadButton";
 
@@ -156,6 +157,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
         {/* ── Col 2: Performance ── */}
         <div className="flex flex-col gap-3">
           <ColHeader label="Performance" description="How well it scores across key dimensions" />
+          {result.performance?.available && <PerformanceCard performance={result.performance} />}
           <div className="grid grid-cols-2 gap-3">
             <TechStackCard techStack={result.techStack} />
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}

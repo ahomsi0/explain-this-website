@@ -17,6 +17,7 @@ import (
 type Config struct {
 	FetchTimeoutSec int
 	MaxBodyBytes    int64
+	PageSpeedAPIKey string
 }
 
 // AnalyzeHandler returns an http.HandlerFunc for POST /api/analyze.
@@ -74,7 +75,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 
 		// Parse and analyse.
-		result, err := parser.Parse(rawHTML, rawURL)
+		result, err := parser.Parse(rawHTML, rawURL, cfg.PageSpeedAPIKey)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
 			return
