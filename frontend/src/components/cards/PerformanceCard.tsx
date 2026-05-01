@@ -137,7 +137,7 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-1">
         <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Core Web Vitals</p>
         <div className="flex items-center gap-1">
           {performance.mobile && (
@@ -148,6 +148,10 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
           )}
         </div>
       </div>
+
+      <p className="text-[11px] text-zinc-600 mb-4 leading-snug">
+        Google's official Lighthouse scores — the SEO score here reflects technical SEO basics Google itself checks.
+      </p>
 
       <StrategyView data={data} />
 

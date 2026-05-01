@@ -58,7 +58,7 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-1">
         <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">SEO Audit</p>
         <div className="flex items-center gap-3 text-[11px]">
           <span className="text-zinc-600"><span className="text-emerald-400 font-semibold">{pass}</span> pass</span>
@@ -67,6 +67,10 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
           <span className="font-semibold text-zinc-200">{score}<span className="text-zinc-600 font-normal">/100</span></span>
         </div>
       </div>
+
+      <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
+        Our 13-point check covering OG tags, structured data, sitemap and more — actionable issues to fix.
+      </p>
 
       {/* Score bar */}
       <div className="h-0.5 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">
