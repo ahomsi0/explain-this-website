@@ -10,7 +10,6 @@ import { PageStatsCard, PagePerfCard } from "../cards/PageStatsCard";
 import { ContentCard }           from "../cards/ContentCard";
 import { InsightCard }           from "../cards/InsightCard";
 import { CustomerViewCard }      from "../cards/CustomerViewCard";
-import { PrioritizedIssuesCard } from "../cards/PrioritizedIssuesCard";
 import { ELI5Card }              from "../cards/ELI5Card";
 import { PerformanceCard }       from "../cards/PerformanceCard";
 import { ActionableOpportunitiesCard } from "../cards/ActionableOpportunitiesCard";

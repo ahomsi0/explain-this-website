@@ -27,7 +27,7 @@ const SEQUENTIAL_STEPS = ["tech", "seo", "ux", "trust", "content", "cwv"] as con
 const WARMUP_S = 1.5;
 const STEP_DURATION_S = 2.4;
 
-export function LoadingSpinner({ url, serverSignaled }: { url: string; serverSignaled: boolean }) {
+export function LoadingSpinner({ url }: { url: string; serverSignaled?: boolean }) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {

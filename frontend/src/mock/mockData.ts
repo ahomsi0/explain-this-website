@@ -134,4 +134,22 @@ export const mockAnalysisResult: AnalysisResult = {
     builder: "Framer",
     signals: ["framerusercontent.com"],
   },
+  imageAudit: {
+    total: 12,
+    webp: 4,
+    avif: 0,
+    jpg: 6,
+    png: 2,
+    gif: 0,
+    svg: 0,
+    missingDims: 3,
+    missingLazy: 4,
+    modernPct: 33,
+  },
+  siteFreshness: {
+    copyrightYear: 2024,
+    latestDate: "",
+    rating: "aging",
+    signals: ["Copyright © 2024 found in footer"],
+  },
 };
