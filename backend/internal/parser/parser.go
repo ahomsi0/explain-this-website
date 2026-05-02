@@ -47,6 +47,8 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	ux := analyzeUX(doc, rawHTML)
 	pageStats := computePageStats(doc, sourceURL, rawHTML)
 	contentStats := analyzeContent(visibleText)
+	imageAudit := auditImages(doc)
+	freshness := auditFreshness(doc, rawHTML)
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
 
 	if tech == nil {
@@ -85,6 +87,21 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	// Collect the concurrent PageSpeed result (nil on any failure — that's fine).
 	perf := (<-perfCh).data
 
+	// Augment the heuristic tech detection with services Lighthouse confirmed via
+	// real network requests. Try mobile first; fall back to desktop if mobile has
+	// no entries (PageSpeed sometimes returns one strategy with empty audits).
+	if perf != nil {
+		var thirdParties []model.ThirdPartyEntity
+		if perf.Mobile != nil && len(perf.Mobile.ThirdParties) > 0 {
+			thirdParties = perf.Mobile.ThirdParties
+		} else if perf.Desktop != nil && len(perf.Desktop.ThirdParties) > 0 {
+			thirdParties = perf.Desktop.ThirdParties
+		}
+		if len(thirdParties) > 0 {
+			tech = mergeThirdParties(tech, thirdParties)
+		}
+	}
+
 	return model.AnalysisResult{
 		URL:                sourceURL,
 		FetchedAt:          time.Now().UTC(),
@@ -106,6 +123,8 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		ELI5:               eli5,
 		AIDetection:        DetectAIBuilder(rawHTML),
 		Performance:        perf,
+		ImageAudit:         imageAudit,
+		SiteFreshness:      freshness,
 	}, nil
 }
 

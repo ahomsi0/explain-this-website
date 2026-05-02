@@ -81,6 +81,28 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
+		// Persist result so it can be retrieved via GET /api/report/:id.
+		result.ReportID = globalStore.save(result)
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(result)
+	}
+}
+
+// ReportHandler returns an http.HandlerFunc for GET /api/report/{id}.
+func ReportHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		id := r.PathValue("id")
+		if id == "" {
+			writeError(w, http.StatusBadRequest, "report id is required")
+			return
+		}
+		result, ok := globalStore.get(id)
+		if !ok {
+			writeError(w, http.StatusNotFound, "report not found or expired")
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(result)
 	}

@@ -18,15 +18,29 @@ type lhCategory struct {
 	Score *float64 `json:"score"`
 }
 
+// thirdPartiesAudit is parsed separately because its structure is more complex.
+type thirdPartiesAudit struct {
+	Details struct {
+		Items []struct {
+			Entity       string  `json:"entity"`
+			TransferSize float64 `json:"transferSize"`
+		} `json:"items"`
+	} `json:"details"`
+}
+
+// lhAudit covers the simple numeric/display audits we use for Core Web Vitals.
+type lhAudit struct {
+	NumericValue float64 `json:"numericValue"`
+	DisplayValue string  `json:"displayValue"`
+}
+
+
 // pageSpeedResponse holds the subset of the PageSpeed Insights API response we care about.
 type pageSpeedResponse struct {
 	LighthouseResult struct {
 		// Categories uses a map so hyphenated keys like "best-practices" parse correctly.
-		Categories map[string]lhCategory `json:"categories"`
-		Audits     map[string]struct {
-			NumericValue float64 `json:"numericValue"`
-			DisplayValue string  `json:"displayValue"`
-		} `json:"audits"`
+		Categories map[string]lhCategory      `json:"categories"`
+		Audits     map[string]json.RawMessage `json:"audits"`
 	} `json:"lighthouseResult"`
 	LoadingExperience struct {
 		InitialURL string `json:"initial_url"`
@@ -81,7 +95,7 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 
 // fetchStrategy calls the PageSpeed Insights API for one strategy and parses the response.
 func fetchStrategy(siteURL string, apiKey string, strategy string) (*model.StrategyData, error) {
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 55 * time.Second}
 
 	// Request all four Lighthouse categories — by default the API only returns "performance".
 	apiURL := fmt.Sprintf(
@@ -120,6 +134,22 @@ func fetchStrategy(siteURL string, apiKey string, strategy string) (*model.Strat
 		SpeedIndex: auditMetric(audits, "speed-index", speedIndexRating),
 	}
 
+	// Parse third-parties-insight to surface real network-detected services.
+	if raw, ok := audits["third-parties-insight"]; ok {
+		var tp thirdPartiesAudit
+		if err := json.Unmarshal(raw, &tp); err == nil {
+			for _, it := range tp.Details.Items {
+				if it.Entity == "" {
+					continue
+				}
+				out.ThirdParties = append(out.ThirdParties, model.ThirdPartyEntity{
+					Name:         it.Entity,
+					TransferSize: int(it.TransferSize),
+				})
+			}
+		}
+	}
+
 	// Field data (real users via CrUX) — only present when the site has enough traffic.
 	if le := data.LoadingExperience; le.InitialURL != "" && len(le.Metrics) > 0 {
 		if m, ok := le.Metrics["LARGEST_CONTENTFUL_PAINT_MS"]; ok {
@@ -156,21 +186,23 @@ func categoryScore(cats map[string]lhCategory, key string) int {
 
 // auditMetric extracts a named audit entry and rates it.
 func auditMetric(
-	audits map[string]struct {
-		NumericValue float64 `json:"numericValue"`
-		DisplayValue string  `json:"displayValue"`
-	},
+	audits map[string]json.RawMessage,
 	key string,
 	rate func(float64) string,
 ) model.CoreWebVital {
-	if a, ok := audits[key]; ok {
-		return model.CoreWebVital{
-			Value:        a.NumericValue,
-			DisplayValue: a.DisplayValue,
-			Rating:       rate(a.NumericValue),
-		}
+	raw, ok := audits[key]
+	if !ok {
+		return model.CoreWebVital{}
 	}
-	return model.CoreWebVital{}
+	var a lhAudit
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return model.CoreWebVital{}
+	}
+	return model.CoreWebVital{
+		Value:        a.NumericValue,
+		DisplayValue: a.DisplayValue,
+		Rating:       rate(a.NumericValue),
+	}
 }
 
 // fieldMetric builds a CoreWebVital from a CrUX percentile value.

@@ -127,6 +127,28 @@ type PageStats struct {
 	VideoCount            int `json:"videoCount"`
 }
 
+// SiteFreshness holds signals about how recently a site was updated.
+type SiteFreshness struct {
+	CopyrightYear int      `json:"copyrightYear"` // latest year found in © text
+	LatestDate    string   `json:"latestDate"`    // ISO date from <time>/OG/JSON-LD, may be empty
+	Rating        string   `json:"rating"`        // "fresh" | "aging" | "stale" | "unknown"
+	Signals       []string `json:"signals"`       // human-readable evidence lines
+}
+
+// ImageFormatAudit breaks down image format usage and flags missing optimisations.
+type ImageFormatAudit struct {
+	Total           int `json:"total"`
+	WebP            int `json:"webp"`
+	AVIF            int `json:"avif"`
+	JPG             int `json:"jpg"`
+	PNG             int `json:"png"`
+	GIF             int `json:"gif"`
+	SVG             int `json:"svg"`
+	MissingDims     int `json:"missingDims"`     // no width+height attrs (causes CLS)
+	MissingLazy     int `json:"missingLazy"`     // no loading=lazy (above a rough fold threshold)
+	ModernPct       int `json:"modernPct"`       // (webp+avif) / total * 100
+}
+
 // ContentStats holds content quality and readability metrics.
 type ContentStats struct {
 	TopKeywords    []string `json:"topKeywords"`
@@ -157,6 +179,12 @@ type LighthouseScores struct {
 	SEO           int `json:"seo"`
 }
 
+// ThirdPartyEntity is a single third-party service detected by Lighthouse network analysis.
+type ThirdPartyEntity struct {
+	Name         string `json:"name"`
+	TransferSize int    `json:"transferSize"` // bytes
+}
+
 // StrategyData holds Lighthouse + CWV results for one device strategy.
 type StrategyData struct {
 	Lighthouse LighthouseScores `json:"lighthouse"`
@@ -170,6 +198,8 @@ type StrategyData struct {
 	FieldCLS *CoreWebVital `json:"fieldCls,omitempty"`
 	FieldINP *CoreWebVital `json:"fieldInp,omitempty"`
 	FieldFCP *CoreWebVital `json:"fieldFcp,omitempty"`
+	// Third parties detected by Lighthouse via real network requests.
+	ThirdParties []ThirdPartyEntity `json:"thirdParties,omitempty"`
 }
 
 // PerformanceResult holds real performance data for both mobile and desktop.
@@ -203,6 +233,9 @@ type AnalysisResult struct {
 	ELI5               []ELI5Item         `json:"eli5"`
 	AIDetection        AIDetection        `json:"aiDetection"`
 	Performance        *PerformanceResult `json:"performance,omitempty"`
+	ReportID           string             `json:"reportId,omitempty"`
+	ImageAudit         ImageFormatAudit   `json:"imageAudit"`
+	SiteFreshness      SiteFreshness      `json:"siteFreshness"`
 }
 
 // ErrorResponse is returned on any failure.

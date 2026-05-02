@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Overview, PageLoadHint, AIDetection } from "../../types/analysis";
 
 const loadLabel: Record<PageLoadHint, { text: string; cls: string }> = {
@@ -6,10 +7,16 @@ const loadLabel: Record<PageLoadHint, { text: string; cls: string }> = {
   heavy:       { text: "Heavy",       cls: "text-red-400    bg-red-950    border-red-900"    },
 };
 
+function screenshotUrl(url: string) {
+  return `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+}
+
 export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
   overview: Overview; url: string; fetchedAt: string; aiDetection?: AIDetection;
 }) {
   const load = loadLabel[overview.pageLoadHint];
+  const [screenshotState, setScreenshotState] = useState<"loading" | "loaded" | "failed">("loading");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
@@ -36,6 +43,23 @@ export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
             {url}
           </a>
         </div>
+
+        {/* Small screenshot thumbnail — click to enlarge */}
+        {screenshotState !== "failed" && (
+          <button
+            onClick={() => screenshotState === "loaded" && setLightboxOpen(true)}
+            className={`shrink-0 w-24 h-16 rounded border border-zinc-700 overflow-hidden bg-zinc-800 transition-all ${screenshotState === "loaded" ? "hover:border-violet-500/60 hover:ring-1 hover:ring-violet-500/30 cursor-zoom-in" : "cursor-default"}`}
+          >
+            {screenshotState === "loading" && <div className="w-full h-full animate-pulse bg-zinc-800" />}
+            <img
+              src={screenshotUrl(url)}
+              alt=""
+              className={`w-full h-full object-cover object-top ${screenshotState === "loaded" ? "block" : "hidden"}`}
+              onLoad={() => setScreenshotState("loaded")}
+              onError={() => setScreenshotState("failed")}
+            />
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -65,6 +89,32 @@ export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
       <p className="mt-3 text-[11px] text-zinc-500">
         {new Date(fetchedAt).toLocaleString()}
       </p>
+
+      {/* Lightbox */}
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute -top-9 right-0 text-zinc-400 hover:text-zinc-100 text-xs flex items-center gap-1.5 transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Close
+            </button>
+            <img
+              src={screenshotUrl(url)}
+              alt="Page screenshot"
+              className="w-full rounded-lg border border-zinc-700 shadow-2xl"
+            />
+            <p className="mt-2 text-center text-[11px] text-zinc-600">{url}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

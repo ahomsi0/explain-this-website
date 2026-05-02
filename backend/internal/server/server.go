@@ -28,6 +28,7 @@ func Start(cfg config.Config) error {
 	}
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
+	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
 
 	health := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

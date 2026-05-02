@@ -2,11 +2,19 @@ import type { AnalysisResult } from "../types/analysis";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
+export async function fetchReport(id: string): Promise<AnalysisResult> {
+  const res = await fetch(`${API_URL}/api/report/${id}`);
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error ?? `Report not found (${res.status})`);
+  return data as AnalysisResult;
+}
+
 // How long to wait for the server in total (covers Render cold-starts which can take 60-90s).
 const TOTAL_TIMEOUT_MS = 120_000;
 
 // How long a single attempt is allowed before we retry (handles flaky wakeups).
-const ATTEMPT_TIMEOUT_MS = 15_000;
+// Must exceed the longest real analysis (~90s when PageSpeed is slow under load).
+const ATTEMPT_TIMEOUT_MS = 100_000;
 
 // Delay between retries when the attempt itself fails (network error, not a slow response).
 const RETRY_DELAY_MS = 2_000;

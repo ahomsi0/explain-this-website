@@ -165,6 +165,26 @@ export interface PerformanceResult {
   desktop?: StrategyData;
 }
 
+export interface SiteFreshness {
+  copyrightYear: number;
+  latestDate: string;
+  rating: 'fresh' | 'aging' | 'stale' | 'unknown';
+  signals: string[];
+}
+
+export interface ImageFormatAudit {
+  total: number;
+  webp: number;
+  avif: number;
+  jpg: number;
+  png: number;
+  gif: number;
+  svg: number;
+  missingDims: number;
+  missingLazy: number;
+  modernPct: number;
+}
+
 export interface AnalysisResult {
   url: string;
   fetchedAt: string;
@@ -186,6 +206,9 @@ export interface AnalysisResult {
   eli5: ELI5Item[];
   aiDetection: AIDetection;
   performance?: PerformanceResult;
+  reportId?: string;
+  imageAudit: ImageFormatAudit;
+  siteFreshness: SiteFreshness;
 }
 
 export interface AnalysisError {

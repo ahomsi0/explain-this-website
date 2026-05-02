@@ -1,77 +1,85 @@
 import type { TechItem } from "../../types/analysis";
+import { getTechDescription, getTechRoleLabel, getTechIcon } from "../../lib/techMeta";
 
-const catLabel: Record<string, string> = {
-  "ai-builder": "AI Builder", cms: "CMS", ecommerce: "E-commerce", builder: "Builder",
-  framework: "Framework", analytics: "Analytics", cdn: "CDN", media: "Media",
-};
-const catOrder = ["ai-builder", "cms", "ecommerce", "builder", "framework", "analytics", "cdn", "media"];
-const CONFIDENCE_TOOLTIP = "Confidence indicates how certain the system is about this detection based on available signals.";
+const CATEGORY_ORDER = ["ai-builder", "cms", "ecommerce", "builder", "framework", "analytics", "cdn", "media"];
 
-function confidenceTone(confidence: TechItem["confidence"]) {
+function confidenceBadgeClass(confidence: TechItem["confidence"]) {
   if (confidence === "high") {
-    return "border-emerald-800/70 bg-emerald-950/60 text-emerald-300";
+    return "bg-emerald-950 text-emerald-400 border-emerald-800";
   }
   if (confidence === "medium") {
-    return "border-amber-800/70 bg-amber-950/60 text-amber-300";
+    return "bg-amber-950 text-amber-400 border-amber-800";
   }
-  return "border-red-900/70 bg-red-950/50 text-red-300";
+  return "bg-zinc-800 text-zinc-400 border-zinc-700";
 }
 
-function confidenceLabel(confidence: TechItem["confidence"]) {
-  if (confidence === "low") return "Possible";
-  return confidence.charAt(0).toUpperCase() + confidence.slice(1);
+function confidenceBadgeText(confidence: TechItem["confidence"]) {
+  if (confidence === "high")   return "Verified";
+  if (confidence === "medium") return "Detected";
+  return "Possible";
+}
+
+function TechCard({ tech }: { tech: TechItem }) {
+  const description = getTechDescription(tech);
+  const role = getTechRoleLabel(tech);
+  const icon = getTechIcon(tech.category);
+
+  return (
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 flex flex-col">
+      {/* Top row: icon + confidence badge */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-9 h-9 rounded-md bg-zinc-800 border border-zinc-700 flex items-center justify-center text-violet-400">
+          {icon}
+        </div>
+        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceBadgeClass(tech.confidence)}`}>
+          {confidenceBadgeText(tech.confidence)}
+        </span>
+      </div>
+
+      {/* Name + description */}
+      <div className="flex-1 mb-3">
+        <h3 className="text-sm font-semibold text-zinc-100 mb-1">{tech.name}</h3>
+        <p className="text-[11px] text-zinc-500 leading-relaxed">{description}</p>
+      </div>
+
+      {/* Divider + role */}
+      <div className="pt-2.5 border-t border-zinc-800/60 flex items-baseline gap-2">
+        <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Primary Role:</span>
+        <span className="text-[11px] font-medium text-zinc-300">{role}</span>
+      </div>
+    </div>
+  );
 }
 
 export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
-  const grouped: Record<string, TechItem[]> = {};
-  for (const t of techStack) (grouped[t.category] ??= []).push(t);
+  if (techStack.length === 0) {
+    return (
+      <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6 text-center">
+        <p className="text-xs text-zinc-500">No technologies detected on this page.</p>
+      </div>
+    );
+  }
+
+  // Sort: by category order, then high confidence first within category.
+  const sorted = [...techStack].sort((a, b) => {
+    const ca = CATEGORY_ORDER.indexOf(a.category);
+    const cb = CATEGORY_ORDER.indexOf(b.category);
+    const catCmp = (ca === -1 ? 99 : ca) - (cb === -1 ? 99 : cb);
+    if (catCmp !== 0) return catCmp;
+    const confOrder = { high: 0, medium: 1, low: 2 } as const;
+    return confOrder[a.confidence] - confOrder[b.confidence];
+  });
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Tech Stack</p>
-        <div className="flex items-center gap-1.5">
-          <span
-            className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-zinc-700 text-[10px] text-zinc-500"
-            title={CONFIDENCE_TOOLTIP}
-            aria-label="Tech confidence info"
-          >
-            i
-          </span>
-          <span className="text-[11px] text-zinc-600">{techStack.length} detected</span>
-        </div>
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {sorted.map((t) => (
+          <TechCard key={`${t.category}:${t.name}`} tech={t} />
+        ))}
       </div>
-
-      {techStack.length === 0 ? (
-        <p className="text-xs text-zinc-600">No technologies detected.</p>
-      ) : (
-        <div className="space-y-2">
-          <div className="space-y-2.5">
-            {catOrder.filter((c) => grouped[c]).map((cat) => (
-              <div key={cat} className="flex items-start gap-3">
-                <span className="text-[11px] text-zinc-600 w-20 shrink-0 pt-1">{catLabel[cat]}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {grouped[cat].map((t) => (
-                    <span key={`${t.category}:${t.name}`} className="inline-flex items-center rounded-md border border-zinc-700 bg-zinc-800">
-                      <span className="px-2 py-0.5 text-xs text-zinc-300 font-medium">{t.name}</span>
-                      <span
-                        className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide border-l ${confidenceTone(t.confidence)}`}
-                        title={CONFIDENCE_TOOLTIP}
-                        aria-label={`${t.name} confidence ${confidenceLabel(t.confidence)}`}
-                      >
-                        {confidenceLabel(t.confidence)}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-[11px] text-zinc-600 leading-relaxed">
-            Technology detection is heuristic-based and may not always be 100% accurate, especially for large or custom-built websites.
-          </p>
-        </div>
-      )}
+      <p className="text-[11px] text-zinc-600 leading-relaxed px-1">
+        Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
+      </p>
     </div>
   );
 }
