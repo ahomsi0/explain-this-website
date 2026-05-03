@@ -59,7 +59,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           />
 
           {/* Insight + ELI5 side-by-side — both have similar shape so they balance well */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             <InsightCard
               intent={result.intent}
               biggestOpportunity={result.biggestOpportunity}
@@ -72,7 +72,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <ActionableOpportunitiesCard issues={result.prioritizedIssues} />
 
           {/* Weak points + recommendations — symmetric two-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             <WeakPointsCard weakPoints={result.weakPoints} />
             <RecommendationsCard recommendations={result.recommendations} />
           </div>
@@ -92,7 +92,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-3">
           <SEOAuditCard seoChecks={result.seoChecks} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             <SecurityHeadersCard checks={result.securityHeaders} />
             <LinkCheckCard linkCheck={result.linkCheck} />
           </div>
@@ -105,7 +105,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-3">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             <ColorPaletteCard colorPalette={result.colorPalette} />
             <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
           </div>
@@ -116,11 +116,11 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-3">
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
             <ImageAuditCard audit={result.imageAudit} />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
             {result.contentStats && <ContentCard contentStats={result.contentStats} />}
           </div>

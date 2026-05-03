@@ -155,7 +155,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
           </div>
 
           {/* Section content */}
-          <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-[1400px]">
+          <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-[1800px]">
             <div className="mb-5">
               <h2 className="text-lg sm:text-xl font-bold text-zinc-100">{currentMeta.title}</h2>
               <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-2xl leading-relaxed">{currentMeta.description}</p>
