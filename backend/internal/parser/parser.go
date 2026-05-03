@@ -34,10 +34,18 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		perfCh <- perfResult{data, err}
 	}()
 
+	type linkResult struct{ data model.LinkCheckResult }
+	linkCh := make(chan linkResult, 1)
+
 	doc, err := html.Parse(strings.NewReader(rawHTML))
 	if err != nil {
 		return model.AnalysisResult{}, fmt.Errorf("failed to parse HTML: %w", err)
 	}
+
+	// Kick off link checking concurrently — runs in parallel with HTML analysis.
+	go func() {
+		linkCh <- linkResult{CheckLinks(doc, sourceURL)}
+	}()
 
 	visibleText := extractVisibleText(doc)
 
@@ -87,6 +95,8 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	// Collect the concurrent PageSpeed result (nil on any failure — that's fine).
 	perf := (<-perfCh).data
 
+	linkCheck := (<-linkCh).data
+
 	// Augment the heuristic tech detection with services Lighthouse confirmed via
 	// real network requests. Try mobile first; fall back to desktop if mobile has
 	// no entries (PageSpeed sometimes returns one strategy with empty audits).
@@ -125,6 +135,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		Performance:        perf,
 		ImageAudit:         imageAudit,
 		SiteFreshness:      freshness,
+		LinkCheck:          linkCheck,
 	}, nil
 }
 
