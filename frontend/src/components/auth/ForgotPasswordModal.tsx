@@ -47,6 +47,15 @@ export function ForgotPasswordModal({
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
+  // Local cooldown for the Resend button — declared above the early return so
+  // React's hook ordering stays consistent across open/closed renders.
+  const [resendCooldown, setResendCooldown] = useState(0);
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
   if (!open) return null;
 
   async function submitEmail(e: React.FormEvent) {
@@ -86,16 +95,6 @@ export function ForgotPasswordModal({
       setBusy(false);
     }
   }
-
-  // Local cooldown so users can't hammer the resend button. Backend already
-  // invalidates prior codes whenever a new one is issued, so the UX is clear:
-  // hit resend → previous code stops working.
-  const [resendCooldown, setResendCooldown] = useState(0);
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setTimeout(() => setResendCooldown((v) => v - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendCooldown]);
 
   async function resendCode() {
     if (resendCooldown > 0 || busy) return;
