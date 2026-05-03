@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { PerformanceResult, StrategyData, CoreWebVital, CWVRating } from "../../types/analysis";
+import { CardShell } from "../ui/CardShell";
+import { CardHeader } from "../ui/CardHeader";
 
 function ratingColor(r: CWVRating) {
   return r === "good" ? "text-emerald-400" : r === "needs-improvement" ? "text-amber-400" : "text-red-400";
@@ -135,29 +137,37 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
   const data = strategy === "mobile" ? performance.mobile : performance.desktop;
   if (!data) return null;
 
+  const mobileLhScore = performance.mobile?.lighthouse?.performance;
+  const badge = mobileLhScore !== undefined ? `${mobileLhScore}/100` : undefined;
+  const badgeColor = mobileLhScore !== undefined
+    ? (mobileLhScore >= 90 ? "green" : mobileLhScore >= 50 ? "amber" : "red") as "green" | "amber" | "red"
+    : "violet" as const;
+
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Core Web Vitals</p>
-        <div className="flex items-center gap-1">
-          {performance.mobile && (
-            <TabButton active={strategy === "mobile"} onClick={() => setStrategy("mobile")}>Mobile</TabButton>
-          )}
-          {performance.desktop && (
-            <TabButton active={strategy === "desktop"} onClick={() => setStrategy("desktop")}>Desktop</TabButton>
-          )}
+    <CardShell>
+      <CardHeader title="Core Web Vitals" badge={badge} badgeColor={badgeColor} />
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-1">
+            {performance.mobile && (
+              <TabButton active={strategy === "mobile"} onClick={() => setStrategy("mobile")}>Mobile</TabButton>
+            )}
+            {performance.desktop && (
+              <TabButton active={strategy === "desktop"} onClick={() => setStrategy("desktop")}>Desktop</TabButton>
+            )}
+          </div>
         </div>
+
+        <p className="text-[11px] text-zinc-600 mb-4 leading-snug">
+          Google's official Lighthouse scores — the SEO score here reflects technical SEO basics Google itself checks.
+        </p>
+
+        <StrategyView data={data} />
+
+        <p className="text-[10px] text-zinc-700 mt-3">
+          {strategy === "mobile" ? "Mobile" : "Desktop"} · via Google PageSpeed Insights
+        </p>
       </div>
-
-      <p className="text-[11px] text-zinc-600 mb-4 leading-snug">
-        Google's official Lighthouse scores — the SEO score here reflects technical SEO basics Google itself checks.
-      </p>
-
-      <StrategyView data={data} />
-
-      <p className="text-[10px] text-zinc-700 mt-3">
-        {strategy === "mobile" ? "Mobile" : "Desktop"} · via Google PageSpeed Insights
-      </p>
-    </div>
+    </CardShell>
   );
 }

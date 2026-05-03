@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { SEOCheck } from "../../types/analysis";
+import { CardShell } from "../ui/CardShell";
+import { CardHeader } from "../ui/CardHeader";
 
 function statusStyle(s: string) {
   if (s === "pass")    return { dot: "bg-emerald-500", label: "text-emerald-400", text: "Pass" };
@@ -57,32 +59,38 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
   const score   = seoChecks.length ? Math.round((pass / seoChecks.length) * 100) : 0;
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">SEO Audit</p>
-        <div className="flex items-center gap-3 text-[11px]">
-          <span className="text-zinc-600"><span className="text-emerald-400 font-semibold">{pass}</span> pass</span>
-          <span className="text-zinc-600"><span className="text-amber-400 font-semibold">{warning}</span> warn</span>
-          <span className="text-zinc-600"><span className="text-red-400 font-semibold">{fail}</span> fail</span>
-          <span className="font-semibold text-zinc-200">{score}<span className="text-zinc-600 font-normal">/100</span></span>
+    <CardShell>
+      <CardHeader
+        title="SEO Audit"
+        badge={`${pass}/${seoChecks.length}`}
+        badgeColor={pass / seoChecks.length >= 0.8 ? "green" : pass / seoChecks.length >= 0.5 ? "amber" : "red"}
+      />
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="text-zinc-600"><span className="text-emerald-400 font-semibold">{pass}</span> pass</span>
+            <span className="text-zinc-600"><span className="text-amber-400 font-semibold">{warning}</span> warn</span>
+            <span className="text-zinc-600"><span className="text-red-400 font-semibold">{fail}</span> fail</span>
+            <span className="font-semibold text-zinc-200">{score}<span className="text-zinc-600 font-normal">/100</span></span>
+          </div>
         </div>
+
+        <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
+          Our 13-point check covering OG tags, structured data, sitemap and more — actionable issues to fix.
+        </p>
+
+        {/* Score bar */}
+        <div className="h-0.5 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${
+              score >= 80 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500"
+            }`}
+            style={{ width: `${score}%` }}
+          />
+        </div>
+
+        <div>{seoChecks.map((c) => <CheckRow key={c.id} check={c} />)}</div>
       </div>
-
-      <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
-        Our 13-point check covering OG tags, structured data, sitemap and more — actionable issues to fix.
-      </p>
-
-      {/* Score bar */}
-      <div className="h-0.5 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${
-            score >= 80 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500"
-          }`}
-          style={{ width: `${score}%` }}
-        />
-      </div>
-
-      <div>{seoChecks.map((c) => <CheckRow key={c.id} check={c} />)}</div>
-    </div>
+    </CardShell>
   );
 }

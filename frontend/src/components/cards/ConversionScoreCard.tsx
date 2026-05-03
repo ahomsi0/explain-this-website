@@ -1,4 +1,6 @@
 import type { ConversionScores } from "../../types/analysis";
+import { CardShell } from "../ui/CardShell";
+import { CardHeader } from "../ui/CardHeader";
 
 function scoreColor(n: number) {
   if (n >= 70) return { bar: "bg-emerald-500", text: "text-emerald-400" };
@@ -45,31 +47,37 @@ export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
   const overall = scoreColor(scores.overall);
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Conversion Readiness</p>
-        <div className="flex items-baseline gap-1">
-          <span className={`text-xs font-medium ${overall.text}`}>{overallLabel(scores.overall)}</span>
-          <span className={`text-sm font-bold ${overall.text}`}>{scores.overall}</span>
-          <span className="text-xs text-zinc-600">/100</span>
+    <CardShell>
+      <CardHeader
+        title="Conversion Score"
+        badge={`${scores.overall}/100`}
+        badgeColor={scores.overall >= 70 ? "green" : scores.overall >= 45 ? "amber" : "red"}
+      />
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-baseline gap-1">
+            <span className={`text-xs font-medium ${overall.text}`}>{overallLabel(scores.overall)}</span>
+            <span className={`text-sm font-bold ${overall.text}`}>{scores.overall}</span>
+            <span className="text-xs text-zinc-600">/100</span>
+          </div>
+        </div>
+
+        {/* Overall bar */}
+        <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden mb-5">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${overall.bar}`}
+            style={{ width: `${scores.overall}%` }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-3.5">
+          <ScoreRow label="Clarity"      score={scores.clarity}     note={scores.clarityNote}  />
+          <ScoreRow label="Trust"        score={scores.trust}       note={scores.trustNote}    />
+          <ScoreRow label="CTA Strength" score={scores.ctaStrength} note={scores.ctaNote}      />
+          {/* "Ease" = inverse of friction — higher score means less friction, better UX */}
+          <ScoreRow label="Ease"         score={scores.friction}    note={scores.frictionNote} />
         </div>
       </div>
-
-      {/* Overall bar */}
-      <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden mb-5">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${overall.bar}`}
-          style={{ width: `${scores.overall}%` }}
-        />
-      </div>
-
-      <div className="flex flex-col gap-3.5">
-        <ScoreRow label="Clarity"      score={scores.clarity}     note={scores.clarityNote}  />
-        <ScoreRow label="Trust"        score={scores.trust}       note={scores.trustNote}    />
-        <ScoreRow label="CTA Strength" score={scores.ctaStrength} note={scores.ctaNote}      />
-        {/* "Ease" = inverse of friction — higher score means less friction, better UX */}
-        <ScoreRow label="Ease"         score={scores.friction}    note={scores.frictionNote} />
-      </div>
-    </div>
+    </CardShell>
   );
 }

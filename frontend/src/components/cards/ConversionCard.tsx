@@ -1,4 +1,6 @@
 import type { UXResult } from "../../types/analysis";
+import { CardShell } from "../ui/CardShell";
+import { CardHeader } from "../ui/CardHeader";
 
 function Row({ label, present, detail }: { label: string; present: boolean; detail: string }) {
   return (
@@ -15,21 +17,23 @@ export function ConversionCard({ ux }: { ux: UXResult }) {
   const score    = Math.round((coreSigs.filter(Boolean).length / coreSigs.length) * 100);
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">UX Signals</p>
-        <span className={`font-semibold text-sm ${score >= 70 ? "text-emerald-400" : score >= 40 ? "text-amber-400" : "text-red-400"}`}>
-          {score}<span className="text-zinc-600 font-normal text-xs">/100</span>
-        </span>
-      </div>
+    <CardShell>
+      <CardHeader title="UX Signals" />
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className={`font-semibold text-sm ${score >= 70 ? "text-emerald-400" : score >= 40 ? "text-amber-400" : "text-red-400"}`}>
+            {score}<span className="text-zinc-600 font-normal text-xs">/100</span>
+          </span>
+        </div>
 
-      <Row label="Call-to-Action" present={ux.hasCTA}         detail={ux.hasCTA         ? `${ux.ctaCount} detected`   : "None found"} />
-      <Row label="Lead Form"      present={ux.hasForms}        detail={ux.hasForms        ? `${ux.formCount} form(s)`   : "None found"} />
-      <Row label="Social Proof"   present={ux.hasSocialProof}  detail={ux.hasSocialProof  ? "Detected"                 : "None found"} />
-      <Row label="Trust Signals"  present={ux.hasTrustSignals} detail={ux.hasTrustSignals ? "Detected"                 : "None found"} />
-      <Row label="Contact Info"   present={ux.hasContactInfo}  detail={ux.hasContactInfo  ? "Present"                  : "None found"} />
-      <Row label="Mobile Ready"   present={ux.mobileReady}     detail={ux.mobileReady     ? "Viewport tag present"     : "Missing"}    />
-    </div>
+        <Row label="Call-to-Action" present={ux.hasCTA}         detail={ux.hasCTA         ? `${ux.ctaCount} detected`   : "None found"} />
+        <Row label="Lead Form"      present={ux.hasForms}        detail={ux.hasForms        ? `${ux.formCount} form(s)`   : "None found"} />
+        <Row label="Social Proof"   present={ux.hasSocialProof}  detail={ux.hasSocialProof  ? "Detected"                 : "None found"} />
+        <Row label="Trust Signals"  present={ux.hasTrustSignals} detail={ux.hasTrustSignals ? "Detected"                 : "None found"} />
+        <Row label="Contact Info"   present={ux.hasContactInfo}  detail={ux.hasContactInfo  ? "Present"                  : "None found"} />
+        <Row label="Mobile Ready"   present={ux.mobileReady}     detail={ux.mobileReady     ? "Viewport tag present"     : "Missing"}    />
+      </div>
+    </CardShell>
   );
 }
 
@@ -38,21 +42,23 @@ export function TrustEngagementCard({ ux }: { ux: UXResult }) {
   const count = sigs.filter(Boolean).length;
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Trust & Engagement</p>
-        <span className="text-[11px] text-zinc-600">
-          <span className={count >= 4 ? "text-emerald-400" : count >= 2 ? "text-amber-400" : "text-red-400"}>
-            {count}/{sigs.length}
-          </span> present
-        </span>
-      </div>
+    <CardShell>
+      <CardHeader title="Trust & Engagement" />
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[11px] text-zinc-600">
+            <span className={count >= 4 ? "text-emerald-400" : count >= 2 ? "text-amber-400" : "text-red-400"}>
+              {count}/{sigs.length}
+            </span> present
+          </span>
+        </div>
 
-      <Row label="Cookie Banner"  present={ux.hasCookieBanner}     detail={ux.hasCookieBanner     ? "Consent UI detected"  : "None found"} />
-      <Row label="Live Chat"      present={ux.hasLiveChat}         detail={ux.hasLiveChat         ? "Widget detected"      : "None found"} />
-      <Row label="Video Content"  present={ux.hasVideoContent}     detail={ux.hasVideoContent     ? "Video detected"       : "None found"} />
-      <Row label="Newsletter"     present={ux.hasNewsletterSignup} detail={ux.hasNewsletterSignup ? "Signup form detected"  : "None found"} />
-      <Row label="Privacy Policy" present={ux.hasPrivacyPolicy}    detail={ux.hasPrivacyPolicy    ? "Policy link found"    : "None found"} />
-    </div>
+        <Row label="Cookie Banner"  present={ux.hasCookieBanner}     detail={ux.hasCookieBanner     ? "Consent UI detected"  : "None found"} />
+        <Row label="Live Chat"      present={ux.hasLiveChat}         detail={ux.hasLiveChat         ? "Widget detected"      : "None found"} />
+        <Row label="Video Content"  present={ux.hasVideoContent}     detail={ux.hasVideoContent     ? "Video detected"       : "None found"} />
+        <Row label="Newsletter"     present={ux.hasNewsletterSignup} detail={ux.hasNewsletterSignup ? "Signup form detected"  : "None found"} />
+        <Row label="Privacy Policy" present={ux.hasPrivacyPolicy}    detail={ux.hasPrivacyPolicy    ? "Policy link found"    : "None found"} />
+      </div>
+    </CardShell>
   );
 }

@@ -1,5 +1,7 @@
 import type { TechItem } from "../../types/analysis";
 import { getTechDescription, getTechRoleLabel, getTechIcon } from "../../lib/techMeta";
+import { CardShell } from "../ui/CardShell";
+import { CardHeader } from "../ui/CardHeader";
 
 const CATEGORY_ORDER = ["ai-builder", "cms", "ecommerce", "builder", "framework", "analytics", "cdn", "media"];
 
@@ -54,9 +56,12 @@ function TechCard({ tech }: { tech: TechItem }) {
 export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
   if (techStack.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6 text-center">
-        <p className="text-xs text-zinc-500">No technologies detected on this page.</p>
-      </div>
+      <CardShell>
+        <CardHeader title="Tech Stack" badge={`${techStack.length} found`} badgeColor="violet" />
+        <div className="p-4 text-center">
+          <p className="text-xs text-zinc-500">No technologies detected on this page.</p>
+        </div>
+      </CardShell>
     );
   }
 
@@ -71,15 +76,20 @@ export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
   });
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {sorted.map((t) => (
-          <TechCard key={`${t.category}:${t.name}`} tech={t} />
-        ))}
+    <CardShell>
+      <CardHeader title="Tech Stack" badge={`${techStack.length} found`} badgeColor="violet" />
+      <div className="p-4">
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {sorted.map((t) => (
+              <TechCard key={`${t.category}:${t.name}`} tech={t} />
+            ))}
+          </div>
+          <p className="text-[11px] text-zinc-600 leading-relaxed px-1">
+            Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
+          </p>
+        </div>
       </div>
-      <p className="text-[11px] text-zinc-600 leading-relaxed px-1">
-        Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
-      </p>
-    </div>
+    </CardShell>
   );
 }

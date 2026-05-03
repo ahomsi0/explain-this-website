@@ -1,4 +1,6 @@
 import type { PageStats } from "../../types/analysis";
+import { CardShell } from "../ui/CardShell";
+import { CardHeader } from "../ui/CardHeader";
 
 function Metric({ label, value, sub, valueClass = "text-zinc-100" }: {
   label: string;
@@ -32,12 +34,14 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
   ];
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider mb-4">Page Stats</p>
-      <div className="grid grid-cols-3 gap-x-4 gap-y-5">
-        {metrics.map((m) => <Metric key={m.label} {...m} />)}
+    <CardShell>
+      <CardHeader title="Page Stats" />
+      <div className="p-4">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-5">
+          {metrics.map((m) => <Metric key={m.label} {...m} />)}
+        </div>
       </div>
-    </div>
+    </CardShell>
   );
 }
 
@@ -97,21 +101,14 @@ export function PagePerfCard({ pageStats }: { pageStats: PageStats }) {
     },
   ];
 
-  const goodCount = rows.filter((r) => r.status === "good").length;
-
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">Load Efficiency</p>
-        <span className="text-[11px] text-zinc-600">
-          <span className={goodCount === rows.length ? "text-emerald-400" : goodCount >= 3 ? "text-amber-400" : "text-red-400"}>
-            {goodCount}/{rows.length}
-          </span> passing
-        </span>
+    <CardShell>
+      <CardHeader title="Load Efficiency" />
+      <div className="p-4">
+        <div>
+          {rows.map((r) => <EfficiencyRow key={r.label} {...r} />)}
+        </div>
       </div>
-      <div>
-        {rows.map((r) => <EfficiencyRow key={r.label} {...r} />)}
-      </div>
-    </div>
+    </CardShell>
   );
 }
