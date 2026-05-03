@@ -119,14 +119,12 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-4">
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
             <ImageAuditCard audit={result.imageAudit} />
-            {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
             {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
             {result.contentStats && <ContentCard contentStats={result.contentStats} />}
+            {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
           </div>
         </div>
       );
