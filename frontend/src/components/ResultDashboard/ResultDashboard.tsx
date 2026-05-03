@@ -9,6 +9,10 @@ import { ShareButton } from "../ui/ShareButton";
 import { Sidebar, MobileSectionNav } from "./Sidebar";
 import { SECTIONS, SectionView, type SectionId } from "./sections";
 import { ErrorBoundary } from "../ui/ErrorBoundary";
+import { useAuth } from "../../context/AuthContext";
+import { AuthModal } from "../auth/AuthModal";
+import { UserMenu } from "../auth/UserMenu";
+import { HistoryModal } from "../auth/HistoryModal";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -53,6 +57,9 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
   const { seoScore, uxScore } = computeScores(result);
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [searchValue, setSearchValue] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const { user } = useAuth();
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
@@ -131,6 +138,16 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
             <CopyButton result={result} />
             <DownloadButton result={result} />
             <ShareButton reportId={result.reportId} />
+            {user ? (
+              <UserMenu onShowHistory={() => setHistoryOpen(true)} />
+            ) : (
+              <button
+                onClick={() => setAuthOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
+              >
+                Sign in
+              </button>
+            )}
             <button
               onClick={onReset}
               className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-violet-300 hover:text-violet-200 bg-violet-500/10 hover:bg-violet-500/15 border border-violet-500/30 transition-colors"
@@ -195,6 +212,16 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
           </div>
         </main>
       </div>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <HistoryModal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onOpenAudit={(id) => {
+          // App.tsx loads /report/:id from the URL — navigate to that path.
+          window.location.href = `/report/${id}`;
+        }}
+      />
     </div>
   );
 }

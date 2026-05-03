@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,13 +13,23 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/config"
+	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/handler"
 	"github.com/ahomsi/explain-website/internal/model"
 )
 
 // Start wires up routes and begins listening.
 func Start(cfg config.Config) error {
+	// Init DB (no-op when DATABASE_URL is unset).
+	dbCtx, dbCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer dbCancel()
+	if err := db.Init(dbCtx); err != nil {
+		log.Printf("WARNING: db init failed (%v) — running in anonymous-only mode", err)
+	}
+	defer db.Close()
+
 	mux := http.NewServeMux()
 
 	handlerCfg := handler.Config{
@@ -29,6 +40,15 @@ func Start(cfg config.Config) error {
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
 	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
+
+	// Auth endpoints
+	mux.HandleFunc("POST /api/auth/signup", handler.SignupHandler())
+	mux.HandleFunc("POST /api/auth/login", handler.LoginHandler())
+	mux.HandleFunc("GET /api/auth/me", auth.RequireAuth(handler.MeHandler()))
+
+	// User audit history (account-only)
+	mux.HandleFunc("GET /api/audits", auth.RequireAuth(handler.AuditsListHandler()))
+	mux.HandleFunc("DELETE /api/audits/{id}", auth.RequireAuth(handler.AuditDeleteHandler()))
 
 	health := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -43,8 +63,10 @@ func Start(cfg config.Config) error {
 	rl := newRateLimiter()
 	wrapped := recoveryMiddleware(
 		securityHeadersMiddleware(
-			rateLimitMiddleware(rl,
-				corsMiddleware(cfg.AllowedOrigin, mux),
+			auth.Middleware(
+				rateLimitMiddleware(rl,
+					corsMiddleware(cfg.AllowedOrigin, mux),
+				),
 			),
 		),
 	)
@@ -69,8 +91,9 @@ type rlEntry struct {
 }
 
 const (
-	rlMax    = 10
-	rlWindow = time.Minute
+	rlMax       = 10 // anonymous: 10/min
+	rlMaxAuthed = 50 // logged-in: 50/min
+	rlWindow    = time.Minute
 )
 
 func newRateLimiter() *rateLimiter {
@@ -93,17 +116,17 @@ func newRateLimiter() *rateLimiter {
 	return rl
 }
 
-func (rl *rateLimiter) allow(ip string) bool {
+func (rl *rateLimiter) allow(key string, max int) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 	now := time.Now()
-	e, ok := rl.clients[ip]
+	e, ok := rl.clients[key]
 	if !ok || now.After(e.resetAt) {
-		rl.clients[ip] = &rlEntry{count: 1, resetAt: now.Add(rlWindow)}
+		rl.clients[key] = &rlEntry{count: 1, resetAt: now.Add(rlWindow)}
 		return true
 	}
 	e.count++
-	return e.count <= rlMax
+	return e.count <= max
 }
 
 // realIP extracts the client IP, honouring X-Forwarded-For from trusted proxies.
@@ -124,7 +147,14 @@ func realIP(r *http.Request) string {
 func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost && r.URL.Path == "/api/analyze" {
-			if !rl.allow(realIP(r)) {
+			// Logged-in users get a separate, higher bucket keyed by user ID.
+			key := "ip:" + realIP(r)
+			max := rlMax
+			if uid := auth.UserIDFromContext(r.Context()); uid != 0 {
+				key = fmt.Sprintf("user:%d", uid)
+				max = rlMaxAuthed
+			}
+			if !rl.allow(key, max) {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
@@ -209,8 +239,8 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 			w.Header().Set("Vary", "Origin")
 		}
 
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

@@ -1,9 +1,16 @@
 import type { AnalysisResult } from "../types/analysis";
+import { getToken } from "./authApi";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
+// Adds Authorization header if a token is present, otherwise omits it.
+function buildHeaders(extra: Record<string, string> = {}): HeadersInit {
+  const t = getToken();
+  return t ? { ...extra, Authorization: `Bearer ${t}` } : extra;
+}
+
 export async function fetchReport(id: string): Promise<AnalysisResult> {
-  const res = await fetch(`${API_URL}/api/report/${id}`);
+  const res = await fetch(`${API_URL}/api/report/${id}`, { headers: buildHeaders() });
   const data = await res.json().catch(() => null);
   if (!res.ok) throw new Error(data?.error ?? `Report not found (${res.status})`);
   return data as AnalysisResult;
@@ -46,7 +53,7 @@ export async function analyzeWebsite(
     try {
       const response = await fetch(`${API_URL}/api/analyze`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: buildHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ url }),
         signal: controller.signal,
       });

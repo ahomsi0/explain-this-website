@@ -8,6 +8,7 @@ import { LogoWordmark } from "./components/ui/Logo";
 import { fetchReport } from "./services/analyzeApi";
 import type { AnalysisResult } from "./types/analysis";
 import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -119,7 +120,9 @@ function AppInner() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppInner />
+      <AuthProvider>
+        <AppInner />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

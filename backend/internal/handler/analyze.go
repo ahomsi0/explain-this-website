@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/auth"
+	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/fetcher"
 	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/ahomsi/explain-website/internal/parser"
@@ -84,7 +86,13 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
 
 		// Persist result so it can be retrieved via GET /api/report/:id.
+		// Ephemeral in-memory store always — DB persistence is additive (history) for logged-in users.
 		result.ReportID = globalStore.save(result)
+
+		// If the user is logged in, also save to their permanent history.
+		if uid := auth.UserIDFromContext(r.Context()); uid != 0 {
+			saveAuditForUser(r.Context(), uid, result.ReportID, result)
+		}
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(result)
@@ -92,6 +100,8 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 }
 
 // ReportHandler returns an http.HandlerFunc for GET /api/report/{id}.
+// Tries the in-memory store first (fast, fresh), falling back to the user's
+// persisted DB audits when the report has aged out of memory.
 func ReportHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -100,13 +110,23 @@ func ReportHandler() http.HandlerFunc {
 			writeError(w, http.StatusBadRequest, "report id is required")
 			return
 		}
-		result, ok := globalStore.get(id)
-		if !ok {
-			writeError(w, http.StatusNotFound, "report not found or expired")
+		if result, ok := globalStore.get(id); ok {
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(result)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(result)
+		if db.IsAvailable() {
+			ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+			defer cancel()
+			var raw []byte
+			err := db.Pool.QueryRow(ctx, `SELECT result FROM audits WHERE id = $1`, id).Scan(&raw)
+			if err == nil {
+				w.WriteHeader(http.StatusOK)
+				w.Write(raw)
+				return
+			}
+		}
+		writeError(w, http.StatusNotFound, "report not found or expired")
 	}
 }
 

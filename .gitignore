@@ -9,3 +9,7 @@ frontend/dist/
 
 # OS
 .DS_Store
+
+# Tooling internals
+.superpowers/
+.claude/worktrees/
