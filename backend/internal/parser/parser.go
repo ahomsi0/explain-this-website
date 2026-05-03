@@ -34,6 +34,9 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		perfCh <- perfResult{data, err}
 	}()
 
+	domainCh := make(chan *model.DomainInfo, 1)
+	go func() { domainCh <- FetchDomainInfo(sourceURL) }()
+
 	doc, err := html.Parse(strings.NewReader(rawHTML))
 	if err != nil {
 		return model.AnalysisResult{}, fmt.Errorf("failed to parse HTML: %w", err)
@@ -90,6 +93,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 
 	// Collect the concurrent PageSpeed result (nil on any failure — that's fine).
 	perf := (<-perfCh).data
+	domainInfo := <-domainCh
 
 	// Augment the heuristic tech detection with services Lighthouse confirmed via
 	// real network requests. Try mobile first; fall back to desktop if mobile has
@@ -133,6 +137,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		SiteFreshness:      freshness,
 		ColorPalette:       colorPalette,
 		FontAudit:          fontAudit,
+		DomainInfo:         domainInfo,
 	}, nil
 }
 

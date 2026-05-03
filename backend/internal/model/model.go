@@ -290,6 +290,14 @@ type FontAudit struct {
 	HasPerfIssue  bool        `json:"hasPerfIssue"` // true if >3 families or >6 total weight variants
 }
 
+// DomainInfo holds registration metadata fetched from the RDAP API.
+type DomainInfo struct {
+	RegisteredAt string `json:"registeredAt"` // "2012-03-15" — ISO date, no time
+	ExpiresAt    string `json:"expiresAt"`     // "2027-03-15" — may be empty
+	Registrar    string `json:"registrar"`     // e.g. "Cloudflare, Inc."
+	AgeYears     int    `json:"ageYears"`      // -1 if unknown
+}
+
 // AnalysisResult is the full response returned by POST /api/analyze.
 type AnalysisResult struct {
 	URL             string       `json:"url"`
@@ -322,6 +330,7 @@ type AnalysisResult struct {
 	CopyAnalysis    CopyAnalysis          `json:"copyAnalysis"`
 	IntentAlignment IntentAlignment       `json:"intentAlignment"`
 	FontAudit       FontAudit             `json:"fontAudit"`
+	DomainInfo  *DomainInfo  `json:"domainInfo,omitempty"`
 }
 
 // ErrorResponse is returned on any failure.
