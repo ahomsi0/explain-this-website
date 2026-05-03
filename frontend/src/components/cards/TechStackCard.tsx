@@ -75,15 +75,15 @@ export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
     return confOrder[a.confidence] - confOrder[b.confidence];
   });
 
+  const isSingle = sorted.length === 1;
+
   return (
-    <CardShell>
+    <CardShell className={isSingle ? "w-full sm:max-w-sm" : ""}>
       <CardHeader title="Tech Stack" badge={`${techStack.length} found`} badgeColor="violet" />
       <div className="p-4">
         <div className="flex flex-col gap-3">
-          {sorted.length === 1 ? (
-            <div className="w-full sm:max-w-xs">
-              <TechCard key={`${sorted[0].category}:${sorted[0].name}`} tech={sorted[0]} />
-            </div>
+          {isSingle ? (
+            <TechCard key={`${sorted[0].category}:${sorted[0].name}`} tech={sorted[0]} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {sorted.map((t) => (
