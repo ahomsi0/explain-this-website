@@ -42,13 +42,13 @@ export function FontAuditCard({ fontAudit }: { fontAudit: FontAudit }) {
           </div>
         )}
         <div className="flex flex-col gap-2">
-          {fontAudit.families.map((f) => (
+          {(fontAudit.families ?? []).map((f) => (
             <div key={f.family} className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
                 <span className="text-xs font-medium text-zinc-200">{f.family}</span>
-                {f.weights.length > 0 && (
+                {(f.weights ?? []).length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {f.weights.map((w) => (
+                    {(f.weights ?? []).map((w) => (
                       <span key={w} className="text-[9px] font-mono text-zinc-500 bg-zinc-800/60 rounded px-1 py-px">{w}</span>
                     ))}
                   </div>

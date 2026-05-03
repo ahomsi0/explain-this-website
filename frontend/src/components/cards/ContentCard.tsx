@@ -36,11 +36,11 @@ export function ContentCard({ contentStats }: { contentStats: ContentStats }) {
           </div>
         </div>
 
-        {contentStats.topKeywords.length > 0 && (
+        {(contentStats.topKeywords?.length ?? 0) > 0 && (
           <div>
             <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider mb-2">Top Keywords</p>
             <div className="flex flex-wrap gap-1.5">
-              {contentStats.topKeywords.map((kw) => (
+              {(contentStats.topKeywords ?? []).map((kw) => (
                 <span key={kw} className="text-[11px] text-zinc-400 bg-zinc-800 border border-zinc-700 px-2 py-0.5 rounded">
                   {kw}
                 </span>

@@ -75,6 +75,12 @@ func ExtractFontAudit(doc *html.Node, rawHTML string) model.FontAudit {
 	if unique == nil {
 		unique = []model.FontEntry{}
 	}
+	// Normalize nil Weights slices to empty arrays so JSON serializes as [] not null.
+	for i := range unique {
+		if unique[i].Weights == nil {
+			unique[i].Weights = []string{}
+		}
+	}
 
 	totalWeights := 0
 	for _, e := range unique {
