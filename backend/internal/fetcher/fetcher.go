@@ -34,11 +34,11 @@ const chromeUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
 	"AppleWebKit/537.36 (KHTML, like Gecko) " +
 	"Chrome/124.0.0.0 Safari/537.36"
 
-// FetchHTML retrieves the raw HTML of the given URL.
-func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, error) {
+// FetchHTML retrieves the raw HTML of the given URL and returns the response headers.
+func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, http.Header, error) {
 	// Pre-flight SSRF check (early rejection before spending resources on a connection).
 	if err := validateNoSSRF(targetURL); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
@@ -107,7 +107,7 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, e
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("could not build request: %w", err)
+		return "", nil, fmt.Errorf("could not build request: %w", err)
 	}
 
 	req.Header.Set("User-Agent", chromeUA)
@@ -117,25 +117,27 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, e
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", friendlyFetchError(err)
+		return "", nil, friendlyFetchError(err)
 	}
 	defer resp.Body.Close()
 
 	if err := friendlyStatusError(resp.StatusCode, targetURL); err != nil {
-		return "", err
+		return "", nil, err
 	}
+
+	respHeaders := resp.Header.Clone()
 
 	ct := resp.Header.Get("Content-Type")
 	if ct != "" && !strings.Contains(ct, "text/html") && !strings.Contains(ct, "application/xhtml") {
-		return "", fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s) — try the homepage instead", ct)
+		return "", nil, fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s) — try the homepage instead", ct)
 	}
 
 	body, err := readBody(resp, maxBytes)
 	if err != nil {
-		return "", fmt.Errorf("failed reading page content: %w", err)
+		return "", nil, fmt.Errorf("failed reading page content: %w", err)
 	}
 
-	return body, nil
+	return body, respHeaders, nil
 }
 
 // readBody handles gzip-encoded responses (since we request gzip explicitly,

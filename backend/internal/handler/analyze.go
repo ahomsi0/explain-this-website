@@ -68,7 +68,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
 
-		rawHTML, err := fetcher.FetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
+		rawHTML, respHeaders, err := fetcher.FetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
 		if err != nil {
 			writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
 			return
@@ -83,6 +83,8 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 		// Persist result so it can be retrieved via GET /api/report/:id.
 		result.ReportID = globalStore.save(result)
+
+		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(result)
