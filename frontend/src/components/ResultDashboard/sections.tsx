@@ -15,6 +15,8 @@ import { PerformanceCard }       from "../cards/PerformanceCard";
 import { ActionableOpportunitiesCard } from "../cards/ActionableOpportunitiesCard";
 import { ImageAuditCard }        from "../cards/ImageAuditCard";
 import { SiteFreshnessCard }     from "../cards/SiteFreshnessCard";
+import { FontAuditCard }         from "../cards/FontAuditCard";
+import { DomainInfoCard }        from "../cards/DomainInfoCard";
 import { SecurityHeadersCard }   from "../cards/SecurityHeadersCard";
 import { LinkCheckCard }         from "../cards/LinkCheckCard";
 import { ColorPaletteCard }      from "../cards/ColorPaletteCard";
@@ -78,6 +80,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           </div>
 
           <SiteFreshnessCard freshness={result.siteFreshness} />
+          {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
         </div>
       );
 
@@ -119,6 +122,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
             <ImageAuditCard audit={result.imageAudit} />
+            <FontAuditCard fontAudit={result.fontAudit} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
             {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
