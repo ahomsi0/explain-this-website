@@ -4,7 +4,7 @@ export function CardShell({ children, className = "" }: {
   className?: string;
 }) {
   return (
-    <div className={`card-shell rounded-lg overflow-hidden border border-zinc-800 border-l-[2px] border-l-violet-700 ${className}`}>
+    <div className={`rounded-lg border border-zinc-800 bg-zinc-900 ${className}`}>
       {children}
     </div>
   );

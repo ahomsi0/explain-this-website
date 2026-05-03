@@ -62,7 +62,7 @@ export function Sidebar({
               onClick={() => onSelect(item.id)}
               className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 isActive
-                  ? "bg-violet-500/10 text-violet-300 border border-violet-500/30"
+                  ? "bg-violet-500/10 text-violet-300 border border-transparent shadow-[inset_3px_0_0_#7c3aed]"
                   : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent"
               }`}
             >

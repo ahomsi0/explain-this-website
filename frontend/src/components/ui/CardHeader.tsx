@@ -14,9 +14,8 @@ export function CardHeader({ title, badge, badgeColor = "violet" }: {
   badgeColor?: BadgeColor;
 }) {
   return (
-    <div className="card-header flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800/60">
-      <div className="w-[5px] h-[5px] rounded-full bg-violet-600 shrink-0 opacity-70" />
-      <span className="text-[10px] font-bold text-violet-300 uppercase tracking-wider flex-1 leading-none">
+    <div className="flex items-center gap-2 px-4 pt-4 pb-0">
+      <span className="text-xs font-semibold text-violet-400 uppercase tracking-wider flex-1 leading-none">
         {title}
       </span>
       {badge !== undefined && (
