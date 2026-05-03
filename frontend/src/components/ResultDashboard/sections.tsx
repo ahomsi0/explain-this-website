@@ -15,6 +15,11 @@ import { PerformanceCard }       from "../cards/PerformanceCard";
 import { ActionableOpportunitiesCard } from "../cards/ActionableOpportunitiesCard";
 import { ImageAuditCard }        from "../cards/ImageAuditCard";
 import { SiteFreshnessCard }     from "../cards/SiteFreshnessCard";
+import { SecurityHeadersCard }   from "../cards/SecurityHeadersCard";
+import { LinkCheckCard }         from "../cards/LinkCheckCard";
+import { ColorPaletteCard }      from "../cards/ColorPaletteCard";
+import { VagueLanguageCard }     from "../cards/VagueLanguageCard";
+import { IntentAlignmentCard }   from "../cards/IntentAlignmentCard";
 
 export type SectionId = "overview" | "tech" | "seo" | "ux" | "performance" | "conversion";
 
@@ -87,6 +92,11 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-3">
           <SEOAuditCard seoChecks={result.seoChecks} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <SecurityHeadersCard checks={result.securityHeaders} />
+            <LinkCheckCard linkCheck={result.linkCheck} />
+          </div>
+          <IntentAlignmentCard intentAlignment={result.intentAlignment} />
         </div>
       );
 
@@ -95,6 +105,10 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-3">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <ColorPaletteCard colorPalette={result.colorPalette} />
+            <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
+          </div>
         </div>
       );
 

@@ -120,6 +120,16 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
               <MetricTile label="Conversion Score"   value={result.conversionScores.overall}               suffix="/100" valueClass={scoreColor(result.conversionScores.overall)} />
               <MetricTile label="Tech Stack"         value={result.techStack.length}                        suffix=" tools" valueClass="text-zinc-100" />
               <MetricTile label="Freshness"          value={result.siteFreshness.copyrightYear || result.siteFreshness.rating} valueClass={freshnessColor(result.siteFreshness.rating)} />
+              {result.securityHeaders.length > 0 && (() => {
+                const secPass = result.securityHeaders.filter(h => h.status === "pass").length;
+                const secTotal = result.securityHeaders.length;
+                const secColor = secPass >= Math.ceil(secTotal * 0.8) ? "text-emerald-400" : secPass >= Math.ceil(secTotal * 0.5) ? "text-amber-400" : "text-red-400";
+                return <MetricTile label="Security Headers" value={`${secPass}/${secTotal}`} valueClass={secColor} />;
+              })()}
+              {result.linkCheck.checked > 0 && (() => {
+                const linkColor = result.linkCheck.broken === 0 ? "text-emerald-400" : result.linkCheck.broken <= 2 ? "text-amber-400" : "text-red-400";
+                return <MetricTile label="Broken Links" value={result.linkCheck.broken} valueClass={linkColor} />;
+              })()}
             </div>
           </div>
 

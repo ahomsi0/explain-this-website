@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ColorPalette } from "../../types/analysis";
 
 function contrastColor(hex: string): string {
@@ -11,11 +11,20 @@ function contrastColor(hex: string): string {
 
 export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette }) {
   const [copied, setCopied] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear any pending timer when the component unmounts.
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   function copyHex(hex: string) {
     navigator.clipboard.writeText(hex).catch(() => {});
     setCopied(hex);
-    setTimeout(() => setCopied(null), 1500);
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(null), 1500);
   }
 
   if (colorPalette.colors.length === 0) {

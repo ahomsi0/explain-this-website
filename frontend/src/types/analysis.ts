@@ -146,6 +146,11 @@ export interface LighthouseScores {
   seo: number;
 }
 
+export interface ThirdPartyEntity {
+  name: string;
+  transferSize: number; // bytes
+}
+
 export interface StrategyData {
   lighthouse: LighthouseScores;
   fcp: CoreWebVital;
@@ -157,6 +162,7 @@ export interface StrategyData {
   fieldCls?: CoreWebVital;
   fieldInp?: CoreWebVital;
   fieldFcp?: CoreWebVital;
+  thirdParties?: ThirdPartyEntity[];
 }
 
 export interface PerformanceResult {

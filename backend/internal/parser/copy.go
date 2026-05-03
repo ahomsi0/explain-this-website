@@ -8,39 +8,40 @@ import (
 )
 
 var vagueList = []struct {
+	re     *regexp.Regexp
 	phrase string
 	reason string
 }{
-	{"best-in-class", "No evidence or comparison to support this claim"},
-	{"world-class", "Overused superlative — replace with a specific differentiator"},
-	{"industry-leading", "Requires proof — what metric makes it industry-leading?"},
-	{"cutting-edge", "Vague — what specific technology or approach is new?"},
-	{"state-of-the-art", "Overused — replace with what is actually new about it"},
-	{"innovative", "Everyone claims innovation — what specifically is new?"},
-	{"revolutionary", "Extraordinary claims need extraordinary evidence"},
-	{"groundbreaking", "Extraordinary claims need extraordinary evidence"},
-	{"seamless", "Vague — what specifically is frictionless?"},
-	{"robust", "Vague technical adjective — be specific about resilience"},
-	{"scalable", "Vague — what scale? What load? Add numbers"},
-	{"comprehensive", "Overused — list what is actually included instead"},
-	{"holistic", "Jargon with no specific meaning in most contexts"},
-	{"synergy", "Corporate cliché — replace with what actually combines"},
-	{"leverage", "Jargon — use 'use' or 'apply' instead"},
-	{"empower", "Overused — describe the concrete capability instead"},
-	{"transformative", "Requires proof — what specifically changes?"},
-	{"game-changing", "Requires proof — what specifically changes?"},
-	{"next-generation", "Vague — what generation and what is new about it?"},
-	{"next-gen", "Vague — what generation and what is new about it?"},
-	{"turnkey", "Jargon — replace with what is actually included"},
-	{"end-to-end", "Overused — specify the actual scope instead"},
-	{"best practices", "Vague — which practices? Specified by whom?"},
-	{"thought leader", "Self-applied label — let readers judge expertise"},
-	{"disruptive", "Overused in tech marketing — be specific about impact"},
-	{"paradigm shift", "Jargon — describe the actual change"},
-	{"move the needle", "Business jargon — replace with a measurable outcome"},
-	{"low-hanging fruit", "Business jargon — describe the actual opportunity"},
-	{"deep dive", "Business jargon — say 'detailed look' or 'analysis'"},
-	{"mission-critical", "Overused — describe the actual consequence of failure"},
+	{regexp.MustCompile(`(?i)\bbest-in-class\b`), "best-in-class", "No evidence or comparison to support this claim"},
+	{regexp.MustCompile(`(?i)\bworld-class\b`), "world-class", "Overused superlative — replace with a specific differentiator"},
+	{regexp.MustCompile(`(?i)\bindustry-leading\b`), "industry-leading", "Requires proof — what metric makes it industry-leading?"},
+	{regexp.MustCompile(`(?i)\bcutting-edge\b`), "cutting-edge", "Vague — what specific technology or approach is new?"},
+	{regexp.MustCompile(`(?i)\bstate-of-the-art\b`), "state-of-the-art", "Overused — replace with what is actually new about it"},
+	{regexp.MustCompile(`(?i)\binnovative\b`), "innovative", "Everyone claims innovation — what specifically is new?"},
+	{regexp.MustCompile(`(?i)\brevolutionary\b`), "revolutionary", "Extraordinary claims need extraordinary evidence"},
+	{regexp.MustCompile(`(?i)\bgroundbreaking\b`), "groundbreaking", "Extraordinary claims need extraordinary evidence"},
+	{regexp.MustCompile(`(?i)\bseamless\b`), "seamless", "Vague — what specifically is frictionless?"},
+	{regexp.MustCompile(`(?i)\brobust\b`), "robust", "Vague technical adjective — be specific about resilience"},
+	{regexp.MustCompile(`(?i)\bscalable\b`), "scalable", "Vague — what scale? What load? Add numbers"},
+	{regexp.MustCompile(`(?i)\bcomprehensive\b`), "comprehensive", "Overused — list what is actually included instead"},
+	{regexp.MustCompile(`(?i)\bholistic\b`), "holistic", "Jargon with no specific meaning in most contexts"},
+	{regexp.MustCompile(`(?i)\bsynergy\b`), "synergy", "Corporate cliché — replace with what actually combines"},
+	{regexp.MustCompile(`(?i)\bleverage\b`), "leverage", "Jargon — use 'use' or 'apply' instead"},
+	{regexp.MustCompile(`(?i)\bempower\b`), "empower", "Overused — describe the concrete capability instead"},
+	{regexp.MustCompile(`(?i)\btransformative\b`), "transformative", "Requires proof — what specifically changes?"},
+	{regexp.MustCompile(`(?i)\bgame-changing\b`), "game-changing", "Requires proof — what specifically changes?"},
+	{regexp.MustCompile(`(?i)\bnext-generation\b`), "next-generation", "Vague — what generation and what is new about it?"},
+	{regexp.MustCompile(`(?i)\bnext-gen\b`), "next-gen", "Vague — what generation and what is new about it?"},
+	{regexp.MustCompile(`(?i)\bturnkey\b`), "turnkey", "Jargon — replace with what is actually included"},
+	{regexp.MustCompile(`(?i)\bend-to-end\b`), "end-to-end", "Overused — specify the actual scope instead"},
+	{regexp.MustCompile(`(?i)\bbest practices\b`), "best practices", "Vague — which practices? Specified by whom?"},
+	{regexp.MustCompile(`(?i)\bthought leader\b`), "thought leader", "Self-applied label — let readers judge expertise"},
+	{regexp.MustCompile(`(?i)\bdisruptive\b`), "disruptive", "Overused in tech marketing — be specific about impact"},
+	{regexp.MustCompile(`(?i)\bparadigm shift\b`), "paradigm shift", "Jargon — describe the actual change"},
+	{regexp.MustCompile(`(?i)\bmove the needle\b`), "move the needle", "Business jargon — replace with a measurable outcome"},
+	{regexp.MustCompile(`(?i)\blow-hanging fruit\b`), "low-hanging fruit", "Business jargon — describe the actual opportunity"},
+	{regexp.MustCompile(`(?i)\bdeep dive\b`), "deep dive", "Business jargon — say 'detailed look' or 'analysis'"},
+	{regexp.MustCompile(`(?i)\bmission-critical\b`), "mission-critical", "Overused — describe the actual consequence of failure"},
 }
 
 var reSpecificity = []*regexp.Regexp{
@@ -67,11 +68,9 @@ func AnalyzeCopy(visibleText string) model.CopyAnalysis {
 		return model.CopyAnalysis{Score: 100, Label: "Sharp", VaguePhrases: []model.VaguePhrase{}, SpecificityHints: []string{}}
 	}
 
-	lower := strings.ToLower(visibleText)
-
 	var found []model.VaguePhrase
 	for _, v := range vagueList {
-		if strings.Contains(lower, v.phrase) {
+		if v.re.MatchString(visibleText) {
 			found = append(found, model.VaguePhrase{Phrase: v.phrase, Reason: v.reason})
 		}
 	}
