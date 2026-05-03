@@ -77,21 +77,23 @@ function StrategyView({ data }: { data: StrategyData }) {
   return (
     <>
       {/* Lighthouse scores */}
-      <div className="grid grid-cols-4 gap-2 mb-4 pb-4 border-b border-zinc-800">
-        <ScoreGauge label="Performance"    score={lh.performance} />
-        <ScoreGauge label="Accessibility"  score={lh.accessibility} />
-        <ScoreGauge label="Best Practices" score={lh.bestPractices} />
-        <ScoreGauge label="SEO"            score={lh.seo} />
-      </div>
+      {lh && (
+        <div className="grid grid-cols-4 gap-2 mb-4 pb-4 border-b border-zinc-800">
+          <ScoreGauge label="Performance"    score={lh.performance ?? 0} />
+          <ScoreGauge label="Accessibility"  score={lh.accessibility ?? 0} />
+          <ScoreGauge label="Best Practices" score={lh.bestPractices ?? 0} />
+          <ScoreGauge label="SEO"            score={lh.seo ?? 0} />
+        </div>
+      )}
 
       {/* Lab metrics */}
       <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Lab Data (Simulated)</p>
       <div className="mb-3">
-        <VitalRow label="Largest Contentful Paint" vital={lcp} />
-        <VitalRow label="First Contentful Paint"   vital={fcp} />
-        <VitalRow label="Total Blocking Time"       vital={tbt} />
-        <VitalRow label="Cumulative Layout Shift"   vital={cls} />
-        <VitalRow label="Speed Index"               vital={speedIndex} />
+        {lcp && <VitalRow label="Largest Contentful Paint" vital={lcp} />}
+        {fcp && <VitalRow label="First Contentful Paint"   vital={fcp} />}
+        {tbt && <VitalRow label="Total Blocking Time"       vital={tbt} />}
+        {cls && <VitalRow label="Cumulative Layout Shift"   vital={cls} />}
+        {speedIndex && <VitalRow label="Speed Index"        vital={speedIndex} />}
       </div>
 
       {/* Field data (CrUX real-user metrics) */}

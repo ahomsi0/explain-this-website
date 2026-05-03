@@ -38,7 +38,7 @@ function Flag({ label, count, severity }: { label: string; count: number; severi
 }
 
 export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
-  if (audit.total === 0) return null;
+  if (!audit || audit.total === 0) return null;
 
   const { label, cls } = ratingFromPct(audit.modernPct, audit.total);
   const legacy = audit.jpg + audit.png + audit.gif;

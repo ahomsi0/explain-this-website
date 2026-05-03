@@ -8,6 +8,7 @@ import { DownloadButton } from "../ui/DownloadButton";
 import { ShareButton } from "../ui/ShareButton";
 import { Sidebar, MobileSectionNav } from "./Sidebar";
 import { SECTIONS, SectionView, type SectionId } from "./sections";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -161,7 +162,9 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
               <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-2xl leading-relaxed">{currentMeta.description}</p>
             </div>
 
-            <SectionView id={activeSection} result={result} />
+            <ErrorBoundary key={activeSection}>
+              <SectionView id={activeSection} result={result} />
+            </ErrorBoundary>
           </div>
         </main>
       </div>
