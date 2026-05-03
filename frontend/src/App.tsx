@@ -1,17 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAnalysis } from "./hooks/useAnalysis";
-import { URLInput } from "./components/UrlInput/UrlInput";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBanner } from "./components/ui/ErrorBanner";
 import { ResultDashboard } from "./components/ResultDashboard/ResultDashboard";
-import { LogoWordmark } from "./components/ui/Logo";
 import { fetchReport } from "./services/analyzeApi";
 import type { AnalysisResult } from "./types/analysis";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import { AuthModal } from "./components/auth/AuthModal";
-import { HistoryModal } from "./components/auth/HistoryModal";
-import { UserMenu } from "./components/auth/UserMenu";
+import { LandingPage } from "./components/Landing/LandingPage";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -84,84 +80,14 @@ function AppInner() {
   return (
     <div className="min-h-screen" style={{ background: "hsl(0 0% 4%)" }}>
       {status === "idle" && (
-        <>
-          {/* Top bar with auth controls — visible on the landing page so users can sign in / view history without running an analysis first */}
-          <header className="absolute top-0 left-0 right-0 px-4 sm:px-6 h-12 flex items-center justify-end gap-2 z-10">
-            {user ? (
-              <>
-                <button
-                  onClick={() => setHistoryOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                  </svg>
-                  History
-                </button>
-                <UserMenu onShowHistory={() => setHistoryOpen(true)} />
-              </>
-            ) : (
-              <button
-                onClick={() => setAuthOpen(true)}
-                className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
-              >
-                Sign in
-              </button>
-            )}
-          </header>
-
-          <div className="flex flex-col items-center justify-center min-h-screen px-4">
-            <div className="w-full max-w-2xl fade-up">
-              <div className="flex justify-center mb-10">
-                <LogoWordmark size={32} />
-              </div>
-
-              <h1 className="text-center text-4xl sm:text-5xl font-bold tracking-tight text-zinc-100 leading-tight">
-                Analyze any website<br />
-                <span className="text-zinc-500">in seconds.</span>
-              </h1>
-              <p className="mt-5 text-center text-zinc-500 text-base leading-relaxed">
-                Paste a URL — get tech stack, SEO audit, UX signals, and actionable recommendations.
-              </p>
-
-              <div className="mt-10">
-                <URLInput onAnalyze={handleAnalyze} isLoading={false} />
-              </div>
-
-              {user && (
-                <p className="mt-6 text-center text-xs text-zinc-500">
-                  Signed in as <span className="text-zinc-300">{user.email}</span> ·
-                  {" "}
-                  <button
-                    onClick={() => setHistoryOpen(true)}
-                    className="text-violet-400 hover:text-violet-300 underline underline-offset-2"
-                  >
-                    view your audit history
-                  </button>
-                </p>
-              )}
-
-              {!user && (
-                <p className="mt-6 text-center text-xs text-zinc-500">
-                  <button
-                    onClick={() => setAuthOpen(true)}
-                    className="text-violet-400 hover:text-violet-300"
-                  >
-                    Sign up
-                  </button>
-                  {" "}to save your audits and access them anytime.
-                </p>
-              )}
-            </div>
-          </div>
-
-          <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-          <HistoryModal
-            open={historyOpen}
-            onClose={() => setHistoryOpen(false)}
-            onOpenAudit={(id) => { window.location.href = `/report/${id}`; }}
-          />
-        </>
+        <LandingPage
+          user={user}
+          onAnalyze={handleAnalyze}
+          authOpen={authOpen}
+          setAuthOpen={setAuthOpen}
+          historyOpen={historyOpen}
+          setHistoryOpen={setHistoryOpen}
+        />
       )}
 
       {status === "loading" && <LoadingSpinner url={currentUrl} serverSignaled={serverSignaled} />}

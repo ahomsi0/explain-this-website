@@ -44,6 +44,8 @@ func Start(cfg config.Config) error {
 	// Auth endpoints
 	mux.HandleFunc("POST /api/auth/signup", handler.SignupHandler())
 	mux.HandleFunc("POST /api/auth/login", handler.LoginHandler())
+	mux.HandleFunc("POST /api/auth/forgot-password", handler.ForgotPasswordHandler())
+	mux.HandleFunc("POST /api/auth/reset-password", handler.ResetPasswordHandler())
 	mux.HandleFunc("GET /api/auth/me", auth.RequireAuth(handler.MeHandler()))
 
 	// User audit history (account-only)

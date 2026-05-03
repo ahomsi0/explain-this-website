@@ -88,6 +88,17 @@ CREATE TABLE IF NOT EXISTS audits (
 
 CREATE INDEX IF NOT EXISTS audits_user_id_created_at_idx
     ON audits (user_id, created_at DESC) WHERE user_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS password_resets (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash   TEXT NOT NULL,
+    expires_at  TIMESTAMPTZ NOT NULL,
+    used_at     TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS password_resets_user_id_idx ON password_resets (user_id);
 `
 
 func migrate(ctx context.Context) error {

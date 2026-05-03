@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 
 type Mode = "login" | "signup";
 
@@ -12,6 +13,7 @@ export function AuthModal({
   initialMode?: Mode;
   onClose: () => void;
 }) {
+  const [forgotOpen, setForgotOpen] = useState(false);
   const { login, signup } = useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
@@ -135,7 +137,18 @@ export function AuthModal({
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Password</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Password</label>
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={() => setForgotOpen(true)}
+                    className="text-[10px] text-violet-400 hover:text-violet-300"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -182,6 +195,13 @@ export function AuthModal({
           </form>
         </div>
       </div>
+
+      <ForgotPasswordModal
+        open={forgotOpen}
+        initialEmail={email}
+        onClose={() => setForgotOpen(false)}
+        onBackToSignIn={() => setForgotOpen(false)}
+      />
     </div>
   );
 }
