@@ -87,6 +87,33 @@ export function ForgotPasswordModal({
     }
   }
 
+  // Local cooldown so users can't hammer the resend button. Backend already
+  // invalidates prior codes whenever a new one is issued, so the UX is clear:
+  // hit resend → previous code stops working.
+  const [resendCooldown, setResendCooldown] = useState(0);
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  async function resendCode() {
+    if (resendCooldown > 0 || busy) return;
+    setError(null);
+    setInfo(null);
+    setBusy(true);
+    try {
+      await requestPasswordReset(email);
+      setInfo(`A fresh code was sent to ${email}. Any previous code is now invalid.`);
+      setCode("");
+      setResendCooldown(30); // 30s before they can hit it again
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not resend code");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
@@ -196,13 +223,24 @@ export function ForgotPasswordModal({
               >
                 {busy ? "Resetting…" : "Reset password"}
               </button>
-              <button
-                type="button"
-                onClick={() => setStep("email")}
-                className="text-[10px] text-zinc-500 hover:text-zinc-300 text-center mt-1"
-              >
-                ← Wrong email? Use a different one
-              </button>
+
+              <div className="flex items-center justify-between mt-1">
+                <button
+                  type="button"
+                  onClick={() => setStep("email")}
+                  className="text-[10px] text-zinc-500 hover:text-zinc-300"
+                >
+                  ← Wrong email?
+                </button>
+                <button
+                  type="button"
+                  onClick={resendCode}
+                  disabled={resendCooldown > 0 || busy}
+                  className="text-[10px] text-violet-400 hover:text-violet-300 disabled:text-zinc-600 disabled:cursor-not-allowed"
+                >
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Didn't get it? Resend code"}
+                </button>
+              </div>
             </form>
           )}
         </div>

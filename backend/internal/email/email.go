@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -71,8 +72,10 @@ func send(ctx context.Context, to, subject, text, html string) error {
 		return fmt.Errorf("resend request: %w", err)
 	}
 	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("resend returned %d", resp.StatusCode)
+		return fmt.Errorf("resend %d: %s", resp.StatusCode, string(respBody))
 	}
+	log.Printf("[email] resend ok: %s", string(respBody))
 	return nil
 }

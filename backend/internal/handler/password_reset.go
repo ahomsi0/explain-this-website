@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"log"
 	"math/big"
 	"net/http"
 	"net/mail"
@@ -84,37 +85,40 @@ func issueResetCode(emailAddr string) {
 	var userID int64
 	err := db.Pool.QueryRow(ctx, `SELECT id FROM users WHERE email = $1`, emailAddr).Scan(&userID)
 	if err != nil {
-		// Either no such user or DB error — silently drop.
+		log.Printf("[reset] no user for email=%s", emailAddr)
 		return
 	}
 
 	code, err := generateResetCode()
 	if err != nil {
+		log.Printf("[reset] gen code err: %v", err)
 		return
 	}
 	hash, err := auth.HashPassword(code)
 	if err != nil {
+		log.Printf("[reset] hash err: %v", err)
 		return
 	}
 	expires := time.Now().Add(resetCodeTTL)
 
-	// Invalidate any prior unused codes for this user, then insert the new one.
-	_, err = db.Pool.Exec(ctx,
-		`UPDATE password_resets SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL`, userID)
-	if err != nil {
+	if _, err := db.Pool.Exec(ctx,
+		`UPDATE password_resets SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL`, userID); err != nil {
+		log.Printf("[reset] invalidate prior codes err: %v", err)
 		return
 	}
-	_, err = db.Pool.Exec(ctx,
+	if _, err := db.Pool.Exec(ctx,
 		`INSERT INTO password_resets (user_id, code_hash, expires_at) VALUES ($1, $2, $3)`,
-		userID, hash, expires)
-	if err != nil {
+		userID, hash, expires); err != nil {
+		log.Printf("[reset] insert code err: %v", err)
 		return
 	}
 
+	log.Printf("[reset] code issued for email=%s userID=%d — sending email…", emailAddr, userID)
 	if err := email.SendResetCode(ctx, emailAddr, code); err != nil {
-		// Best-effort: log but don't surface to client.
-		_ = err
+		log.Printf("[reset] send email FAILED for %s: %v (code was: %s)", emailAddr, err, code)
+		return
 	}
+	log.Printf("[reset] email send ok for %s", emailAddr)
 }
 
 // ResetPasswordHandler verifies a reset code and sets a new password.
