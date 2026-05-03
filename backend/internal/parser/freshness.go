@@ -147,6 +147,11 @@ func auditFreshness(doc *html.Node, rawHTML string) model.SiteFreshness {
 		}
 	}
 
+	// Normalize nil slice to empty so JSON serializes as [] not null —
+	// frontend then doesn't have to .signals?.length defensively.
+	if signals == nil {
+		signals = []string{}
+	}
 	return model.SiteFreshness{
 		CopyrightYear: copyrightYear,
 		LatestDate:    latestDate,
