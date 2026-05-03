@@ -47,7 +47,9 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	ux := analyzeUX(doc, rawHTML)
 	pageStats := computePageStats(doc, sourceURL, rawHTML)
 	contentStats := analyzeContent(visibleText)
+	copyAnalysis := AnalyzeCopy(visibleText)
 	imageAudit := auditImages(doc)
+	intentAlignment := CheckIntentAlignment(doc, rawHTML)
 	freshness := auditFreshness(doc, rawHTML)
 	colorPalette := ExtractColorPalette(doc, rawHTML)
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
@@ -125,6 +127,8 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		AIDetection:        DetectAIBuilder(rawHTML),
 		Performance:        perf,
 		ImageAudit:         imageAudit,
+		CopyAnalysis:       copyAnalysis,
+		IntentAlignment:    intentAlignment,
 		SiteFreshness:      freshness,
 		ColorPalette:       colorPalette,
 	}, nil
