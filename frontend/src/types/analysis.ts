@@ -191,6 +191,13 @@ export interface FontAudit {
   hasPerfIssue: boolean;
 }
 
+export interface DomainInfo {
+  registeredAt: string; // "YYYY-MM-DD"
+  expiresAt: string;    // "YYYY-MM-DD" or ""
+  registrar: string;
+  ageYears: number;     // -1 if unknown
+}
+
 export interface SecurityHeaderCheck {
   id: string;
   label: string;
@@ -290,6 +297,7 @@ export interface AnalysisResult {
   copyAnalysis: CopyAnalysis;
   intentAlignment: IntentAlignment;
   fontAudit: FontAudit;
+  domainInfo?: DomainInfo;
 }
 
 export interface AnalysisError {

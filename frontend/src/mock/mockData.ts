@@ -213,4 +213,10 @@ export const mockAnalysisResult: AnalysisResult = {
     totalWeights: 6,
     hasPerfIssue: false,
   },
+  domainInfo: {
+    registeredAt: "2018-04-12",
+    expiresAt: "2026-04-12",
+    registrar: "Cloudflare, Inc.",
+    ageYears: 7,
+  },
 };
