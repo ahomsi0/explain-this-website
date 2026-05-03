@@ -28,12 +28,12 @@ func fromAddress() string {
 // is configured (RESEND_API_KEY unset) it logs the code instead so dev still works.
 func SendResetCode(ctx context.Context, to, code string) error {
 	subject := "Your password reset code"
-	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 15 minutes. If you didn't request a reset, you can safely ignore this email.", code)
+	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.", code)
 	html := fmt.Sprintf(`<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1f2937">
   <h2 style="color:#111827;margin:0 0 16px">Reset your password</h2>
   <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#4b5563">Use this code to set a new password:</p>
   <div style="font-size:32px;font-weight:700;letter-spacing:6px;color:#7c3aed;background:#f5f3ff;padding:16px;border-radius:8px;text-align:center;margin:0 0 16px;font-family:ui-monospace,monospace">%s</div>
-  <p style="margin:0;font-size:12px;color:#6b7280">This code expires in 15 minutes. If you didn't request a reset, you can safely ignore this email.</p>
+  <p style="margin:0;font-size:12px;color:#6b7280">This code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.</p>
 </div>`, code)
 	return send(ctx, to, subject, text, html)
 }

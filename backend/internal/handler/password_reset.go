@@ -18,7 +18,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-const resetCodeTTL = 15 * time.Minute
+const resetCodeTTL = 35 * time.Minute
 
 type forgotReq struct {
 	Email string `json:"email"`
