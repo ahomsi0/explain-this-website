@@ -58,23 +58,15 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
             fetchedAt={result.fetchedAt}
             aiDetection={result.aiDetection}
           />
-
-          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
-            <InsightCard
-              intent={result.intent}
-              biggestOpportunity={result.biggestOpportunity}
-              competitorInsight={result.competitorInsight}
-            />
-            {(result.eli5 ?? []).length > 0 && <ELI5Card items={result.eli5 ?? []} />}
-          </div>
-
+          <InsightCard
+            intent={result.intent}
+            biggestOpportunity={result.biggestOpportunity}
+            competitorInsight={result.competitorInsight}
+          />
+          {(result.eli5 ?? []).length > 0 && <ELI5Card items={result.eli5 ?? []} />}
           <ActionableOpportunitiesCard issues={result.prioritizedIssues ?? []} />
-
-          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
-            <WeakPointsCard weakPoints={result.weakPoints ?? []} />
-            <RecommendationsCard recommendations={result.recommendations ?? []} />
-          </div>
-
+          <WeakPointsCard weakPoints={result.weakPoints ?? []} />
+          <RecommendationsCard recommendations={result.recommendations ?? []} />
           <SiteFreshnessCard freshness={result.siteFreshness} />
           {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
         </div>
@@ -91,10 +83,8 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-2">
           <SEOAuditCard seoChecks={result.seoChecks} />
-          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
-            <SecurityHeadersCard checks={result.securityHeaders} />
-            <LinkCheckCard linkCheck={result.linkCheck} />
-          </div>
+          <SecurityHeadersCard checks={result.securityHeaders} />
+          <LinkCheckCard linkCheck={result.linkCheck} />
           <IntentAlignmentCard intentAlignment={result.intentAlignment} />
         </div>
       );
@@ -104,10 +94,8 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-2">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
-            <ColorPaletteCard colorPalette={result.colorPalette} />
-            <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
-          </div>
+          <ColorPaletteCard colorPalette={result.colorPalette} />
+          <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
         </div>
       );
 
@@ -115,13 +103,11 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-2">
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
-          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
-            {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
-            <ImageAuditCard audit={result.imageAudit} />
-            {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
-            {result.contentStats && <ContentCard contentStats={result.contentStats} />}
-            {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
-          </div>
+          {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
+          <ImageAuditCard audit={result.imageAudit} />
+          {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
+          {result.contentStats && <ContentCard contentStats={result.contentStats} />}
+          {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
         </div>
       );
 
