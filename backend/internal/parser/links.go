@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -128,15 +129,26 @@ func probeLink(target string) model.LinkCheckItem {
 		req2.Header.Set("User-Agent", req.Header.Get("User-Agent"))
 		resp2, err2 := linkClient.Do(req2)
 		if err2 == nil {
-			defer resp2.Body.Close()
+			io.Copy(io.Discard, resp2.Body)
+			resp2.Body.Close()
 			resp = resp2
 		}
 	}
 
 	item.Status = resp.StatusCode
-	if resp.Request != nil && resp.Request.URL.String() != target {
-		item.FinalURL = resp.Request.URL.String()
-		item.IsRedirect = true
+	if resp.Request != nil {
+		finalURL := resp.Request.URL.String()
+		if finalURL != target {
+			// Only flag as redirect if the host or path meaningfully changed.
+			parsedOrig, e1 := url.Parse(target)
+			parsedFinal, e2 := url.Parse(finalURL)
+			if e1 == nil && e2 == nil &&
+				(strings.ToLower(parsedOrig.Host) != strings.ToLower(parsedFinal.Host) ||
+					parsedOrig.Path != parsedFinal.Path) {
+				item.FinalURL = finalURL
+				item.IsRedirect = true
+			}
+		}
 	}
 	item.IsBroken = resp.StatusCode == 0 || resp.StatusCode >= 400
 	return item
