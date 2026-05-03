@@ -94,16 +94,6 @@ export function LandingPage({
         <div className="absolute top-[20%] -right-32 w-[400px] h-[400px] rounded-full bg-pink-500/5 blur-[100px]" />
       </div>
 
-      {/* Subtle grid backdrop */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
-
       <div className="relative z-10">
         {/* Top bar */}
         <header className="sticky top-0 backdrop-blur-md bg-zinc-950/40 border-b border-zinc-900/80 px-4 sm:px-6 h-14 flex items-center justify-between">
