@@ -148,15 +148,6 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
                 Sign in
               </button>
             )}
-            <button
-              onClick={onReset}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-violet-300 hover:text-violet-200 bg-violet-500/10 hover:bg-violet-500/15 border border-violet-500/30 transition-colors"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              <span className="hidden sm:inline">New Analysis</span>
-            </button>
           </div>
         </div>
       </header>

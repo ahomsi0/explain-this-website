@@ -149,15 +149,13 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
     <CardShell>
       <CardHeader title="Core Web Vitals" badge={badge} badgeColor={badgeColor} />
       <div className="p-4">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-1">
-            {performance.mobile && (
-              <TabButton active={strategy === "mobile"} onClick={() => setStrategy("mobile")}>Mobile</TabButton>
-            )}
-            {performance.desktop && (
-              <TabButton active={strategy === "desktop"} onClick={() => setStrategy("desktop")}>Desktop</TabButton>
-            )}
-          </div>
+        <div className="flex items-center justify-end gap-1 mb-2">
+          {performance.mobile && (
+            <TabButton active={strategy === "mobile"} onClick={() => setStrategy("mobile")}>Mobile</TabButton>
+          )}
+          {performance.desktop && (
+            <TabButton active={strategy === "desktop"} onClick={() => setStrategy("desktop")}>Desktop</TabButton>
+          )}
         </div>
 
         <p className="text-[11px] text-zinc-600 mb-4 leading-snug">

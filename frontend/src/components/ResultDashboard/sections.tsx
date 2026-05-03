@@ -51,8 +51,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
   switch (id) {
     case "overview":
       return (
-        <div className="flex flex-col gap-4">
-          {/* Site overview spans full width — height varies by site, no risk of dead column space */}
+        <div className="flex flex-col gap-2">
           <OverviewCard
             overview={result.overview}
             url={result.url}
@@ -60,23 +59,20 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
             aiDetection={result.aiDetection}
           />
 
-          {/* Insight + ELI5 side-by-side — both have similar shape so they balance well */}
-          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
             <InsightCard
               intent={result.intent}
               biggestOpportunity={result.biggestOpportunity}
               competitorInsight={result.competitorInsight}
             />
-            {result.eli5.length > 0 && <ELI5Card items={result.eli5} />}
+            {(result.eli5 ?? []).length > 0 && <ELI5Card items={result.eli5 ?? []} />}
           </div>
 
-          {/* The new full-width actionable opportunities card */}
-          <ActionableOpportunitiesCard issues={result.prioritizedIssues} />
+          <ActionableOpportunitiesCard issues={result.prioritizedIssues ?? []} />
 
-          {/* Weak points + recommendations — symmetric two-column layout */}
-          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
-            <WeakPointsCard weakPoints={result.weakPoints} />
-            <RecommendationsCard recommendations={result.recommendations} />
+          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
+            <WeakPointsCard weakPoints={result.weakPoints ?? []} />
+            <RecommendationsCard recommendations={result.recommendations ?? []} />
           </div>
 
           <SiteFreshnessCard freshness={result.siteFreshness} />
@@ -86,16 +82,16 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "tech":
       return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <TechStackCard techStack={result.techStack} />
         </div>
       );
 
     case "seo":
       return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <SEOAuditCard seoChecks={result.seoChecks} />
-          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
             <SecurityHeadersCard checks={result.securityHeaders} />
             <LinkCheckCard linkCheck={result.linkCheck} />
           </div>
@@ -105,10 +101,10 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "ux":
       return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
             <ColorPaletteCard colorPalette={result.colorPalette} />
             <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
           </div>
@@ -117,9 +113,9 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "performance":
       return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
-          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+          <div className="columns-1 lg:columns-2 gap-2 [&>*]:mb-2 [&>*]:break-inside-avoid">
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
             <ImageAuditCard audit={result.imageAudit} />
             {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
@@ -131,7 +127,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "conversion":
       return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <ConversionScoreCard scores={result.conversionScores} />
           <TrustEngagementCard ux={result.ux} />
         </div>

@@ -54,11 +54,11 @@ function TechCard({ tech }: { tech: TechItem }) {
 }
 
 export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
-  if (techStack.length === 0) {
+  if (!techStack || techStack.length === 0) {
     return (
       <CardShell>
-        <CardHeader title="Tech Stack" badge={`${techStack.length} found`} badgeColor="violet" />
-        <div className="p-4 text-center">
+        <CardHeader title="Tech Stack" badge="0 found" badgeColor="violet" />
+        <div className="p-4">
           <p className="text-xs text-zinc-500">No technologies detected on this page.</p>
         </div>
       </CardShell>
@@ -75,27 +75,20 @@ export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
     return confOrder[a.confidence] - confOrder[b.confidence];
   });
 
-  const isSingle = sorted.length === 1;
-
+  // Each tech rendered as its own top-level card. Wrap in a grid for layout.
   return (
-    <CardShell className={isSingle ? "w-full sm:max-w-sm" : ""}>
-      <CardHeader title="Tech Stack" badge={`${techStack.length} found`} badgeColor="violet" />
-      <div className="p-4">
-        <div className="flex flex-col gap-3">
-          {isSingle ? (
-            <TechCard key={`${sorted[0].category}:${sorted[0].name}`} tech={sorted[0]} />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {sorted.map((t) => (
-                <TechCard key={`${t.category}:${t.name}`} tech={t} />
-              ))}
-            </div>
-          )}
-          <p className="text-[11px] text-zinc-600 leading-relaxed px-1">
-            Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
-          </p>
-        </div>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-semibold text-violet-400 uppercase tracking-wider">{techStack.length} technolog{techStack.length === 1 ? "y" : "ies"} detected</p>
       </div>
-    </CardShell>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 items-start">
+        {sorted.map((t) => (
+          <TechCard key={`${t.category}:${t.name}`} tech={t} />
+        ))}
+      </div>
+      <p className="text-[11px] text-zinc-600 leading-relaxed px-1 mt-1">
+        Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
+      </p>
+    </div>
   );
 }
