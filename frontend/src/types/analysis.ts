@@ -212,7 +212,7 @@ export interface VaguePhrase {
 
 export interface CopyAnalysis {
   score: number;
-  label: string;
+  label: "Sharp" | "Mixed" | "Generic";
   vaguePhrases: VaguePhrase[];
   specificityHints: string[];
 }
