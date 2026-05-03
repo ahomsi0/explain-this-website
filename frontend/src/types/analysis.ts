@@ -172,6 +172,62 @@ export interface SiteFreshness {
   signals: string[];
 }
 
+export interface SecurityHeaderCheck {
+  id: string;
+  label: string;
+  status: "pass" | "warning" | "fail";
+  detail: string;
+}
+
+export interface LinkCheckItem {
+  url: string;
+  status: number;
+  finalUrl: string;
+  isRedirect: boolean;
+  isBroken: boolean;
+}
+
+export interface LinkCheckResult {
+  checked: number;
+  ok: number;
+  broken: number;
+  redirects: number;
+  items: LinkCheckItem[];
+}
+
+export interface ColorEntry {
+  hex: string;
+  frequency: number;
+}
+
+export interface ColorPalette {
+  themeColor: string;
+  colors: ColorEntry[];
+}
+
+export interface VaguePhrase {
+  phrase: string;
+  reason: string;
+}
+
+export interface CopyAnalysis {
+  score: number;
+  label: string;
+  vaguePhrases: VaguePhrase[];
+  specificityHints: string[];
+}
+
+export interface IntentCheck {
+  claim: string;
+  signal: string;
+  found: boolean;
+}
+
+export interface IntentAlignment {
+  score: number;
+  checks: IntentCheck[];
+}
+
 export interface ImageFormatAudit {
   total: number;
   webp: number;
@@ -209,6 +265,11 @@ export interface AnalysisResult {
   reportId?: string;
   imageAudit: ImageFormatAudit;
   siteFreshness: SiteFreshness;
+  securityHeaders: SecurityHeaderCheck[];
+  linkCheck: LinkCheckResult;
+  colorPalette: ColorPalette;
+  copyAnalysis: CopyAnalysis;
+  intentAlignment: IntentAlignment;
 }
 
 export interface AnalysisError {

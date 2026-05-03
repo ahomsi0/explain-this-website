@@ -152,4 +152,56 @@ export const mockAnalysisResult: AnalysisResult = {
     rating: "aging",
     signals: ["Copyright © 2024 found in footer"],
   },
+  securityHeaders: [
+    { id: "hsts",        label: "Strict-Transport-Security", status: "pass",    detail: "max-age=31536000 present" },
+    { id: "csp",         label: "Content-Security-Policy",   status: "fail",    detail: "Header not set — XSS risk" },
+    { id: "xframe",      label: "X-Frame-Options",           status: "pass",    detail: "SAMEORIGIN" },
+    { id: "xcontent",    label: "X-Content-Type-Options",    status: "pass",    detail: "nosniff" },
+    { id: "referrer",    label: "Referrer-Policy",           status: "warning", detail: "Set but uses unsafe-url" },
+    { id: "permissions", label: "Permissions-Policy",        status: "fail",    detail: "Header not set" },
+  ],
+  linkCheck: {
+    checked: 12,
+    ok: 9,
+    broken: 2,
+    redirects: 1,
+    items: [
+      { url: "https://twitter.com/old-handle",       status: 404, finalUrl: "",                                     isRedirect: false, isBroken: true },
+      { url: "https://docs.example.com/deprecated",  status: 404, finalUrl: "",                                     isRedirect: false, isBroken: true },
+      { url: "https://facebook.com/page",            status: 301, finalUrl: "https://facebook.com/newpage",         isRedirect: true,  isBroken: false },
+      { url: "https://linkedin.com/company/example", status: 200, finalUrl: "https://linkedin.com/company/example", isRedirect: false, isBroken: false },
+    ],
+  },
+  colorPalette: {
+    themeColor: "#6d28d9",
+    colors: [
+      { hex: "#6d28d9", frequency: 42 },
+      { hex: "#7c3aed", frequency: 31 },
+      { hex: "#a78bfa", frequency: 18 },
+      { hex: "#f59e0b", frequency: 14 },
+      { hex: "#10b981", frequency: 9  },
+      { hex: "#18181b", frequency: 87 },
+      { hex: "#f4f4f5", frequency: 53 },
+    ],
+  },
+  copyAnalysis: {
+    score: 42,
+    label: "Generic",
+    vaguePhrases: [
+      { phrase: "best-in-class",       reason: "No evidence or comparison to support this claim" },
+      { phrase: "innovative solutions", reason: "Used by 78% of pages we've analyzed — overused" },
+      { phrase: "seamless experience",  reason: "Vague — what specifically is seamless?" },
+    ],
+    specificityHints: ["Contains percentage figures", "Mentions specific product names"],
+  },
+  intentAlignment: {
+    score: 40,
+    checks: [
+      { claim: "Title says 'best' — comparison content expected", signal: "Comparison table or competitor names in body", found: false },
+      { claim: "Meta mentions 'pricing' — price elements expected", signal: "$ / per month / price text in body",           found: false },
+      { claim: "H1 topic matches title topic",                      signal: "H1 contains title keywords",                   found: true  },
+      { claim: "Title says 'free' — free offering expected",        signal: "'Free' prominently in body text",              found: false },
+      { claim: "Meta mentions 'guide' — numbered steps expected",   signal: "Ordered list or step-by-step content",         found: true  },
+    ],
+  },
 };

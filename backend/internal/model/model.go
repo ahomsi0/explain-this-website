@@ -149,6 +149,71 @@ type ImageFormatAudit struct {
 	ModernPct       int `json:"modernPct"`       // (webp+avif) / total * 100
 }
 
+// SecurityHeaderCheck is a single HTTP security-header audit result.
+type SecurityHeaderCheck struct {
+	ID     string `json:"id"`
+	Label  string `json:"label"`
+	Status string `json:"status"` // "pass" | "warning" | "fail"
+	Detail string `json:"detail"`
+}
+
+// LinkCheckItem is the result for a single link probe.
+type LinkCheckItem struct {
+	URL        string `json:"url"`
+	Status     int    `json:"status"`     // HTTP status code; 0 = unreachable
+	FinalURL   string `json:"finalUrl"`   // destination after any redirects
+	IsRedirect bool   `json:"isRedirect"` // true when FinalURL != URL
+	IsBroken   bool   `json:"isBroken"`   // true when status 0, 4xx, or 5xx
+}
+
+// LinkCheckResult summarises the health of all probed external links.
+type LinkCheckResult struct {
+	Checked   int             `json:"checked"`
+	OK        int             `json:"ok"`
+	Broken    int             `json:"broken"`
+	Redirects int             `json:"redirects"`
+	Items     []LinkCheckItem `json:"items"`
+}
+
+// ColorEntry is one extracted brand colour with its occurrence frequency.
+type ColorEntry struct {
+	Hex       string `json:"hex"`       // normalised 6-digit lowercase hex e.g. "#6d28d9"
+	Frequency int    `json:"frequency"` // number of times seen in CSS/styles
+}
+
+// ColorPalette holds the top brand colours extracted from the page.
+type ColorPalette struct {
+	ThemeColor string       `json:"themeColor"` // from <meta name="theme-color">, may be empty
+	Colors     []ColorEntry `json:"colors"`     // top 8, sorted by frequency descending
+}
+
+// VaguePhrase is a single flagged marketing cliché with an explanation.
+type VaguePhrase struct {
+	Phrase string `json:"phrase"`
+	Reason string `json:"reason"`
+}
+
+// CopyAnalysis scores the specificity of the page's visible copy.
+type CopyAnalysis struct {
+	Score            int           `json:"score"`            // 0–100
+	Label            string        `json:"label"`            // "Sharp" | "Mixed" | "Generic"
+	VaguePhrases     []VaguePhrase `json:"vaguePhrases"`
+	SpecificityHints []string      `json:"specificityHints"` // positive signals found
+}
+
+// IntentCheck is one claim-vs-evidence check for search intent alignment.
+type IntentCheck struct {
+	Claim  string `json:"claim"`  // e.g. "Title says 'pricing'"
+	Signal string `json:"signal"` // e.g. "Price elements on page"
+	Found  bool   `json:"found"`
+}
+
+// IntentAlignment scores how well page content backs up what title/meta claim.
+type IntentAlignment struct {
+	Score  int           `json:"score"`  // % of checks that passed (0–100)
+	Checks []IntentCheck `json:"checks"` // may be empty when no intent keywords found
+}
+
 // ContentStats holds content quality and readability metrics.
 type ContentStats struct {
 	TopKeywords    []string `json:"topKeywords"`
@@ -236,6 +301,11 @@ type AnalysisResult struct {
 	ReportID           string             `json:"reportId,omitempty"`
 	ImageAudit         ImageFormatAudit   `json:"imageAudit"`
 	SiteFreshness      SiteFreshness      `json:"siteFreshness"`
+	SecurityHeaders []SecurityHeaderCheck `json:"securityHeaders"`
+	LinkCheck       LinkCheckResult       `json:"linkCheck"`
+	ColorPalette    ColorPalette          `json:"colorPalette"`
+	CopyAnalysis    CopyAnalysis          `json:"copyAnalysis"`
+	IntentAlignment IntentAlignment       `json:"intentAlignment"`
 }
 
 // ErrorResponse is returned on any failure.
