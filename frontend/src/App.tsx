@@ -110,7 +110,7 @@ function AppInner() {
       )}
 
       {status === "success" && result && (
-        <ResultDashboard result={result} onReset={reset} />
+        <ResultDashboard result={result} onReset={reset} onAnalyze={handleAnalyze} />
       )}
     </div>
   );

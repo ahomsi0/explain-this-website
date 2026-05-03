@@ -49,12 +49,21 @@ function lcpColor(rating: string) {
   return rating === "good" ? "text-emerald-400" : rating === "needs-improvement" ? "text-amber-400" : "text-red-400";
 }
 
-export function ResultDashboard({ result, onReset }: { result: AnalysisResult; onReset: () => void }) {
+export function ResultDashboard({ result, onReset, onAnalyze }: { result: AnalysisResult; onReset: () => void; onAnalyze?: (url: string) => void }) {
   const { seoScore, uxScore } = computeScores(result);
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
+  const [searchValue, setSearchValue] = useState("");
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = searchValue.trim();
+    if (!trimmed || !onAnalyze) return;
+    onAnalyze(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    setSearchValue("");
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
@@ -71,7 +80,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />
 
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 max-w-md">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[200px]">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -79,6 +88,24 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
               <span className="text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             </div>
             <span className="sm:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
+
+            {onAnalyze && (
+              <form onSubmit={submitSearch} className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors flex-1 max-w-md">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 shrink-0">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  type="text"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  placeholder="Analyze another URL…"
+                  className="flex-1 bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none min-w-0"
+                />
+                {searchValue && (
+                  <kbd className="hidden lg:inline text-[9px] font-mono text-zinc-500 bg-zinc-800 border border-zinc-700 rounded px-1 py-px">↵</kbd>
+                )}
+              </form>
+            )}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -122,7 +149,7 @@ export function ResultDashboard({ result, onReset }: { result: AnalysisResult; o
 
       {/* ── Body: sidebar + main ── */}
       <div className="flex-1 flex">
-        <Sidebar items={SECTIONS} active={activeSection} onSelect={setActiveSection} />
+        <Sidebar items={SECTIONS} active={activeSection} onSelect={setActiveSection} onNewAudit={onReset} />
 
         <main className="flex-1 min-w-0">
           {/* Metrics strip */}

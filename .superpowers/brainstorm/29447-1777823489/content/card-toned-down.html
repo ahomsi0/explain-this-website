@@ -1,0 +1,71 @@
+<h2>Dialing it back — which level feels right?</h2>
+<p class="subtitle">Same B+D idea, three levels of subtlety. From "barely there" to "still present but calm."</p>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px;">
+
+  <!-- Option A: Very subtle — just a faint top line + minimal depth -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #09090b;">
+      <div style="background: #18181b; border: 1px solid #27272a; border-top: 2px solid #7c3aed; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+        <div style="padding: 10px 13px; display:flex; align-items:center; gap: 6px; border-bottom: 1px solid #27272a;">
+          <span style="font-size: 9px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: .08em; flex:1;">SEO Audit</span>
+          <span style="font-size: 9px; color: #4ade80; font-weight: 600;">9/13</span>
+        </div>
+        <div style="padding: 10px 13px; display:flex; flex-direction:column; gap: 6px;">
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">HTTPS</span><span style="font-size:9px;color:#4ade80;font-weight:600;">PASS</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">Canonical</span><span style="font-size:9px;color:#f87171;font-weight:600;">FAIL</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">Image Alt</span><span style="font-size:9px;color:#fbbf24;font-weight:600;">WARN</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Top Accent Only</h3>
+      <p>Just a 2px violet top border. No glow, no gradient. Clean header line with title + score — very minimal, high clarity.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Medium — thin left border + soft header, no glow -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #09090b;">
+      <div style="background: #18181b; border: 1px solid #27272a; border-left: 2px solid #7c3aed; border-radius: 8px; overflow: hidden;">
+        <div style="background: rgba(124,58,237,0.06); border-bottom: 1px solid rgba(124,58,237,0.12); padding: 10px 13px; display:flex; align-items:center; gap: 6px;">
+          <div style="width: 5px; height: 5px; background: #7c3aed; border-radius: 50%; flex-shrink:0; opacity:0.7;"></div>
+          <span style="font-size: 9px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: .08em; flex:1;">SEO Audit</span>
+          <span style="font-size: 9px; color: #4ade80; font-weight: 600; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.15); border-radius: 3px; padding: 0px 5px;">9/13</span>
+        </div>
+        <div style="padding: 10px 13px; display:flex; flex-direction:column; gap: 6px;">
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">HTTPS</span><span style="font-size:9px;color:#4ade80;font-weight:600;">PASS</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">Canonical</span><span style="font-size:9px;color:#f87171;font-weight:600;">FAIL</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">Image Alt</span><span style="font-size:9px;color:#fbbf24;font-weight:600;">WARN</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Soft Header + Thin Border</h3>
+      <p>2px left border, barely-there header tint, small dot. Present but quiet — the structure is there without shouting.</p>
+      <p style="color:#a78bfa;font-size:11px;margin-top:6px;">★ Recommended</p>
+    </div>
+  </div>
+
+  <!-- Option C: Refined — no left border, just elevated header with separator -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #09090b;">
+      <div style="background: #18181b; border: 1px solid #2a2a2a; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.25);">
+        <div style="background: #1f1f23; border-bottom: 1px solid #2a2a2a; padding: 10px 13px; display:flex; align-items:center; gap: 6px;">
+          <span style="font-size: 9px; font-weight: 700; color: #c4b5fd; text-transform: uppercase; letter-spacing: .08em; flex:1;">SEO Audit</span>
+          <span style="font-size: 9px; color: #4ade80; font-weight: 600; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.15); border-radius: 3px; padding: 0px 5px;">9/13</span>
+        </div>
+        <div style="padding: 10px 13px; display:flex; flex-direction:column; gap: 6px;">
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">HTTPS</span><span style="font-size:9px;color:#4ade80;font-weight:600;">PASS</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">Canonical</span><span style="font-size:9px;color:#f87171;font-weight:600;">FAIL</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="font-size:10px;color:#71717a;">Image Alt</span><span style="font-size:9px;color:#fbbf24;font-weight:600;">WARN</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Elevated Header, No Accent</h3>
+      <p>Slightly darker header band, no border accent, no glow. The separation between title and content is enough — very clean and neutral.</p>
+    </div>
+  </div>
+
+</div>
