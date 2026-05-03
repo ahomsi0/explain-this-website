@@ -129,6 +129,13 @@ html.light .card-header {
 html.light .bg-violet-500\/10  { background-color: rgba(124,58,237,0.08) !important; }
 html.light .border-violet-500\/30 { border-color: rgba(124,58,237,0.25) !important; }
 
+/* Hover states — flip dark zinc hovers to light violet tints */
+html.light .hover\:bg-zinc-900:hover { background-color: #ede9fe !important; }
+html.light .hover\:bg-zinc-800:hover { background-color: #ddd6fe !important; }
+html.light .hover\:text-zinc-200:hover { color: #312e81 !important; }
+html.light .hover\:text-zinc-300:hover { color: #4338ca !important; }
+html.light .hover\:text-zinc-400:hover { color: #4b5563 !important; }
+
 /* Header bar backdrop */
 html.light .bg-zinc-950.rounded-lg,
 html.light .bg-zinc-900.rounded-lg { box-shadow: 0 1px 4px rgba(124,58,237,0.06); }
