@@ -51,7 +51,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
   switch (id) {
     case "overview":
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {/* Site overview spans full width — height varies by site, no risk of dead column space */}
           <OverviewCard
             overview={result.overview}
@@ -61,7 +61,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           />
 
           {/* Insight + ELI5 side-by-side — both have similar shape so they balance well */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             <InsightCard
               intent={result.intent}
               biggestOpportunity={result.biggestOpportunity}
@@ -74,7 +74,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <ActionableOpportunitiesCard issues={result.prioritizedIssues} />
 
           {/* Weak points + recommendations — symmetric two-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             <WeakPointsCard weakPoints={result.weakPoints} />
             <RecommendationsCard recommendations={result.recommendations} />
           </div>
@@ -86,16 +86,16 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "tech":
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <TechStackCard techStack={result.techStack} />
         </div>
       );
 
     case "seo":
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <SEOAuditCard seoChecks={result.seoChecks} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             <SecurityHeadersCard checks={result.securityHeaders} />
             <LinkCheckCard linkCheck={result.linkCheck} />
           </div>
@@ -105,10 +105,10 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "ux":
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             <ColorPaletteCard colorPalette={result.colorPalette} />
             <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
           </div>
@@ -117,14 +117,14 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "performance":
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
             <ImageAuditCard audit={result.imageAudit} />
-            <FontAuditCard fontAudit={result.fontAudit} />
+            {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
             {result.contentStats && <ContentCard contentStats={result.contentStats} />}
           </div>
@@ -133,7 +133,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
 
     case "conversion":
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <ConversionScoreCard scores={result.conversionScores} />
           <TrustEngagementCard ux={result.ux} />
         </div>

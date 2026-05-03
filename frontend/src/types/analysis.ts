@@ -296,7 +296,7 @@ export interface AnalysisResult {
   colorPalette: ColorPalette;
   copyAnalysis: CopyAnalysis;
   intentAlignment: IntentAlignment;
-  fontAudit: FontAudit;
+  fontAudit?: FontAudit;
   domainInfo?: DomainInfo;
 }
 

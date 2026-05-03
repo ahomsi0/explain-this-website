@@ -14,6 +14,7 @@ function sourceBadgeClass(source: string): string {
 }
 
 export function FontAuditCard({ fontAudit }: { fontAudit: FontAudit }) {
+  if (!fontAudit) return null;
   const badgeColor = fontAudit.hasPerfIssue ? "amber" : "green" as const;
 
   if (fontAudit.totalFamilies === 0) {
