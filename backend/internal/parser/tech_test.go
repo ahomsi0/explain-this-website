@@ -111,6 +111,12 @@ func TestDetectTech_WordPressIgnoresJSONLDFalsePositive(t *testing.T) {
 }
 
 func TestDetectTech_ViteBroadHeuristicIsLow(t *testing.T) {
+	// The low-confidence modulepreload heuristic was removed because it produced
+	// false positives on Shopify, Astro, and any framework that serves assets from
+	// /assets/ with rel="modulepreload". A generic modulepreload link should NOT
+	// trigger Vite detection — only definitive signals (/@vite/client,
+	// vite/modulepreload-polyfill) or strong runtime markers (__vite__mapdeps,
+	// vite:preloaderror) should match.
 	html := `
 	<html>
 	  <head>
@@ -119,12 +125,9 @@ func TestDetectTech_ViteBroadHeuristicIsLow(t *testing.T) {
 	</html>`
 
 	tech := detectTech(html, "https://example.com")
-	vite, ok := findTechByName(tech, "Vite")
-	if !ok {
-		t.Fatalf("expected Vite to be detected")
-	}
-	if vite.Confidence != "low" {
-		t.Fatalf("expected Vite confidence low for broad heuristic, got %q", vite.Confidence)
+	_, ok := findTechByName(tech, "Vite")
+	if ok {
+		t.Fatalf("expected Vite NOT to be detected for a generic modulepreload link (too broad)")
 	}
 }
 
