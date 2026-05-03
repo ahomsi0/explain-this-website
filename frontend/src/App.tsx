@@ -7,6 +7,7 @@ import { ResultDashboard } from "./components/ResultDashboard/ResultDashboard";
 import { LogoWordmark } from "./components/ui/Logo";
 import { fetchReport } from "./services/analyzeApi";
 import type { AnalysisResult } from "./types/analysis";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -26,7 +27,7 @@ function useReportRoute() {
   return { sharedResult, sharedError, loadingShared };
 }
 
-export default function App() {
+function AppInner() {
   const { status, result, error, serverSignaled, analyze, reset } = useAnalysis();
   const [currentUrl, setCurrentUrl] = useState("");
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
@@ -112,5 +113,13 @@ export default function App() {
         <ResultDashboard result={result} onReset={reset} />
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
   );
 }
