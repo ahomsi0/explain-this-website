@@ -178,6 +178,19 @@ export interface SiteFreshness {
   signals: string[];
 }
 
+export interface FontEntry {
+  family: string;
+  source: string;
+  weights: string[];
+}
+
+export interface FontAudit {
+  families: FontEntry[];
+  totalFamilies: number;
+  totalWeights: number;
+  hasPerfIssue: boolean;
+}
+
 export interface SecurityHeaderCheck {
   id: string;
   label: string;
@@ -276,6 +289,7 @@ export interface AnalysisResult {
   colorPalette: ColorPalette;
   copyAnalysis: CopyAnalysis;
   intentAlignment: IntentAlignment;
+  fontAudit: FontAudit;
 }
 
 export interface AnalysisError {

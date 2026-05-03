@@ -204,4 +204,13 @@ export const mockAnalysisResult: AnalysisResult = {
       { claim: "Meta mentions 'guide' — numbered steps expected",   signal: "Ordered list or step-by-step content",         found: true  },
     ],
   },
+  fontAudit: {
+    families: [
+      { family: "Inter", source: "Google Fonts", weights: ["400", "500", "600", "700"] },
+      { family: "Roboto Mono", source: "Google Fonts", weights: ["400", "500"] },
+    ],
+    totalFamilies: 2,
+    totalWeights: 6,
+    hasPerfIssue: false,
+  },
 };
