@@ -49,6 +49,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	contentStats := analyzeContent(visibleText)
 	imageAudit := auditImages(doc)
 	freshness := auditFreshness(doc, rawHTML)
+	colorPalette := ExtractColorPalette(doc, rawHTML)
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
 
 	if tech == nil {
@@ -125,6 +126,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		Performance:        perf,
 		ImageAudit:         imageAudit,
 		SiteFreshness:      freshness,
+		ColorPalette:       colorPalette,
 	}, nil
 }
 
