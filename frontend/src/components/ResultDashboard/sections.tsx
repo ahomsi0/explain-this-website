@@ -61,7 +61,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           />
 
           {/* Insight + ELI5 side-by-side — both have similar shape so they balance well */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             <InsightCard
               intent={result.intent}
               biggestOpportunity={result.biggestOpportunity}
@@ -74,7 +74,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <ActionableOpportunitiesCard issues={result.prioritizedIssues} />
 
           {/* Weak points + recommendations — symmetric two-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             <WeakPointsCard weakPoints={result.weakPoints} />
             <RecommendationsCard recommendations={result.recommendations} />
           </div>
@@ -95,7 +95,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-4">
           <SEOAuditCard seoChecks={result.seoChecks} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             <SecurityHeadersCard checks={result.securityHeaders} />
             <LinkCheckCard linkCheck={result.linkCheck} />
           </div>
@@ -108,7 +108,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-4">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <div className="columns-1 lg:columns-2 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             <ColorPaletteCard colorPalette={result.colorPalette} />
             <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
           </div>
