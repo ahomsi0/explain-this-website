@@ -52,6 +52,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	intentAlignment := CheckIntentAlignment(doc, rawHTML)
 	freshness := auditFreshness(doc, rawHTML)
 	colorPalette := ExtractColorPalette(doc, rawHTML)
+	fontAudit := ExtractFontAudit(doc, rawHTML)
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
 
 	if tech == nil {
@@ -131,6 +132,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		IntentAlignment:    intentAlignment,
 		SiteFreshness:      freshness,
 		ColorPalette:       colorPalette,
+		FontAudit:          fontAudit,
 	}, nil
 }
 

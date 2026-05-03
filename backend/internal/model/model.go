@@ -275,6 +275,21 @@ type PerformanceResult struct {
 	Desktop   *StrategyData `json:"desktop,omitempty"`
 }
 
+// FontEntry describes one detected font family.
+type FontEntry struct {
+	Family  string   `json:"family"`
+	Source  string   `json:"source"`  // "Google Fonts" | "Bunny Fonts" | "Adobe Fonts" | "Custom/Self-hosted"
+	Weights []string `json:"weights"` // e.g. ["400","500","700"], empty if unknown
+}
+
+// FontAudit summarises web font usage detected from HTML.
+type FontAudit struct {
+	Families      []FontEntry `json:"families"`
+	TotalFamilies int         `json:"totalFamilies"`
+	TotalWeights  int         `json:"totalWeights"`
+	HasPerfIssue  bool        `json:"hasPerfIssue"` // true if >3 families or >6 total weight variants
+}
+
 // AnalysisResult is the full response returned by POST /api/analyze.
 type AnalysisResult struct {
 	URL             string       `json:"url"`
@@ -306,6 +321,7 @@ type AnalysisResult struct {
 	ColorPalette    ColorPalette          `json:"colorPalette"`
 	CopyAnalysis    CopyAnalysis          `json:"copyAnalysis"`
 	IntentAlignment IntentAlignment       `json:"intentAlignment"`
+	FontAudit       FontAudit             `json:"fontAudit"`
 }
 
 // ErrorResponse is returned on any failure.
