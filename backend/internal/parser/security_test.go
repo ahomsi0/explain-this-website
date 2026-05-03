@@ -42,9 +42,16 @@ func TestAuditSecurityHeaders_UnsafeReferrer(t *testing.T) {
 	checks := AuditSecurityHeaders(http.Header{
 		"Referrer-Policy": []string{"unsafe-url"},
 	})
+	found := false
 	for _, c := range checks {
-		if c.ID == "referrer" && c.Status != "warning" {
-			t.Errorf("expected warning for unsafe-url, got %s", c.Status)
+		if c.ID == "referrer" {
+			found = true
+			if c.Status != "warning" {
+				t.Errorf("expected warning for unsafe-url, got %s", c.Status)
+			}
 		}
+	}
+	if !found {
+		t.Error("referrer check not found in results")
 	}
 }

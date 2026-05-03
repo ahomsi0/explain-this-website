@@ -81,10 +81,10 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
+		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
+
 		// Persist result so it can be retrieved via GET /api/report/:id.
 		result.ReportID = globalStore.save(result)
-
-		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(result)
