@@ -42,10 +42,37 @@ func Init(ctx context.Context) error {
 		return fmt.Errorf("open pool: %w", err)
 	}
 
-	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	if err := pool.Ping(pingCtx); err != nil {
-		return fmt.Errorf("ping db: %w", err)
+	const (
+		maxPingAttempts = 3
+		pingTimeout     = 15 * time.Second
+		retryDelay      = 3 * time.Second
+	)
+
+	var pingErr error
+	for attempt := 1; attempt <= maxPingAttempts; attempt++ {
+		pingCtx, cancel := context.WithTimeout(ctx, pingTimeout)
+		pingErr = pool.Ping(pingCtx)
+		cancel()
+		if pingErr == nil {
+			break
+		}
+		if ctx.Err() != nil {
+			pool.Close()
+			return fmt.Errorf("ping db: %w", pingErr)
+		}
+		if attempt < maxPingAttempts {
+			log.Printf("Postgres ping attempt %d/%d failed: %v — retrying in %s", attempt, maxPingAttempts, pingErr, retryDelay)
+			select {
+			case <-time.After(retryDelay):
+			case <-ctx.Done():
+				pool.Close()
+				return fmt.Errorf("ping db: %w", pingErr)
+			}
+		}
+	}
+	if pingErr != nil {
+		pool.Close()
+		return fmt.Errorf("ping db after %d attempts: %w", maxPingAttempts, pingErr)
 	}
 
 	Pool = pool

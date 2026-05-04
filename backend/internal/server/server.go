@@ -23,7 +23,7 @@ import (
 // Start wires up routes and begins listening.
 func Start(cfg config.Config) error {
 	// Init DB (no-op when DATABASE_URL is unset).
-	dbCtx, dbCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	dbCtx, dbCancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer dbCancel()
 	if err := db.Init(dbCtx); err != nil {
 		log.Printf("WARNING: db init failed (%v) — running in anonymous-only mode", err)
