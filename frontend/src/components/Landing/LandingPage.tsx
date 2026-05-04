@@ -207,7 +207,7 @@ export function LandingPage({
               {[
                 { n: "01", title: "Paste any URL", desc: "Public site, landing page, blog, ecommerce — anything reachable on the open web." },
                 { n: "02", title: "Wait a few seconds", desc: "We fetch the page, run Google PageSpeed, and analyze 50+ signals in parallel." },
-                { n: "03", title: "Get a full report", desc: "Read the breakdown by section, copy any insight, share a public link, save to history." },
+                { n: "03", title: "Get a full report", desc: "Read the breakdown by section, copy any insight, save it to history, and share public links on Pro." },
               ].map((s) => (
                 <div key={s.n} className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-5">
                   <span className="text-[10px] font-mono font-semibold text-violet-400">{s.n}</span>

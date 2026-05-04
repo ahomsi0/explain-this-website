@@ -19,26 +19,28 @@ type reportStore struct {
 type reportEntry struct {
 	result    model.AnalysisResult
 	createdAt time.Time
+	userID    int64
+	shared    bool
 }
 
 var globalStore = &reportStore{
 	entries: make(map[string]reportEntry),
 }
 
-func (s *reportStore) save(result model.AnalysisResult) string {
+func (s *reportStore) save(result model.AnalysisResult, userID int64, shared bool) string {
 	id := newReportID()
 	s.mu.Lock()
-	s.entries[id] = reportEntry{result: result, createdAt: time.Now()}
+	s.entries[id] = reportEntry{result: result, createdAt: time.Now(), userID: userID, shared: shared}
 	s.mu.Unlock()
 	go s.sweep()
 	return id
 }
 
-func (s *reportStore) get(id string) (model.AnalysisResult, bool) {
+func (s *reportStore) get(id string) (reportEntry, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	e, ok := s.entries[id]
-	return e.result, ok
+	return e, ok
 }
 
 func (s *reportStore) sweep() {

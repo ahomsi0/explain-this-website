@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS audits (
 CREATE INDEX IF NOT EXISTS audits_user_id_created_at_idx
     ON audits (user_id, created_at DESC) WHERE user_id IS NOT NULL;
 
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS is_shareable BOOLEAN NOT NULL DEFAULT FALSE;
+
 CREATE TABLE IF NOT EXISTS password_resets (
     id          BIGSERIAL PRIMARY KEY,
     user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -106,14 +106,18 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 		result.Usage = &usage
+		shareable := uid != 0 && usage.Plan == planPro
 
-		// Persist result so it can be retrieved via GET /api/report/:id.
-		// Ephemeral in-memory store always — DB persistence is additive (history) for logged-in users.
-		result.ReportID = globalStore.save(result)
+		// Persist result so it can be retrieved via history and, for Pro users,
+		// via public shared links.
+		reportID := globalStore.save(result, uid, shareable)
+		if shareable {
+			result.ReportID = reportID
+		}
 
 		// If the user is logged in, also save to their permanent history.
 		if uid != 0 {
-			saveAuditForUser(r.Context(), uid, result.ReportID, result)
+			saveAuditForUser(r.Context(), uid, reportID, result, shareable)
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -132,19 +136,35 @@ func ReportHandler() http.HandlerFunc {
 			writeError(w, http.StatusBadRequest, "report id is required")
 			return
 		}
-		if result, ok := globalStore.get(id); ok {
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(result)
+		uid := auth.UserIDFromContext(r.Context())
+		if entry, ok := globalStore.get(id); ok {
+			if entry.shared || (uid != 0 && uid == entry.userID) {
+				if entry.shared {
+					entry.result.ReportID = id
+				} else {
+					entry.result.ReportID = ""
+				}
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(entry.result)
+				return
+			}
+			writeError(w, http.StatusNotFound, "report not found or expired")
 			return
 		}
 		if db.IsAvailable() {
 			ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 			defer cancel()
 			var raw []byte
-			err := db.Pool.QueryRow(ctx, `SELECT result FROM audits WHERE id = $1`, id).Scan(&raw)
+			var ownerID int64
+			var shareable bool
+			err := db.Pool.QueryRow(ctx, `SELECT result, COALESCE(user_id, 0), is_shareable FROM audits WHERE id = $1`, id).Scan(&raw, &ownerID, &shareable)
 			if err == nil {
-				w.WriteHeader(http.StatusOK)
-				w.Write(raw)
+				if shareable || (uid != 0 && uid == ownerID) {
+					w.WriteHeader(http.StatusOK)
+					w.Write(raw)
+					return
+				}
+				writeError(w, http.StatusNotFound, "report not found or expired")
 				return
 			}
 		}

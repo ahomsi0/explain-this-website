@@ -1,9 +1,20 @@
 import { useState } from "react";
 
-export function ShareButton({ reportId }: { reportId?: string }) {
-  const [state, setState] = useState<"idle" | "copied" | "unavailable">("idle");
+export function ShareButton({
+  reportId,
+  canShare = false,
+}: {
+  reportId?: string;
+  canShare?: boolean;
+}) {
+  const [state, setState] = useState<"idle" | "copied" | "unavailable" | "pro-only">("idle");
 
   const handleShare = async () => {
+    if (!canShare) {
+      setState("pro-only");
+      setTimeout(() => setState("idle"), 2500);
+      return;
+    }
     if (!reportId) {
       setState("unavailable");
       setTimeout(() => setState("idle"), 2500);
@@ -29,6 +40,13 @@ export function ShareButton({ reportId }: { reportId?: string }) {
         <>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span className="text-emerald-400 hidden sm:inline">Link copied</span>
+        </>
+      ) : state === "pro-only" ? (
+        <>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          <span className="text-violet-300 hidden sm:inline">Pro only</span>
         </>
       ) : state === "unavailable" ? (
         <>

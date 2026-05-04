@@ -173,7 +173,7 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
             </button>
             <CopyButton result={result} />
             <DownloadButton result={result} />
-            <ShareButton reportId={result.reportId} />
+            <ShareButton reportId={result.reportId} canShare={isPro} />
             {user?.billingEnabled && (
               <button
                 onClick={() => void handleBilling()}
