@@ -39,6 +39,7 @@ func Start(cfg config.Config) error {
 	}
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
+	mux.HandleFunc("GET /api/usage", handler.UsageHandler())
 	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
 
 	// Auth endpoints

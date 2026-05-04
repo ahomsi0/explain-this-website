@@ -5,12 +5,13 @@ import { UserMenu } from "../auth/UserMenu";
 import { AuthModal } from "../auth/AuthModal";
 import { HistoryModal } from "../auth/HistoryModal";
 import { createCheckoutSession } from "../../services/authApi";
-import type { AuthUser } from "../../services/authApi";
+import type { AuthUser, UsageSummary } from "../../services/authApi";
 
 const EXAMPLE_URLS = ["stripe.com", "github.com", "vercel.com", "linear.app"];
 
 export function LandingPage({
   user,
+  usage,
   onAnalyze,
   authOpen,
   setAuthOpen,
@@ -18,6 +19,7 @@ export function LandingPage({
   setHistoryOpen,
 }: {
   user: AuthUser | null;
+  usage: UsageSummary | null;
   onAnalyze: (url: string) => void;
   authOpen: boolean;
   setAuthOpen: (v: boolean) => void;
@@ -93,6 +95,15 @@ export function LandingPage({
               </span>
             </div>
 
+            {usage && (
+              <div className="flex justify-center mb-3">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium text-zinc-300 bg-zinc-900/70 border border-zinc-800">
+                  <span className={`w-1.5 h-1.5 rounded-full ${usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  {usage.dailyRemaining}/{usage.dailyLimit} analyses left today
+                </span>
+              </div>
+            )}
+
             <h1 className="text-center text-4xl sm:text-6xl font-bold tracking-tight text-zinc-100 leading-[1.05]">
               Understand any website
             </h1>
@@ -164,7 +175,7 @@ export function LandingPage({
                 <ul className="mt-5 space-y-2 text-sm text-zinc-300">
                   <li>2 analyses per day</li>
                   <li>No email required</li>
-                  <li>Shareable report links</li>
+                  <li>History unlocked when you sign in</li>
                   <li>Sign in anytime to keep your audit history</li>
                 </ul>
               </div>

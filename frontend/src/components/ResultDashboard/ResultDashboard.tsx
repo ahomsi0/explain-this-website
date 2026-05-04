@@ -13,7 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { HistoryModal } from "../auth/HistoryModal";
-import { createCheckoutSession, createPortalSession } from "../../services/authApi";
+import { createCheckoutSession, createPortalSession, type UsageSummary } from "../../services/authApi";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -54,7 +54,17 @@ function lcpColor(rating: string) {
   return rating === "good" ? "text-emerald-400" : rating === "needs-improvement" ? "text-amber-400" : "text-red-400";
 }
 
-export function ResultDashboard({ result, onReset, onAnalyze }: { result: AnalysisResult; onReset: () => void; onAnalyze?: (url: string) => void }) {
+export function ResultDashboard({
+  result,
+  usage: usageOverride,
+  onReset,
+  onAnalyze,
+}: {
+  result: AnalysisResult;
+  usage?: UsageSummary | null;
+  onReset: () => void;
+  onAnalyze?: (url: string) => void;
+}) {
   const { seoScore, uxScore } = computeScores(result);
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [searchValue, setSearchValue] = useState("");
@@ -66,7 +76,7 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
-  const usage = result.usage ?? user?.usage;
+  const usage = usageOverride ?? result.usage ?? user?.usage;
   const isPro = (user?.plan ?? usage?.plan) === "pro";
 
   const submitSearch = (e: React.FormEvent) => {

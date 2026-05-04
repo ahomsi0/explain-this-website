@@ -14,7 +14,7 @@ interface UseAnalysisReturn {
   reset: () => void;
 }
 
-export function useAnalysis(): UseAnalysisReturn {
+export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promise<void>): UseAnalysisReturn {
   const [status, setStatus] = useState<AnalysisStatus>("idle");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +43,14 @@ export function useAnalysis(): UseAnalysisReturn {
       }
 
       setResult(data);
+      void onSuccess?.(data);
       setStatus("success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(message);
       setStatus("error");
     }
-  }, []);
+  }, [onSuccess]);
 
   const reset = useCallback(() => {
     setStatus("idle");

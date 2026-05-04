@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/jackc/pgx/v5"
@@ -258,4 +259,17 @@ func incrementUsage(ctx context.Context, userID int64, visitorID string) (model.
 		return model.UsageSummary{}, err
 	}
 	return usageSummaryFor(planFree, limit, used), nil
+}
+
+func UsageHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		uid := auth.UserIDFromContext(r.Context())
+		visitorID := visitorIDFromRequest(r)
+		usage, err := currentUsage(r.Context(), uid, visitorID)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load usage")
+			return
+		}
+		writeJSON(w, http.StatusOK, usage)
+	}
 }

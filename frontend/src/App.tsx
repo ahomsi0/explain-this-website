@@ -8,6 +8,7 @@ import type { AnalysisResult } from "./types/analysis";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LandingPage } from "./components/Landing/LandingPage";
+import { fetchUsage, type UsageSummary } from "./services/authApi";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -28,10 +29,18 @@ function useReportRoute() {
 }
 
 function AppInner() {
-  const { status, result, error, serverSignaled, analyze, reset } = useAnalysis();
+  const { user, refreshUser } = useAuth();
+  const [usage, setUsage] = useState<UsageSummary | null>(null);
+  const { status, result, error, serverSignaled, analyze, reset } = useAnalysis(async (analysisResult) => {
+    if (analysisResult.usage) {
+      setUsage(analysisResult.usage);
+    }
+    if (user) {
+      await refreshUser();
+    }
+  });
   const [currentUrl, setCurrentUrl] = useState("");
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
-  const { user, refreshUser } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -45,6 +54,10 @@ function AppInner() {
       });
     }
   }, [refreshUser]);
+
+  useEffect(() => {
+    fetchUsage().then(setUsage).catch(() => {});
+  }, [user?.id]);
 
   const handleAnalyze = (url: string) => { setCurrentUrl(url); analyze(url); };
   const isBotProtectionError = !!error && (
@@ -93,6 +106,7 @@ function AppInner() {
       {status === "idle" && (
         <LandingPage
           user={user}
+          usage={usage}
           onAnalyze={handleAnalyze}
           authOpen={authOpen}
           setAuthOpen={setAuthOpen}
@@ -113,7 +127,7 @@ function AppInner() {
       )}
 
       {status === "success" && result && (
-        <ResultDashboard result={result} onReset={reset} onAnalyze={handleAnalyze} />
+        <ResultDashboard result={result} usage={usage} onReset={reset} onAnalyze={handleAnalyze} />
       )}
     </div>
   );

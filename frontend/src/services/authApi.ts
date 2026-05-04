@@ -86,6 +86,10 @@ export async function fetchAudits(): Promise<AuditListItem[]> {
   return jsonFetch<AuditListItem[]>("/api/audits");
 }
 
+export async function fetchUsage(): Promise<UsageSummary> {
+  return jsonFetch<UsageSummary>("/api/usage");
+}
+
 export async function requestPasswordReset(email: string): Promise<void> {
   await jsonFetch<{ ok: boolean }>("/api/auth/forgot-password", {
     method: "POST",
