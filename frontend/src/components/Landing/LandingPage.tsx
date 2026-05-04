@@ -5,69 +5,6 @@ import { AuthModal } from "../auth/AuthModal";
 import { HistoryModal } from "../auth/HistoryModal";
 import type { AuthUser } from "../../services/authApi";
 
-const FEATURES = [
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-      </svg>
-    ),
-    title: "Tech Stack",
-    desc: "Detect frameworks, CMS, analytics, CDNs, and platforms in seconds.",
-    accent: "from-violet-500/20 to-violet-500/0",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-    ),
-    title: "SEO Audit",
-    desc: "13 critical SEO checks: meta tags, headings, canonicals, hreflang, more.",
-    accent: "from-blue-500/20 to-blue-500/0",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-      </svg>
-    ),
-    title: "Performance",
-    desc: "Real Core Web Vitals from Google PageSpeed Insights — mobile + desktop.",
-    accent: "from-amber-500/20 to-amber-500/0",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-      </svg>
-    ),
-    title: "UX Review",
-    desc: "Conversion signals, trust markers, mobile readiness, and friction points.",
-    accent: "from-emerald-500/20 to-emerald-500/0",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      </svg>
-    ),
-    title: "Security",
-    desc: "Header audit, HTTPS posture, CSP, HSTS, frame protection, and more.",
-    accent: "from-red-500/20 to-red-500/0",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-      </svg>
-    ),
-    title: "Domain Info",
-    desc: "Registrar, age, DNS records, and freshness signals via RDAP.",
-    accent: "from-indigo-500/20 to-indigo-500/0",
-  },
-];
-
 const EXAMPLE_URLS = ["stripe.com", "github.com", "vercel.com", "linear.app"];
 
 export function LandingPage({
@@ -184,34 +121,6 @@ export function LandingPage({
                 to save your audits, access them anytime, and get higher rate limits.
               </p>
             )}
-          </div>
-        </section>
-
-        {/* Feature grid */}
-        <section className="px-4 sm:px-6 pb-16">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8">
-              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">What you'll get</p>
-              <h3 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">Everything you need to evaluate a site</h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {FEATURES.map((f) => (
-                <div
-                  key={f.title}
-                  className="group relative rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-5 hover:border-zinc-700 transition-colors overflow-hidden"
-                >
-                  <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${f.accent} blur-2xl opacity-0 group-hover:opacity-100 transition-opacity`} />
-                  <div className="relative">
-                    <div className="w-9 h-9 rounded-lg bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-violet-300 mb-3">
-                      {f.icon}
-                    </div>
-                    <h4 className="text-sm font-semibold text-zinc-100 mb-1">{f.title}</h4>
-                    <p className="text-xs text-zinc-500 leading-relaxed">{f.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
