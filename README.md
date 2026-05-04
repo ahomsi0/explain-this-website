@@ -167,6 +167,12 @@ Returns `{"status":"ok"}`.
 | `ALLOWED_ORIGIN` | `http://localhost:5173,http://127.0.0.1:5173` | CORS allowed origin(s). Accepts `*`, a single origin, or a comma-separated list |
 | `FETCH_TIMEOUT_SEC` | `60` | Seconds before aborting a fetch |
 | `MAX_BODY_BYTES` | `5242880` (5 MB) | Max response body size |
+| `DATABASE_URL` | - | Postgres connection string for accounts, audit history, and password resets |
+| `RESEND_API_KEY` | - | Enables real password reset email delivery through Resend |
+| `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Optional sender address shown on reset emails |
+
+If `RESEND_API_KEY` is unset, password reset requests still succeed but the reset
+code is only written to the backend logs instead of being delivered by email.
 
 ### Frontend (`frontend/.env.local`)
 

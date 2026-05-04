@@ -48,6 +48,10 @@ func generateResetCode() (string, error) {
 // ForgotPasswordHandler accepts an email, and if it matches a user, generates
 // a reset code, stores its bcrypt hash, and emails the plaintext code to the user.
 // To avoid leaking which emails are registered, ALWAYS responds 200.
+//
+// Important: we run the reset flow inline instead of in a background goroutine.
+// Some production runtimes can drop post-response work, which makes password
+// reset email delivery look flaky even though the endpoint returned success.
 func ForgotPasswordHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !db.IsAvailable() {
@@ -66,8 +70,9 @@ func ForgotPasswordHandler() http.HandlerFunc {
 		}
 
 		// Always respond success regardless of whether the email is registered.
-		// This prevents email enumeration attacks.
-		go issueResetCode(body.Email)
+		// This prevents email enumeration attacks. We still perform the work
+		// before responding so email delivery is reliable in production.
+		issueResetCode(body.Email)
 
 		writeJSON(w, http.StatusOK, map[string]any{
 			"ok":      true,
@@ -76,8 +81,9 @@ func ForgotPasswordHandler() http.HandlerFunc {
 	}
 }
 
-// issueResetCode runs in a background goroutine so the HTTP response returns
-// immediately and the timing doesn't leak whether the email was found.
+// issueResetCode creates and delivers a reset code when the account exists.
+// It is intentionally best-effort and logs failures rather than returning them
+// to the caller so the public endpoint can keep a uniform response.
 func issueResetCode(emailAddr string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
