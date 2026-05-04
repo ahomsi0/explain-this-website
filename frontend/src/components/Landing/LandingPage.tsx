@@ -179,8 +179,8 @@ export function LandingPage({
                 <ul className="mt-5 space-y-2 text-sm text-zinc-200">
                   <li>30 analyses per day</li>
                   <li>Saved history on your account</li>
-                  <li>Hosted Stripe checkout</li>
-                  <li>Manage billing from your account menu</li>
+                  <li>Built for regular research and client work</li>
+                  <li>More room to compare sites without hitting the limit</li>
                 </ul>
                 <button
                   onClick={() => void handleUpgrade()}

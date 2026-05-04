@@ -117,6 +117,10 @@ export function Sidebar({
             <span>API</span>
           </a>
         </div>
+
+        <p className="px-2.5 text-[10px] text-zinc-600 leading-relaxed">
+          © {new Date().getFullYear()} Explain This Website
+        </p>
       </div>
     </aside>
   );
