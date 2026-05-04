@@ -35,6 +35,33 @@ export interface AuditListItem {
   createdAt: string;
 }
 
+export interface AdminUserRow {
+  id: number;
+  email: string;
+  plan: "free" | "pro";
+  subscriptionStatus: string;
+  dailyLimit: number;
+  dailyUsed: number;
+  dailyRemaining: number;
+  createdAt: string;
+}
+
+export interface AdminVisitorRow {
+  visitorId: string;
+  dailyLimit: number;
+  dailyUsed: number;
+  dailyRemaining: number;
+  updatedAt: string;
+}
+
+export interface AdminOverview {
+  currentDate: string;
+  adminEmail?: string;
+  anySignedInIsAdmin: boolean;
+  users: AdminUserRow[];
+  anonymousVisitors: AdminVisitorRow[];
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -91,6 +118,31 @@ export async function fetchAudits(): Promise<AuditListItem[]> {
 
 export async function fetchUsage(): Promise<UsageSummary> {
   return jsonFetch<UsageSummary>("/api/usage");
+}
+
+export async function fetchAdminOverview(): Promise<AdminOverview> {
+  return jsonFetch<AdminOverview>("/api/admin/overview");
+}
+
+export async function updateAdminUserUsage(userId: number, count: number): Promise<void> {
+  await jsonFetch<{ ok: boolean }>("/api/admin/user-usage", {
+    method: "POST",
+    body: JSON.stringify({ userId, count }),
+  });
+}
+
+export async function updateAdminAnonUsage(visitorId: string, count: number): Promise<void> {
+  await jsonFetch<{ ok: boolean }>("/api/admin/anon-usage", {
+    method: "POST",
+    body: JSON.stringify({ visitorId, count }),
+  });
+}
+
+export async function updateAdminUserPlan(userId: number, plan: "free" | "pro", subscriptionStatus?: string): Promise<void> {
+  await jsonFetch<{ ok: boolean }>("/api/admin/user-plan", {
+    method: "POST",
+    body: JSON.stringify({ userId, plan, subscriptionStatus }),
+  });
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {

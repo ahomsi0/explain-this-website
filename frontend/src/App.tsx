@@ -9,6 +9,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LandingPage } from "./components/Landing/LandingPage";
 import { fetchUsage, type UsageSummary } from "./services/authApi";
+import { AdminDashboard } from "./components/admin/AdminDashboard";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -28,8 +29,14 @@ function useReportRoute() {
   return { sharedResult, sharedError, loadingShared };
 }
 
+function useDashboardRoute() {
+  const pathname = window.location.pathname.toLowerCase();
+  return pathname === "/dashboard";
+}
+
 function AppInner() {
   const { user, refreshUser } = useAuth();
+  const isDashboardRoute = useDashboardRoute();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const { status, result, error, serverSignaled, analyze, reset } = useAnalysis(async (analysisResult) => {
     if (analysisResult.usage) {
@@ -43,6 +50,10 @@ function AppInner() {
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  if (isDashboardRoute) {
+    return <AdminDashboard />;
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
