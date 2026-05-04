@@ -89,8 +89,8 @@ export function AuthModal({
           </h2>
           <p className="text-xs text-zinc-500 mt-1">
             {mode === "login"
-              ? "Sign in to access your audit history."
-              : "Save your audits, share protected reports, get higher rate limits."}
+              ? "Sign in to access your audit history and plan settings."
+              : "Free accounts keep history. Pro adds 30 analyses a day for $4.99/month."}
           </p>
         </div>
 

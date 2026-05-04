@@ -4,10 +4,21 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const TOKEN_KEY = "etw_auth_token";
 
+export interface UsageSummary {
+  plan: "free" | "pro";
+  dailyLimit: number;
+  dailyUsed: number;
+  dailyRemaining: number;
+}
+
 export interface AuthUser {
   id: number;
   email: string;
   createdAt: string;
+  plan: "free" | "pro";
+  subscriptionStatus: string;
+  usage: UsageSummary;
+  billingEnabled: boolean;
 }
 
 export interface AuthResponse {
@@ -86,6 +97,18 @@ export async function resetPassword(email: string, code: string, newPassword: st
   return jsonFetch<{ ok: boolean; token?: string }>("/api/auth/reset-password", {
     method: "POST",
     body: JSON.stringify({ email, code, newPassword }),
+  });
+}
+
+export async function createCheckoutSession(): Promise<{ url: string }> {
+  return jsonFetch<{ url: string }>("/api/billing/checkout-session", {
+    method: "POST",
+  });
+}
+
+export async function createPortalSession(): Promise<{ url: string }> {
+  return jsonFetch<{ url: string }>("/api/billing/portal-session", {
+    method: "POST",
   });
 }
 

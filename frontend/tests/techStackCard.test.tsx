@@ -4,7 +4,7 @@ import type { TechItem } from "../src/types/analysis";
 import { TechStackCard } from "../src/components/cards/TechStackCard";
 
 describe("TechStackCard", () => {
-  it("shows confidence badges, tooltip text, and disclaimer", () => {
+  it("shows confidence badges and disclaimer", () => {
     const techStack: TechItem[] = [
       { name: "Google Tag Manager", category: "analytics", confidence: "high" },
       { name: "Vite", category: "framework", confidence: "medium" },
@@ -17,15 +17,12 @@ describe("TechStackCard", () => {
     expect(screen.getByText("Vite")).toBeInTheDocument();
     expect(screen.getByText("WordPress")).toBeInTheDocument();
 
-    expect(screen.getByText("High")).toBeInTheDocument();
-    expect(screen.getByText("Medium")).toBeInTheDocument();
+    expect(screen.getByText("Verified")).toBeInTheDocument();
+    expect(screen.getByText("Detected")).toBeInTheDocument();
     expect(screen.getByText("Possible")).toBeInTheDocument();
 
     expect(
-      screen.getByText("Technology detection is heuristic-based and may not always be 100% accurate, especially for large or custom-built websites."),
+      screen.getByText("Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals."),
     ).toBeInTheDocument();
-
-    const tooltip = "Confidence indicates how certain the system is about this detection based on available signals.";
-    expect(screen.getAllByTitle(tooltip).length).toBeGreaterThan(0);
   });
 });

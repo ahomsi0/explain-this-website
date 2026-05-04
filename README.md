@@ -2,6 +2,11 @@
 
 Paste any URL and get an instant analysis report covering tech stack detection, SEO audit, UX/conversion signals, page performance stats, content analysis, weak points, and actionable recommendations. Results can be exported as a PDF report.
 
+Usage model:
+- Anonymous visitors: `2` analyses per day, no account required
+- Free accounts: `2` analyses per day plus saved history
+- Pro accounts: `30` analyses per day for `$4.99/month`
+
 **Live:** [explain-this-website.vercel.app](https://explain-this-website.vercel.app/)
 
 ---
@@ -170,6 +175,10 @@ Returns `{"status":"ok"}`.
 | `DATABASE_URL` | - | Postgres connection string for accounts, audit history, and password resets |
 | `RESEND_API_KEY` | - | Enables real password reset email delivery through Resend |
 | `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Optional sender address shown on reset emails |
+| `STRIPE_SECRET_KEY` | - | Stripe secret key for Pro checkout + billing portal |
+| `STRIPE_PRICE_ID` | - | Stripe recurring price ID for the `$4.99/month` Pro plan |
+| `STRIPE_WEBHOOK_SECRET` | - | Stripe webhook signing secret for subscription lifecycle updates |
+| `APP_URL` | `http://localhost:5173` | Frontend base URL used for Stripe success/cancel redirects |
 
 If `RESEND_API_KEY` is unset, password reset requests still succeed but the reset
 code is only written to the backend logs instead of being delivered by email.

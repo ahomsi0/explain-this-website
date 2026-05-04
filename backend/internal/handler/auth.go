@@ -11,6 +11,7 @@ import (
 
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
+	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -25,9 +26,13 @@ type authResp struct {
 }
 
 type userOut struct {
-	ID        int64     `json:"id"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID                 int64              `json:"id"`
+	Email              string             `json:"email"`
+	CreatedAt          time.Time          `json:"createdAt"`
+	Plan               string             `json:"plan"`
+	SubscriptionStatus string             `json:"subscriptionStatus"`
+	Usage              model.UsageSummary `json:"usage"`
+	BillingEnabled     bool               `json:"billingEnabled"`
 }
 
 func writeJSONError(w http.ResponseWriter, status int, msg string) {
@@ -79,11 +84,13 @@ func SignupHandler() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		var u userOut
+		var userID int64
+		var emailAddr string
+		var createdAt time.Time
 		err = db.Pool.QueryRow(ctx,
 			`INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, created_at`,
 			body.Email, hash,
-		).Scan(&u.ID, &u.Email, &u.CreatedAt)
+		).Scan(&userID, &emailAddr, &createdAt)
 		if err != nil {
 			// 23505 = unique_violation
 			if strings.Contains(err.Error(), "23505") || strings.Contains(err.Error(), "duplicate") {
@@ -93,6 +100,14 @@ func SignupHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusInternalServerError, "could not create account")
 			return
 		}
+
+		u, err := loadUserOut(ctx, userID)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not create account")
+			return
+		}
+		u.Email = emailAddr
+		u.CreatedAt = createdAt
 
 		token, err := auth.IssueToken(u.ID)
 		if err != nil {
@@ -119,12 +134,14 @@ func LoginHandler() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		var u userOut
+		var userID int64
+		var emailAddr string
+		var createdAt time.Time
 		var hash string
 		err = db.Pool.QueryRow(ctx,
 			`SELECT id, email, created_at, password_hash FROM users WHERE email = $1`,
 			body.Email,
-		).Scan(&u.ID, &u.Email, &u.CreatedAt, &hash)
+		).Scan(&userID, &emailAddr, &createdAt, &hash)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				writeJSONError(w, http.StatusUnauthorized, "incorrect email or password")
@@ -137,6 +154,14 @@ func LoginHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusUnauthorized, "incorrect email or password")
 			return
 		}
+		u, err := loadUserOut(ctx, userID)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "login failed")
+			return
+		}
+		u.Email = emailAddr
+		u.CreatedAt = createdAt
+
 		token, err := auth.IssueToken(u.ID)
 		if err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not issue token")
@@ -152,14 +177,32 @@ func MeHandler() http.HandlerFunc {
 		uid := auth.UserIDFromContext(r.Context())
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
-		var u userOut
-		err := db.Pool.QueryRow(ctx,
-			`SELECT id, email, created_at FROM users WHERE id = $1`, uid,
-		).Scan(&u.ID, &u.Email, &u.CreatedAt)
+		u, err := loadUserOut(ctx, uid)
 		if err != nil {
 			writeJSONError(w, http.StatusUnauthorized, "user not found")
 			return
 		}
 		writeJSON(w, http.StatusOK, u)
 	}
+}
+
+func loadUserOut(ctx context.Context, userID int64) (userOut, error) {
+	var u userOut
+	err := db.Pool.QueryRow(ctx,
+		`SELECT id, email, created_at, plan, subscription_status
+		   FROM users
+		  WHERE id = $1`,
+		userID,
+	).Scan(&u.ID, &u.Email, &u.CreatedAt, &u.Plan, &u.SubscriptionStatus)
+	if err != nil {
+		return userOut{}, err
+	}
+	u.Plan = effectivePlan(u.Plan, u.SubscriptionStatus)
+	usage, err := currentUsage(ctx, userID, "")
+	if err != nil {
+		return userOut{}, err
+	}
+	u.Usage = usage
+	u.BillingEnabled = billingConfigured()
+	return u, nil
 }

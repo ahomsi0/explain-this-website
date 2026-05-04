@@ -198,6 +198,13 @@ export interface DomainInfo {
   ageYears: number;     // -1 if unknown
 }
 
+export interface UsageSummary {
+  plan: "free" | "pro";
+  dailyLimit: number;
+  dailyUsed: number;
+  dailyRemaining: number;
+}
+
 export interface SecurityHeaderCheck {
   id: string;
   label: string;
@@ -298,6 +305,7 @@ export interface AnalysisResult {
   intentAlignment: IntentAlignment;
   fontAudit?: FontAudit;
   domainInfo?: DomainInfo;
+  usage?: UsageSummary;
 }
 
 export interface AnalysisError {

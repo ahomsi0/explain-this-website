@@ -99,6 +99,35 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 
 CREATE INDEX IF NOT EXISTS password_resets_user_id_idx ON password_resets (user_id);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status TEXT NOT NULL DEFAULT 'inactive';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_current_period_end TIMESTAMPTZ;
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_stripe_customer_id_idx
+    ON users (stripe_customer_id) WHERE stripe_customer_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS users_stripe_subscription_id_idx
+    ON users (stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS user_daily_usage (
+    user_id      BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    usage_date   DATE NOT NULL,
+    count        INTEGER NOT NULL DEFAULT 0,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, usage_date)
+);
+
+CREATE TABLE IF NOT EXISTS anonymous_daily_usage (
+    visitor_id   TEXT NOT NULL,
+    usage_date   DATE NOT NULL,
+    count        INTEGER NOT NULL DEFAULT 0,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (visitor_id, usage_date)
+);
 `
 
 func migrate(ctx context.Context) error {

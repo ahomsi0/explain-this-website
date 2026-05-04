@@ -65,6 +65,18 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
+		uid := auth.UserIDFromContext(r.Context())
+		visitorID := visitorIDFromRequest(r)
+		usage, err := currentUsage(r.Context(), uid, visitorID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check daily usage")
+			return
+		}
+		if usage.DailyRemaining <= 0 {
+			writeError(w, http.StatusTooManyRequests, usageLimitMessage(usage.DailyLimit, uid != 0))
+			return
+		}
+
 		// Fetch HTML with a deadline.
 		timeout := time.Duration(cfg.FetchTimeoutSec) * time.Second
 		ctx, cancel := context.WithTimeout(r.Context(), timeout)
@@ -84,13 +96,23 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 
 		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
+		usage, err = incrementUsage(r.Context(), uid, visitorID)
+		if err != nil {
+			if err == errDailyLimitReached {
+				writeError(w, http.StatusTooManyRequests, usageLimitMessage(usage.DailyLimit, uid != 0))
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "could not record daily usage")
+			return
+		}
+		result.Usage = &usage
 
 		// Persist result so it can be retrieved via GET /api/report/:id.
 		// Ephemeral in-memory store always — DB persistence is additive (history) for logged-in users.
 		result.ReportID = globalStore.save(result)
 
 		// If the user is logged in, also save to their permanent history.
-		if uid := auth.UserIDFromContext(r.Context()); uid != 0 {
+		if uid != 0 {
 			saveAuditForUser(r.Context(), uid, result.ReportID, result)
 		}
 

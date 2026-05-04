@@ -47,6 +47,9 @@ func Start(cfg config.Config) error {
 	mux.HandleFunc("POST /api/auth/forgot-password", handler.ForgotPasswordHandler())
 	mux.HandleFunc("POST /api/auth/reset-password", handler.ResetPasswordHandler())
 	mux.HandleFunc("GET /api/auth/me", auth.RequireAuth(handler.MeHandler()))
+	mux.HandleFunc("POST /api/billing/checkout-session", auth.RequireAuth(handler.BillingCheckoutSessionHandler()))
+	mux.HandleFunc("POST /api/billing/portal-session", auth.RequireAuth(handler.BillingPortalSessionHandler()))
+	mux.HandleFunc("POST /api/billing/webhook", handler.BillingWebhookHandler())
 
 	// User audit history (account-only)
 	mux.HandleFunc("GET /api/audits", auth.RequireAuth(handler.AuditsListHandler()))

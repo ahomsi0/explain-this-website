@@ -31,9 +31,20 @@ function AppInner() {
   const { status, result, error, serverSignaled, analyze, reset } = useAnalysis();
   const [currentUrl, setCurrentUrl] = useState("");
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("billing") === "success") {
+      void refreshUser().finally(() => {
+        params.delete("billing");
+        const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+        window.history.replaceState({}, "", next);
+      });
+    }
+  }, [refreshUser]);
 
   const handleAnalyze = (url: string) => { setCurrentUrl(url); analyze(url); };
   const isBotProtectionError = !!error && (

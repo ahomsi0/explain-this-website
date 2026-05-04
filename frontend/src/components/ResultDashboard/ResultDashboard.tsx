@@ -13,6 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { HistoryModal } from "../auth/HistoryModal";
+import { createCheckoutSession, createPortalSession } from "../../services/authApi";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -59,10 +60,14 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
   const [searchValue, setSearchValue] = useState("");
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [billingBusy, setBillingBusy] = useState<"upgrade" | "manage" | null>(null);
+  const [billingError, setBillingError] = useState<string | null>(null);
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
+  const usage = result.usage ?? user?.usage;
+  const isPro = (user?.plan ?? usage?.plan) === "pro";
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +76,23 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
     onAnalyze(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
     setSearchValue("");
   };
+
+  async function handleBilling() {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    setBillingError(null);
+    setBillingBusy(isPro ? "manage" : "upgrade");
+    try {
+      const session = isPro ? await createPortalSession() : await createCheckoutSession();
+      window.location.href = session.url;
+    } catch (err) {
+      setBillingError(err instanceof Error ? err.message : "Could not open billing");
+    } finally {
+      setBillingBusy(null);
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
@@ -95,6 +117,20 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
               <span className="text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             </div>
             <span className="sm:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
+            {usage && (
+              <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                  usage.plan === "pro"
+                    ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
+                    : "text-zinc-300 bg-zinc-800 border-zinc-700"
+                }`}>
+                  {usage.plan === "pro" ? "Pro" : "Free"}
+                </span>
+                <span className="text-[11px] text-zinc-400">
+                  {usage.dailyRemaining}/{usage.dailyLimit} left today
+                </span>
+              </div>
+            )}
 
             {onAnalyze && (
               <form onSubmit={submitSearch} className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors flex-1 max-w-md">
@@ -138,6 +174,15 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
             <CopyButton result={result} />
             <DownloadButton result={result} />
             <ShareButton reportId={result.reportId} />
+            {user?.billingEnabled && (
+              <button
+                onClick={() => void handleBilling()}
+                disabled={billingBusy !== null}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors disabled:opacity-60"
+              >
+                {billingBusy ? "Please wait…" : isPro ? "Manage plan" : "Upgrade"}
+              </button>
+            )}
             {user ? (
               <UserMenu onShowHistory={() => setHistoryOpen(true)} />
             ) : (
@@ -188,6 +233,7 @@ export function ResultDashboard({ result, onReset, onAnalyze }: { result: Analys
                 return <MetricTile label="Broken Links" value={result.linkCheck.broken} valueClass={linkColor} />;
               })()}
             </div>
+            {billingError && <p className="px-4 sm:px-6 pb-3 text-xs text-red-300">{billingError}</p>}
           </div>
 
           {/* Section content */}

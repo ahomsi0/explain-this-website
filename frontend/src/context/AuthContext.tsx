@@ -13,6 +13,7 @@ interface AuthState {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
@@ -29,11 +30,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    fetchMe()
-      .then(setUser)
-      .catch(() => setToken(null))
-      .finally(() => setLoading(false));
+    refreshUser().finally(() => setLoading(false));
   }, []);
+
+  async function refreshUser() {
+    if (!getToken()) {
+      setUser(null);
+      return;
+    }
+    try {
+      const me = await fetchMe();
+      setUser(me);
+    } catch {
+      setToken(null);
+      setUser(null);
+    }
+  }
 
   async function login(email: string, password: string) {
     const res = await apiLogin(email, password);
@@ -53,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthCtx.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthCtx.Provider value={{ user, loading, login, signup, refreshUser, logout }}>
       {children}
     </AuthCtx.Provider>
   );

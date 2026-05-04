@@ -137,16 +137,16 @@ type SiteFreshness struct {
 
 // ImageFormatAudit breaks down image format usage and flags missing optimisations.
 type ImageFormatAudit struct {
-	Total           int `json:"total"`
-	WebP            int `json:"webp"`
-	AVIF            int `json:"avif"`
-	JPG             int `json:"jpg"`
-	PNG             int `json:"png"`
-	GIF             int `json:"gif"`
-	SVG             int `json:"svg"`
-	MissingDims     int `json:"missingDims"`     // no width+height attrs (causes CLS)
-	MissingLazy     int `json:"missingLazy"`     // no loading=lazy (above a rough fold threshold)
-	ModernPct       int `json:"modernPct"`       // (webp+avif) / total * 100
+	Total       int `json:"total"`
+	WebP        int `json:"webp"`
+	AVIF        int `json:"avif"`
+	JPG         int `json:"jpg"`
+	PNG         int `json:"png"`
+	GIF         int `json:"gif"`
+	SVG         int `json:"svg"`
+	MissingDims int `json:"missingDims"` // no width+height attrs (causes CLS)
+	MissingLazy int `json:"missingLazy"` // no loading=lazy (above a rough fold threshold)
+	ModernPct   int `json:"modernPct"`   // (webp+avif) / total * 100
 }
 
 // SecurityHeaderCheck is a single HTTP security-header audit result.
@@ -195,8 +195,8 @@ type VaguePhrase struct {
 
 // CopyAnalysis scores the specificity of the page's visible copy.
 type CopyAnalysis struct {
-	Score            int           `json:"score"`            // 0–100
-	Label            string        `json:"label"`            // "Sharp" | "Mixed" | "Generic"
+	Score            int           `json:"score"` // 0–100
+	Label            string        `json:"label"` // "Sharp" | "Mixed" | "Generic"
 	VaguePhrases     []VaguePhrase `json:"vaguePhrases"`
 	SpecificityHints []string      `json:"specificityHints"` // positive signals found
 }
@@ -293,9 +293,17 @@ type FontAudit struct {
 // DomainInfo holds registration metadata fetched from the RDAP API.
 type DomainInfo struct {
 	RegisteredAt string `json:"registeredAt"` // "2012-03-15" — ISO date, no time
-	ExpiresAt    string `json:"expiresAt"`     // "2027-03-15" — may be empty
-	Registrar    string `json:"registrar"`     // e.g. "Cloudflare, Inc."
-	AgeYears     int    `json:"ageYears"`      // -1 if unknown
+	ExpiresAt    string `json:"expiresAt"`    // "2027-03-15" — may be empty
+	Registrar    string `json:"registrar"`    // e.g. "Cloudflare, Inc."
+	AgeYears     int    `json:"ageYears"`     // -1 if unknown
+}
+
+// UsageSummary describes the caller's daily analysis allowance and current usage.
+type UsageSummary struct {
+	Plan           string `json:"plan"` // "free" | "pro"
+	DailyLimit     int    `json:"dailyLimit"`
+	DailyUsed      int    `json:"dailyUsed"`
+	DailyRemaining int    `json:"dailyRemaining"`
 }
 
 // AnalysisResult is the full response returned by POST /api/analyze.
@@ -311,26 +319,27 @@ type AnalysisResult struct {
 	WeakPoints      []string     `json:"weakPoints"`
 	Recommendations []string     `json:"recommendations"`
 	// Insight layer
-	Intent             IntentSummary      `json:"intent"`
-	CustomerView       CustomerView       `json:"customerView"`
-	ConversionScores   ConversionScores   `json:"conversionScores"`
-	FirstImpression    FirstImpression    `json:"firstImpression"`
-	BiggestOpportunity string             `json:"biggestOpportunity"`
-	CompetitorInsight  string             `json:"competitorInsight"`
-	PrioritizedIssues  []PrioritizedIssue `json:"prioritizedIssues"`
-	ELI5               []ELI5Item         `json:"eli5"`
-	AIDetection        AIDetection        `json:"aiDetection"`
-	Performance        *PerformanceResult `json:"performance,omitempty"`
-	ReportID           string             `json:"reportId,omitempty"`
-	ImageAudit         ImageFormatAudit   `json:"imageAudit"`
-	SiteFreshness      SiteFreshness      `json:"siteFreshness"`
-	SecurityHeaders []SecurityHeaderCheck `json:"securityHeaders"`
-	LinkCheck       LinkCheckResult       `json:"linkCheck"`
-	ColorPalette    ColorPalette          `json:"colorPalette"`
-	CopyAnalysis    CopyAnalysis          `json:"copyAnalysis"`
-	IntentAlignment IntentAlignment       `json:"intentAlignment"`
-	FontAudit       FontAudit             `json:"fontAudit"`
-	DomainInfo  *DomainInfo  `json:"domainInfo,omitempty"`
+	Intent             IntentSummary         `json:"intent"`
+	CustomerView       CustomerView          `json:"customerView"`
+	ConversionScores   ConversionScores      `json:"conversionScores"`
+	FirstImpression    FirstImpression       `json:"firstImpression"`
+	BiggestOpportunity string                `json:"biggestOpportunity"`
+	CompetitorInsight  string                `json:"competitorInsight"`
+	PrioritizedIssues  []PrioritizedIssue    `json:"prioritizedIssues"`
+	ELI5               []ELI5Item            `json:"eli5"`
+	AIDetection        AIDetection           `json:"aiDetection"`
+	Performance        *PerformanceResult    `json:"performance,omitempty"`
+	ReportID           string                `json:"reportId,omitempty"`
+	ImageAudit         ImageFormatAudit      `json:"imageAudit"`
+	SiteFreshness      SiteFreshness         `json:"siteFreshness"`
+	SecurityHeaders    []SecurityHeaderCheck `json:"securityHeaders"`
+	LinkCheck          LinkCheckResult       `json:"linkCheck"`
+	ColorPalette       ColorPalette          `json:"colorPalette"`
+	CopyAnalysis       CopyAnalysis          `json:"copyAnalysis"`
+	IntentAlignment    IntentAlignment       `json:"intentAlignment"`
+	FontAudit          FontAudit             `json:"fontAudit"`
+	DomainInfo         *DomainInfo           `json:"domainInfo,omitempty"`
+	Usage              *UsageSummary         `json:"usage,omitempty"`
 }
 
 // ErrorResponse is returned on any failure.
