@@ -51,10 +51,6 @@ function AppInner() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  if (isDashboardRoute) {
-    return <AdminDashboard />;
-  }
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("billing") === "success") {
@@ -81,6 +77,10 @@ function AppInner() {
     if (!currentUrl) { reset(); return; }
     analyze(currentUrl);
   };
+
+  if (isDashboardRoute) {
+    return <AdminDashboard />;
+  }
 
   // Shared report route takes over the whole page.
   if (loadingShared) {
