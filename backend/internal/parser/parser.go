@@ -91,8 +91,16 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 		eli5 = []model.ELI5Item{}
 	}
 
-	// Collect the concurrent PageSpeed result (nil on any failure — that's fine).
-	perf := (<-perfCh).data
+	// Collect the concurrent PageSpeed result, but don't let it block the whole
+	// analysis indefinitely. If CWV is slow or rate-limited, we still return the
+	// rest of the report and simply omit performance data.
+	var perf *model.PerformanceResult
+	select {
+	case perfRes := <-perfCh:
+		perf = perfRes.data
+	case <-time.After(30 * time.Second):
+		perf = nil
+	}
 	domainInfo := <-domainCh
 
 	// Augment the heuristic tech detection with services Lighthouse confirmed via

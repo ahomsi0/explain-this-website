@@ -19,11 +19,11 @@ export async function fetchReport(id: string): Promise<AnalysisResult> {
 }
 
 // How long to wait for the server in total (covers Render cold-starts which can take 60-90s).
-const TOTAL_TIMEOUT_MS = 120_000;
+const TOTAL_TIMEOUT_MS = 180_000;
 
 // How long a single attempt is allowed before we retry (handles flaky wakeups).
 // Must exceed the longest real analysis (~90s when PageSpeed is slow under load).
-const ATTEMPT_TIMEOUT_MS = 100_000;
+const ATTEMPT_TIMEOUT_MS = 150_000;
 
 // Delay between retries when the attempt itself fails (network error, not a slow response).
 const RETRY_DELAY_MS = 2_000;
