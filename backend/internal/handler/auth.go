@@ -174,6 +174,10 @@ func LoginHandler() http.HandlerFunc {
 // MeHandler returns the current user (requires auth).
 func MeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
+			return
+		}
 		uid := auth.UserIDFromContext(r.Context())
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
@@ -187,6 +191,9 @@ func MeHandler() http.HandlerFunc {
 }
 
 func loadUserOut(ctx context.Context, userID int64) (userOut, error) {
+	if !db.IsAvailable() {
+		return userOut{}, db.ErrNotConfigured
+	}
 	var u userOut
 	err := db.Pool.QueryRow(ctx,
 		`SELECT id, email, created_at, plan, subscription_status

@@ -21,6 +21,10 @@ type auditListItem struct {
 // AuditsListHandler returns the authenticated user's audit history.
 func AuditsListHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
+			return
+		}
 		uid := auth.UserIDFromContext(r.Context())
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
@@ -53,6 +57,10 @@ func AuditsListHandler() http.HandlerFunc {
 // AuditDeleteHandler deletes an audit owned by the authenticated user.
 func AuditDeleteHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
+			return
+		}
 		uid := auth.UserIDFromContext(r.Context())
 		id := r.PathValue("id")
 		if id == "" {
@@ -78,7 +86,7 @@ func AuditDeleteHandler() http.HandlerFunc {
 // saveAuditForUser persists an analysis result to the DB linked to a user.
 // Best-effort: errors are logged but not returned to the caller, since the analysis
 // itself succeeded and the user shouldn't see a failure.
-func saveAuditForUser(ctx context.Context, userID int64, id string, result model.AnalysisResult) {
+func saveAuditForUser(ctx context.Context, userID int64, id string, result model.AnalysisResult, shareable bool) {
 	if !db.IsAvailable() || userID == 0 {
 		return
 	}
@@ -90,9 +98,9 @@ func saveAuditForUser(ctx context.Context, userID int64, id string, result model
 	insertCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	_, _ = db.Pool.Exec(insertCtx,
-		`INSERT INTO audits (id, user_id, url, title, result)
-		 VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO audits (id, user_id, url, title, result, is_shareable)
+		 VALUES ($1, $2, $3, $4, $5, $6)
 		 ON CONFLICT (id) DO NOTHING`,
-		id, userID, result.URL, title, resultJSON,
+		id, userID, result.URL, title, resultJSON, shareable,
 	)
 }
