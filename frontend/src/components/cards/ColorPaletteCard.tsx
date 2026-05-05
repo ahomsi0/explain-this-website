@@ -12,7 +12,7 @@ function contrastColor(hex: string): string {
 }
 
 export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette }) {
-  const colors = colors ?? [];
+  const colors = colorPalette.colors ?? [];
   const [copied, setCopied] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
