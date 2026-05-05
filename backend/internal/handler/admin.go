@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/adminstate"
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
+	"github.com/ahomsi/explain-website/internal/email"
 )
 
 type adminUserRow struct {
@@ -31,12 +34,48 @@ type adminVisitorRow struct {
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
 
+// recentAuditRow surfaces a single recent analysis (joined with the user's email).
+type recentAuditRow struct {
+	ID        string    `json:"id"`
+	URL       string    `json:"url"`
+	Title     string    `json:"title"`
+	Email     string    `json:"email,omitempty"` // empty for anonymous
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type dayCount struct {
+	Date  string `json:"date"`  // YYYY-MM-DD
+	Count int    `json:"count"`
+}
+
+type urlCount struct {
+	URL   string `json:"url"`
+	Count int    `json:"count"`
+}
+
+type systemHealth struct {
+	DBOK             bool                    `json:"dbOk"`
+	DBLatencyMs      int64                   `json:"dbLatencyMs"`
+	PageSpeedKeySet  bool                    `json:"pagespeedKeySet"`
+	ResendKeySet     bool                    `json:"resendKeySet"`
+	JWTSecretSet     bool                    `json:"jwtSecretSet"`
+	StripeKeySet     bool                    `json:"stripeKeySet"`
+	PageSpeed        adminstate.HealthState  `json:"pagespeed"`
+	Resend           adminstate.HealthState  `json:"resend"`
+}
+
 type adminOverviewResp struct {
-	CurrentDate        string            `json:"currentDate"`
-	AdminEmail         string            `json:"adminEmail,omitempty"`
-	AnySignedInIsAdmin bool              `json:"anySignedInIsAdmin"`
-	Users              []adminUserRow    `json:"users"`
-	AnonymousVisitors  []adminVisitorRow `json:"anonymousVisitors"`
+	CurrentDate        string                   `json:"currentDate"`
+	AdminEmail         string                   `json:"adminEmail,omitempty"`
+	AnySignedInIsAdmin bool                     `json:"anySignedInIsAdmin"`
+	Users              []adminUserRow           `json:"users"`
+	AnonymousVisitors  []adminVisitorRow        `json:"anonymousVisitors"`
+	RecentAudits       []recentAuditRow         `json:"recentAudits"`
+	AuditsByDay        []dayCount               `json:"auditsByDay"`
+	TopURLs            []urlCount               `json:"topUrls"`
+	FailureLog         []adminstate.FailureEntry `json:"failureLog"`
+	SystemHealth       systemHealth             `json:"systemHealth"`
+	FeatureFlags       map[string]bool          `json:"featureFlags"`
 }
 
 type updateUserUsageReq struct {
@@ -55,6 +94,22 @@ type updateUserPlanReq struct {
 	SubscriptionStatus string `json:"subscriptionStatus"`
 }
 
+type toggleFlagReq struct {
+	Name    string `json:"name"`
+	Enabled bool   `json:"enabled"`
+}
+
+type broadcastReq struct {
+	Subject string `json:"subject"`
+	Body    string `json:"body"`
+}
+
+type broadcastResp struct {
+	Sent   int `json:"sent"`
+	Failed int `json:"failed"`
+	Total  int `json:"total"`
+}
+
 func AdminOverviewHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !db.IsAvailable() {
@@ -66,59 +121,131 @@ func AdminOverviewHandler() http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
 
-		rows, err := db.Pool.Query(ctx, `
+		// Users + their usage today.
+		users := []adminUserRow{}
+		if rows, err := db.Pool.Query(ctx, `
 			SELECT u.id, u.email, u.plan, u.subscription_status, COALESCE(du.count, 0), u.created_at
 			  FROM users u
 			  LEFT JOIN user_daily_usage du
 			    ON du.user_id = u.id
 			   AND du.usage_date = CURRENT_DATE
 			 ORDER BY u.created_at DESC
-			 LIMIT 200`)
-		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "could not load dashboard")
-			return
-		}
-		defer rows.Close()
-
-		users := []adminUserRow{}
-		for rows.Next() {
-			var row adminUserRow
-			if err := rows.Scan(&row.ID, &row.Email, &row.Plan, &row.SubscriptionStatus, &row.DailyUsed, &row.CreatedAt); err != nil {
-				writeJSONError(w, http.StatusInternalServerError, "could not load dashboard")
-				return
+			 LIMIT 200`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var row adminUserRow
+				if err := rows.Scan(&row.ID, &row.Email, &row.Plan, &row.SubscriptionStatus, &row.DailyUsed, &row.CreatedAt); err == nil {
+					row.Plan = effectivePlan(row.Plan, row.SubscriptionStatus)
+					row.DailyLimit = dailyLimitForPlan(row.Plan)
+					row.DailyRemaining = max(0, row.DailyLimit-row.DailyUsed)
+					users = append(users, row)
+				}
 			}
-			row.Plan = effectivePlan(row.Plan, row.SubscriptionStatus)
-			row.DailyLimit = dailyLimitForPlan(row.Plan)
-			row.DailyRemaining = max(0, row.DailyLimit-row.DailyUsed)
-			users = append(users, row)
 		}
 
-		anonRows, err := db.Pool.Query(ctx, `
+		// Anonymous visitors today.
+		visitors := []adminVisitorRow{}
+		if rows, err := db.Pool.Query(ctx, `
 			SELECT visitor_id, count, updated_at
 			  FROM anonymous_daily_usage
 			 WHERE usage_date = CURRENT_DATE
 			 ORDER BY updated_at DESC
-			 LIMIT 200`)
-		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "could not load dashboard")
-			return
-		}
-		defer anonRows.Close()
-
-		visitors := []adminVisitorRow{}
-		for anonRows.Next() {
-			var row adminVisitorRow
-			if err := anonRows.Scan(&row.VisitorID, &row.DailyUsed, &row.UpdatedAt); err != nil {
-				writeJSONError(w, http.StatusInternalServerError, "could not load dashboard")
-				return
+			 LIMIT 200`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var row adminVisitorRow
+				if err := rows.Scan(&row.VisitorID, &row.DailyUsed, &row.UpdatedAt); err == nil {
+					row.DailyLimit = freeDailyLimit
+					row.DailyRemaining = max(0, row.DailyLimit-row.DailyUsed)
+					visitors = append(visitors, row)
+				}
 			}
-			row.DailyLimit = freeDailyLimit
-			row.DailyRemaining = max(0, row.DailyLimit-row.DailyUsed)
-			visitors = append(visitors, row)
 		}
+
+		// Recent audits — last 20 across all users (left join to capture anonymous too).
+		recent := []recentAuditRow{}
+		if rows, err := db.Pool.Query(ctx, `
+			SELECT a.id, a.url, COALESCE(a.title, ''), COALESCE(u.email, ''), a.created_at
+			  FROM audits a
+			  LEFT JOIN users u ON u.id = a.user_id
+			 ORDER BY a.created_at DESC
+			 LIMIT 20`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var row recentAuditRow
+				if err := rows.Scan(&row.ID, &row.URL, &row.Title, &row.Email, &row.CreatedAt); err == nil {
+					recent = append(recent, row)
+				}
+			}
+		}
+
+		// Audits by day for the last 14 days (filling in zero days client-side is easier
+		// than generating series in SQL across all DB engines).
+		auditsByDay := []dayCount{}
+		if rows, err := db.Pool.Query(ctx, `
+			SELECT to_char(created_at::date, 'YYYY-MM-DD') AS d, COUNT(*) AS n
+			  FROM audits
+			 WHERE created_at >= NOW() - INTERVAL '14 days'
+			 GROUP BY d
+			 ORDER BY d ASC`); err == nil {
+			defer rows.Close()
+			counts := map[string]int{}
+			for rows.Next() {
+				var d string
+				var n int
+				if err := rows.Scan(&d, &n); err == nil {
+					counts[d] = n
+				}
+			}
+			// Fill zero-count days so the chart renders evenly.
+			for i := 13; i >= 0; i-- {
+				date := time.Now().AddDate(0, 0, -i).Format("2006-01-02")
+				auditsByDay = append(auditsByDay, dayCount{Date: date, Count: counts[date]})
+			}
+		}
+
+		// Top URLs analyzed in the last 30 days.
+		topUrls := []urlCount{}
+		if rows, err := db.Pool.Query(ctx, `
+			SELECT url, COUNT(*) AS n
+			  FROM audits
+			 WHERE created_at >= NOW() - INTERVAL '30 days'
+			 GROUP BY url
+			 ORDER BY n DESC
+			 LIMIT 10`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var row urlCount
+				if err := rows.Scan(&row.URL, &row.Count); err == nil {
+					topUrls = append(topUrls, row)
+				}
+			}
+		}
+
+		// Failure log + health: in-memory.
+		failures := adminstate.SnapshotFailures()
+		psHealth, resendHealth := adminstate.SnapshotHealth()
+		flags := adminstate.SnapshotFlags()
+
+		// DB health: ping with a trivial query and time it.
+		health := systemHealth{
+			PageSpeedKeySet: os.Getenv("PAGESPEED_API_KEY") != "",
+			ResendKeySet:    os.Getenv("RESEND_API_KEY") != "",
+			JWTSecretSet:    os.Getenv("JWT_SECRET") != "",
+			StripeKeySet:    os.Getenv("STRIPE_SECRET_KEY") != "",
+			PageSpeed:       psHealth,
+			Resend:          resendHealth,
+		}
+		pingCtx, pingCancel := context.WithTimeout(ctx, 2*time.Second)
+		startPing := time.Now()
+		if err := db.Pool.Ping(pingCtx); err == nil {
+			health.DBOK = true
+			health.DBLatencyMs = time.Since(startPing).Milliseconds()
+		}
+		pingCancel()
 
 		adminEmail := strings.TrimSpace(os.Getenv("ADMIN_EMAIL"))
 		writeJSON(w, http.StatusOK, adminOverviewResp{
@@ -127,6 +254,12 @@ func AdminOverviewHandler() http.HandlerFunc {
 			AnySignedInIsAdmin: adminEmail == "",
 			Users:              users,
 			AnonymousVisitors:  visitors,
+			RecentAudits:       recent,
+			AuditsByDay:        auditsByDay,
+			TopURLs:            topUrls,
+			FailureLog:         failures,
+			SystemHealth:       health,
+			FeatureFlags:       flags,
 		})
 	}
 }
@@ -254,6 +387,104 @@ func AdminUpdateUserPlanHandler() http.HandlerFunc {
 	}
 }
 
+// AdminToggleFlagHandler turns a feature flag on or off in-memory. Restart resets.
+func AdminToggleFlagHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := requireAdmin(r.Context()); err != nil {
+			writeJSONError(w, http.StatusForbidden, err.Error())
+			return
+		}
+		var body toggleFlagReq
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
+		body.Name = strings.TrimSpace(body.Name)
+		if body.Name == "" {
+			writeJSONError(w, http.StatusBadRequest, "flag name is required")
+			return
+		}
+		adminstate.SetFlag(body.Name, body.Enabled)
+		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "name": body.Name, "enabled": body.Enabled})
+	}
+}
+
+// AdminBroadcastHandler sends an email to every user. Best-effort: returns the
+// counts of successful + failed sends so the admin sees what happened.
+func AdminBroadcastHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "broadcasts are not enabled on this server")
+			return
+		}
+		if err := requireAdmin(r.Context()); err != nil {
+			writeJSONError(w, http.StatusForbidden, err.Error())
+			return
+		}
+		var body broadcastReq
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
+		body.Subject = strings.TrimSpace(body.Subject)
+		body.Body = strings.TrimSpace(body.Body)
+		if body.Subject == "" || body.Body == "" {
+			writeJSONError(w, http.StatusBadRequest, "subject and body are required")
+			return
+		}
+
+		// Fetch every user's email.
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+		rows, err := db.Pool.Query(ctx, `SELECT email FROM users WHERE email <> ''`)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load recipients")
+			return
+		}
+		defer rows.Close()
+		recipients := []string{}
+		for rows.Next() {
+			var e string
+			if err := rows.Scan(&e); err == nil && e != "" {
+				recipients = append(recipients, e)
+			}
+		}
+
+		// Send in parallel with a small pool to avoid hammering Resend.
+		const concurrency = 4
+		sem := make(chan struct{}, concurrency)
+		var (
+			wg     sync.WaitGroup
+			mu     sync.Mutex
+			sent   int
+			failed int
+		)
+		for _, addr := range recipients {
+			to := addr
+			wg.Add(1)
+			sem <- struct{}{}
+			go func() {
+				defer wg.Done()
+				defer func() { <-sem }()
+				sendCtx, sendCancel := context.WithTimeout(context.Background(), 15*time.Second)
+				defer sendCancel()
+				if err := email.SendBroadcast(sendCtx, to, body.Subject, body.Body); err != nil {
+					mu.Lock()
+					failed++
+					mu.Unlock()
+					return
+				}
+				mu.Lock()
+				sent++
+				mu.Unlock()
+			}()
+		}
+		wg.Wait()
+
+		writeJSON(w, http.StatusOK, broadcastResp{Sent: sent, Failed: failed, Total: len(recipients)})
+	}
+}
+
 func requireAdmin(ctx context.Context) error {
 	uid := auth.UserIDFromContext(ctx)
 	if uid == 0 {
@@ -265,13 +496,13 @@ func requireAdmin(ctx context.Context) error {
 		adminEmail = "homsiahmed16@gmail.com"
 	}
 
-	var email string
+	var emailAddr string
 	qctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	if err := db.Pool.QueryRow(qctx, `SELECT email FROM users WHERE id = $1`, uid).Scan(&email); err != nil {
+	if err := db.Pool.QueryRow(qctx, `SELECT email FROM users WHERE id = $1`, uid).Scan(&emailAddr); err != nil {
 		return errForbidden("admin access required")
 	}
-	if strings.ToLower(strings.TrimSpace(email)) != adminEmail {
+	if strings.ToLower(strings.TrimSpace(emailAddr)) != adminEmail {
 		return errForbidden("admin access required")
 	}
 	return nil

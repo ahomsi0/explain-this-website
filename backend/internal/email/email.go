@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/ahomsi/explain-website/internal/adminstate"
 )
 
 // fromAddress is what shows up in the recipient's inbox. Override via FROM_EMAIL.
@@ -22,6 +24,17 @@ func fromAddress() string {
 		return v
 	}
 	return "Explain The Website <onboarding@resend.dev>"
+}
+
+// SendBroadcast sends a plain-text admin announcement to a single recipient.
+// The body is rendered as both plain text and a minimal HTML version.
+func SendBroadcast(ctx context.Context, to, subject, body string) error {
+	htmlBody := fmt.Sprintf(`<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
+  <h2 style="color:#111827;margin:0 0 16px">%s</h2>
+  <div style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;white-space:pre-wrap">%s</div>
+  <p style="margin:24px 0 0;font-size:11px;color:#9ca3af">Sent by Explain The Website</p>
+</div>`, subject, body)
+	return send(ctx, to, subject, body, htmlBody)
 }
 
 // SendResetCode emails a password reset code to the recipient. If no email backend
@@ -39,6 +52,9 @@ func SendResetCode(ctx context.Context, to, code string) error {
 }
 
 func send(ctx context.Context, to, subject, text, html string) error {
+	if !adminstate.FlagEnabled(adminstate.FlagEmail) {
+		return fmt.Errorf("email sending is disabled by an admin flag")
+	}
 	apiKey := os.Getenv("RESEND_API_KEY")
 	if apiKey == "" {
 		// Dev fallback: log the email instead of sending. The user can copy the
@@ -69,13 +85,17 @@ func send(ctx context.Context, to, subject, text, html string) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		adminstate.RecordEmailFailure(err.Error())
 		return fmt.Errorf("resend request: %w", err)
 	}
 	defer resp.Body.Close()
 	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("resend %d: %s", resp.StatusCode, string(respBody))
+		errMsg := fmt.Sprintf("resend %d: %s", resp.StatusCode, string(respBody))
+		adminstate.RecordEmailFailure(errMsg)
+		return fmt.Errorf("%s", errMsg)
 	}
+	adminstate.RecordEmailSuccess()
 	log.Printf("[email] resend ok: %s", string(respBody))
 	return nil
 }

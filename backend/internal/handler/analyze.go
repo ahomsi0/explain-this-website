@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/adminstate"
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/fetcher"
@@ -84,6 +85,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 		rawHTML, respHeaders, err := fetcher.FetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
 		if err != nil {
+			adminstate.RecordAnalyzeFailure(rawURL, uid, "fetch: "+err.Error())
 			writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
 			return
 		}
@@ -91,6 +93,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		// Parse and analyse.
 		result, err := parser.Parse(rawHTML, rawURL, cfg.PageSpeedAPIKey)
 		if err != nil {
+			adminstate.RecordAnalyzeFailure(rawURL, uid, "parse: "+err.Error())
 			writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
 			return
 		}

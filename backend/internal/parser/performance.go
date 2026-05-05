@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/adminstate"
 	"github.com/ahomsi/explain-website/internal/model"
 )
 
@@ -88,8 +89,12 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 	}
 
 	if !result.Available {
+		if firstErr != nil {
+			adminstate.RecordPageSpeedFailure(firstErr.Error())
+		}
 		return nil, firstErr
 	}
+	adminstate.RecordPageSpeedSuccess()
 	return result, nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/adminstate"
 	"github.com/ahomsi/explain-website/internal/model"
 	"golang.org/x/net/html"
 )
@@ -26,7 +27,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	}
 	perfCh := make(chan perfResult, 1)
 	go func() {
-		if pageSpeedKey == "" {
+		if pageSpeedKey == "" || !adminstate.FlagEnabled(adminstate.FlagPageSpeed) {
 			perfCh <- perfResult{}
 			return
 		}

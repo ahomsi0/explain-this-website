@@ -10,6 +10,7 @@ import {
   updateAdminUserUsage,
   type AdminOverview,
 } from "../../services/authApi";
+import { AdminInsightsSection } from "./AdminInsightsCards";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -184,6 +185,9 @@ export function AdminDashboard() {
                 </div>
               </div>
             </section>
+
+            {/* ── Operational insights (recent audits, failures, charts, health, flags, broadcast) ── */}
+            <AdminInsightsSection overview={overview} onChange={() => void loadOverview()} />
 
             {/* ── Users table ── */}
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">

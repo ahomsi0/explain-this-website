@@ -54,12 +54,60 @@ export interface AdminVisitorRow {
   updatedAt: string;
 }
 
+export interface RecentAuditRow {
+  id: string;
+  url: string;
+  title: string;
+  email?: string;
+  createdAt: string;
+}
+
+export interface DayCount {
+  date: string;
+  count: number;
+}
+
+export interface UrlCount {
+  url: string;
+  count: number;
+}
+
+export interface FailureEntry {
+  at: string;
+  url: string;
+  message: string;
+  userId?: number;
+}
+
+export interface HealthState {
+  lastSuccessAt: string;
+  lastErrorAt: string;
+  lastErrorMsg: string;
+}
+
+export interface SystemHealth {
+  dbOk: boolean;
+  dbLatencyMs: number;
+  pagespeedKeySet: boolean;
+  resendKeySet: boolean;
+  jwtSecretSet: boolean;
+  stripeKeySet: boolean;
+  pagespeed: HealthState;
+  resend: HealthState;
+}
+
 export interface AdminOverview {
   currentDate: string;
   adminEmail?: string;
   anySignedInIsAdmin: boolean;
   users: AdminUserRow[];
   anonymousVisitors: AdminVisitorRow[];
+  recentAudits: RecentAuditRow[];
+  auditsByDay: DayCount[];
+  topUrls: UrlCount[];
+  failureLog: FailureEntry[];
+  systemHealth: SystemHealth;
+  featureFlags: Record<string, boolean>;
 }
 
 export function getToken(): string | null {
@@ -142,6 +190,26 @@ export async function updateAdminUserPlan(userId: number, plan: "free" | "pro", 
   await jsonFetch<{ ok: boolean }>("/api/admin/user-plan", {
     method: "POST",
     body: JSON.stringify({ userId, plan, subscriptionStatus }),
+  });
+}
+
+export async function toggleAdminFlag(name: string, enabled: boolean): Promise<void> {
+  await jsonFetch<{ ok: boolean }>("/api/admin/flag", {
+    method: "POST",
+    body: JSON.stringify({ name, enabled }),
+  });
+}
+
+export interface BroadcastResult {
+  sent: number;
+  failed: number;
+  total: number;
+}
+
+export async function adminBroadcastEmail(subject: string, body: string): Promise<BroadcastResult> {
+  return jsonFetch<BroadcastResult>("/api/admin/broadcast", {
+    method: "POST",
+    body: JSON.stringify({ subject, body }),
   });
 }
 
