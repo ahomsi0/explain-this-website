@@ -8,8 +8,8 @@ function barColorClass(score: number) {
 }
 
 export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis }) {
-  const vaguePhrases = vaguePhrases ?? [];
-  const specificityHints = specificityHints ?? [];
+  const vaguePhrases = copyAnalysis.vaguePhrases ?? [];
+  const specificityHints = copyAnalysis.specificityHints ?? [];
   return (
     <CardShell>
       <CardHeader
