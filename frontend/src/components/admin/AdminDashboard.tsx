@@ -11,12 +11,36 @@ import {
   type AdminOverview,
 } from "../../services/authApi";
 
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function scoreColor(n: number) {
+  return n >= 70 ? "text-emerald-400" : n >= 40 ? "text-amber-400" : "text-red-400";
+}
+
+// ─── sub-components ─────────────────────────────────────────────────────────
+
+function AnalyticCard({ title, value, sub, color = "text-zinc-100" }: {
+  title: string; value: string; sub: string; color?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
+      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em]">{title}</p>
+      <p className={`mt-3 text-3xl font-bold tabular-nums ${color}`}>{value}</p>
+      <p className="mt-1 text-xs text-zinc-500">{sub}</p>
+    </div>
+  );
+}
+
+// ─── main component ──────────────────────────────────────────────────────────
+
 export function AdminDashboard() {
   const { user, loading } = useAuth();
-  const [authOpen, setAuthOpen] = useState(false);
-  const [overview, setOverview] = useState<AdminOverview | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [authOpen, setAuthOpen]     = useState(false);
+  const [overview, setOverview]     = useState<AdminOverview | null>(null);
+  const [error, setError]           = useState<string | null>(null);
+  const [busyKey, setBusyKey]       = useState<string | null>(null);
+  const [search, setSearch]         = useState("");
+  const [planFilter, setPlanFilter] = useState<"all" | "free" | "pro">("all");
 
   async function loadOverview() {
     try {
@@ -30,57 +54,62 @@ export function AdminDashboard() {
   }
 
   useEffect(() => {
-    if (user) {
-      void loadOverview();
-    }
+    if (user) void loadOverview();
   }, [user?.id]);
 
-  const totals = useMemo(() => {
-    if (!overview) return { users: 0, pro: 0, guest: 0, analyses: 0 };
-    return {
-      users: overview.users.length,
-      pro: overview.users.filter((u) => u.plan === "pro").length,
-      guest: overview.anonymousVisitors.length,
-      analyses: overview.users.reduce((sum, u) => sum + u.dailyUsed, 0) + overview.anonymousVisitors.reduce((sum, v) => sum + v.dailyUsed, 0),
-    };
+  // ── derived analytics ──────────────────────────────────────────────────────
+  const analytics = useMemo(() => {
+    if (!overview) return null;
+    const totalUsers    = overview.users.length;
+    const proUsers      = overview.users.filter((u) => u.plan === "pro").length;
+    const freeUsers     = totalUsers - proUsers;
+    const totalAnalyses = overview.users.reduce((s, u) => s + u.dailyUsed, 0)
+                        + overview.anonymousVisitors.reduce((s, v) => s + v.dailyUsed, 0);
+    const guestAnalyses = overview.anonymousVisitors.reduce((s, v) => s + v.dailyUsed, 0);
+    const proRatio      = totalUsers > 0 ? Math.round((proUsers / totalUsers) * 100) : 0;
+    return { totalUsers, proUsers, freeUsers, totalAnalyses, guestAnalyses, proRatio };
   }, [overview]);
 
+  // ── filtered users ─────────────────────────────────────────────────────────
+  const filteredUsers = useMemo(() => {
+    if (!overview) return [];
+    return overview.users.filter((u) => {
+      const matchSearch = !search || u.email.toLowerCase().includes(search.toLowerCase());
+      const matchPlan   = planFilter === "all" || u.plan === planFilter;
+      return matchSearch && matchPlan;
+    });
+  }, [overview, search, planFilter]);
+
+  // ── actions ────────────────────────────────────────────────────────────────
   async function saveUserUsage(userId: number, count: number) {
     setBusyKey(`user-usage-${userId}`);
-    try {
-      await updateAdminUserUsage(userId, count);
-      await loadOverview();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update usage");
-    } finally {
-      setBusyKey(null);
-    }
+    try { await updateAdminUserUsage(userId, count); await loadOverview(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not update usage"); }
+    finally { setBusyKey(null); }
   }
 
   async function saveAnonUsage(visitorId: string, count: number) {
     setBusyKey(`anon-usage-${visitorId}`);
-    try {
-      await updateAdminAnonUsage(visitorId, count);
-      await loadOverview();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update visitor usage");
-    } finally {
-      setBusyKey(null);
-    }
+    try { await updateAdminAnonUsage(visitorId, count); await loadOverview(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not update visitor usage"); }
+    finally { setBusyKey(null); }
   }
 
   async function saveUserPlan(userId: number, plan: "free" | "pro") {
     setBusyKey(`user-plan-${userId}`);
-    try {
-      await updateAdminUserPlan(userId, plan, plan === "pro" ? "active" : "inactive");
-      await loadOverview();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update plan");
-    } finally {
-      setBusyKey(null);
-    }
+    try { await updateAdminUserPlan(userId, plan, plan === "pro" ? "active" : "inactive"); await loadOverview(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not update plan"); }
+    finally { setBusyKey(null); }
   }
 
+  async function resetUserUsage(userId: number) {
+    setBusyKey(`user-usage-${userId}`);
+    try { await updateAdminUserUsage(userId, 0); await loadOverview(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not reset usage"); }
+    finally { setBusyKey(null); }
+  }
+
+  // ── render ─────────────────────────────────────────────────────────────────
   if (loading) {
     return <Shell title="Dashboard"><p className="text-sm text-zinc-500">Loading account…</p></Shell>;
   }
@@ -106,25 +135,29 @@ export function AdminDashboard() {
   return (
     <Shell title="Dashboard" userMenu={<UserMenu />}>
       <div className="space-y-6">
-        <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-          <Metric title="Users" value={String(totals.users)} note="registered accounts" />
-          <Metric title="Pro" value={String(totals.pro)} note="active plan holders" />
-          <Metric title="Guests" value={String(totals.guest)} note="today's anonymous visitors" />
-          <Metric title="Usage" value={String(totals.analyses)} note="analyses counted today" />
-        </section>
+
+        {/* ── Analytics cards ── */}
+        {analytics && (
+          <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+            <AnalyticCard title="Total Users"    value={String(analytics.totalUsers)}    sub="registered accounts" />
+            <AnalyticCard title="Pro Users"      value={String(analytics.proUsers)}      sub={`${analytics.proRatio}% conversion rate`}
+              color={scoreColor(analytics.proRatio)} />
+            <AnalyticCard title="Free Users"     value={String(analytics.freeUsers)}     sub="on free plan" />
+            <AnalyticCard title="Analyses Today" value={String(analytics.totalAnalyses)} sub={`${analytics.guestAnalyses} from guests`} />
+          </section>
+        )}
 
         {error && (
-          <div className="rounded-lg border border-red-800/40 bg-red-950/50 px-4 py-3 text-sm text-red-300">
-            {error}
-          </div>
+          <div className="rounded-lg border border-red-800/40 bg-red-950/50 px-4 py-3 text-sm text-red-300">{error}</div>
         )}
 
         {overview && (
           <>
+            {/* ── Environment / admin status ── */}
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-800/80 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Overview</p>
+                  <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Environment</p>
                   <h2 className="mt-1 text-xl font-semibold text-zinc-100">Daily controls for {overview.currentDate}</h2>
                 </div>
                 <button
@@ -134,20 +167,64 @@ export function AdminDashboard() {
                   Refresh
                 </button>
               </div>
-              <div className="px-5 py-4">
-                <p className="text-sm text-zinc-400">
+              <div className="px-5 py-4 flex flex-wrap gap-3">
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium ${
+                  overview.anySignedInIsAdmin
+                    ? "border-amber-800/50 bg-amber-950/30 text-amber-400"
+                    : "border-emerald-800/50 bg-emerald-950/30 text-emerald-400"
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${overview.anySignedInIsAdmin ? "bg-amber-500" : "bg-emerald-500"}`} />
                   {overview.anySignedInIsAdmin
-                    ? "Admin mode is open to any signed-in user because ADMIN_EMAIL is not set."
-                    : `Admin access is restricted to ${overview.adminEmail}.`}
-                </p>
+                    ? "Admin lock: OFF — any signed-in user has access"
+                    : `Admin lock: ON — restricted to ${overview.adminEmail}`}
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900 text-xs font-medium text-zinc-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Backend: Connected
+                </div>
               </div>
             </section>
 
+            {/* ── Users table ── */}
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-800/80">
                 <h2 className="text-lg font-semibold text-zinc-100">Users</h2>
-                <p className="text-sm text-zinc-500 mt-1">Adjust today’s count or switch someone between Free and Pro.</p>
+                <p className="text-sm text-zinc-500 mt-1">Adjust today's count or switch someone between Free and Pro.</p>
+
+                {/* Search + filter */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-950 border border-zinc-800 focus-within:border-violet-500/50 transition-colors flex-1 min-w-[180px] max-w-xs">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
+                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search by email…"
+                      className="bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none flex-1"
+                    />
+                    {search && (
+                      <button onClick={() => setSearch("")} className="text-zinc-600 hover:text-zinc-400 text-xs">✕</button>
+                    )}
+                  </div>
+
+                  {(["all", "free", "pro"] as const).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPlanFilter(p)}
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors ${
+                        planFilter === p
+                          ? "text-violet-300 bg-violet-500/10 border-violet-500/30"
+                          : "text-zinc-500 hover:text-zinc-300 border-zinc-800 bg-zinc-900"
+                      }`}
+                    >
+                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px]">
                   <thead>
@@ -160,13 +237,20 @@ export function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {overview.users.map((row) => (
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-5 py-6 text-sm text-zinc-500 text-center">
+                          No users match the current filter.
+                        </td>
+                      </tr>
+                    ) : filteredUsers.map((row) => (
                       <UserRow
                         key={row.id}
                         row={row}
                         busyKey={busyKey}
                         onSaveUsage={saveUserUsage}
                         onSavePlan={saveUserPlan}
+                        onResetUsage={resetUserUsage}
                       />
                     ))}
                   </tbody>
@@ -174,6 +258,7 @@ export function AdminDashboard() {
               </div>
             </section>
 
+            {/* ── Anonymous visitors ── */}
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
               <div className="px-5 py-4 border-b border-zinc-800/80">
                 <h2 className="text-lg font-semibold text-zinc-100">Anonymous visitors</h2>
@@ -210,6 +295,8 @@ export function AdminDashboard() {
   );
 }
 
+// ─── Shell ────────────────────────────────────────────────────────────────────
+
 function Shell({ title, userMenu, children }: { title: string; userMenu?: ReactNode; children: ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -223,43 +310,28 @@ function Shell({ title, userMenu, children }: { title: string; userMenu?: ReactN
           <div className="shrink-0">{userMenu}</div>
         </div>
       </header>
-
       <main className="px-4 sm:px-6 py-8">
-        <div className="max-w-6xl mx-auto">
-          {children}
-        </div>
+        <div className="max-w-6xl mx-auto">{children}</div>
       </main>
     </div>
   );
 }
 
-function Metric({ title, value, note }: { title: string; value: string; note: string }) {
-  return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
-      <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.18em]">{title}</p>
-      <p className="mt-3 text-3xl font-bold text-zinc-100 tabular-nums">{value}</p>
-      <p className="mt-1 text-xs text-zinc-500">{note}</p>
-    </div>
-  );
-}
+// ─── UserRow ──────────────────────────────────────────────────────────────────
 
 function UserRow({
-  row,
-  busyKey,
-  onSaveUsage,
-  onSavePlan,
+  row, busyKey, onSaveUsage, onSavePlan, onResetUsage,
 }: {
   row: AdminOverview["users"][number];
   busyKey: string | null;
   onSaveUsage: (userId: number, count: number) => Promise<void>;
   onSavePlan: (userId: number, plan: "free" | "pro") => Promise<void>;
+  onResetUsage: (userId: number) => Promise<void>;
 }) {
   const [count, setCount] = useState(String(row.dailyUsed));
   const isBusy = busyKey === `user-usage-${row.id}` || busyKey === `user-plan-${row.id}`;
 
-  useEffect(() => {
-    setCount(String(row.dailyUsed));
-  }, [row.dailyUsed]);
+  useEffect(() => { setCount(String(row.dailyUsed)); }, [row.dailyUsed]);
 
   return (
     <tr className="border-b border-zinc-800/60 last:border-b-0 align-top">
@@ -295,7 +367,14 @@ function UserRow({
             disabled={isBusy}
             className="px-3 py-2 rounded-md text-xs font-semibold text-zinc-300 bg-zinc-800/70 hover:bg-zinc-800 border border-zinc-700 disabled:opacity-60 transition-colors"
           >
-            Save usage
+            Save
+          </button>
+          <button
+            onClick={() => void onResetUsage(row.id)}
+            disabled={isBusy}
+            className="px-3 py-2 rounded-md text-xs font-semibold text-zinc-400 hover:text-red-400 bg-zinc-800/70 hover:bg-red-950/30 border border-zinc-700 hover:border-red-900/50 disabled:opacity-60 transition-colors"
+          >
+            Reset
           </button>
           <button
             onClick={() => void onSavePlan(row.id, row.plan === "pro" ? "free" : "pro")}
@@ -310,10 +389,10 @@ function UserRow({
   );
 }
 
+// ─── VisitorRow ───────────────────────────────────────────────────────────────
+
 function VisitorRow({
-  row,
-  busyKey,
-  onSaveUsage,
+  row, busyKey, onSaveUsage,
 }: {
   row: AdminOverview["anonymousVisitors"][number];
   busyKey: string | null;
@@ -322,9 +401,7 @@ function VisitorRow({
   const [count, setCount] = useState(String(row.dailyUsed));
   const isBusy = busyKey === `anon-usage-${row.visitorId}`;
 
-  useEffect(() => {
-    setCount(String(row.dailyUsed));
-  }, [row.dailyUsed]);
+  useEffect(() => { setCount(String(row.dailyUsed)); }, [row.dailyUsed]);
 
   return (
     <tr className="border-b border-zinc-800/60 last:border-b-0 align-top">
