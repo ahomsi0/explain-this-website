@@ -217,31 +217,18 @@ export function ResultDashboard({
         <main className="flex-1 min-w-0">
           {/* Metrics strip */}
           <div className="border-b border-zinc-800 bg-zinc-900/30">
-            <div className="flex items-stretch overflow-x-auto scrollbar-none">
-              <MetricTile label="SEO Audit"        value={seoScore}                                        suffix="/100" valueClass={scoreColor(seoScore)} />
-              {result.performance?.mobile?.lighthouse && <>
-                <MetricTile label="Lighthouse SEO"   value={result.performance.mobile.lighthouse.seo}      suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />
-                <MetricTile label="Performance"      value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />
-                <MetricTile label="Accessibility"    value={result.performance.mobile.lighthouse.accessibility} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.accessibility)} />
-              </>}
+            <div className="flex items-stretch">
+              <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
+              {result.performance?.mobile?.lighthouse ? <>
+                <MetricTile label="Lighthouse SEO"  value={result.performance.mobile.lighthouse.seo}         suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />
+                <MetricTile label="Performance"     value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />
+              </> : null}
               {result.performance?.mobile?.lcp?.displayValue && (
-                <MetricTile label="LCP"              value={result.performance.mobile.lcp.displayValue}    valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
+                <MetricTile label="LCP"             value={result.performance.mobile.lcp.displayValue}       valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
               )}
-              <MetricTile label="UX Score"           value={uxScore}                                        suffix="/100" valueClass={scoreColor(uxScore)} />
-              <MetricTile label="First Impression"   value={result.firstImpression.score}                  suffix="/10"  valueClass={impressionColor(result.firstImpression.score)} />
-              <MetricTile label="Conversion Score"   value={result.conversionScores.overall}               suffix="/100" valueClass={scoreColor(result.conversionScores.overall)} />
-              <MetricTile label="Tech Stack"         value={result.techStack.length}                        suffix=" tools" valueClass="text-zinc-100" />
-              <MetricTile label="Freshness"          value={result.siteFreshness.copyrightYear || result.siteFreshness.rating} valueClass={freshnessColor(result.siteFreshness.rating)} />
-              {result.securityHeaders.length > 0 && (() => {
-                const secPass = result.securityHeaders.filter(h => h.status === "pass").length;
-                const secTotal = result.securityHeaders.length;
-                const secColor = secPass >= Math.ceil(secTotal * 0.8) ? "text-emerald-400" : secPass >= Math.ceil(secTotal * 0.5) ? "text-amber-400" : "text-red-400";
-                return <MetricTile label="Security Headers" value={`${secPass}/${secTotal}`} valueClass={secColor} />;
-              })()}
-              {result.linkCheck.checked > 0 && (() => {
-                const linkColor = result.linkCheck.broken === 0 ? "text-emerald-400" : result.linkCheck.broken <= 2 ? "text-amber-400" : "text-red-400";
-                return <MetricTile label="Broken Links" value={result.linkCheck.broken} valueClass={linkColor} />;
-              })()}
+              <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
+              <MetricTile label="First Impression"  value={result.firstImpression.score}                     suffix="/10"  valueClass={impressionColor(result.firstImpression.score)} />
+              <MetricTile label="Conversion Score"  value={result.conversionScores.overall}                  suffix="/100" valueClass={scoreColor(result.conversionScores.overall)} />
             </div>
             {billingError && <p className="px-4 sm:px-6 pb-3 text-xs text-red-300">{billingError}</p>}
           </div>
