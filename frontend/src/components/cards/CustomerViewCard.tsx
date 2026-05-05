@@ -1,6 +1,29 @@
 import type { CustomerView } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { ScoreInsight } from "../ui/ScoreInsight";
+
+function uxVerdictData(trustLevel: "strong" | "moderate" | "weak", offerClear: boolean, ctaClear: boolean) {
+  const signals = [trustLevel === "strong", offerClear, ctaClear].filter(Boolean).length;
+  if (signals === 3) return {
+    label: "Strong",
+    cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/25",
+    meaning: "Strong first impression — visitors quickly understand the offer and trust the brand.",
+    nextStep: "Keep refining copy freshness and social proof to maintain this standard.",
+  };
+  if (signals >= 2) return {
+    label: "Moderate",
+    cls: "text-amber-400 bg-amber-500/10 border-amber-500/25",
+    meaning: "Decent UX but some trust or clarity gaps may cause visitors to hesitate.",
+    nextStep: "Improve the weakest signal — unclear offers and missing trust badges are top priorities.",
+  };
+  return {
+    label: "Weak",
+    cls: "text-red-400 bg-red-500/10 border-red-500/25",
+    meaning: "Visitors are unlikely to convert — the offer is unclear or the site feels untrustworthy.",
+    nextStep: "Start with a single clear value proposition and add at least one social proof element.",
+  };
+}
 
 const trustColor = {
   strong:   "text-emerald-400",
@@ -15,6 +38,7 @@ const trustLabel = {
 };
 
 export function CustomerViewCard({ customerView }: { customerView: CustomerView }) {
+  const verdict = uxVerdictData(customerView.trustLevel, customerView.offerClear, customerView.ctaClear);
   return (
     <CardShell>
       <CardHeader
@@ -48,6 +72,13 @@ export function CustomerViewCard({ customerView }: { customerView: CustomerView 
             </div>
           ))}
         </div>
+        <div className="mt-4 flex items-center gap-2">
+          <span className="text-[10px] text-zinc-500 font-medium">UX Verdict</span>
+          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${verdict.cls}`}>
+            {verdict.label}
+          </span>
+        </div>
+        <ScoreInsight meaning={verdict.meaning} nextStep={verdict.nextStep} />
       </div>
     </CardShell>
   );
