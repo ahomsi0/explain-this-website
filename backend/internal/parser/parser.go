@@ -98,7 +98,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	select {
 	case perfRes := <-perfCh:
 		perf = perfRes.data
-	case <-time.After(30 * time.Second):
+	case <-time.After(60 * time.Second):
 		perf = nil
 	}
 	domainInfo := <-domainCh
