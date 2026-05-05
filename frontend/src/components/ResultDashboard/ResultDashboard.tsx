@@ -194,7 +194,7 @@ export function ResultDashboard({
               </button>
             )}
             {user ? (
-              <UserMenu onShowHistory={() => setHistoryOpen(true)} />
+              <UserMenu />
             ) : (
               <button
                 onClick={() => setAuthOpen(true)}
@@ -212,7 +212,14 @@ export function ResultDashboard({
 
       {/* ── Body: sidebar + main ── */}
       <div className="flex-1 flex">
-        <Sidebar items={SECTIONS} active={activeSection} onSelect={setActiveSection} onNewAudit={onReset} />
+        <Sidebar
+          items={SECTIONS}
+          active={activeSection}
+          onSelect={setActiveSection}
+          onNewAudit={onReset}
+          isSignedIn={!!user}
+          onShowHistory={() => setHistoryOpen(true)}
+        />
 
         <main className="flex-1 min-w-0">
           {/* Metrics strip */}

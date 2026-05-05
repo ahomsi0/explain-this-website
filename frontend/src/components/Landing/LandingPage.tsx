@@ -49,7 +49,7 @@ export function LandingPage({
                   </svg>
                   History
                 </button>
-                <UserMenu onShowHistory={() => setHistoryOpen(true)} />
+                <UserMenu />
               </>
             ) : (
               <button

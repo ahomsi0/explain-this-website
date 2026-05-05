@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { createCheckoutSession, createPortalSession } from "../../services/authApi";
 
-export function UserMenu({ onShowHistory, onGoPro }: { onShowHistory?: () => void; onGoPro?: () => void }) {
+export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
   const { user, logout, refreshUser } = useAuth();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<"upgrade" | "manage" | null>(null);
@@ -94,14 +94,6 @@ export function UserMenu({ onShowHistory, onGoPro }: { onShowHistory?: () => voi
           >
             Go Pro
           </button>
-          {onShowHistory && (
-            <button
-              onClick={() => { setOpen(false); onShowHistory(); }}
-              className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
-            >
-              Audit history
-            </button>
-          )}
           {user.billingEnabled && (
             <button
               onClick={() => {
