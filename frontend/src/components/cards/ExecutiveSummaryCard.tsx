@@ -1,4 +1,5 @@
 // frontend/src/components/cards/ExecutiveSummaryCard.tsx
+import { useState } from "react";
 import type { Insights, InsightItem } from "../../utils/insights";
 import { CardShell } from "../ui/CardShell";
 import { scoreColor, scoreBg } from "../../utils/scoreColors";
@@ -28,8 +29,40 @@ function ScorePill({ label, score, tooltip }: { label: string; score: number; to
   );
 }
 
+function PerfPill({ score, view, hasBoth, onToggle }: {
+  score: number;
+  view: "mobile" | "desktop";
+  hasBoth: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
+      <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+      {hasBoth ? (
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-0.5 mt-0.5 group"
+          title={`Showing ${view} — click to switch`}
+        >
+          <span className={`text-[9px] font-semibold uppercase tracking-wider transition-colors ${view === "mobile" ? "text-zinc-300" : "text-zinc-600 group-hover:text-zinc-400"}`}>M</span>
+          <span className="text-[9px] text-zinc-700 mx-0.5">/</span>
+          <span className={`text-[9px] font-semibold uppercase tracking-wider transition-colors ${view === "desktop" ? "text-zinc-300" : "text-zinc-600 group-hover:text-zinc-400"}`}>D</span>
+        </button>
+      ) : (
+        <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Perf</span>
+      )}
+    </div>
+  );
+}
+
 export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
-  const { overallScore, seoScore, perfScore, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const [perfView, setPerfView] = useState<"mobile" | "desktop">("mobile");
+
+  const hasBoth = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
+  const displayedPerfScore = !hasBoth
+    ? perfScore
+    : perfView === "mobile" ? perfScoreMobile : perfScoreDesktop;
 
   return (
     <CardShell>
@@ -56,10 +89,15 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
 
         {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2 mb-5">
-          <ScorePill label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing" />
-          <ScorePill label="Performance" score={perfScore}       tooltip="Lighthouse performance score (mobile)" />
-          <ScorePill label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." />
-          <ScorePill label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction" />
+          <ScorePill label="SEO"        score={seoScore}           tooltip="Proportion of SEO checks passing" />
+          <PerfPill
+            score={displayedPerfScore}
+            view={perfView}
+            hasBoth={hasBoth}
+            onToggle={() => setPerfView((v) => v === "mobile" ? "desktop" : "mobile")}
+          />
+          <ScorePill label="UX"         score={uxScore}            tooltip="UX signals: CTA, trust, mobile, forms, etc." />
+          <ScorePill label="Conversion" score={conversionScore}    tooltip="Clarity, trust, CTA strength, friction" />
         </div>
 
         {/* Top issues + Quick wins */}

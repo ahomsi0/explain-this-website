@@ -11,6 +11,8 @@ export interface Insights {
   overallScore: number;
   seoScore: number;
   perfScore: number;
+  perfScoreMobile: number;   // -1 when unavailable
+  perfScoreDesktop: number;  // -1 when unavailable
   uxScore: number;
   conversionScore: number;
   /** Up to 3 highest-priority issues. May be empty if no issues are detected. */
@@ -253,7 +255,10 @@ export function computeInsights(result: AnalysisResult): Insights {
 
   const summarySentence = buildSummary({ seoScore, perfScore, uxScore, conversionScore, result });
 
-  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, uxScore, conversionScore, topIssues, quickWins, summarySentence };
+  const perfScoreMobile  = result.performance?.mobile?.lighthouse?.performance  ?? -1;
+  const perfScoreDesktop = result.performance?.desktop?.lighthouse?.performance ?? -1;
+
+  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence };
 }
 
 function buildSummary({
