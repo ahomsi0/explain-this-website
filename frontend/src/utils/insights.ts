@@ -13,7 +13,9 @@ export interface Insights {
   perfScore: number;
   uxScore: number;
   conversionScore: number;
+  /** Up to 3 highest-priority issues. May be empty if no issues are detected. */
   topIssues: InsightItem[];
+  /** Up to 3 low-effort quick wins. May be empty if no low-effort issues are detected. */
   quickWins: InsightItem[];
   summarySentence: string;
 }
@@ -35,6 +37,7 @@ function computePerfScore(result: AnalysisResult): number {
 }
 
 function computeUxScore(result: AnalysisResult): number {
+  // Conversion-relevant signals only (hasCookieBanner, hasLiveChat, etc. excluded)
   const sigs = [
     result.ux.hasCTA,
     result.ux.hasForms,
@@ -204,7 +207,7 @@ export function computeInsights(result: AnalysisResult): Insights {
     });
   }
 
-  // Stale content — scored high because it signals abandonment and hurts trust/SEO
+  // Scored high (91): stale content signals abandonment, hurts trust and SEO credibility
   if (result.siteFreshness.rating === "stale") {
     candidates.push({
       id: "stale-content",

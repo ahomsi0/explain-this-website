@@ -69,6 +69,7 @@ describe("computeInsights", () => {
     expect(topIssues.some((i) => i.id === "no-cta")).toBe(true);
   });
 
+  // stale-content scores 91 (above SEO fails at 84) so it lands in the top-3 for this fixture
   it("flags stale freshness as an issue", () => {
     const { topIssues } = computeInsights(base);
     expect(topIssues.some((i) => i.id === "stale-content")).toBe(true);
