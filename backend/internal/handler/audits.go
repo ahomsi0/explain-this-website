@@ -32,7 +32,7 @@ func AuditsListHandler() http.HandlerFunc {
 		rows, err := db.Pool.Query(ctx,
 			`SELECT id, url, COALESCE(title, ''), created_at
 			   FROM audits
-			  WHERE user_id = $1
+			  WHERE user_id = $1 AND deleted_at IS NULL
 			  ORDER BY created_at DESC
 			  LIMIT 100`, uid)
 		if err != nil {
@@ -64,7 +64,10 @@ func AuditsClearHandler() http.HandlerFunc {
 		uid := auth.UserIDFromContext(r.Context())
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
-		_, err := db.Pool.Exec(ctx, `DELETE FROM audits WHERE user_id = $1`, uid)
+		// Soft-delete so the analyses still count toward operational metrics
+		// (admin Recent Audits, Top URLs, Audits-by-Day) — the user just no
+		// longer sees them in their own history.
+		_, err := db.Pool.Exec(ctx, `UPDATE audits SET deleted_at = NOW() WHERE user_id = $1 AND deleted_at IS NULL`, uid)
 		if err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not clear history")
 			return
@@ -88,8 +91,9 @@ func AuditDeleteHandler() http.HandlerFunc {
 		}
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
+		// Soft-delete: keep the row for admin metrics, hide from the user.
 		tag, err := db.Pool.Exec(ctx,
-			`DELETE FROM audits WHERE id = $1 AND user_id = $2`, id, uid)
+			`UPDATE audits SET deleted_at = NOW() WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`, id, uid)
 		if err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not delete")
 			return
