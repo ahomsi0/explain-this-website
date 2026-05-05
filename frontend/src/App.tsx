@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LandingPage } from "./components/Landing/LandingPage";
 import { fetchUsage, type UsageSummary } from "./services/authApi";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
+import { GoProPage } from "./components/billing/GoProPage";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -34,9 +35,15 @@ function useDashboardRoute() {
   return pathname === "/dashboard";
 }
 
+function useGoProRoute() {
+  const pathname = window.location.pathname.toLowerCase();
+  return pathname === "/go-pro";
+}
+
 function AppInner() {
   const { user, refreshUser } = useAuth();
   const isDashboardRoute = useDashboardRoute();
+  const isGoProRoute = useGoProRoute();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const { status, result, error, serverSignaled, analyze, reset } = useAnalysis(async (analysisResult) => {
     if (analysisResult.usage) {
@@ -80,6 +87,9 @@ function AppInner() {
 
   if (isDashboardRoute) {
     return <AdminDashboard />;
+  }
+  if (isGoProRoute) {
+    return <GoProPage />;
   }
 
   // Shared report route takes over the whole page.

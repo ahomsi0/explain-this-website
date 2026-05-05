@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { LogoWordmark } from "../ui/Logo";
 import { URLInput } from "../UrlInput/UrlInput";
 import { UserMenu } from "../auth/UserMenu";
 import { AuthModal } from "../auth/AuthModal";
 import { HistoryModal } from "../auth/HistoryModal";
-import { createCheckoutSession } from "../../services/authApi";
 import type { AuthUser, UsageSummary } from "../../services/authApi";
 
 const EXAMPLE_URLS = ["stripe.com", "github.com", "vercel.com", "linear.app"];
@@ -26,26 +24,6 @@ export function LandingPage({
   historyOpen: boolean;
   setHistoryOpen: (v: boolean) => void;
 }) {
-  const [upgradeBusy, setUpgradeBusy] = useState(false);
-  const [planError, setPlanError] = useState<string | null>(null);
-
-  async function handleUpgrade() {
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-    setPlanError(null);
-    setUpgradeBusy(true);
-    try {
-      const { url } = await createCheckoutSession();
-      window.location.href = url;
-    } catch (err) {
-      setPlanError(err instanceof Error ? err.message : "Could not open checkout");
-    } finally {
-      setUpgradeBusy(false);
-    }
-  }
-
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Ambient gradient blobs — purely decorative */}
@@ -154,55 +132,6 @@ export function LandingPage({
                 to save your audit history and unlock the paid Pro plan.
               </p>
             )}
-          </div>
-        </section>
-
-        <section className="px-4 sm:px-6 pb-16">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8">
-              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Plans</p>
-              <h3 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">Simple limits, no surprises</h3>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <h4 className="text-lg font-semibold text-zinc-100">Free</h4>
-                  <span className="text-[11px] font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-full px-2.5 py-1">No signup required</span>
-                </div>
-                <p className="mt-3 text-3xl font-bold text-zinc-100">$0<span className="text-sm text-zinc-500 font-medium">/month</span></p>
-                <p className="mt-3 text-sm text-zinc-400 leading-relaxed">Perfect for quick checks before you decide whether a site deserves a deeper look.</p>
-                <ul className="mt-5 space-y-2 text-sm text-zinc-300">
-                  <li>2 analyses per day</li>
-                  <li>No email required</li>
-                  <li>History unlocked when you sign in</li>
-                  <li>Sign in anytime to keep your audit history</li>
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-violet-500/30 bg-violet-500/8 p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <h4 className="text-lg font-semibold text-zinc-100">Pro</h4>
-                  <span className="text-[11px] font-semibold text-violet-300 bg-violet-500/15 border border-violet-500/25 rounded-full px-2.5 py-1">Best for daily work</span>
-                </div>
-                <p className="mt-3 text-3xl font-bold text-zinc-100">$4.99<span className="text-sm text-zinc-400 font-medium">/month</span></p>
-                <p className="mt-3 text-sm text-zinc-300 leading-relaxed">For agencies, founders, and consultants who need room to analyze sites every day without babysitting limits.</p>
-                <ul className="mt-5 space-y-2 text-sm text-zinc-200">
-                  <li>30 analyses per day</li>
-                  <li>Saved history on your account</li>
-                  <li>Built for regular research and client work</li>
-                  <li>More room to compare sites without hitting the limit</li>
-                </ul>
-                <button
-                  onClick={() => void handleUpgrade()}
-                  disabled={upgradeBusy || user?.plan === "pro"}
-                  className="mt-6 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-semibold text-white bg-violet-500 hover:bg-violet-400 disabled:opacity-60 transition-colors"
-                >
-                  {user ? (upgradeBusy ? "Opening checkout…" : user.plan === "pro" ? "Your plan is active" : "Upgrade to Pro") : "Sign in to upgrade"}
-                </button>
-                {planError && <p className="mt-3 text-xs text-red-300">{planError}</p>}
-              </div>
-            </div>
           </div>
         </section>
 
