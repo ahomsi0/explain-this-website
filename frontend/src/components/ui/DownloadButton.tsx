@@ -125,8 +125,12 @@ function buildPDF(result: AnalysisResult) {
     y += 12;
   }
 
-  // Standard table
+  // Standard table. We track the page the table starts on so the
+  // didDrawPage hook only paints the dark background on NEW overflow
+  // pages — painting it on the start page would cover content drawn
+  // before the table.
   function table(opts: Parameters<typeof autoTable>[1]) {
+    const startPage = doc.getNumberOfPages();
     autoTable(doc, {
       theme: "plain",
       margin: { left: M, right: M, bottom: FOOT + 2 },
@@ -143,7 +147,9 @@ function buildPDF(result: AnalysisResult) {
         overflow: "linebreak",
       },
       alternateRowStyles: { fillColor: rgb(CARD2) },
-      didDrawPage() { bg(); },
+      didDrawPage() {
+        if (doc.getNumberOfPages() > startPage) bg();
+      },
       ...opts,
     });
   }
