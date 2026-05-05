@@ -54,6 +54,25 @@ func AuditsListHandler() http.HandlerFunc {
 	}
 }
 
+// AuditsClearHandler deletes ALL audits owned by the authenticated user.
+func AuditsClearHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
+			return
+		}
+		uid := auth.UserIDFromContext(r.Context())
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+		_, err := db.Pool.Exec(ctx, `DELETE FROM audits WHERE user_id = $1`, uid)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not clear history")
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // AuditDeleteHandler deletes an audit owned by the authenticated user.
 func AuditDeleteHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

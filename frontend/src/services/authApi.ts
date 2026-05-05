@@ -181,3 +181,14 @@ export async function deleteAudit(id: string): Promise<void> {
     throw new Error(data?.error ?? `Delete failed (${res.status})`);
   }
 }
+
+export async function clearAudits(): Promise<void> {
+  const res = await fetch(`${API_URL}/api/audits`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error ?? `Clear failed (${res.status})`);
+  }
+}

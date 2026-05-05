@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchAudits, deleteAudit, type AuditListItem } from "../../services/authApi";
+import { fetchAudits, deleteAudit, clearAudits, type AuditListItem } from "../../services/authApi";
 
 export function HistoryModal({
   open,
@@ -42,6 +42,16 @@ export function HistoryModal({
     }
   }
 
+  async function clearAll() {
+    if (!confirm("Permanently delete all audits from your history? This cannot be undone.")) return;
+    try {
+      await clearAudits();
+      setItems([]);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Clear failed");
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
@@ -53,11 +63,21 @@ export function HistoryModal({
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
           <h2 className="text-sm font-semibold text-zinc-100">Audit history</h2>
-          <button
-            onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-200 text-xl leading-none"
-            aria-label="Close"
-          >×</button>
+          <div className="flex items-center gap-3">
+            {items && items.length > 0 && (
+              <button
+                onClick={clearAll}
+                className="text-[11px] font-medium text-zinc-500 hover:text-red-400 transition-colors"
+              >
+                Clear history
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-zinc-500 hover:text-zinc-200 text-xl leading-none"
+              aria-label="Close"
+            >×</button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">

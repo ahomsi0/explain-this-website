@@ -58,6 +58,7 @@ func Start(cfg config.Config) error {
 
 	// User audit history (account-only)
 	mux.HandleFunc("GET /api/audits", auth.RequireAuth(handler.AuditsListHandler()))
+	mux.HandleFunc("DELETE /api/audits", auth.RequireAuth(handler.AuditsClearHandler()))
 	mux.HandleFunc("DELETE /api/audits/{id}", auth.RequireAuth(handler.AuditDeleteHandler()))
 
 	health := func(w http.ResponseWriter, r *http.Request) {
