@@ -1,7 +1,8 @@
 // frontend/src/components/ui/Tooltip.tsx
 import { useState } from "react";
+import type { ReactNode } from "react";
 
-export function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+export function Tooltip({ children, text }: { children: ReactNode; text: string }) {
   const [visible, setVisible] = useState(false);
 
   return (
