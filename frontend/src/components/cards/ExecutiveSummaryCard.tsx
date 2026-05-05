@@ -41,17 +41,32 @@ function PerfPill({ score, view, hasBoth, onToggle }: {
       {hasBoth ? (
         <div className="flex items-center gap-1.5 mt-0.5">
           {/* Phone icon — mobile */}
-          <button onClick={() => view !== "mobile" && onToggle()} title="Mobile score" className="transition-colors">
+          <button
+            onClick={() => view !== "mobile" && onToggle()}
+            title="Mobile score"
+            className={`p-1 rounded-md border transition-all ${
+              view === "mobile"
+                ? "border-white/30 shadow-[0_0_6px_1px_rgba(255,255,255,0.15)]"
+                : "border-transparent hover:border-zinc-700"
+            }`}
+          >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              className={view === "mobile" ? scoreColor(score) : "text-zinc-700 hover:text-zinc-500"}>
+              className={view === "mobile" ? "text-white" : "text-zinc-600 hover:text-zinc-400"}>
               <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
             </svg>
           </button>
-          <span className="text-zinc-700 text-[9px]">·</span>
           {/* Monitor icon — desktop */}
-          <button onClick={() => view !== "desktop" && onToggle()} title="Desktop score" className="transition-colors">
+          <button
+            onClick={() => view !== "desktop" && onToggle()}
+            title="Desktop score"
+            className={`p-1 rounded-md border transition-all ${
+              view === "desktop"
+                ? "border-white/30 shadow-[0_0_6px_1px_rgba(255,255,255,0.15)]"
+                : "border-transparent hover:border-zinc-700"
+            }`}
+          >
             <svg width="12" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              className={view === "desktop" ? scoreColor(score) : "text-zinc-700 hover:text-zinc-500"}>
+              className={view === "desktop" ? "text-white" : "text-zinc-600 hover:text-zinc-400"}>
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
