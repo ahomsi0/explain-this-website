@@ -36,29 +36,24 @@ function PerfPill({ score, view, hasBoth, onToggle }: {
   onToggle: () => void;
 }) {
   return (
-    <div className={`flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
+    <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
       <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
       {hasBoth ? (
-        <div className="flex items-center rounded-full bg-zinc-900 border border-zinc-800 p-0.5 gap-0.5">
-          <button
-            onClick={() => view !== "mobile" && onToggle()}
-            className={`px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all ${
-              view === "mobile"
-                ? "bg-zinc-700 text-zinc-200"
-                : "text-zinc-600 hover:text-zinc-400"
-            }`}
-          >
-            Mobile
+        <div className="flex items-center gap-1.5 mt-0.5">
+          {/* Phone icon — mobile */}
+          <button onClick={() => view !== "mobile" && onToggle()} title="Mobile score" className="transition-colors">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              className={view === "mobile" ? scoreColor(score) : "text-zinc-700 hover:text-zinc-500"}>
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
           </button>
-          <button
-            onClick={() => view !== "desktop" && onToggle()}
-            className={`px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all ${
-              view === "desktop"
-                ? "bg-zinc-700 text-zinc-200"
-                : "text-zinc-600 hover:text-zinc-400"
-            }`}
-          >
-            Desktop
+          <span className="text-zinc-700 text-[9px]">·</span>
+          {/* Monitor icon — desktop */}
+          <button onClick={() => view !== "desktop" && onToggle()} title="Desktop score" className="transition-colors">
+            <svg width="12" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              className={view === "desktop" ? scoreColor(score) : "text-zinc-700 hover:text-zinc-500"}>
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
           </button>
         </div>
       ) : (
