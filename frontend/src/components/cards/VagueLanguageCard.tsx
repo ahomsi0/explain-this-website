@@ -55,14 +55,18 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
 
         {/* Specificity hints */}
         {copyAnalysis.specificityHints.length > 0 && (
-          <div className="border-t border-zinc-800 pt-3 mt-2">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1.5">What&apos;s working</p>
-            {copyAnalysis.specificityHints.map((h, i) => (
-              <div key={i} className="flex items-center gap-2 py-0.5">
-                <span className="text-emerald-500 text-xs">&#10003;</span>
-                <span className="text-[11px] text-zinc-400">{h}</span>
-              </div>
-            ))}
+          <div className="mt-4 pt-4 border-t border-zinc-800">
+            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              Suggested Alternatives
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {copyAnalysis.specificityHints.map((hint, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                  <span className="text-xs text-zinc-400">{hint}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
