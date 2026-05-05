@@ -46,10 +46,6 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   );
 }
 
-function freshnessColor(rating: string) {
-  return rating === "fresh" ? "text-emerald-400" : rating === "aging" ? "text-amber-400" : rating === "stale" ? "text-red-400" : "text-zinc-500";
-}
-
 function lcpColor(rating: string) {
   return rating === "good" ? "text-emerald-400" : rating === "needs-improvement" ? "text-amber-400" : "text-red-400";
 }
