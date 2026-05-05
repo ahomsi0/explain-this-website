@@ -36,18 +36,31 @@ function PerfPill({ score, view, hasBoth, onToggle }: {
   onToggle: () => void;
 }) {
   return (
-    <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
+    <div className={`flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
       <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
       {hasBoth ? (
-        <button
-          onClick={onToggle}
-          className="flex items-center gap-0.5 mt-0.5 group"
-          title={`Showing ${view} — click to switch`}
-        >
-          <span className={`text-[9px] font-semibold uppercase tracking-wider transition-colors ${view === "mobile" ? "text-zinc-300" : "text-zinc-600 group-hover:text-zinc-400"}`}>M</span>
-          <span className="text-[9px] text-zinc-700 mx-0.5">/</span>
-          <span className={`text-[9px] font-semibold uppercase tracking-wider transition-colors ${view === "desktop" ? "text-zinc-300" : "text-zinc-600 group-hover:text-zinc-400"}`}>D</span>
-        </button>
+        <div className="flex items-center rounded-full bg-zinc-900 border border-zinc-800 p-0.5 gap-0.5">
+          <button
+            onClick={() => view !== "mobile" && onToggle()}
+            className={`px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all ${
+              view === "mobile"
+                ? "bg-zinc-700 text-zinc-200"
+                : "text-zinc-600 hover:text-zinc-400"
+            }`}
+          >
+            Mobile
+          </button>
+          <button
+            onClick={() => view !== "desktop" && onToggle()}
+            className={`px-2 py-0.5 rounded-full text-[9px] font-semibold transition-all ${
+              view === "desktop"
+                ? "bg-zinc-700 text-zinc-200"
+                : "text-zinc-600 hover:text-zinc-400"
+            }`}
+          >
+            Desktop
+          </button>
+        </div>
       ) : (
         <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Perf</span>
       )}
