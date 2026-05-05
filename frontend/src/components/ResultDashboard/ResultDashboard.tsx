@@ -36,7 +36,7 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   label: string; value: string | number; suffix?: string; valueClass?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 px-3 py-3 border-r border-zinc-800 last:border-r-0 min-w-[110px]">
+    <div className="flex flex-col gap-1 px-3 py-3 border-r border-zinc-800 last:border-r-0 min-w-[110px] shrink-0">
       <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold whitespace-nowrap">{label}</span>
       <div className="flex items-baseline gap-0.5">
         <span className={`text-2xl font-bold leading-none ${valueClass}`}>{value}</span>
