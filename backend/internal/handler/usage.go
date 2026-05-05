@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	freeDailyLimit = 2
-	proDailyLimit  = 30
+	freeDailyLimit = 5
+	proDailyLimit  = 50
 	planFree       = "free"
 	planPro        = "pro"
 )
