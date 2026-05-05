@@ -1,6 +1,7 @@
 import type { IntentAlignment } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { scoreColor } from "../../utils/scoreColors";
 
 export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: IntentAlignment }) {
   if (intentAlignment.checks.length === 0) {
@@ -18,9 +19,6 @@ export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: Inte
     );
   }
 
-  const scoreColor = intentAlignment.score >= 80 ? "text-emerald-400"
-    : intentAlignment.score >= 50 ? "text-amber-400" : "text-red-400";
-
   return (
     <CardShell>
       <CardHeader
@@ -30,7 +28,7 @@ export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: Inte
       />
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <span className={`text-lg font-bold ${scoreColor}`}>
+          <span className={`text-lg font-bold ${scoreColor(intentAlignment.score)}`}>
             {intentAlignment.score}<span className="text-xs text-zinc-600 font-medium">/100</span>
           </span>
         </div>

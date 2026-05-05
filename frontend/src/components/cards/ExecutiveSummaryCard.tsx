@@ -1,14 +1,7 @@
 // frontend/src/components/cards/ExecutiveSummaryCard.tsx
 import type { Insights, InsightItem } from "../../utils/insights";
 import { CardShell } from "../ui/CardShell";
-
-function scoreColor(n: number) {
-  return n >= 75 ? "text-emerald-400" : n >= 50 ? "text-amber-400" : "text-red-400";
-}
-
-function scoreBg(n: number) {
-  return n >= 75 ? "bg-emerald-500/10 border-emerald-500/20" : n >= 50 ? "bg-amber-500/10 border-amber-500/20" : "bg-red-500/10 border-red-500/20";
-}
+import { scoreColor, scoreBg } from "../../utils/scoreColors";
 
 function overallLabel(n: number) {
   if (n >= 80) return "Excellent";

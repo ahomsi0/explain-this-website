@@ -1,12 +1,10 @@
 import type { CopyAnalysis } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { scoreColor } from "../../utils/scoreColors";
 
-function scoreColorClass(score: number) {
-  return score >= 80 ? "text-emerald-400" : score >= 50 ? "text-amber-400" : "text-red-400";
-}
 function barColorClass(score: number) {
-  return score >= 80 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500";
+  return score >= 75 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500";
 }
 
 export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis }) {
@@ -24,7 +22,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
       <div className="p-4">
         {/* Score bar */}
         <div className="flex items-center gap-3 mb-4">
-          <span className={`text-3xl font-bold leading-none ${scoreColorClass(copyAnalysis.score)}`}>
+          <span className={`text-3xl font-bold leading-none ${scoreColor(copyAnalysis.score)}`}>
             {copyAnalysis.score}
           </span>
           <div className="flex-1">

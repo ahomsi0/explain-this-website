@@ -4,14 +4,14 @@ import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 import { ScoreInsight } from "../ui/ScoreInsight";
 
-function scoreColor(n: number) {
+function conversionScoreColor(n: number) {
   if (n >= 70) return { bar: "bg-emerald-500", text: "text-emerald-400" };
   if (n >= 45) return { bar: "bg-amber-500",   text: "text-amber-400"   };
   return             { bar: "bg-red-500",       text: "text-red-400"     };
 }
 
 function ScoreRow({ label, score, note }: { label: string; score: number; note: string }) {
-  const c = scoreColor(score);
+  const c = conversionScoreColor(score);
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
@@ -68,7 +68,7 @@ function conversionInsightText(score: number): { meaning: string; nextStep: stri
 }
 
 export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
-  const overall  = scoreColor(scores.overall);
+  const overall  = conversionScoreColor(scores.overall);
   const blockers = buildBlockers(scores);
   const priority = whatToImproveFirst(scores);
   const insight  = conversionInsightText(scores.overall);
