@@ -22,6 +22,8 @@ import { LinkCheckCard }         from "../cards/LinkCheckCard";
 import { ColorPaletteCard }      from "../cards/ColorPaletteCard";
 import { VagueLanguageCard }     from "../cards/VagueLanguageCard";
 import { IntentAlignmentCard }   from "../cards/IntentAlignmentCard";
+import { computeInsights } from "../../utils/insights";
+import { ExecutiveSummaryCard } from "../cards/ExecutiveSummaryCard";
 
 export type SectionId = "overview" | "tech" | "seo" | "ux" | "performance" | "conversion";
 
@@ -49,9 +51,11 @@ export const SECTIONS: SectionMeta[] = [
 
 export function SectionView({ id, result }: { id: SectionId; result: AnalysisResult }) {
   switch (id) {
-    case "overview":
+    case "overview": {
+      const insights = computeInsights(result);
       return (
         <div className="flex flex-col gap-2">
+          <ExecutiveSummaryCard insights={insights} />
           <OverviewCard
             overview={result.overview}
             url={result.url}
@@ -71,6 +75,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
         </div>
       );
+    }
 
     case "tech":
       return (
