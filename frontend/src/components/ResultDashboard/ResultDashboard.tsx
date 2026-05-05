@@ -217,7 +217,7 @@ export function ResultDashboard({
         <main className="flex-1 min-w-0">
           {/* Metrics strip */}
           <div className="border-b border-zinc-800 bg-zinc-900/30">
-            <div className="flex items-stretch">
+            <div className="flex items-stretch justify-center">
               <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
               {result.performance?.mobile?.lighthouse ? <>
                 <MetricTile label="Lighthouse SEO"  value={result.performance.mobile.lighthouse.seo}         suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />
