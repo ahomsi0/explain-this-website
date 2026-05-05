@@ -12,6 +12,7 @@ function contrastColor(hex: string): string {
 }
 
 export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette }) {
+  const colors = colors ?? [];
   const [copied, setCopied] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -29,10 +30,10 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
     timerRef.current = setTimeout(() => setCopied(null), 1500);
   }
 
-  if (colorPalette.colors.length === 0) {
+  if (colors.length === 0) {
     return (
       <CardShell>
-        <CardHeader title="Color Palette" badge={`${colorPalette.colors.length} colors`} badgeColor="violet" />
+        <CardHeader title="Color Palette" badge={`${colors.length} colors`} badgeColor="violet" />
         <div className="p-4">
           <p className="text-xs text-zinc-500">No brand colors detected in CSS or inline styles.</p>
         </div>
@@ -42,7 +43,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
 
   return (
     <CardShell>
-      <CardHeader title="Color Palette" badge={`${colorPalette.colors.length} colors`} badgeColor="violet" />
+      <CardHeader title="Color Palette" badge={`${colors.length} colors`} badgeColor="violet" />
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           {colorPalette.themeColor && (
@@ -54,7 +55,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {colorPalette.colors.map((entry) => (
+          {colors.map((entry) => (
             <button
               key={entry.hex}
               onClick={() => copyHex(entry.hex)}
@@ -74,7 +75,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
           ))}
         </div>
 
-        <p className="text-[10px] text-zinc-600 mt-3">Click any swatch to copy hex · {colorPalette.colors.length} colors detected</p>
+        <p className="text-[10px] text-zinc-600 mt-3">Click any swatch to copy hex · {colors.length} colors detected</p>
       </div>
     </CardShell>
   );

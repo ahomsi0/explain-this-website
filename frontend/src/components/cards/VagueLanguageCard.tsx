@@ -8,6 +8,8 @@ function barColorClass(score: number) {
 }
 
 export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis }) {
+  const vaguePhrases = vaguePhrases ?? [];
+  const specificityHints = specificityHints ?? [];
   return (
     <CardShell>
       <CardHeader
@@ -35,11 +37,11 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
         </div>
 
         {/* Vague phrases */}
-        {copyAnalysis.vaguePhrases.length > 0 && (
+        {vaguePhrases.length > 0 && (
           <div className="border-t border-zinc-800 pt-3">
             <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Flagged phrases</p>
             <div className="flex flex-col gap-2">
-              {copyAnalysis.vaguePhrases.slice(0, 5).map((v, i) => (
+              {vaguePhrases.slice(0, 5).map((v, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <span className="text-[10px] font-mono font-semibold text-amber-400 bg-amber-950/40 px-1.5 py-0.5 rounded shrink-0">
                     &quot;{v.phrase}&quot;
@@ -52,13 +54,13 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
         )}
 
         {/* Specificity hints */}
-        {copyAnalysis.specificityHints.length > 0 && (
+        {specificityHints.length > 0 && (
           <div className="mt-4 pt-4 border-t border-zinc-800">
             <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
               Suggested Alternatives
             </p>
             <div className="flex flex-col gap-1.5">
-              {copyAnalysis.specificityHints.map((hint, i) => (
+              {specificityHints.map((hint, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
                   <span className="text-xs text-zinc-400">{hint}</span>
@@ -68,7 +70,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
           </div>
         )}
 
-        {copyAnalysis.vaguePhrases.length === 0 && (
+        {vaguePhrases.length === 0 && (
           <p className="text-[11px] text-emerald-400/80 mt-1">No vague marketing language detected — copy is specific and clear.</p>
         )}
       </div>

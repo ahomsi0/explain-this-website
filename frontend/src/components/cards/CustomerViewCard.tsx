@@ -38,6 +38,7 @@ const trustLabel = {
 };
 
 export function CustomerViewCard({ customerView }: { customerView: CustomerView }) {
+  const statements = customerView.statements ?? [];
   const verdict = uxVerdictData(customerView.trustLevel, customerView.offerClear, customerView.ctaClear);
   return (
     <CardShell>
@@ -65,7 +66,7 @@ export function CustomerViewCard({ customerView }: { customerView: CustomerView 
 
         {/* Statements */}
         <div className="flex flex-col gap-2.5">
-          {customerView.statements.map((stmt, i) => (
+          {statements.map((stmt, i) => (
             <div key={i} className="flex items-start gap-2">
               <span className="text-zinc-500 mt-0.5 shrink-0 text-[10px]">›</span>
               <p className="text-xs text-zinc-400 leading-relaxed">{stmt}</p>
