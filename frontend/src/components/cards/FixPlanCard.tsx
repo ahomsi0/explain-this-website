@@ -9,6 +9,12 @@ interface FixPlanCardProps {
 
 type TabId = "fixfirst" | "quickwins" | "all";
 
+const tabs: Array<{ id: TabId; label: string }> = [
+  { id: "fixfirst",  label: "Fix First" },
+  { id: "quickwins", label: "Quick Wins" },
+  { id: "all",       label: "All Issues" },
+];
+
 const CATEGORIES: Array<{ value: IssueCategory | "all"; label: string }> = [
   { value: "all",         label: "All" },
   { value: "seo",         label: "SEO" },
@@ -82,9 +88,11 @@ function IssueRow({
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       {/* Summary row */}
-      <div
-        className="p-3 flex items-start gap-3 cursor-pointer"
+      <button
+        type="button"
         onClick={onToggle}
+        aria-expanded={expanded}
+        className="w-full text-left p-3 flex items-start gap-3 cursor-pointer"
       >
         {/* Priority badge */}
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${priorityStyles(issue.priority)}`}>
@@ -115,13 +123,14 @@ function IssueRow({
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              aria-hidden="true"
               className={`transition-transform ${expanded ? "rotate-180" : ""}`}
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </span>
         </div>
-      </div>
+      </button>
 
       {/* Expanded panel */}
       {expanded && (
@@ -150,7 +159,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
   const tabCounts: Record<TabId, number> = {
     fixfirst:  fixFirstIssues.length,
     quickwins: quickWinIssues.length,
-    all:       issues.length,
+    all:       allIssues.length,
   };
 
   const visibleIssues =
@@ -161,12 +170,6 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
   function toggleExpand(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
   }
-
-  const tabs: Array<{ id: TabId; label: string }> = [
-    { id: "fixfirst",  label: "Fix First" },
-    { id: "quickwins", label: "Quick Wins" },
-    { id: "all",       label: "All Issues" },
-  ];
 
   return (
     <CardShell>
@@ -193,6 +196,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
               onClick={() => {
                 setActiveTab(tab.id);
                 setExpandedId(null);
+                // Reset category filter when leaving 'All Issues' tab; filter is preserved when returning.
                 if (tab.id !== "all") setCategoryFilter("all");
               }}
               className={`flex items-center gap-1.5 pb-2.5 text-xs font-medium transition-colors ${
