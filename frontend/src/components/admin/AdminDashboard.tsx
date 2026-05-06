@@ -10,7 +10,7 @@ import {
   updateAdminUserUsage,
   type AdminOverview,
 } from "../../services/authApi";
-import { AdminInsightsSection } from "./AdminInsightsCards";
+import { AdminInsightsSection, BusinessMetricsRow } from "./AdminInsightsCards";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -110,6 +110,21 @@ export function AdminDashboard() {
     finally { setBusyKey(null); }
   }
 
+  function exportUsersCsv(users: typeof filteredUsers) {
+    const header = "ID,Email,Plan,Status,Daily Used,Daily Limit,Joined";
+    const rows = users.map(u =>
+      [u.id, u.email, u.plan, u.subscriptionStatus,
+       u.dailyUsed, u.dailyLimit, u.createdAt.slice(0, 10)].join(",")
+    );
+    const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `users-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // ── render ─────────────────────────────────────────────────────────────────
   if (loading) {
     return <Shell title="Dashboard"><p className="text-sm text-zinc-500">Loading account…</p></Shell>;
@@ -136,6 +151,9 @@ export function AdminDashboard() {
   return (
     <Shell title="Dashboard" userMenu={<UserMenu />}>
       <div className="space-y-6">
+
+        {/* ── Business metrics row ── */}
+        {overview && <BusinessMetricsRow overview={overview} />}
 
         {/* ── Analytics cards ── */}
         {analytics && (
@@ -195,37 +213,38 @@ export function AdminDashboard() {
                 <h2 className="text-lg font-semibold text-zinc-100">Users</h2>
                 <p className="text-sm text-zinc-500 mt-1">Adjust today's count or switch someone between Free and Pro.</p>
 
-                {/* Search + filter */}
+                {/* Search + filter + export */}
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-950 border border-zinc-800 focus-within:border-violet-500/50 transition-colors flex-1 min-w-[180px] max-w-xs">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
-                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search by email…"
-                      className="bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none flex-1"
-                    />
-                    {search && (
-                      <button onClick={() => setSearch("")} className="text-zinc-600 hover:text-zinc-400 text-xs">✕</button>
-                    )}
-                  </div>
-
-                  {(["all", "free", "pro"] as const).map((p) => (
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search users by email…"
+                    className="flex-1 min-w-[180px] px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800
+                               focus:border-violet-500/50 outline-none text-xs text-zinc-200 placeholder:text-zinc-600"
+                  />
+                  {(["all", "free", "pro"] as const).map(plan => (
                     <button
-                      key={p}
-                      onClick={() => setPlanFilter(p)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors ${
-                        planFilter === p
-                          ? "text-violet-300 bg-violet-500/10 border-violet-500/30"
-                          : "text-zinc-500 hover:text-zinc-300 border-zinc-800 bg-zinc-900"
+                      key={plan}
+                      type="button"
+                      onClick={() => setPlanFilter(plan)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors capitalize ${
+                        planFilter === plan
+                          ? "text-violet-300 bg-violet-500/10 border-violet-500/25"
+                          : "text-zinc-500 bg-zinc-900 border-zinc-800 hover:text-zinc-300"
                       }`}
                     >
-                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                      {plan === "all" ? "All Plans" : plan.charAt(0).toUpperCase() + plan.slice(1)}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => exportUsersCsv(filteredUsers)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium border text-zinc-400 bg-zinc-900
+                               border-zinc-800 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                  >
+                    Export CSV
+                  </button>
                 </div>
               </div>
 
@@ -374,9 +393,11 @@ function UserRow({
             Save
           </button>
           <button
+            type="button"
             onClick={() => void onResetUsage(row.id)}
             disabled={isBusy}
-            className="px-3 py-2 rounded-md text-xs font-semibold text-zinc-400 hover:text-red-400 bg-zinc-800/70 hover:bg-red-950/30 border border-zinc-700 hover:border-red-900/50 disabled:opacity-60 transition-colors"
+            className="text-[10px] text-zinc-600 hover:text-amber-400 border border-zinc-800
+                       hover:border-amber-500/30 px-2 py-0.5 rounded transition-colors disabled:opacity-60"
           >
             Reset
           </button>
