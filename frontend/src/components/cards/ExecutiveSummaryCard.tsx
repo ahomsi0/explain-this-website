@@ -77,7 +77,7 @@ function ImpactDot({ impact }: { impact: InsightItem["impact"] }) {
   );
 }
 
-function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle }: {
+function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle, viewToggle }: {
   label: string;
   score: number;
   tooltip: string;
@@ -85,6 +85,8 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
   expScore?: number;   // override score used for explanation (e.g. -1 when perf unavailable)
   isOpen?: boolean;
   onToggle?: () => void;
+  /** Optional M/D text toggle shown in the label row */
+  viewToggle?: { active: "mobile" | "desktop"; onSwitch: () => void };
 }) {
   const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(expScore ?? score) : null;
 
@@ -101,7 +103,21 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
       <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`} title={tooltip}>
         <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
         <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider text-center leading-tight flex items-center gap-0.5">
-          {label}
+          {viewToggle ? (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); viewToggle.onSwitch(); }}
+                className={`transition-colors ${viewToggle.active === "mobile" ? "text-zinc-200" : "text-zinc-600 hover:text-zinc-400"}`}
+              >M</button>
+              <span className="text-zinc-700">·</span>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); viewToggle.onSwitch(); }}
+                className={`transition-colors ${viewToggle.active === "desktop" ? "text-zinc-200" : "text-zinc-600 hover:text-zinc-400"}`}
+              >D</button>
+            </>
+          ) : label}
           {exp && (
             <button
               type="button"
@@ -137,8 +153,14 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
 }
 
 export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
-  const { overallScore, seoScore, perfScore, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
   const [openKey, setOpenKey] = useState<ScoreKey | null>(null);
+  const [perfView, setPerfView] = useState<"mobile" | "desktop">("mobile");
+
+  const hasBothPerf = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
+  const displayedPerfScore = hasBothPerf
+    ? (perfView === "mobile" ? perfScoreMobile : perfScoreDesktop)
+    : perfScore;
 
   function toggle(key: ScoreKey) {
     setOpenKey((prev) => (prev === key ? null : key));
@@ -170,7 +192,16 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
         {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2 mb-5">
           <ScorePill label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
-          <ScorePill label="Performance" score={perfScore} tooltip="PageSpeed mobile performance score" scoreKey="performance" isOpen={openKey === "performance"} onToggle={() => toggle("performance")} expScore={perfUnavailable ? -1 : perfScore} />
+          <ScorePill
+            label="Performance"
+            score={displayedPerfScore}
+            tooltip={hasBothPerf ? `Mobile: ${perfScoreMobile} · Desktop: ${perfScoreDesktop}` : "PageSpeed mobile performance score"}
+            scoreKey="performance"
+            isOpen={openKey === "performance"}
+            onToggle={() => toggle("performance")}
+            expScore={perfUnavailable ? -1 : displayedPerfScore}
+            viewToggle={hasBothPerf ? { active: perfView, onSwitch: () => setPerfView(v => v === "mobile" ? "desktop" : "mobile") } : undefined}
+          />
           <ScorePill label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux"          isOpen={openKey === "ux"}          onToggle={() => toggle("ux")} />
           <ScorePill label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"      scoreKey="conversion"  isOpen={openKey === "conversion"}  onToggle={() => toggle("conversion")} />
         </div>
