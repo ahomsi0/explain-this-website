@@ -3,6 +3,7 @@ package parser
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"net/url"
@@ -52,7 +53,9 @@ type pageSpeedResponse struct {
 	} `json:"loadingExperience"`
 }
 
-// fetchPerformance fetches both mobile and desktop PageSpeed data concurrently.
+// fetchPerformance fetches both mobile and desktop PageSpeed data.
+// Desktop is started 1 second after mobile to avoid simultaneous requests
+// hitting the PageSpeed API rate limit (1 QPS on the free/keyless tier).
 // Returns nil, err only if both strategies fail — partial success is allowed.
 func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, error) {
 	type stratResult struct {
@@ -62,10 +65,18 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 	}
 	ch := make(chan stratResult, 2)
 
-	for _, strat := range []string{"mobile", "desktop"} {
+	// Launch mobile immediately, desktop after a 1-second stagger.
+	for i, strat := range []string{"mobile", "desktop"} {
 		s := strat
+		delay := time.Duration(i) * time.Second
 		go func() {
+			if delay > 0 {
+				time.Sleep(delay)
+			}
 			d, err := fetchStrategy(siteURL, apiKey, s)
+			if err != nil {
+				log.Printf("PageSpeed %s failed for %s: %v", s, siteURL, err)
+			}
 			ch <- stratResult{s, d, err}
 		}()
 	}
