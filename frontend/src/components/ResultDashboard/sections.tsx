@@ -4,6 +4,7 @@ import { TechStackCard }         from "../cards/TechStackCard";
 import { SEOAuditCard }          from "../cards/SeoAuditCard";
 import { ConversionCard, TrustEngagementCard } from "../cards/ConversionCard";
 import { ConversionScoreCard }   from "../cards/ConversionScoreCard";
+import { ConversionBlockersCard } from "../cards/ConversionBlockersCard";
 import { WeakPointsCard }        from "../cards/WeakPointsCard";
 import { RecommendationsCard }   from "../cards/RecommendationsCard";
 import { PageStatsCard, PagePerfCard } from "../cards/PageStatsCard";
@@ -140,6 +141,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
     case "conversion":
       return (
         <div className="flex flex-col gap-2">
+          <ConversionBlockersCard scores={result.conversionScores} ux={result.ux} />
           <ConversionScoreCard scores={result.conversionScores} />
           <TrustEngagementCard ux={result.ux} />
         </div>
