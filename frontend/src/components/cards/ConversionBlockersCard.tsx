@@ -71,6 +71,9 @@ function deriveBlockers(scores: ConversionScores, ux: UXResult): Blocker[] {
       severity: "info",
     });
 
+  const severityOrder: Record<BlockerSeverity, number> = { critical: 0, warning: 1, info: 2 };
+  blockers.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+
   return blockers;
 }
 
@@ -78,6 +81,7 @@ function SeverityIcon({ severity }: { severity: BlockerSeverity }) {
   if (severity === "critical") {
     return (
       <svg
+        aria-hidden="true"
         width="12"
         height="12"
         viewBox="0 0 24 24"
@@ -98,6 +102,7 @@ function SeverityIcon({ severity }: { severity: BlockerSeverity }) {
   if (severity === "warning") {
     return (
       <svg
+        aria-hidden="true"
         width="12"
         height="12"
         viewBox="0 0 24 24"
@@ -117,6 +122,7 @@ function SeverityIcon({ severity }: { severity: BlockerSeverity }) {
 
   return (
     <svg
+      aria-hidden="true"
       width="12"
       height="12"
       viewBox="0 0 24 24"
