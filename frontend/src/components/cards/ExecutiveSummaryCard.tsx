@@ -77,14 +77,16 @@ function ImpactDot({ impact }: { impact: InsightItem["impact"] }) {
   );
 }
 
-function ScorePill({ label, score, tooltip, scoreKey }: {
+function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle }: {
   label: string;
   score: number;
   tooltip: string;
   scoreKey?: ScoreKey;
+  expScore?: number;   // override score used for explanation (e.g. -1 when perf unavailable)
+  isOpen?: boolean;
+  onToggle?: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(score) : null;
+  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(expScore ?? score) : null;
 
   return (
     <div className="relative">
@@ -95,9 +97,9 @@ function ScorePill({ label, score, tooltip, scoreKey }: {
           {exp && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+              onClick={(e) => { e.stopPropagation(); onToggle?.(); }}
               aria-label={`${label} score explanation`}
-              aria-expanded={open}
+              aria-expanded={isOpen}
               className="text-zinc-600 hover:text-zinc-400 transition-colors leading-none"
             >
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -109,88 +111,13 @@ function ScorePill({ label, score, tooltip, scoreKey }: {
           )}
         </span>
       </div>
-      {open && exp && (
+      {isOpen && exp && (
         <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
                         rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl p-3.5 text-left">
           <button
             type="button"
             className="fixed inset-0 z-[-1]"
-            onClick={() => setOpen(false)}
-            aria-label="Close explanation"
-            tabIndex={-1}
-          />
-          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-            What this means
-          </p>
-          <p className="text-[11px] text-zinc-300 leading-snug mb-2.5">{exp.means}</p>
-          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-            What to do next
-          </p>
-          <p className="text-[11px] text-zinc-300 leading-snug">{exp.next}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PerfPill({ score, view, hasBoth, onToggle, scoreKey, perfUnavailable }: {
-  score: number;
-  view: "mobile" | "desktop";
-  hasBoth: boolean;
-  onToggle: () => void;
-  scoreKey?: ScoreKey;
-  perfUnavailable?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const scoreForExp = perfUnavailable ? -1 : score;
-  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(scoreForExp) : null;
-
-  return (
-    <div className="relative">
-      <div className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
-        <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
-        <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-0.5">
-          Performance
-          {exp && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-              aria-label="Performance score explanation"
-              aria-expanded={open}
-              className="text-zinc-600 hover:text-zinc-400 transition-colors leading-none"
-            >
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>
-                <line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
-            </button>
-          )}
-        </span>
-        {hasBoth && (
-          <div className="flex items-center gap-1 mt-0.5">
-            <button onClick={() => view !== "mobile" && onToggle()} title="Mobile score" className="p-0.5 transition-all">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                style={view === "mobile" ? { color: "white", filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" } : { color: "#52525b" }}>
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-              </svg>
-            </button>
-            <button onClick={() => view !== "desktop" && onToggle()} title="Desktop score" className="p-0.5 transition-all">
-              <svg width="11" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                style={view === "desktop" ? { color: "white", filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" } : { color: "#52525b" }}>
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-              </svg>
-            </button>
-          </div>
-        )}
-      </div>
-      {open && exp && (
-        <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
-                        rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl p-3.5 text-left">
-          <button
-            type="button"
-            className="fixed inset-0 z-[-1]"
-            onClick={() => setOpen(false)}
+            onClick={() => onToggle?.()}
             aria-label="Close explanation"
             tabIndex={-1}
           />
@@ -209,13 +136,12 @@ function PerfPill({ score, view, hasBoth, onToggle, scoreKey, perfUnavailable }:
 }
 
 export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
-  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
-  const [perfView, setPerfView] = useState<"mobile" | "desktop">("mobile");
+  const { overallScore, seoScore, perfScore, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const [openKey, setOpenKey] = useState<ScoreKey | null>(null);
 
-  const hasBoth = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
-  const displayedPerfScore = !hasBoth
-    ? perfScore
-    : perfView === "mobile" ? perfScoreMobile : perfScoreDesktop;
+  function toggle(key: ScoreKey) {
+    setOpenKey((prev) => (prev === key ? null : key));
+  }
 
   return (
     <CardShell>
@@ -242,17 +168,10 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
 
         {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2 mb-5">
-          <ScorePill label="SEO"        score={seoScore}        tooltip="Proportion of SEO checks passing"         scoreKey="seo" />
-          <PerfPill
-            score={displayedPerfScore}
-            view={perfView}
-            hasBoth={hasBoth}
-            onToggle={() => setPerfView((v) => v === "mobile" ? "desktop" : "mobile")}
-            scoreKey="performance"
-            perfUnavailable={perfUnavailable}
-          />
-          <ScorePill label="UX"         score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux" />
-          <ScorePill label="Conversion" score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"    scoreKey="conversion" />
+          <ScorePill label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
+          <ScorePill label="Performance" score={perfScore}       tooltip="PageSpeed mobile performance score"          scoreKey="performance" isOpen={openKey === "performance"} onToggle={() => toggle("performance")} expScore={perfUnavailable ? -1 : perfScore} />
+          <ScorePill label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux"          isOpen={openKey === "ux"}          onToggle={() => toggle("ux")} />
+          <ScorePill label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"      scoreKey="conversion"  isOpen={openKey === "conversion"}  onToggle={() => toggle("conversion")} />
         </div>
 
         {/* Top issues + Quick wins */}
