@@ -13,3 +13,4 @@ frontend/dist/
 # Tooling internals
 .superpowers/
 .claude/worktrees/
+.worktrees/
