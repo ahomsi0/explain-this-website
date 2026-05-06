@@ -18,10 +18,10 @@ export interface PriorityIssue {
 }
 
 function assignPriority(urgencyScore: number, effort: EffortLevel): PriorityLabel {
-  return urgencyScore >= 90 ? "fix-now"
-    : urgencyScore >= 80 && effort !== "hard" ? "fix-now"
-    : urgencyScore >= 60 || (urgencyScore >= 80 && effort === "hard") ? "fix-soon"
-    : "optional";
+  if (urgencyScore >= 90)                       return "fix-now";
+  if (urgencyScore >= 80 && effort !== "hard")  return "fix-now";
+  if (urgencyScore >= 60)                       return "fix-soon";
+  return "optional";
 }
 
 function makeIssue(
@@ -220,11 +220,12 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Render-blocking scripts
-  if ((result.pageStats?.renderBlockingScripts ?? 0) > 2) {
+  const renderBlockingCount = result.pageStats?.renderBlockingScripts ?? 0;
+  if (renderBlockingCount > 2) {
     issues.push(makeIssue(
       "render-blocking",
       "Remove render-blocking scripts",
-      `${result.pageStats!.renderBlockingScripts} render-blocking scripts delay page display.`,
+      `${renderBlockingCount} render-blocking scripts delay page display.`,
       "Add defer or async attributes to non-critical scripts and move them before </body>.",
       "medium",
       "easy",
@@ -262,7 +263,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   if (!result.ux.hasTrustSignals) {
     issues.push(makeIssue(
       "no-trust",
-      "Add trust signals",
+      "No trust signals on the page",
       "No trust signals detected (reviews, badges, testimonials). These significantly boost conversion.",
       "Add customer testimonials, security badges, or industry certifications above the fold.",
       "high",
