@@ -1,10 +1,8 @@
 import { CardShell } from "../ui/CardShell";
-import { CardHeader } from "../ui/CardHeader";
 
 export function RecommendationsCard({ recommendations }: { recommendations: string[] }) {
   return (
-    <CardShell>
-      <CardHeader title="Recommendations" badge={recommendations.length} badgeColor="violet" />
+    <CardShell collapsible defaultOpen={false} title="Recommendations">
       <div className="p-4">
         {recommendations.length === 0 ? (
           <p className="text-xs text-zinc-600">No recommendations at this time.</p>

@@ -4,6 +4,63 @@ import type { Insights, InsightItem } from "../../utils/insights";
 import { CardShell } from "../ui/CardShell";
 import { scoreColor, scoreBg } from "../../utils/scoreColors";
 
+type ScoreKey = "seo" | "performance" | "ux" | "conversion";
+
+const SCORE_EXPLANATIONS: Record<ScoreKey, (score: number) => { means: string; next: string }> = {
+  seo: (s) => ({
+    means: s >= 75
+      ? "Your SEO fundamentals are solid. Most technical checks are passing."
+      : s >= 50
+      ? "Your SEO setup is partial. Several important checks are failing or flagged."
+      : "Your SEO has critical gaps that are likely hurting your search visibility.",
+    next: s >= 75
+      ? "Focus on content quality and earning backlinks — technical SEO is covered."
+      : s >= 50
+      ? "Fix the failing checks in the SEO Audit tab, starting with title and meta description."
+      : "Open the SEO Audit tab and work through every red item before anything else.",
+  }),
+  performance: (s) => ({
+    means: s < 0
+      ? "Performance data is unavailable — PageSpeed could not be reached for this site."
+      : s >= 75
+      ? "Pages load quickly. Users get a good experience across devices."
+      : s >= 50
+      ? "Load times are acceptable on desktop but likely slow on mobile."
+      : "Slow page load is actively costing you visitors and rankings.",
+    next: s < 0
+      ? "Try re-running the analysis when the site is accessible to Google PageSpeed."
+      : s >= 75
+      ? "Monitor Core Web Vitals in Google Search Console to maintain this."
+      : s >= 50
+      ? "Optimize images (convert to WebP) and defer non-critical JavaScript."
+      : "Prioritize reducing LCP — compress images and eliminate render-blocking scripts.",
+  }),
+  ux: (s) => ({
+    means: s >= 75
+      ? "Key UX signals are in place — visitors have what they need to engage."
+      : s >= 50
+      ? "Some UX elements are missing. Visitors may feel uncertain about next steps."
+      : "Critical UX signals are absent. Visitors are likely confused or distrustful.",
+    next: s >= 75
+      ? "Run user testing to find friction that metrics can't catch."
+      : s >= 50
+      ? "Add missing elements — focus on trust signals and a clear CTA first."
+      : "Add a CTA and trust signals immediately. These have the highest ROI.",
+  }),
+  conversion: (s) => ({
+    means: s >= 65
+      ? "The page communicates its value clearly and removes most friction."
+      : s >= 45
+      ? "The conversion path exists but has gaps in clarity or trust."
+      : "Significant barriers are preventing visitors from converting.",
+    next: s >= 65
+      ? "A/B test your CTA copy and headline to squeeze out more conversions."
+      : s >= 45
+      ? "Review the Conversion tab — focus on clarity score and CTA strength first."
+      : "Open the Conversion tab and address every red item. Start with the value proposition.",
+  }),
+};
+
 function overallLabel(n: number) {
   if (n >= 80) return "Excellent";
   if (n >= 65) return "Good";
@@ -20,39 +77,131 @@ function ImpactDot({ impact }: { impact: InsightItem["impact"] }) {
   );
 }
 
-function ScorePill({ label, score, tooltip }: { label: string; score: number; tooltip: string }) {
+function ScorePill({ label, score, tooltip, scoreKey }: {
+  label: string;
+  score: number;
+  tooltip: string;
+  scoreKey?: ScoreKey;
+}) {
+  const [open, setOpen] = useState(false);
+  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(score) : null;
+
   return (
-    <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`} title={tooltip}>
-      <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
-      <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider text-center leading-tight">{label}</span>
+    <div className="relative">
+      <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`} title={tooltip}>
+        <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+        <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider text-center leading-tight flex items-center gap-0.5">
+          {label}
+          {exp && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+              aria-label={`${label} score explanation`}
+              aria-expanded={open}
+              className="text-zinc-600 hover:text-zinc-400 transition-colors leading-none"
+            >
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </button>
+          )}
+        </span>
+      </div>
+      {open && exp && (
+        <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
+                        rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl p-3.5 text-left">
+          <button
+            type="button"
+            className="fixed inset-0 z-[-1]"
+            onClick={() => setOpen(false)}
+            aria-label="Close explanation"
+            tabIndex={-1}
+          />
+          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+            What this means
+          </p>
+          <p className="text-[11px] text-zinc-300 leading-snug mb-2.5">{exp.means}</p>
+          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+            What to do next
+          </p>
+          <p className="text-[11px] text-zinc-300 leading-snug">{exp.next}</p>
+        </div>
+      )}
     </div>
   );
 }
 
-function PerfPill({ score, view, hasBoth, onToggle }: {
+function PerfPill({ score, view, hasBoth, onToggle, scoreKey, perfUnavailable }: {
   score: number;
   view: "mobile" | "desktop";
   hasBoth: boolean;
   onToggle: () => void;
+  scoreKey?: ScoreKey;
+  perfUnavailable?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+  const scoreForExp = perfUnavailable ? -1 : score;
+  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(scoreForExp) : null;
+
   return (
-    <div className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
-      <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
-      <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Performance</span>
-      {hasBoth && (
-        <div className="flex items-center gap-1 mt-0.5">
-          <button onClick={() => view !== "mobile" && onToggle()} title="Mobile score" className="p-0.5 transition-all">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              style={view === "mobile" ? { color: "white", filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" } : { color: "#52525b" }}>
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-          </button>
-          <button onClick={() => view !== "desktop" && onToggle()} title="Desktop score" className="p-0.5 transition-all">
-            <svg width="11" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              style={view === "desktop" ? { color: "white", filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" } : { color: "#52525b" }}>
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
-          </button>
+    <div className="relative">
+      <div className={`flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`}>
+        <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+        <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-0.5">
+          Performance
+          {exp && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+              aria-label="Performance score explanation"
+              aria-expanded={open}
+              className="text-zinc-600 hover:text-zinc-400 transition-colors leading-none"
+            >
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </button>
+          )}
+        </span>
+        {hasBoth && (
+          <div className="flex items-center gap-1 mt-0.5">
+            <button onClick={() => view !== "mobile" && onToggle()} title="Mobile score" className="p-0.5 transition-all">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={view === "mobile" ? { color: "white", filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" } : { color: "#52525b" }}>
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+            </button>
+            <button onClick={() => view !== "desktop" && onToggle()} title="Desktop score" className="p-0.5 transition-all">
+              <svg width="11" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={view === "desktop" ? { color: "white", filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" } : { color: "#52525b" }}>
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
+      {open && exp && (
+        <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
+                        rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl p-3.5 text-left">
+          <button
+            type="button"
+            className="fixed inset-0 z-[-1]"
+            onClick={() => setOpen(false)}
+            aria-label="Close explanation"
+            tabIndex={-1}
+          />
+          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+            What this means
+          </p>
+          <p className="text-[11px] text-zinc-300 leading-snug mb-2.5">{exp.means}</p>
+          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+            What to do next
+          </p>
+          <p className="text-[11px] text-zinc-300 leading-snug">{exp.next}</p>
         </div>
       )}
     </div>
@@ -60,7 +209,7 @@ function PerfPill({ score, view, hasBoth, onToggle }: {
 }
 
 export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
-  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
   const [perfView, setPerfView] = useState<"mobile" | "desktop">("mobile");
 
   const hasBoth = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
@@ -93,15 +242,17 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
 
         {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2 mb-5">
-          <ScorePill label="SEO"        score={seoScore}           tooltip="Proportion of SEO checks passing" />
+          <ScorePill label="SEO"        score={seoScore}        tooltip="Proportion of SEO checks passing"         scoreKey="seo" />
           <PerfPill
             score={displayedPerfScore}
             view={perfView}
             hasBoth={hasBoth}
             onToggle={() => setPerfView((v) => v === "mobile" ? "desktop" : "mobile")}
+            scoreKey="performance"
+            perfUnavailable={perfUnavailable}
           />
-          <ScorePill label="UX"         score={uxScore}            tooltip="UX signals: CTA, trust, mobile, forms, etc." />
-          <ScorePill label="Conversion" score={conversionScore}    tooltip="Clarity, trust, CTA strength, friction" />
+          <ScorePill label="UX"         score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux" />
+          <ScorePill label="Conversion" score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"    scoreKey="conversion" />
         </div>
 
         {/* Top issues + Quick wins */}

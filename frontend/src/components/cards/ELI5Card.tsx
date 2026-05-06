@@ -1,13 +1,11 @@
 import type { ELI5Item } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
-import { CardHeader } from "../ui/CardHeader";
 
 export function ELI5Card({ items }: { items: ELI5Item[] }) {
   if (items.length === 0) return null;
 
   return (
-    <CardShell>
-      <CardHeader title="Plain English" badge={`${items.length} terms`} badgeColor="violet" />
+    <CardShell collapsible defaultOpen={false} title="Plain-Language Explanations">
       <div className="p-4">
         <div className="flex flex-col gap-3">
           {items.map((item, i) => (

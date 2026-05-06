@@ -11,6 +11,35 @@ import {
   type BroadcastResult,
 } from "../../services/authApi";
 
+// ─── Business Metrics Row ────────────────────────────────────────────────────
+export function BusinessMetricsRow({ overview }: { overview: AdminOverview }) {
+  const { users, auditsByDay, anonymousVisitors } = overview;
+
+  const totalUsers       = users.length;
+  const proUsers         = users.filter(u => u.plan === "pro").length;
+  const freeToProRate    = totalUsers > 0 ? ((proUsers / totalUsers) * 100).toFixed(1) : "0.0";
+  const todayStr         = new Date().toISOString().slice(0, 10);
+  const auditsToday      = (auditsByDay.find(d => d.date === todayStr)?.count ?? 0);
+  const anonVisitorsToday = anonymousVisitors.length;
+  const totalAudits14d   = auditsByDay.reduce((s, d) => s + d.count, 0);
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      {[
+        { label: "Free → Pro Rate",     value: `${freeToProRate}%` },
+        { label: "Audits Today",        value: auditsToday          },
+        { label: "Anon Visitors Today", value: anonVisitorsToday    },
+        { label: "Total Audits (14d)",  value: totalAudits14d       },
+      ].map(({ label, value }) => (
+        <div key={label} className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3.5">
+          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
+          <p className="text-2xl font-bold text-zinc-100 tabular-nums leading-none">{value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── shared shell ────────────────────────────────────────────────────────────
 function Card({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
@@ -68,6 +97,17 @@ export function RecentAuditsCard({ rows }: { rows: RecentAuditRow[] }) {
 // ─── 2. Failure Log ──────────────────────────────────────────────────────────
 export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
   const errorsLastDay = rows.filter(r => Date.now() - new Date(r.at).getTime() < 86400_000).length;
+
+  const failsByDomain = rows.reduce((acc, r) => {
+    const h = host(r.url);
+    acc[h] = (acc[h] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topFails = Object.entries(failsByDomain)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5);
+
   return (
     <Card
       title="Failure Log"
@@ -87,6 +127,21 @@ export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
             </li>
           ))}
         </ul>
+      )}
+      {topFails.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-zinc-800/60">
+          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            Most Failed Domains
+          </p>
+          <ul className="flex flex-col gap-1">
+            {topFails.map(([domain, count]) => (
+              <li key={domain} className="flex items-center justify-between text-[11px]">
+                <span className="text-zinc-400 truncate">{domain}</span>
+                <span className="text-red-400 tabular-nums shrink-0 ml-2">{count}×</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </Card>
   );

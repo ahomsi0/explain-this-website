@@ -4,6 +4,7 @@ import { TechStackCard }         from "../cards/TechStackCard";
 import { SEOAuditCard }          from "../cards/SeoAuditCard";
 import { ConversionCard, TrustEngagementCard } from "../cards/ConversionCard";
 import { ConversionScoreCard }   from "../cards/ConversionScoreCard";
+import { ConversionBlockersCard } from "../cards/ConversionBlockersCard";
 import { WeakPointsCard }        from "../cards/WeakPointsCard";
 import { RecommendationsCard }   from "../cards/RecommendationsCard";
 import { PageStatsCard, PagePerfCard } from "../cards/PageStatsCard";
@@ -24,8 +25,10 @@ import { VagueLanguageCard }     from "../cards/VagueLanguageCard";
 import { IntentAlignmentCard }   from "../cards/IntentAlignmentCard";
 import { computeInsights } from "../../utils/insights";
 import { ExecutiveSummaryCard } from "../cards/ExecutiveSummaryCard";
+import { FixPlanCard } from "../cards/FixPlanCard";
+import { AdvancedSection } from "../ui/AdvancedSection";
 
-export type SectionId = "overview" | "tech" | "seo" | "ux" | "performance" | "conversion";
+export type SectionId = "overview" | "fixplan" | "tech" | "seo" | "ux" | "performance" | "conversion";
 
 export type SectionMeta = {
   id: SectionId;
@@ -37,6 +40,8 @@ export type SectionMeta = {
 export const SECTIONS: SectionMeta[] = [
   { id: "overview",    label: "Overview",    title: "Audit Overview",
     description: "A high-level snapshot of the site, what it's for, and the most impactful issues to fix." },
+  { id: "fixplan",     label: "Fix Plan",    title: "Your Fix Plan",
+    description: "Prioritized issues ranked by impact × severity. Start here to get the most value." },
   { id: "tech",        label: "Tech Stack",  title: "Technology Stack",
     description: "Frameworks, analytics, CDNs, and platforms detected on the page." },
   { id: "seo",         label: "SEO Audit",   title: "SEO Audit",
@@ -71,8 +76,19 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <ActionableOpportunitiesCard issues={result.prioritizedIssues ?? []} />
           <WeakPointsCard weakPoints={result.weakPoints ?? []} />
           <RecommendationsCard recommendations={result.recommendations ?? []} />
-          <SiteFreshnessCard freshness={result.siteFreshness} />
-          {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
+          <AdvancedSection>
+            <SiteFreshnessCard freshness={result.siteFreshness} />
+            {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
+          </AdvancedSection>
+        </div>
+      );
+    }
+
+    case "fixplan": {
+      const insights = computeInsights(result);
+      return (
+        <div className="flex flex-col gap-2">
+          <FixPlanCard issues={insights.allIssues} />
         </div>
       );
     }
@@ -90,7 +106,9 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <SEOAuditCard seoChecks={result.seoChecks} />
           <SecurityHeadersCard checks={result.securityHeaders} />
           <LinkCheckCard linkCheck={result.linkCheck} />
-          <IntentAlignmentCard intentAlignment={result.intentAlignment} />
+          <AdvancedSection>
+            <IntentAlignmentCard intentAlignment={result.intentAlignment} />
+          </AdvancedSection>
         </div>
       );
 
@@ -99,8 +117,10 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-2">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <ColorPaletteCard colorPalette={result.colorPalette} />
           <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
+          <AdvancedSection>
+            <ColorPaletteCard colorPalette={result.colorPalette} />
+          </AdvancedSection>
         </div>
       );
 
@@ -110,15 +130,18 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
           {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
           <ImageAuditCard audit={result.imageAudit} />
-          {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
-          {result.contentStats && <ContentCard contentStats={result.contentStats} />}
-          {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
+          <AdvancedSection>
+            {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
+            {result.contentStats && <ContentCard contentStats={result.contentStats} />}
+            {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
+          </AdvancedSection>
         </div>
       );
 
     case "conversion":
       return (
         <div className="flex flex-col gap-2">
+          <ConversionBlockersCard scores={result.conversionScores} ux={result.ux} />
           <ConversionScoreCard scores={result.conversionScores} />
           <TrustEngagementCard ux={result.ux} />
         </div>
