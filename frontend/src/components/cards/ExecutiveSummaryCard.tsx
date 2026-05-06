@@ -77,9 +77,10 @@ function ImpactDot({ impact }: { impact: InsightItem["impact"] }) {
   );
 }
 
-function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle }: {
+function ScorePill({ label, score, score2, tooltip, scoreKey, expScore, isOpen, onToggle }: {
   label: string;
   score: number;
+  score2?: number;     // second score shown inline (e.g. desktop perf alongside mobile)
   tooltip: string;
   scoreKey?: ScoreKey;
   expScore?: number;   // override score used for explanation (e.g. -1 when perf unavailable)
@@ -90,10 +91,26 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
 
   return (
     <div className="relative">
+      {/* Backdrop — sits behind popover (z-20) but above page (z-10), catches outside clicks */}
+      {isOpen && exp && (
+        <div
+          className="fixed inset-0 z-10"
+          onClick={() => onToggle?.()}
+          aria-hidden="true"
+        />
+      )}
       <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`} title={tooltip}>
-        <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+        {score2 !== undefined ? (
+          <div className="flex items-baseline gap-1">
+            <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+            <span className="text-zinc-700 text-xs leading-none">·</span>
+            <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score2)}`}>{score2}</span>
+          </div>
+        ) : (
+          <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
+        )}
         <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider text-center leading-tight flex items-center gap-0.5">
-          {label}
+          {score2 !== undefined ? <><span className={scoreColor(score)}>M</span><span className="text-zinc-700">·</span><span className={scoreColor(score2)}>D</span></> : label}
           {exp && (
             <button
               type="button"
@@ -114,13 +131,6 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
       {isOpen && exp && (
         <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
                         rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl p-3.5 text-left">
-          <button
-            type="button"
-            className="fixed inset-0 z-[-1]"
-            onClick={() => onToggle?.()}
-            aria-label="Close explanation"
-            tabIndex={-1}
-          />
           <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
             What this means
           </p>
@@ -136,8 +146,10 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
 }
 
 export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
-  const { overallScore, seoScore, perfScore, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
   const [openKey, setOpenKey] = useState<ScoreKey | null>(null);
+
+  const hasBothPerf = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
 
   function toggle(key: ScoreKey) {
     setOpenKey((prev) => (prev === key ? null : key));
@@ -169,7 +181,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
         {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2 mb-5">
           <ScorePill label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
-          <ScorePill label="Performance" score={perfScore}       tooltip="PageSpeed mobile performance score"          scoreKey="performance" isOpen={openKey === "performance"} onToggle={() => toggle("performance")} expScore={perfUnavailable ? -1 : perfScore} />
+          <ScorePill label="Performance" score={hasBothPerf ? perfScoreMobile : perfScore} score2={hasBothPerf ? perfScoreDesktop : undefined} tooltip={hasBothPerf ? "PageSpeed mobile · desktop performance scores" : "PageSpeed mobile performance score"} scoreKey="performance" isOpen={openKey === "performance"} onToggle={() => toggle("performance")} expScore={perfUnavailable ? -1 : perfScore} />
           <ScorePill label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux"          isOpen={openKey === "ux"}          onToggle={() => toggle("ux")} />
           <ScorePill label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"      scoreKey="conversion"  isOpen={openKey === "conversion"}  onToggle={() => toggle("conversion")} />
         </div>
