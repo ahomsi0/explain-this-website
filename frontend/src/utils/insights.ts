@@ -1,4 +1,6 @@
 import type { AnalysisResult } from "../types/analysis";
+import { computePriorityIssues, getFixFirst, getQuickWins } from "./priorityIssues";
+import type { PriorityIssue } from "./priorityIssues";
 
 export interface InsightItem {
   id: string;
@@ -20,6 +22,7 @@ export interface Insights {
   /** Up to 3 low-effort quick wins. May be empty if no low-effort issues are detected. */
   quickWins: InsightItem[];
   summarySentence: string;
+  allIssues: PriorityIssue[];
 }
 
 function clamp(n: number) {
@@ -51,14 +54,6 @@ function computeUxScore(result: AnalysisResult): number {
   return clamp((sigs.filter(Boolean).length / sigs.length) * 100);
 }
 
-interface Candidate {
-  id: string;
-  title: string;
-  description: string;
-  score: number; // impact × severity: higher = worse = higher priority issue
-  effort: "low" | "high" | "medium"; // low effort = quick win candidate
-}
-
 export function computeInsights(result: AnalysisResult): Insights {
   const seoScore        = computeSeoScore(result);
   const perfScore       = computePerfScore(result);
@@ -71,186 +66,22 @@ export function computeInsights(result: AnalysisResult): Insights {
     ? clamp(seoScore * 0.25 + perfScore * 0.25 + uxScore * 0.25 + conversionScore * 0.25)
     : clamp((seoScore + uxScore + conversionScore) / 3);
 
-  const candidates: Candidate[] = [];
+  const allIssues = computePriorityIssues(result);
+  const fixFirst  = getFixFirst(allIssues);
+  const qwList    = getQuickWins(allIssues);
 
-  // SEO: FAIL checks
-  result.seoChecks.filter((c) => c.status === "fail").forEach((c) => {
-    candidates.push({
-      id: `seo-fail-${c.id}`,
-      title: `Fix SEO: ${c.label}`,
-      description: c.detail,
-      score: 84,
-      effort: "low",
-    });
-  });
-
-  // SEO: WARNING checks
-  result.seoChecks.filter((c) => c.status === "warning").forEach((c) => {
-    candidates.push({
-      id: `seo-warn-${c.id}`,
-      title: `Improve SEO: ${c.label}`,
-      description: c.detail,
-      score: 55,
-      effort: "low",
-    });
-  });
-
-  // Performance (only when data is available)
-  if (perfAvailable && perfScore < 50) {
-    candidates.push({
-      id: "slow-performance",
-      title: "Improve page speed",
-      description: `Lighthouse performance score is ${perfScore}/100 — users are likely experiencing slow loads.`,
-      score: 95,
-      effort: "high",
-    });
-  } else if (perfAvailable && perfScore < 75) {
-    candidates.push({
-      id: "moderate-performance",
-      title: "Optimize page speed",
-      description: `Performance score is ${perfScore}/100 — moderate load times may hurt conversions.`,
-      score: 65,
-      effort: "high",
-    });
-  }
-
-  // Images
-  if (result.imageAudit.modernPct < 50) {
-    candidates.push({
-      id: "image-format",
-      title: "Convert images to WebP/AVIF",
-      description: `Only ${result.imageAudit.modernPct}% of images use modern formats. Switching saves significant bandwidth.`,
-      score: 70,
-      effort: "low",
-    });
-  }
-  if (result.imageAudit.missingLazy > 3) {
-    candidates.push({
-      id: "lazy-loading",
-      title: "Add lazy loading to images",
-      description: `${result.imageAudit.missingLazy} images lack lazy loading — add loading="lazy" to defer off-screen images.`,
-      score: 60,
-      effort: "low",
-    });
-  }
-
-  // CTA
-  if (!result.ux.hasCTA) {
-    candidates.push({
-      id: "no-cta",
-      title: "Add a clear call-to-action",
-      description: "No CTA button detected. A strong CTA is the single biggest conversion lever.",
-      score: 98,
-      effort: "low",
-    });
-  } else if (result.conversionScores.ctaStrength < 50) {
-    candidates.push({
-      id: "weak-cta",
-      title: "Strengthen the call-to-action",
-      description: `CTA strength is ${result.conversionScores.ctaStrength}/100. Make the primary action obvious and specific.`,
-      score: 75,
-      effort: "low",
-    });
-  }
-
-  // Trust
-  if (!result.ux.hasTrustSignals) {
-    candidates.push({
-      id: "no-trust",
-      title: "Add trust signals",
-      description: "No trust signals detected (reviews, badges, testimonials). These significantly boost conversion.",
-      score: 80,
-      effort: "medium",
-    });
-  }
-
-  // Mobile
-  if (!result.ux.mobileReady) {
-    candidates.push({
-      id: "not-mobile-ready",
-      title: "Improve mobile readiness",
-      description: "The page shows mobile readiness issues. Over 60% of web traffic is mobile.",
-      score: 78,
-      effort: "high",
-    });
-  }
-
-  // Broken links
-  if (result.linkCheck.broken > 0) {
-    candidates.push({
-      id: "broken-links",
-      title: `Fix ${result.linkCheck.broken} broken link${result.linkCheck.broken > 1 ? "s" : ""}`,
-      description: "Broken links hurt SEO rankings and damage user trust.",
-      score: 88,
-      effort: "low",
-    });
-  }
-
-  // Security headers
-  const secFails = result.securityHeaders.filter((h) => h.status === "fail").length;
-  if (secFails >= 3) {
-    candidates.push({
-      id: "security-headers",
-      title: "Add missing security headers",
-      description: `${secFails} security headers are missing. These protect users and improve trust scores.`,
-      score: 72,
-      effort: "low",
-    });
-  }
-
-  // Vague copy
-  if (result.copyAnalysis.vaguePhrases.length > 2) {
-    candidates.push({
-      id: "vague-copy",
-      title: "Replace vague marketing language",
-      description: `${result.copyAnalysis.vaguePhrases.length} generic phrases detected. Specific copy converts better.`,
-      score: 65,
-      effort: "low",
-    });
-  }
-
-  // Scored high (91): stale content signals abandonment, hurts trust and SEO credibility
-  if (result.siteFreshness.rating === "stale") {
-    candidates.push({
-      id: "stale-content",
-      title: "Update stale content",
-      description: "Site content appears outdated. Fresh content signals trust and relevance.",
-      score: 91,
-      effort: "high",
-    });
-  }
-
-  // Privacy policy
-  if (!result.ux.hasPrivacyPolicy) {
-    candidates.push({
-      id: "no-privacy-policy",
-      title: "Add a privacy policy",
-      description: "No privacy policy found. Required by GDPR/CCPA and builds user trust.",
-      score: 62,
-      effort: "low",
-    });
-  }
-
-  // Sort by descending priority score
-  candidates.sort((a, b) => b.score - a.score);
-
-  const topIssues: InsightItem[] = candidates.slice(0, 3).map((c) => ({
-    id: c.id,
-    title: c.title,
-    impact: c.score >= 80 ? "high" : c.score >= 55 ? "medium" : "low",
-    description: c.description,
+  const topIssues: InsightItem[] = fixFirst.slice(0, 3).map(i => ({
+    id: i.id,
+    title: i.title,
+    impact: i.impact,
+    description: i.whyItMatters,
   }));
 
-  // Quick wins = low effort candidates, sorted by score
-  const quickWinCandidates = candidates
-    .filter((c) => c.effort === "low")
-    .slice(0, 3);
-
-  const quickWins: InsightItem[] = quickWinCandidates.map((c) => ({
-    id: c.id,
-    title: c.title,
-    impact: c.score >= 80 ? "high" : c.score >= 55 ? "medium" : "low",
-    description: c.description,
+  const quickWins: InsightItem[] = qwList.map(i => ({
+    id: i.id,
+    title: i.title,
+    impact: i.impact,
+    description: i.whyItMatters,
   }));
 
   const summarySentence = buildSummary({ seoScore, perfScore, uxScore, conversionScore, result });
@@ -258,7 +89,7 @@ export function computeInsights(result: AnalysisResult): Insights {
   const perfScoreMobile  = result.performance?.mobile?.lighthouse?.performance  ?? -1;
   const perfScoreDesktop = result.performance?.desktop?.lighthouse?.performance ?? -1;
 
-  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence };
+  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence, allIssues };
 }
 
 function buildSummary({
