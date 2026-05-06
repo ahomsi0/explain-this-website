@@ -100,24 +100,20 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, isOpen, onToggle
           aria-hidden="true"
         />
       )}
-      <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)}`} title={tooltip}>
+      <div
+        className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${scoreBg(score)} ${viewToggle ? "cursor-pointer select-none" : ""}`}
+        title={tooltip}
+        onClick={viewToggle ? (e) => { e.stopPropagation(); viewToggle.onSwitch(); } : undefined}
+      >
+        {viewToggle && (
+          <div className="flex items-center gap-1 mb-0.5">
+            <span className={`text-[9px] font-bold px-1 py-px rounded transition-colors ${viewToggle.active === "mobile" ? "bg-zinc-600 text-zinc-100" : "text-zinc-600"}`}>M</span>
+            <span className={`text-[9px] font-bold px-1 py-px rounded transition-colors ${viewToggle.active === "desktop" ? "bg-zinc-600 text-zinc-100" : "text-zinc-600"}`}>D</span>
+          </div>
+        )}
         <span className={`text-xl font-bold tabular-nums leading-none ${scoreColor(score)}`}>{score}</span>
         <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider text-center leading-tight flex items-center gap-0.5">
-          {viewToggle ? (
-            <>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); viewToggle.onSwitch(); }}
-                className={`transition-colors ${viewToggle.active === "mobile" ? "text-zinc-200" : "text-zinc-600 hover:text-zinc-400"}`}
-              >M</button>
-              <span className="text-zinc-700">·</span>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); viewToggle.onSwitch(); }}
-                className={`transition-colors ${viewToggle.active === "desktop" ? "text-zinc-200" : "text-zinc-600 hover:text-zinc-400"}`}
-              >D</button>
-            </>
-          ) : label}
+          {label}
           {exp && (
             <button
               type="button"
