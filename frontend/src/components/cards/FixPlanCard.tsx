@@ -196,7 +196,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
               onClick={() => {
                 setActiveTab(tab.id);
                 setExpandedId(null);
-                // Reset category filter when leaving 'All Issues' tab; filter is preserved when returning.
+                // Reset category filter to 'all' whenever leaving the 'All Issues' tab.
                 if (tab.id !== "all") setCategoryFilter("all");
               }}
               className={`flex items-center gap-1.5 pb-2.5 text-xs font-medium transition-colors ${

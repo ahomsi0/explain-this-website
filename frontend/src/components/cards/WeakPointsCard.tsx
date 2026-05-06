@@ -1,14 +1,8 @@
 import { CardShell } from "../ui/CardShell";
-import { CardHeader } from "../ui/CardHeader";
 
 export function WeakPointsCard({ weakPoints }: { weakPoints: string[] }) {
   return (
     <CardShell collapsible defaultOpen={false} title="Weak Points">
-      <CardHeader
-        title="Weak Points"
-        badge={weakPoints.length}
-        badgeColor={weakPoints.length === 0 ? "green" : "amber"}
-      />
       <div className="p-4">
         {weakPoints.length === 0 ? (
           <p className="text-xs text-emerald-400">No significant weak points detected.</p>

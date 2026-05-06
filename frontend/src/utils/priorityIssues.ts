@@ -330,12 +330,12 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: low clarity
-  if (result.conversionScores.clarity < 50) {
+  if (result.conversionScores.clarity < 40) {
     const n = result.conversionScores.clarity;
     issues.push(makeIssue(
       "low-clarity",
       "Clarify what your site offers",
-      `Clarity score is ${n}/100 — visitors can't quickly understand what you offer.`,
+      `Clarity score is ${n}/100 — visitors can't quickly understand what you offer (threshold: below 40).`,
       'Rewrite your hero headline to answer: "What do you do, for whom, and why today?"',
       "high",
       "medium",
@@ -345,11 +345,11 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: low trust score
-  if (result.conversionScores.trust < 50) {
+  if (result.conversionScores.trust < 40) {
     issues.push(makeIssue(
       "low-trust-score",
       "Improve trust signals for conversions",
-      `Trust score is ${result.conversionScores.trust}/100 — low trust directly reduces conversion rates.`,
+      `Trust score is ${result.conversionScores.trust}/100 — low trust (below 40) directly reduces conversion rates.`,
       "Add verified reviews, security certificates, or money-back guarantees to your page.",
       "high",
       "medium",
@@ -359,12 +359,12 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: high friction
-  if (result.conversionScores.friction > 60) {
+  if (result.conversionScores.friction > 65) {
     const n = result.conversionScores.friction;
     issues.push(makeIssue(
       "high-friction",
       "Reduce conversion friction",
-      `Friction score is ${n}/100 — obstacles are preventing conversions.`,
+      `Friction score is ${n}/100 — obstacles above 65 are actively preventing conversions.`,
       "Remove unnecessary form fields, reduce steps to checkout/signup, and add autofill support.",
       "high",
       "medium",

@@ -13,21 +13,23 @@ import {
 
 // ─── Business Metrics Row ────────────────────────────────────────────────────
 export function BusinessMetricsRow({ overview }: { overview: AdminOverview }) {
-  const { users, auditsByDay } = overview;
+  const { users, auditsByDay, anonymousVisitors } = overview;
 
-  const totalUsers    = users.length;
-  const proUsers      = users.filter(u => u.plan === "pro").length;
-  const freeToProRate = totalUsers > 0 ? ((proUsers / totalUsers) * 100).toFixed(1) : "0.0";
-  const todayStr      = new Date().toISOString().slice(0, 10);
-  const auditsToday   = (auditsByDay.find(d => d.date === todayStr)?.count ?? 0);
+  const totalUsers       = users.length;
+  const proUsers         = users.filter(u => u.plan === "pro").length;
+  const freeToProRate    = totalUsers > 0 ? ((proUsers / totalUsers) * 100).toFixed(1) : "0.0";
+  const todayStr         = new Date().toISOString().slice(0, 10);
+  const auditsToday      = (auditsByDay.find(d => d.date === todayStr)?.count ?? 0);
+  const anonVisitorsToday = anonymousVisitors.length;
+  const totalAudits14d   = auditsByDay.reduce((s, d) => s + d.count, 0);
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
       {[
-        { label: "Total Users",  value: totalUsers         },
-        { label: "Pro Users",    value: proUsers           },
-        { label: "Free → Pro",   value: `${freeToProRate}%` },
-        { label: "Audits Today", value: auditsToday        },
+        { label: "Free → Pro Rate",     value: `${freeToProRate}%` },
+        { label: "Audits Today",        value: auditsToday          },
+        { label: "Anon Visitors Today", value: anonVisitorsToday    },
+        { label: "Total Audits (14d)",  value: totalAudits14d       },
       ].map(({ label, value }) => (
         <div key={label} className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3.5">
           <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">{label}</p>

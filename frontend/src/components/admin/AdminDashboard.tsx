@@ -11,12 +11,7 @@ import {
   type AdminOverview,
 } from "../../services/authApi";
 import { AdminInsightsSection, BusinessMetricsRow } from "./AdminInsightsCards";
-
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-function scoreColor(n: number) {
-  return n >= 70 ? "text-emerald-400" : n >= 40 ? "text-amber-400" : "text-red-400";
-}
+import { scoreColor } from "../../utils/scoreColors";
 
 // ─── sub-components ─────────────────────────────────────────────────────────
 

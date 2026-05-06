@@ -133,15 +133,17 @@ function ScorePill({ label, score, tooltip, scoreKey }: {
   );
 }
 
-function PerfPill({ score, view, hasBoth, onToggle, scoreKey }: {
+function PerfPill({ score, view, hasBoth, onToggle, scoreKey, perfUnavailable }: {
   score: number;
   view: "mobile" | "desktop";
   hasBoth: boolean;
   onToggle: () => void;
   scoreKey?: ScoreKey;
+  perfUnavailable?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(score) : null;
+  const scoreForExp = perfUnavailable ? -1 : score;
+  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(scoreForExp) : null;
 
   return (
     <div className="relative">
@@ -207,7 +209,7 @@ function PerfPill({ score, view, hasBoth, onToggle, scoreKey }: {
 }
 
 export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
-  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
+  const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
   const [perfView, setPerfView] = useState<"mobile" | "desktop">("mobile");
 
   const hasBoth = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
@@ -247,6 +249,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
             hasBoth={hasBoth}
             onToggle={() => setPerfView((v) => v === "mobile" ? "desktop" : "mobile")}
             scoreKey="performance"
+            perfUnavailable={perfUnavailable}
           />
           <ScorePill label="UX"         score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux" />
           <ScorePill label="Conversion" score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"    scoreKey="conversion" />

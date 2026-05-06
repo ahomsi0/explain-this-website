@@ -15,6 +15,7 @@ export interface Insights {
   perfScore: number;
   perfScoreMobile: number;   // -1 when unavailable
   perfScoreDesktop: number;  // -1 when unavailable
+  perfUnavailable: boolean;  // true when no PageSpeed data is available
   uxScore: number;
   conversionScore: number;
   /** Up to 3 highest-priority issues. May be empty if no issues are detected. */
@@ -62,6 +63,7 @@ export function computeInsights(result: AnalysisResult): Insights {
 
   // When perfScore is -1 (no data), exclude it from the weighted average
   const perfAvailable = perfScore >= 0;
+  const perfUnavailable = !perfAvailable;
   const overallScore = perfAvailable
     ? clamp(seoScore * 0.25 + perfScore * 0.25 + uxScore * 0.25 + conversionScore * 0.25)
     : clamp((seoScore + uxScore + conversionScore) / 3);
@@ -89,7 +91,7 @@ export function computeInsights(result: AnalysisResult): Insights {
   const perfScoreMobile  = result.performance?.mobile?.lighthouse?.performance  ?? -1;
   const perfScoreDesktop = result.performance?.desktop?.lighthouse?.performance ?? -1;
 
-  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, perfScoreMobile, perfScoreDesktop, uxScore, conversionScore, topIssues, quickWins, summarySentence, allIssues };
+  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence, allIssues };
 }
 
 function buildSummary({
