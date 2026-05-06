@@ -24,8 +24,9 @@ import { VagueLanguageCard }     from "../cards/VagueLanguageCard";
 import { IntentAlignmentCard }   from "../cards/IntentAlignmentCard";
 import { computeInsights } from "../../utils/insights";
 import { ExecutiveSummaryCard } from "../cards/ExecutiveSummaryCard";
+import { FixPlanCard } from "../cards/FixPlanCard";
 
-export type SectionId = "overview" | "tech" | "seo" | "ux" | "performance" | "conversion";
+export type SectionId = "overview" | "fixplan" | "tech" | "seo" | "ux" | "performance" | "conversion";
 
 export type SectionMeta = {
   id: SectionId;
@@ -37,6 +38,8 @@ export type SectionMeta = {
 export const SECTIONS: SectionMeta[] = [
   { id: "overview",    label: "Overview",    title: "Audit Overview",
     description: "A high-level snapshot of the site, what it's for, and the most impactful issues to fix." },
+  { id: "fixplan",     label: "Fix Plan",    title: "Your Fix Plan",
+    description: "Prioritized issues ranked by impact × severity. Start here to get the most value." },
   { id: "tech",        label: "Tech Stack",  title: "Technology Stack",
     description: "Frameworks, analytics, CDNs, and platforms detected on the page." },
   { id: "seo",         label: "SEO Audit",   title: "SEO Audit",
@@ -73,6 +76,15 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <RecommendationsCard recommendations={result.recommendations ?? []} />
           <SiteFreshnessCard freshness={result.siteFreshness} />
           {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
+        </div>
+      );
+    }
+
+    case "fixplan": {
+      const insights = computeInsights(result);
+      return (
+        <div className="flex flex-col gap-2">
+          <FixPlanCard issues={insights.allIssues} />
         </div>
       );
     }
