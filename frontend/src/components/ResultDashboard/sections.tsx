@@ -25,6 +25,7 @@ import { IntentAlignmentCard }   from "../cards/IntentAlignmentCard";
 import { computeInsights } from "../../utils/insights";
 import { ExecutiveSummaryCard } from "../cards/ExecutiveSummaryCard";
 import { FixPlanCard } from "../cards/FixPlanCard";
+import { AdvancedSection } from "../ui/AdvancedSection";
 
 export type SectionId = "overview" | "fixplan" | "tech" | "seo" | "ux" | "performance" | "conversion";
 
@@ -74,8 +75,10 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <ActionableOpportunitiesCard issues={result.prioritizedIssues ?? []} />
           <WeakPointsCard weakPoints={result.weakPoints ?? []} />
           <RecommendationsCard recommendations={result.recommendations ?? []} />
-          <SiteFreshnessCard freshness={result.siteFreshness} />
-          {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
+          <AdvancedSection>
+            <SiteFreshnessCard freshness={result.siteFreshness} />
+            {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
+          </AdvancedSection>
         </div>
       );
     }
@@ -102,7 +105,9 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <SEOAuditCard seoChecks={result.seoChecks} />
           <SecurityHeadersCard checks={result.securityHeaders} />
           <LinkCheckCard linkCheck={result.linkCheck} />
-          <IntentAlignmentCard intentAlignment={result.intentAlignment} />
+          <AdvancedSection>
+            <IntentAlignmentCard intentAlignment={result.intentAlignment} />
+          </AdvancedSection>
         </div>
       );
 
@@ -111,8 +116,10 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-2">
           <CustomerViewCard customerView={result.customerView} />
           <ConversionCard ux={result.ux} />
-          <ColorPaletteCard colorPalette={result.colorPalette} />
           <VagueLanguageCard copyAnalysis={result.copyAnalysis} />
+          <AdvancedSection>
+            <ColorPaletteCard colorPalette={result.colorPalette} />
+          </AdvancedSection>
         </div>
       );
 
@@ -122,9 +129,11 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
           {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
           <ImageAuditCard audit={result.imageAudit} />
-          {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
-          {result.contentStats && <ContentCard contentStats={result.contentStats} />}
-          {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
+          <AdvancedSection>
+            {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}
+            {result.contentStats && <ContentCard contentStats={result.contentStats} />}
+            {result.fontAudit && <FontAuditCard fontAudit={result.fontAudit} />}
+          </AdvancedSection>
         </div>
       );
 
