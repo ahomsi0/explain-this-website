@@ -3,7 +3,7 @@ import { CardHeader } from "../ui/CardHeader";
 
 export function WeakPointsCard({ weakPoints }: { weakPoints: string[] }) {
   return (
-    <CardShell>
+    <CardShell collapsible defaultOpen={false} title="Weak Points">
       <CardHeader
         title="Weak Points"
         badge={weakPoints.length}

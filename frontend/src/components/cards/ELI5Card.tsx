@@ -6,7 +6,7 @@ export function ELI5Card({ items }: { items: ELI5Item[] }) {
   if (items.length === 0) return null;
 
   return (
-    <CardShell>
+    <CardShell collapsible defaultOpen={false} title="Plain-Language Explanations">
       <CardHeader title="Plain English" badge={`${items.length} terms`} badgeColor="violet" />
       <div className="p-4">
         <div className="flex flex-col gap-3">

@@ -3,7 +3,7 @@ import { CardHeader } from "../ui/CardHeader";
 
 export function RecommendationsCard({ recommendations }: { recommendations: string[] }) {
   return (
-    <CardShell>
+    <CardShell collapsible defaultOpen={false} title="Recommendations">
       <CardHeader title="Recommendations" badge={recommendations.length} badgeColor="violet" />
       <div className="p-4">
         {recommendations.length === 0 ? (
