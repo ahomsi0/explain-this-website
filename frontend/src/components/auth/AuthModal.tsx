@@ -90,7 +90,7 @@ export function AuthModal({
           <p className="text-xs text-zinc-500 mt-1">
             {mode === "login"
               ? "Sign in to access your audit history and plan settings."
-              : "Free accounts keep history. Pro adds 30 analyses a day for $4.99/month."}
+              : "Free accounts keep history. Pro adds 50 analyses a day for $2.99/month."}
           </p>
         </div>
 

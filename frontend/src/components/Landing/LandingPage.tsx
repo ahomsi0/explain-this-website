@@ -92,7 +92,7 @@ export function LandingPage({
             </h2>
 
             <p className="mt-6 text-center text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
-              Start with 2 free analyses a day without signing in. Create an account to save history, then upgrade to Pro for 30 analyses a day at $4.99/month.
+              Start with 5 free analyses a day without signing in. Create an account to save history, then upgrade to Pro for 50 analyses a day at $2.99/month.
             </p>
 
             {/* URL input */}
