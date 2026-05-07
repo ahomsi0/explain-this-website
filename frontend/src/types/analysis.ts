@@ -199,7 +199,7 @@ export interface DomainInfo {
 }
 
 export interface UsageSummary {
-  plan: "free" | "pro";
+  plan: "free" | "pro" | "owner";
   dailyLimit: number;
   dailyUsed: number;
   dailyRemaining: number;

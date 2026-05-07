@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const TOKEN_KEY = "etw_auth_token";
 
 export interface UsageSummary {
-  plan: "free" | "pro";
+  plan: "free" | "pro" | "owner";
   dailyLimit: number;
   dailyUsed: number;
   dailyRemaining: number;
@@ -17,7 +17,7 @@ export interface AuthUser {
   id: number;
   email: string;
   createdAt: string;
-  plan: "free" | "pro";
+  plan: "free" | "pro" | "owner";
   subscriptionStatus: string;
   usage: UsageSummary;
   billingEnabled: boolean;
@@ -38,7 +38,7 @@ export interface AuditListItem {
 export interface AdminUserRow {
   id: number;
   email: string;
-  plan: "free" | "pro";
+  plan: "free" | "pro" | "owner";
   subscriptionStatus: string;
   dailyLimit: number;
   dailyUsed: number;

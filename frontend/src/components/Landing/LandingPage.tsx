@@ -76,8 +76,8 @@ export function LandingPage({
             {usage && (
               <div className="flex justify-center mb-3">
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium text-zinc-300 bg-zinc-900/70 border border-zinc-800">
-                  <span className={`w-1.5 h-1.5 rounded-full ${usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
-                  {usage.dailyRemaining}/{usage.dailyLimit} analyses left today
+                  <span className={`w-1.5 h-1.5 rounded-full ${usage.plan === "owner" || usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  {usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} analyses left today
                 </span>
               </div>
             )}

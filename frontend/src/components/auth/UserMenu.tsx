@@ -21,7 +21,7 @@ export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
 
   if (!user) return null;
   const initial = user.email.charAt(0).toUpperCase();
-  const isPro = user.plan === "pro";
+  const isPro = user.plan === "pro" || user.plan === "owner";
 
   async function startUpgrade() {
     setError(null);
@@ -64,7 +64,7 @@ export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
                 {isPro ? "Pro" : "Free"}
               </span>
               <span className="text-[10px] text-zinc-500">
-                {user.usage.dailyRemaining}/{user.usage.dailyLimit} left today
+                {user.plan === "owner" ? "∞" : `${user.usage.dailyRemaining}/${user.usage.dailyLimit}`} left today
               </span>
             </div>
           </div>

@@ -73,7 +73,7 @@ export function ResultDashboard({
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
   const usage = usageOverride ?? result.usage ?? user?.usage;
-  const isPro = (user?.plan ?? usage?.plan) === "pro";
+  const isPro = ["pro", "owner"].includes(user?.plan ?? usage?.plan ?? "");
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,14 +127,14 @@ export function ResultDashboard({
             {usage && (
               <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                  usage.plan === "pro"
+                  usage.plan === "pro" || usage.plan === "owner"
                     ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
                     : "text-zinc-300 bg-zinc-800 border-zinc-700"
                 }`}>
-                  {usage.plan === "pro" ? "Pro" : "Free"}
+                  {usage.plan === "owner" ? "Owner" : usage.plan === "pro" ? "Pro" : "Free"}
                 </span>
                 <span className="text-[11px] text-zinc-400">
-                  {usage.dailyRemaining}/{usage.dailyLimit} left today
+                  {usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} left today
                 </span>
               </div>
             )}

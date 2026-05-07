@@ -102,7 +102,7 @@ Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data aft
 │       │   ├── analyze.go       # POST /api/analyze (main analysis pipeline)
 │       │   ├── audits.go        # Audit history save/fetch/share
 │       │   ├── auth.go          # Sign-up, sign-in, sign-out, /me
-│       │   ├── billing.go       # Stripe checkout + billing portal + webhook
+│       │   ├── billing.go       # Tap checkout + billing + webhook
 │       │   ├── password_reset.go
 │       │   ├── store.go         # Anonymous visitor daily usage
 │       │   └── usage.go         # Admin usage controls
@@ -181,13 +181,13 @@ Returns a previously saved analysis result by its share ID. No authentication re
 
 ---
 
-### Billing (Stripe)
+### Billing (Tap Payments)
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/billing/checkout` | Create Stripe checkout session |
+| `POST` | `/api/billing/checkout` | Create Tap checkout session |
 | `POST` | `/api/billing/portal` | Open billing portal |
-| `POST` | `/api/stripe/webhook` | Stripe subscription lifecycle events |
+| `POST` | `/api/tap/webhook` | Tap subscription lifecycle events |
 
 ---
 
@@ -259,7 +259,7 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 | `TAP_MONTHLY_PLAN_ID` | — | Tap plan ID for the $2.99/month Pro plan |
 | `TAP_YEARLY_PLAN_ID` | — | Tap plan ID for the $24.99/year Pro plan |
 | `TAP_WEBHOOK_SECRET` | — | Tap webhook secret for HMAC-SHA256 signature verification |
-| `APP_URL` | `http://localhost:5173` | Frontend base URL used for Stripe success/cancel redirects |
+| `APP_URL` | `http://localhost:5173` | Frontend base URL used for Tap success/cancel redirects |
 
 ### Frontend (`frontend/.env.local`)
 

@@ -18,10 +18,12 @@ import (
 )
 
 const (
-	freeDailyLimit = 5
-	proDailyLimit  = 50
-	planFree       = "free"
-	planPro        = "pro"
+	freeDailyLimit  = 5
+	proDailyLimit   = 50
+	ownerDailyLimit = 999999
+	planFree        = "free"
+	planPro         = "pro"
+	planOwner       = "owner"
 )
 
 var (
@@ -96,13 +98,20 @@ func usageSummaryFor(plan string, limit, used int) model.UsageSummary {
 }
 
 func dailyLimitForPlan(plan string) int {
-	if plan == planPro {
+	switch plan {
+	case planOwner:
+		return ownerDailyLimit
+	case planPro:
 		return proDailyLimit
+	default:
+		return freeDailyLimit
 	}
-	return freeDailyLimit
 }
 
 func effectivePlan(plan, subscriptionStatus string) string {
+	if plan == planOwner {
+		return planOwner
+	}
 	if plan == planPro {
 		switch subscriptionStatus {
 		case "active", "trialing", "past_due":

@@ -132,6 +132,8 @@ CREATE INDEX IF NOT EXISTS password_resets_user_id_idx ON password_resets (user_
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status TEXT NOT NULL DEFAULT 'inactive';
+-- Legacy Stripe columns; superseded by tap_customer_id / tap_subscription_id.
+-- Kept idempotent so existing DBs are not broken; no application code reads these.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_current_period_end TIMESTAMPTZ;
@@ -172,6 +174,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_tap_customer_id_idx
     ON users (tap_customer_id) WHERE tap_customer_id IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS users_tap_subscription_id_idx
     ON users (tap_subscription_id) WHERE tap_subscription_id IS NOT NULL;
+
+UPDATE users SET plan = 'owner', subscription_status = 'active' WHERE email = 'homsiahmed16@gmail.com';
 `
 
 func migrate(ctx context.Context) error {
