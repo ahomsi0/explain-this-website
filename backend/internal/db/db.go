@@ -163,6 +163,15 @@ ALTER TABLE users   ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
 ALTER TABLE users   ADD COLUMN IF NOT EXISTS admin_note   TEXT;
 ALTER TABLE audits  ADD COLUMN IF NOT EXISTS duration_ms   INTEGER;
 ALTER TABLE audits  ADD COLUMN IF NOT EXISTS perf_available BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS tap_customer_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS tap_subscription_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_interval TEXT NOT NULL DEFAULT 'monthly';
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_tap_customer_id_idx
+    ON users (tap_customer_id) WHERE tap_customer_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS users_tap_subscription_id_idx
+    ON users (tap_subscription_id) WHERE tap_subscription_id IS NOT NULL;
 `
 
 func migrate(ctx context.Context) error {
