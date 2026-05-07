@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,14 +17,16 @@ import (
 )
 
 type adminUserRow struct {
-	ID                 int64     `json:"id"`
-	Email              string    `json:"email"`
-	Plan               string    `json:"plan"`
-	SubscriptionStatus string    `json:"subscriptionStatus"`
-	DailyLimit         int       `json:"dailyLimit"`
-	DailyUsed          int       `json:"dailyUsed"`
-	DailyRemaining     int       `json:"dailyRemaining"`
-	CreatedAt          time.Time `json:"createdAt"`
+	ID                 int64      `json:"id"`
+	Email              string     `json:"email"`
+	Plan               string     `json:"plan"`
+	SubscriptionStatus string     `json:"subscriptionStatus"`
+	DailyLimit         int        `json:"dailyLimit"`
+	DailyUsed          int        `json:"dailyUsed"`
+	DailyRemaining     int        `json:"dailyRemaining"`
+	CreatedAt          time.Time  `json:"createdAt"`
+	SuspendedAt        *time.Time `json:"suspendedAt,omitempty"`
+	AdminNote          string     `json:"adminNote,omitempty"`
 }
 
 type adminVisitorRow struct {
@@ -76,6 +79,8 @@ type adminOverviewResp struct {
 	FailureLog         []adminstate.FailureEntry `json:"failureLog"`
 	SystemHealth       systemHealth             `json:"systemHealth"`
 	FeatureFlags       map[string]bool          `json:"featureFlags"`
+	SlowAudits         []slowAuditRow           `json:"slowAudits"`
+	AuditOutcomes      []auditOutcomeRow        `json:"auditOutcomes"`
 }
 
 type updateUserUsageReq struct {
@@ -110,6 +115,25 @@ type broadcastResp struct {
 	Total  int `json:"total"`
 }
 
+type patchUserReq struct {
+	Plan      *string `json:"plan"`      // "free" | "pro" — nil means no change
+	Suspended *bool   `json:"suspended"` // nil means no change
+	Note      *string `json:"note"`      // nil means no change
+}
+
+type slowAuditRow struct {
+	URL        string    `json:"url"`
+	DurationMs int       `json:"durationMs"`
+	CreatedAt  time.Time `json:"createdAt"`
+}
+
+type auditOutcomeRow struct {
+	Date     string `json:"date"`
+	Total    int    `json:"total"`
+	PerfOK   int    `json:"perfOk"`
+	PerfFail int    `json:"perfFail"`
+}
+
 func AdminOverviewHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !db.IsAvailable() {
@@ -127,7 +151,9 @@ func AdminOverviewHandler() http.HandlerFunc {
 		// Users + their usage today.
 		users := []adminUserRow{}
 		if rows, err := db.Pool.Query(ctx, `
-			SELECT u.id, u.email, u.plan, u.subscription_status, COALESCE(du.count, 0), u.created_at
+			SELECT u.id, u.email, u.plan, u.subscription_status,
+			       COALESCE(du.count, 0), u.created_at,
+			       u.suspended_at, COALESCE(u.admin_note, '')
 			  FROM users u
 			  LEFT JOIN user_daily_usage du
 			    ON du.user_id = u.id
@@ -137,7 +163,10 @@ func AdminOverviewHandler() http.HandlerFunc {
 			defer rows.Close()
 			for rows.Next() {
 				var row adminUserRow
-				if err := rows.Scan(&row.ID, &row.Email, &row.Plan, &row.SubscriptionStatus, &row.DailyUsed, &row.CreatedAt); err == nil {
+				if err := rows.Scan(
+					&row.ID, &row.Email, &row.Plan, &row.SubscriptionStatus,
+					&row.DailyUsed, &row.CreatedAt, &row.SuspendedAt, &row.AdminNote,
+				); err == nil {
 					row.Plan = effectivePlan(row.Plan, row.SubscriptionStatus)
 					row.DailyLimit = dailyLimitForPlan(row.Plan)
 					row.DailyRemaining = max(0, row.DailyLimit-row.DailyUsed)
@@ -225,6 +254,45 @@ func AdminOverviewHandler() http.HandlerFunc {
 			}
 		}
 
+		// Slowest 10 audits in last 30 days.
+		slowAudits := []slowAuditRow{}
+		if rows, err := db.Pool.Query(ctx, `
+			SELECT url, duration_ms, created_at
+			  FROM audits
+			 WHERE duration_ms IS NOT NULL AND deleted_at IS NULL
+			   AND created_at > NOW() - INTERVAL '30 days'
+			 ORDER BY duration_ms DESC
+			 LIMIT 10`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var r slowAuditRow
+				if err := rows.Scan(&r.URL, &r.DurationMs, &r.CreatedAt); err == nil {
+					slowAudits = append(slowAudits, r)
+				}
+			}
+		}
+
+		// Audit outcomes (PageSpeed hit rate) last 14 days.
+		auditOutcomes := []auditOutcomeRow{}
+		if rows, err := db.Pool.Query(ctx, `
+			SELECT to_char(created_at::date, 'YYYY-MM-DD') AS d,
+			       COUNT(*)                                 AS total,
+			       SUM(CASE WHEN perf_available THEN 1 ELSE 0 END) AS perf_ok,
+			       SUM(CASE WHEN NOT perf_available THEN 1 ELSE 0 END) AS perf_fail
+			  FROM audits
+			 WHERE deleted_at IS NULL
+			   AND created_at > NOW() - INTERVAL '14 days'
+			 GROUP BY d
+			 ORDER BY d DESC`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var r auditOutcomeRow
+				if err := rows.Scan(&r.Date, &r.Total, &r.PerfOK, &r.PerfFail); err == nil {
+					auditOutcomes = append(auditOutcomes, r)
+				}
+			}
+		}
+
 		// Failure log + health: in-memory.
 		failures := adminstate.SnapshotFailures()
 		psHealth, resendHealth := adminstate.SnapshotHealth()
@@ -260,6 +328,8 @@ func AdminOverviewHandler() http.HandlerFunc {
 			FailureLog:         failures,
 			SystemHealth:       health,
 			FeatureFlags:       flags,
+			SlowAudits:         slowAudits,
+			AuditOutcomes:      auditOutcomes,
 		})
 	}
 }
@@ -384,6 +454,84 @@ func AdminUpdateUserPlanHandler() http.HandlerFunc {
 			return
 		}
 		writeJSON(w, http.StatusOK, map[string]any{"ok": true})
+	}
+}
+
+// AdminPatchUserHandler handles PATCH /api/admin/users/{id}.
+// Accepts { plan?, suspended?, note? } and updates only present fields.
+func AdminPatchUserHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "dashboard is not enabled on this server")
+			return
+		}
+		if err := requireAdmin(r.Context()); err != nil {
+			writeJSONError(w, http.StatusForbidden, err.Error())
+			return
+		}
+		idStr := r.PathValue("id")
+		if idStr == "" {
+			writeJSONError(w, http.StatusBadRequest, "missing id")
+			return
+		}
+		userID, err := strconv.ParseInt(idStr, 10, 64)
+		if err != nil || userID == 0 {
+			writeJSONError(w, http.StatusBadRequest, "invalid id")
+			return
+		}
+
+		var body patchUserReq
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		if body.Plan != nil {
+			plan := *body.Plan
+			if plan != "free" && plan != "pro" {
+				writeJSONError(w, http.StatusBadRequest, "plan must be 'free' or 'pro'")
+				return
+			}
+			status := "inactive"
+			if plan == "pro" {
+				status = "active"
+			}
+			if _, err := db.Pool.Exec(ctx,
+				`UPDATE users SET plan = $1, subscription_status = $2 WHERE id = $3`,
+				plan, status, userID); err != nil {
+				writeJSONError(w, http.StatusInternalServerError, "could not update plan")
+				return
+			}
+		}
+
+		if body.Suspended != nil {
+			if *body.Suspended {
+				_, err = db.Pool.Exec(ctx,
+					`UPDATE users SET suspended_at = NOW() WHERE id = $1 AND suspended_at IS NULL`, userID)
+			} else {
+				_, err = db.Pool.Exec(ctx,
+					`UPDATE users SET suspended_at = NULL WHERE id = $1`, userID)
+			}
+			if err != nil {
+				writeJSONError(w, http.StatusInternalServerError, "could not update suspension")
+				return
+			}
+		}
+
+		if body.Note != nil {
+			note := strings.TrimSpace(*body.Note)
+			_, err = db.Pool.Exec(ctx,
+				`UPDATE users SET admin_note = NULLIF($1, '') WHERE id = $2`, note, userID)
+			if err != nil {
+				writeJSONError(w, http.StatusInternalServerError, "could not update note")
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

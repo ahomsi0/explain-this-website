@@ -57,6 +57,7 @@ func Start(cfg config.Config) error {
 	mux.HandleFunc("POST /api/admin/user-plan", auth.RequireAuth(handler.AdminUpdateUserPlanHandler()))
 	mux.HandleFunc("POST /api/admin/flag", auth.RequireAuth(handler.AdminToggleFlagHandler()))
 	mux.HandleFunc("POST /api/admin/broadcast", auth.RequireAuth(handler.AdminBroadcastHandler()))
+	mux.HandleFunc("PATCH /api/admin/users/{id}", auth.RequireAuth(handler.AdminPatchUserHandler()))
 
 	// User audit history (account-only)
 	mux.HandleFunc("GET /api/audits", auth.RequireAuth(handler.AuditsListHandler()))

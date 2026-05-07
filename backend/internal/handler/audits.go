@@ -109,7 +109,7 @@ func AuditDeleteHandler() http.HandlerFunc {
 // saveAuditForUser persists an analysis result to the DB linked to a user.
 // Best-effort: errors are logged but not returned to the caller, since the analysis
 // itself succeeded and the user shouldn't see a failure.
-func saveAuditForUser(ctx context.Context, userID int64, id string, result model.AnalysisResult, shareable bool) {
+func saveAuditForUser(ctx context.Context, userID int64, id string, result model.AnalysisResult, shareable bool, durationMs int, perfAvailable bool) {
 	if !db.IsAvailable() || userID == 0 {
 		return
 	}
@@ -121,9 +121,9 @@ func saveAuditForUser(ctx context.Context, userID int64, id string, result model
 	insertCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	_, _ = db.Pool.Exec(insertCtx,
-		`INSERT INTO audits (id, user_id, url, title, result, is_shareable)
-		 VALUES ($1, $2, $3, $4, $5, $6)
+		`INSERT INTO audits (id, user_id, url, title, result, is_shareable, duration_ms, perf_available)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		 ON CONFLICT (id) DO NOTHING`,
-		id, userID, result.URL, title, resultJSON, shareable,
+		id, userID, result.URL, title, resultJSON, shareable, durationMs, perfAvailable,
 	)
 }

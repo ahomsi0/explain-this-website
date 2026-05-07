@@ -78,6 +78,20 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
+		// Block suspended users before wasting resources on a fetch.
+		if uid != 0 && db.IsAvailable() {
+			var suspendedAt *time.Time
+			suspendCtx, suspendCancel := context.WithTimeout(r.Context(), 3*time.Second)
+			defer suspendCancel()
+			_ = db.Pool.QueryRow(suspendCtx,
+				`SELECT suspended_at FROM users WHERE id = $1`, uid,
+			).Scan(&suspendedAt)
+			if suspendedAt != nil {
+				writeError(w, http.StatusForbidden, "Your account has been suspended. Please contact support.")
+				return
+			}
+		}
+
 		// Fetch HTML with a deadline.
 		timeout := time.Duration(cfg.FetchTimeoutSec) * time.Second
 		ctx, cancel := context.WithTimeout(r.Context(), timeout)
@@ -91,7 +105,9 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 
 		// Parse and analyse.
+		parseStart := time.Now()
 		result, err := parser.Parse(rawHTML, rawURL, cfg.PageSpeedAPIKey)
+		parseDurationMs := int(time.Since(parseStart).Milliseconds())
 		if err != nil {
 			adminstate.RecordAnalyzeFailure(rawURL, uid, "parse: "+err.Error())
 			writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
@@ -110,6 +126,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 		result.Usage = &usage
 		shareable := uid != 0 && usage.Plan == planPro
+		perfAvailable := result.Performance != nil && result.Performance.Available
 
 		// Persist result so it can be retrieved via history and, for Pro users,
 		// via public shared links.
@@ -120,7 +137,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 		// If the user is logged in, also save to their permanent history.
 		if uid != 0 {
-			saveAuditForUser(r.Context(), uid, reportID, result, shareable)
+			saveAuditForUser(r.Context(), uid, reportID, result, shareable, parseDurationMs, perfAvailable)
 		}
 
 		w.WriteHeader(http.StatusOK)
