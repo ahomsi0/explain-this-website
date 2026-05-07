@@ -44,6 +44,21 @@ export interface AdminUserRow {
   dailyUsed: number;
   dailyRemaining: number;
   createdAt: string;
+  suspendedAt?: string;   // ISO string when suspended, absent if not
+  adminNote?: string;
+}
+
+export interface SlowAuditRow {
+  url: string;
+  durationMs: number;
+  createdAt: string;
+}
+
+export interface AuditOutcomeRow {
+  date: string;
+  total: number;
+  perfOk: number;
+  perfFail: number;
 }
 
 export interface AdminVisitorRow {
@@ -108,6 +123,8 @@ export interface AdminOverview {
   failureLog: FailureEntry[];
   systemHealth: SystemHealth;
   featureFlags: Record<string, boolean>;
+  slowAudits: SlowAuditRow[];
+  auditOutcomes: AuditOutcomeRow[];
 }
 
 export function getToken(): string | null {
@@ -190,6 +207,16 @@ export async function updateAdminUserPlan(userId: number, plan: "free" | "pro", 
   await jsonFetch<{ ok: boolean }>("/api/admin/user-plan", {
     method: "POST",
     body: JSON.stringify({ userId, plan, subscriptionStatus }),
+  });
+}
+
+export async function patchAdminUser(
+  userId: number,
+  patch: { plan?: "free" | "pro"; suspended?: boolean; note?: string }
+): Promise<void> {
+  await jsonFetch<void>(`/api/admin/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
   });
 }
 
