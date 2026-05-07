@@ -442,18 +442,14 @@ export function AdminInsightsSection({
   const showMetrics = !systemOnly;
   const showSystem  = !metricsOnly;
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+    <div className="flex flex-col gap-4">
       {showMetrics && <RecentAuditsCard rows={overview.recentAudits} />}
       {showSystem  && <FailureLogCard rows={overview.failureLog} />}
       {showMetrics && <AuditsChartCard days={overview.auditsByDay} />}
       {showMetrics && <TopUrlsCard rows={overview.topUrls} />}
       {showSystem  && <SystemHealthCard h={overview.systemHealth} />}
       {showSystem  && <FeatureFlagsCard flags={overview.featureFlags} onChange={onChange} />}
-      {showSystem  && (
-        <div className="lg:col-span-2">
-          <BroadcastEmailCard totalUsers={overview.users.length} />
-        </div>
-      )}
+      {showSystem  && <BroadcastEmailCard totalUsers={overview.users.length} />}
     </div>
   );
 }

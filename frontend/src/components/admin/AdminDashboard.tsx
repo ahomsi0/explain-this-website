@@ -337,10 +337,8 @@ export function AdminDashboard() {
             {activeTab === "metrics" && (
               <div className="space-y-6">
                 <AdminInsightsSection overview={overview} onChange={() => void loadOverview()} metricsOnly />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-                  <SlowAnalysesCard rows={overview.slowAudits ?? []} />
-                  <AuditOutcomesCard rows={overview.auditOutcomes ?? []} />
-                </div>
+                <SlowAnalysesCard rows={overview.slowAudits ?? []} />
+                <AuditOutcomesCard rows={overview.auditOutcomes ?? []} />
               </div>
             )}
 
