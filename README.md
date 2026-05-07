@@ -5,7 +5,7 @@ Paste any URL and get an instant analysis report covering SEO, page performance 
 Usage model:
 - Anonymous visitors: `5` analyses per day, no account required
 - Free accounts: `5` analyses per day plus saved audit history
-- Pro accounts: `50` analyses per day for `$4.99/month`
+- Pro accounts: `50` analyses per day for `$2.99/month or $24.99/year`
 
 **Live:** [explain-this-website.vercel.app](https://explain-this-website.vercel.app/)
 
@@ -35,7 +35,7 @@ Usage model:
 | Frontend | React 18, Vite, TypeScript, Tailwind CSS |
 | Backend | Go 1.22 (stdlib net/http), PostgreSQL (pgx/v5) |
 | Auth | JWT (HS256), bcrypt password hashing, email-based password reset |
-| Payments | Stripe (checkout, billing portal, webhook lifecycle) |
+| Payments | Tap Payments (checkout, subscription management, webhook lifecycle) |
 | Email | Resend API |
 | Performance | Google PageSpeed Insights API v5 |
 | PDF Export | jsPDF + jspdf-autotable |
@@ -255,9 +255,10 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 | `PAGESPEED_API_KEY` | — | Google PageSpeed Insights API key. Without this key, PageSpeed requests are unauthenticated and rate-limited to ~1 QPS |
 | `RESEND_API_KEY` | — | Enables email delivery via Resend. Without it, reset codes are logged to stdout only |
 | `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Sender address shown on outbound emails |
-| `STRIPE_SECRET_KEY` | — | Stripe secret key for Pro checkout + billing portal |
-| `STRIPE_PRICE_ID` | — | Stripe recurring price ID for the `$4.99/month` Pro plan |
-| `STRIPE_WEBHOOK_SECRET` | — | Stripe webhook signing secret for subscription lifecycle events |
+| `TAP_SECRET_KEY` | — | Tap Payments secret key. Without this key, billing endpoints return 503 |
+| `TAP_MONTHLY_PLAN_ID` | — | Tap plan ID for the $2.99/month Pro plan |
+| `TAP_YEARLY_PLAN_ID` | — | Tap plan ID for the $24.99/year Pro plan |
+| `TAP_WEBHOOK_SECRET` | — | Tap webhook secret for HMAC-SHA256 signature verification |
 | `APP_URL` | `http://localhost:5173` | Frontend base URL used for Stripe success/cancel redirects |
 
 ### Frontend (`frontend/.env.local`)
