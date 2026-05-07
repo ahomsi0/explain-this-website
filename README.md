@@ -3,9 +3,9 @@
 Paste any URL and get an instant analysis report covering SEO, page performance (Google PageSpeed / Lighthouse), UX/conversion signals, tech stack detection, content analysis, and actionable recommendations. Results include an executive summary with scored sub-categories and can be shared via a public link or exported as a PDF.
 
 Usage model:
-- Anonymous visitors: `2` analyses per day, no account required
-- Free accounts: `2` analyses per day plus saved audit history
-- Pro accounts: `30` analyses per day for `$4.99/month`
+- Anonymous visitors: `5` analyses per day, no account required
+- Free accounts: `5` analyses per day plus saved audit history
+- Pro accounts: `50` analyses per day for `$4.99/month`
 
 **Live:** [explain-this-website.vercel.app](https://explain-this-website.vercel.app/)
 

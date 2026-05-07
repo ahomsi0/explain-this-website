@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"regexp"
@@ -114,11 +115,11 @@ func effectivePlan(plan, subscriptionStatus string) string {
 func usageLimitMessage(limit int, signedIn bool) string {
 	if signedIn {
 		if limit >= proDailyLimit {
-			return "You've reached your 30 analyses for today. Your Pro plan resets tomorrow."
+			return fmt.Sprintf("You've reached your %d analyses for today. Your Pro plan resets tomorrow.", proDailyLimit)
 		}
-		return "You've reached your 2 free analyses for today. Upgrade to Pro for 30 analyses a day."
+		return fmt.Sprintf("You've reached your %d free analyses for today. Upgrade to Pro for %d analyses a day.", freeDailyLimit, proDailyLimit)
 	}
-	return "You've used your 2 free analyses for today. Sign in to save history and upgrade to Pro for 30 analyses a day."
+	return fmt.Sprintf("You've used your %d free analyses for today. Sign in to save history and upgrade to Pro for %d analyses a day.", freeDailyLimit, proDailyLimit)
 }
 
 func visitorIDFromRequest(r *http.Request) string {
