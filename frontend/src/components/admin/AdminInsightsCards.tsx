@@ -222,7 +222,7 @@ export function SystemHealthCard({ h }: { h: SystemHealth }) {
         <HealthRow label="JWT Secret"        ok={h.jwtSecretSet}     detail={h.jwtSecretSet ? "configured" : "missing"} />
         <HealthRow label="PageSpeed API"     ok={psHealthy}          detail={h.pagespeedKeySet ? `success ${timeAgo(h.pagespeed.lastSuccessAt)}` : "no key"} />
         <HealthRow label="Resend (email)"    ok={reHealthy}          detail={h.resendKeySet ? `success ${timeAgo(h.resend.lastSuccessAt)}` : "no key"} />
-        <HealthRow label="Stripe"            ok={h.stripeKeySet}     detail={h.stripeKeySet ? "configured" : "no key"} />
+        <HealthRow label="Tap Payments" ok={h.tapKeySet}        detail={h.tapKeySet ? "configured" : "no key"} />
       </div>
       {h.pagespeed.lastErrorMsg && (
         <p className="mt-3 text-[10px] text-red-400 break-words">PageSpeed last error: {h.pagespeed.lastErrorMsg}</p>

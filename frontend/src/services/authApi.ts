@@ -106,7 +106,7 @@ export interface SystemHealth {
   pagespeedKeySet: boolean;
   resendKeySet: boolean;
   jwtSecretSet: boolean;
-  stripeKeySet: boolean;
+  tapKeySet: boolean;
   pagespeed: HealthState;
   resend: HealthState;
 }
@@ -254,16 +254,15 @@ export async function resetPassword(email: string, code: string, newPassword: st
   });
 }
 
-export async function createCheckoutSession(): Promise<{ url: string }> {
+export async function createCheckoutSession(interval: "monthly" | "yearly" = "monthly"): Promise<{ url: string }> {
   return jsonFetch<{ url: string }>("/api/billing/checkout-session", {
     method: "POST",
+    body: JSON.stringify({ interval }),
   });
 }
 
-export async function createPortalSession(): Promise<{ url: string }> {
-  return jsonFetch<{ url: string }>("/api/billing/portal-session", {
-    method: "POST",
-  });
+export async function cancelSubscription(): Promise<void> {
+  await jsonFetch<void>("/api/billing/cancel", { method: "POST" });
 }
 
 export async function deleteAudit(id: string): Promise<void> {

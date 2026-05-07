@@ -13,7 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { HistoryModal } from "../auth/HistoryModal";
-import { createCheckoutSession, createPortalSession, type UsageSummary } from "../../services/authApi";
+import { createCheckoutSession, type UsageSummary } from "../../services/authApi";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -91,7 +91,8 @@ export function ResultDashboard({
     setBillingError(null);
     setBillingBusy(isPro ? "manage" : "upgrade");
     try {
-      const session = isPro ? await createPortalSession() : await createCheckoutSession();
+      if (isPro) { window.location.href = "/go-pro"; setBillingBusy(null); return; }
+      const session = await createCheckoutSession();
       window.location.href = session.url;
     } catch (err) {
       setBillingError(err instanceof Error ? err.message : "Could not open billing");

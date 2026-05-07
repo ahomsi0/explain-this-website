@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { createCheckoutSession, createPortalSession } from "../../services/authApi";
+import { createCheckoutSession } from "../../services/authApi";
 
 export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
   const { user, logout, refreshUser } = useAuth();
@@ -36,21 +36,8 @@ export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
     }
   }
 
-  async function openPortal() {
-    setError(null);
-    setBusy("manage");
-    try {
-      const { url } = await createPortalSession();
-      window.location.href = url;
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("no billing account")) {
-        await startUpgrade();
-        return;
-      }
-      setError(err instanceof Error ? err.message : "Could not open billing portal");
-    } finally {
-      setBusy(null);
-    }
+  function openPortal() {
+    window.location.href = "/go-pro";
   }
 
   return (
