@@ -28,9 +28,9 @@ export function GoProPage() {
     try {
       const session = await createCheckoutSession(interval);
       window.location.href = session.url;
+      // Keep busy=true after redirect — page is navigating away
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start checkout");
-    } finally {
       setBusy(null);
     }
   }
@@ -112,9 +112,11 @@ export function GoProPage() {
                     $0<span className="text-sm text-zinc-500 font-medium">/month</span>
                   </p>
                 </div>
-                <span className="text-[11px] font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-full px-2.5 py-1">
-                  Current plan
-                </span>
+                {!isPro && (
+                  <span className="text-[11px] font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-full px-2.5 py-1">
+                    Current plan
+                  </span>
+                )}
               </div>
               <ul className="mt-5 space-y-1.5 text-sm text-zinc-400">
                 <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />{FREE_LIMIT} analyses per day</li>
@@ -190,7 +192,7 @@ export function GoProPage() {
                       : `Upgrade to Pro — ${interval === "yearly" ? YEARLY_PRICE + "/yr" : MONTHLY_PRICE + "/mo"}`}
                 </button>
               )}
-              {error && <p className="mt-3 text-xs text-red-300">{error}</p>}
+              {error && <p role="alert" className="mt-3 text-xs text-red-300">{error}</p>}
             </section>
           </div>
         </div>
