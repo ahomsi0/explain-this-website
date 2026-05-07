@@ -158,6 +158,11 @@ CREATE TABLE IF NOT EXISTS anonymous_daily_usage (
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (visitor_id, usage_date)
 );
+
+ALTER TABLE users   ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
+ALTER TABLE users   ADD COLUMN IF NOT EXISTS admin_note   TEXT;
+ALTER TABLE audits  ADD COLUMN IF NOT EXISTS duration_ms   INTEGER;
+ALTER TABLE audits  ADD COLUMN IF NOT EXISTS perf_available BOOLEAN NOT NULL DEFAULT TRUE;
 `
 
 func migrate(ctx context.Context) error {
