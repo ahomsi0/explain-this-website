@@ -48,6 +48,13 @@ export function AdminDashboard() {
   const [noteText, setNoteText]       = useState("");
   const [rowError, setRowError]       = useState<Record<number, string>>({});
 
+  useEffect(() => {
+    if (!noteModal) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setNoteModal(null); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [noteModal]);
+
   async function loadOverview() {
     try {
       setError(null);
@@ -124,6 +131,7 @@ export function AdminDashboard() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not update user";
       setRowError(prev => ({ ...prev, [userId]: msg }));
+      // React 18: setState after unmount is a no-op — no cleanup needed
       setTimeout(() => setRowError(prev => { const next = { ...prev }; delete next[userId]; return next; }), 4000);
     } finally {
       setBusyKey(null);

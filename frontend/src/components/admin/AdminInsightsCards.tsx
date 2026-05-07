@@ -9,6 +9,8 @@ import {
   type FailureEntry,
   type SystemHealth,
   type BroadcastResult,
+  type SlowAuditRow,
+  type AuditOutcomeRow,
 } from "../../services/authApi";
 
 // ─── Business Metrics Row ────────────────────────────────────────────────────
@@ -356,7 +358,7 @@ export function BroadcastEmailCard({ totalUsers }: { totalUsers: number }) {
 }
 
 // ─── Slow Analyses ───────────────────────────────────────────────────────────
-export function SlowAnalysesCard({ rows }: { rows: import("../../services/authApi").SlowAuditRow[] }) {
+export function SlowAnalysesCard({ rows }: { rows: SlowAuditRow[] }) {
   function fmt(ms: number) {
     return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
   }
@@ -379,7 +381,7 @@ export function SlowAnalysesCard({ rows }: { rows: import("../../services/authAp
 }
 
 // ─── Audit Outcomes ──────────────────────────────────────────────────────────
-export function AuditOutcomesCard({ rows }: { rows: import("../../services/authApi").AuditOutcomeRow[] }) {
+export function AuditOutcomesCard({ rows }: { rows: AuditOutcomeRow[] }) {
   const totalAll  = rows.reduce((s, r) => s + r.total, 0);
   const perfOkAll = rows.reduce((s, r) => s + r.perfOk, 0);
   const rate      = totalAll > 0 ? Math.round((perfOkAll / totalAll) * 100) : null;
