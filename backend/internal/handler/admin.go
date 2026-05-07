@@ -62,7 +62,7 @@ type systemHealth struct {
 	PageSpeedKeySet  bool                    `json:"pagespeedKeySet"`
 	ResendKeySet     bool                    `json:"resendKeySet"`
 	JWTSecretSet     bool                    `json:"jwtSecretSet"`
-	StripeKeySet     bool                    `json:"stripeKeySet"`
+	TapKeySet        bool                    `json:"tapKeySet"`
 	PageSpeed        adminstate.HealthState  `json:"pagespeed"`
 	Resend           adminstate.HealthState  `json:"resend"`
 }
@@ -303,7 +303,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 			PageSpeedKeySet: os.Getenv("PAGESPEED_API_KEY") != "",
 			ResendKeySet:    os.Getenv("RESEND_API_KEY") != "",
 			JWTSecretSet:    os.Getenv("JWT_SECRET") != "",
-			StripeKeySet:    os.Getenv("STRIPE_SECRET_KEY") != "",
+			TapKeySet:       os.Getenv("TAP_SECRET_KEY") != "",
 			PageSpeed:       psHealth,
 			Resend:          resendHealth,
 		}
