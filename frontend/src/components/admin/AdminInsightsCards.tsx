@@ -442,7 +442,7 @@ export function AdminInsightsSection({
   const showMetrics = !systemOnly;
   const showSystem  = !metricsOnly;
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
       {showMetrics && <RecentAuditsCard rows={overview.recentAudits} />}
       {showSystem  && <FailureLogCard rows={overview.failureLog} />}
       {showMetrics && <AuditsChartCard days={overview.auditsByDay} />}
