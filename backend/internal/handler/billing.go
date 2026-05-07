@@ -7,8 +7,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,6 +19,7 @@ import (
 
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
+	"github.com/jackc/pgx/v5"
 )
 
 // ── Tap env helpers ───────────────────────────────────────────────────────────
@@ -42,6 +45,8 @@ func appURL() string {
 
 const tapBaseURL = "https://api.tap.company/v2"
 
+var tapHTTPClient = &http.Client{Timeout: 15 * time.Second}
+
 func tapDo(ctx context.Context, method, path string, body any) (map[string]any, error) {
 	var reqBody io.Reader
 	if body != nil {
@@ -60,19 +65,22 @@ func tapDo(ctx context.Context, method, path string, body any) (map[string]any, 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := tapHTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("tap request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	var result map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("tap decode: %w", err)
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("tap read body (status %d): %w", resp.StatusCode, err)
 	}
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("tap API error %d: %v", resp.StatusCode, result)
+		return nil, fmt.Errorf("tap API error %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+	var result map[string]any
+	if err := json.Unmarshal(bodyBytes, &result); err != nil {
+		return nil, fmt.Errorf("tap decode (status %d): %w", resp.StatusCode, err)
 	}
 	return result, nil
 }
@@ -83,9 +91,12 @@ func tapDo(ctx context.Context, method, path string, body any) (map[string]any, 
 // a new one and saves it to the DB.
 func tapEnsureCustomer(ctx context.Context, uid int64, email string) (string, error) {
 	var existing string
-	_ = db.Pool.QueryRow(ctx,
+	err := db.Pool.QueryRow(ctx,
 		`SELECT COALESCE(tap_customer_id, '') FROM users WHERE id = $1`, uid,
 	).Scan(&existing)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return "", fmt.Errorf("load tap customer id: %w", err)
+	}
 	if existing != "" {
 		return existing, nil
 	}
@@ -122,6 +133,7 @@ type checkoutReq struct {
 // POST /api/billing/checkout-session
 func BillingCheckoutSessionHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
 		if !db.IsAvailable() {
 			writeJSONError(w, http.StatusServiceUnavailable, "billing is not enabled on this server")
 			return
@@ -243,8 +255,11 @@ func BillingWebhookHandler() http.HandlerFunc {
 			return
 		}
 
-		// Verify HMAC-SHA256 signature when a webhook secret is configured.
-		if secret := tapWebhookSecret(); secret != "" {
+		// Verify HMAC-SHA256 signature.
+		secret := tapWebhookSecret()
+		if secret == "" {
+			log.Printf("tap webhook: TAP_WEBHOOK_SECRET not set — accepting unverified webhook (configure in production)")
+		} else {
 			sig := r.Header.Get("hashstring")
 			mac := hmac.New(sha256.New, []byte(secret))
 			mac.Write(payload)
@@ -267,9 +282,17 @@ func BillingWebhookHandler() http.HandlerFunc {
 		status, _ := event["status"].(string)
 		switch status {
 		case "SUBSCRIPTION_ACTIVATED", "SUBSCRIPTION_UPDATED":
-			_ = handleTapSubscriptionActive(ctx, event)
+			if err := handleTapSubscriptionActive(ctx, event); err != nil {
+				log.Printf("tap webhook: handleTapSubscriptionActive: %v", err)
+				http.Error(w, "internal error", http.StatusInternalServerError)
+				return
+			}
 		case "SUBSCRIPTION_CANCELLED":
-			_ = handleTapSubscriptionCancelled(ctx, event)
+			if err := handleTapSubscriptionCancelled(ctx, event); err != nil {
+				log.Printf("tap webhook: handleTapSubscriptionCancelled: %v", err)
+				http.Error(w, "internal error", http.StatusInternalServerError)
+				return
+			}
 		}
 
 		w.WriteHeader(http.StatusOK)
