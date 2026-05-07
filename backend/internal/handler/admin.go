@@ -277,8 +277,8 @@ func AdminOverviewHandler() http.HandlerFunc {
 		if rows, err := db.Pool.Query(ctx, `
 			SELECT to_char(created_at::date, 'YYYY-MM-DD') AS d,
 			       COUNT(*)                                 AS total,
-			       SUM(CASE WHEN perf_available THEN 1 ELSE 0 END) AS perf_ok,
-			       SUM(CASE WHEN NOT perf_available THEN 1 ELSE 0 END) AS perf_fail
+			       SUM(CASE WHEN perf_available IS TRUE THEN 1 ELSE 0 END) AS perf_ok,
+			       SUM(CASE WHEN perf_available IS NOT TRUE THEN 1 ELSE 0 END) AS perf_fail
 			  FROM audits
 			 WHERE deleted_at IS NULL
 			   AND created_at > NOW() - INTERVAL '14 days'
@@ -499,10 +499,15 @@ func AdminPatchUserHandler() http.HandlerFunc {
 			if plan == "pro" {
 				status = "active"
 			}
-			if _, err := db.Pool.Exec(ctx,
+			tag, execErr := db.Pool.Exec(ctx,
 				`UPDATE users SET plan = $1, subscription_status = $2 WHERE id = $3`,
-				plan, status, userID); err != nil {
+				plan, status, userID)
+			if execErr != nil {
 				writeJSONError(w, http.StatusInternalServerError, "could not update plan")
+				return
+			}
+			if tag.RowsAffected() == 0 {
+				writeJSONError(w, http.StatusNotFound, "user not found")
 				return
 			}
 		}
@@ -662,9 +667,3 @@ func (e forbiddenError) Error() string { return string(e) }
 
 func errForbidden(msg string) error { return forbiddenError(msg) }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}

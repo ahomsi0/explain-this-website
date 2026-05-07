@@ -82,10 +82,10 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		if uid != 0 && db.IsAvailable() {
 			var suspendedAt *time.Time
 			suspendCtx, suspendCancel := context.WithTimeout(r.Context(), 3*time.Second)
-			defer suspendCancel()
 			_ = db.Pool.QueryRow(suspendCtx,
 				`SELECT suspended_at FROM users WHERE id = $1`, uid,
 			).Scan(&suspendedAt)
+			suspendCancel()
 			if suspendedAt != nil {
 				writeError(w, http.StatusForbidden, "Your account has been suspended. Please contact support.")
 				return
