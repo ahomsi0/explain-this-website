@@ -355,19 +355,103 @@ export function BroadcastEmailCard({ totalUsers }: { totalUsers: number }) {
   );
 }
 
+// ─── Slow Analyses ───────────────────────────────────────────────────────────
+export function SlowAnalysesCard({ rows }: { rows: import("../../services/authApi").SlowAuditRow[] }) {
+  function fmt(ms: number) {
+    return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+  }
+  return (
+    <Card title="Slowest Analyses" action={<span className="text-[10px] text-zinc-500">last 30 days</span>}>
+      {rows.length === 0 ? (
+        <p className="text-xs text-zinc-500 py-2">No slow analysis data yet.</p>
+      ) : (
+        <ul className="divide-y divide-zinc-800/60">
+          {rows.map((r, i) => (
+            <li key={i} className="flex items-center justify-between py-2 gap-3">
+              <span className="text-[11px] text-zinc-400 truncate">{host(r.url)}</span>
+              <span className="text-[11px] font-semibold text-amber-400 tabular-nums shrink-0">{fmt(r.durationMs)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+// ─── Audit Outcomes ──────────────────────────────────────────────────────────
+export function AuditOutcomesCard({ rows }: { rows: import("../../services/authApi").AuditOutcomeRow[] }) {
+  const totalAll  = rows.reduce((s, r) => s + r.total, 0);
+  const perfOkAll = rows.reduce((s, r) => s + r.perfOk, 0);
+  const rate      = totalAll > 0 ? Math.round((perfOkAll / totalAll) * 100) : null;
+  return (
+    <Card
+      title="PageSpeed Hit Rate"
+      action={rate !== null
+        ? <span className={`text-[10px] font-semibold ${rate >= 80 ? "text-emerald-400" : rate >= 50 ? "text-amber-400" : "text-red-400"}`}>{rate}% overall</span>
+        : undefined}
+    >
+      {rows.length === 0 ? (
+        <p className="text-xs text-zinc-500 py-2">No audit outcome data yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="text-zinc-600 uppercase tracking-wider text-[9px] border-b border-zinc-800">
+                <th className="text-left py-1.5">Date</th>
+                <th className="text-right py-1.5">Total</th>
+                <th className="text-right py-1.5 text-emerald-600">✓ Perf</th>
+                <th className="text-right py-1.5 text-red-600">✗ Perf</th>
+                <th className="text-right py-1.5">Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const rowRate = r.total > 0 ? Math.round((r.perfOk / r.total) * 100) : 0;
+                return (
+                  <tr key={r.date} className="border-b border-zinc-800/40 last:border-0">
+                    <td className="py-1.5 text-zinc-400">{r.date}</td>
+                    <td className="py-1.5 text-right text-zinc-300 tabular-nums">{r.total}</td>
+                    <td className="py-1.5 text-right text-emerald-500 tabular-nums">{r.perfOk}</td>
+                    <td className="py-1.5 text-right text-red-500 tabular-nums">{r.perfFail}</td>
+                    <td className={`py-1.5 text-right tabular-nums font-semibold ${rowRate >= 80 ? "text-emerald-400" : rowRate >= 50 ? "text-amber-400" : "text-red-400"}`}>{rowRate}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // ─── Bundle for convenient import ────────────────────────────────────────────
-export function AdminInsightsSection({ overview, onChange }: { overview: AdminOverview; onChange: () => void }) {
+export function AdminInsightsSection({
+  overview,
+  onChange,
+  metricsOnly = false,
+  systemOnly = false,
+}: {
+  overview: AdminOverview;
+  onChange: () => void;
+  metricsOnly?: boolean;
+  systemOnly?: boolean;
+}) {
+  const showMetrics = !systemOnly;
+  const showSystem  = !metricsOnly;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <RecentAuditsCard rows={overview.recentAudits} />
-      <FailureLogCard rows={overview.failureLog} />
-      <AuditsChartCard days={overview.auditsByDay} />
-      <TopUrlsCard rows={overview.topUrls} />
-      <SystemHealthCard h={overview.systemHealth} />
-      <FeatureFlagsCard flags={overview.featureFlags} onChange={onChange} />
-      <div className="lg:col-span-2">
-        <BroadcastEmailCard totalUsers={overview.users.length} />
-      </div>
+      {showMetrics && <RecentAuditsCard rows={overview.recentAudits} />}
+      {showSystem  && <FailureLogCard rows={overview.failureLog} />}
+      {showMetrics && <AuditsChartCard days={overview.auditsByDay} />}
+      {showMetrics && <TopUrlsCard rows={overview.topUrls} />}
+      {showSystem  && <SystemHealthCard h={overview.systemHealth} />}
+      {showSystem  && <FeatureFlagsCard flags={overview.featureFlags} onChange={onChange} />}
+      {showSystem  && (
+        <div className="lg:col-span-2">
+          <BroadcastEmailCard totalUsers={overview.users.length} />
+        </div>
+      )}
     </div>
   );
 }
