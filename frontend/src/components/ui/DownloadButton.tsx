@@ -210,11 +210,11 @@ function buildPDF(result: AnalysisResult) {
     startY: y,
     head: [["Dimension", "Score", "Rating"]],
     body: [
-      ["Overall",     `${insights.overallScore}/100`,    ovLabel],
-      ["SEO",         `${insights.seoScore}/100`,        rateLabel(insights.seoScore)],
-      ["Performance", `${insights.perfScore}/100`,       rateLabel(insights.perfScore)],
-      ["UX",          `${insights.uxScore}/100`,         rateLabel(insights.uxScore)],
-      ["Conversion",  `${insights.conversionScore}/100`, rateLabel(insights.conversionScore)],
+      ["Overall",     `${insights.overallScore}/100`,                                                  ovLabel],
+      ["SEO",         `${insights.seoScore}/100`,                                                      rateLabel(insights.seoScore)],
+      ["Performance", insights.perfUnavailable ? "N/A" : `${insights.perfScore}/100`,                  insights.perfUnavailable ? "No data" : rateLabel(insights.perfScore)],
+      ["UX",          `${insights.uxScore}/100`,                                                       rateLabel(insights.uxScore)],
+      ["Conversion",  `${insights.conversionScore}/100`,                                               rateLabel(insights.conversionScore)],
     ],
     columnStyles: {
       0: { cellWidth: 50, fontStyle: "bold" },
@@ -223,7 +223,8 @@ function buildPDF(result: AnalysisResult) {
     },
     didParseCell(data) {
       if (data.section !== "body") return;
-      const scores = [insights.overallScore, insights.seoScore, insights.perfScore, insights.uxScore, insights.conversionScore];
+      const scores = [insights.overallScore, insights.seoScore, insights.perfUnavailable ? -1 : insights.perfScore, insights.uxScore, insights.conversionScore];
+      if (scores[data.row.index] < 0) return; // skip coloring N/A row
       const c = rgb(scoreColor(scores[data.row.index]));
       if (data.column.index === 1) data.cell.styles.textColor = c;
       if (data.column.index === 2) data.cell.styles.textColor = c;
