@@ -210,6 +210,6 @@ func loadUserOut(ctx context.Context, userID int64) (userOut, error) {
 		return userOut{}, err
 	}
 	u.Usage = usage
-	u.BillingEnabled = billingConfigured()
+	u.BillingEnabled = tapConfigured()
 	return u, nil
 }
