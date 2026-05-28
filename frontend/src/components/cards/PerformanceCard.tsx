@@ -216,6 +216,20 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
           </div>
         </div>
 
+        {/* Notice when only one strategy is available — PageSpeed sometimes
+            times out for one device class on large pages. Surface it instead of
+            silently hiding the missing tab. */}
+        {(!performance.mobile || !performance.desktop) && (
+          <div className="mt-1 mb-3 flex items-center gap-2 text-[10px] text-zinc-500">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>
+              {performance.mobile ? "Desktop" : "Mobile"} score unavailable — Google's PageSpeed API didn't respond in time for this run.
+            </span>
+          </div>
+        )}
+
         <p className="text-[11px] text-zinc-600 mb-4 leading-snug">
           Google's official Lighthouse scores — the SEO score here reflects technical SEO basics Google itself checks.
         </p>
