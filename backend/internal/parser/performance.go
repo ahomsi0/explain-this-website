@@ -110,8 +110,11 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 }
 
 // fetchStrategy calls the PageSpeed Insights API for one strategy and parses the response.
+// Timeout is 90s because Google's desktop PageSpeed regularly takes 60–80s on
+// large/heavy pages, and timing out at 55s was silently dropping the desktop
+// result on real-world sites like stripe.com.
 func fetchStrategy(siteURL string, apiKey string, strategy string) (*model.StrategyData, error) {
-	client := &http.Client{Timeout: 55 * time.Second}
+	client := &http.Client{Timeout: 90 * time.Second}
 
 	// Request all four Lighthouse categories — by default the API only returns "performance".
 	apiURL := fmt.Sprintf(
