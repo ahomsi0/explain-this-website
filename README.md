@@ -5,7 +5,7 @@ Paste any URL and get an instant analysis report covering SEO, page performance 
 Usage model:
 - Anonymous visitors: `5` analyses per day, no account required
 - Free accounts: `5` analyses per day plus saved audit history
-- Pro accounts: `50` analyses per day for `$2.99/month or $24.99/year`
+- Pro accounts: `50` analyses per day — currently admin-granted only (self-serve checkout is paused)
 
 **Live:** [explain-this-website.vercel.app](https://explain-this-website.vercel.app/)
 
@@ -35,7 +35,7 @@ Usage model:
 | Frontend | React 18, Vite, TypeScript, Tailwind CSS |
 | Backend | Go 1.22 (stdlib net/http), PostgreSQL (pgx/v5) |
 | Auth | JWT (HS256), bcrypt password hashing, email-based password reset |
-| Payments | Tap Payments (checkout, subscription management, webhook lifecycle) |
+| Payments | Tap Payments backend (checkout, subscriptions, webhook lifecycle) — wired but currently dormant; Pro is admin-granted while self-serve is paused |
 | Email | Resend API |
 | Performance | Google PageSpeed Insights API v5 |
 | PDF Export | jsPDF + jspdf-autotable |
@@ -120,7 +120,7 @@ Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data aft
         ├── components/
         │   ├── admin/     # AdminDashboard (Users / Metrics / System tabs)
         │   ├── auth/      # AuthModal, UserMenu, ForgotPassword
-        │   ├── billing/   # PricingPage, UpgradePrompt
+        │   ├── billing/   # GoProPage (orphaned — kept for when self-serve checkout returns)
         │   ├── cards/     # All result cards (SEO, Tech, UX, Stats, Perf…)
         │   ├── layout/    # Page shell, nav
         │   └── ui/        # Logo, CardShell, shared primitives
@@ -181,7 +181,9 @@ Returns a previously saved analysis result by its share ID. No authentication re
 
 ---
 
-### Billing (Tap Payments)
+### Billing (Tap Payments — dormant)
+
+These endpoints still exist on the backend but **nothing in the frontend calls them**. Self-serve upgrade is paused while Pro is admin-granted only. The route map is kept here so re-enabling checkout later is just a frontend change.
 
 | Method | Path | Description |
 |---|---|---|
@@ -255,10 +257,10 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 | `PAGESPEED_API_KEY` | — | Google PageSpeed Insights API key. Without this key, PageSpeed requests are unauthenticated and rate-limited to ~1 QPS |
 | `RESEND_API_KEY` | — | Enables email delivery via Resend. Without it, reset codes are logged to stdout only |
 | `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Sender address shown on outbound emails |
-| `TAP_SECRET_KEY` | — | Tap Payments secret key. Without this key, billing endpoints return 503 |
-| `TAP_MONTHLY_PLAN_ID` | — | Tap plan ID for the $2.99/month Pro plan |
-| `TAP_YEARLY_PLAN_ID` | — | Tap plan ID for the $24.99/year Pro plan |
-| `TAP_WEBHOOK_SECRET` | — | Tap webhook secret for HMAC-SHA256 signature verification |
+| `TAP_SECRET_KEY` | — | Tap Payments secret key. Without this key, billing endpoints return 503. Optional while self-serve checkout is paused |
+| `TAP_MONTHLY_PLAN_ID` | — | Tap plan ID for the monthly Pro plan. Optional while self-serve checkout is paused |
+| `TAP_YEARLY_PLAN_ID` | — | Tap plan ID for the yearly Pro plan. Optional while self-serve checkout is paused |
+| `TAP_WEBHOOK_SECRET` | — | Tap webhook secret for HMAC-SHA256 signature verification. Optional while self-serve checkout is paused |
 | `APP_URL` | `http://localhost:5173` | Frontend base URL used for Tap success/cancel redirects |
 
 ### Frontend (`frontend/.env.local`)
