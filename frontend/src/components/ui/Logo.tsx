@@ -1,5 +1,9 @@
 // Logo mark for "Explain This Website"
 // A browser window with a magnifying glass overlaid — "looking inside a website"
+//
+// Sharpened pass: taller chrome bar, uniform brighter dots, fewer/bolder
+// content lines, larger lens with a dark separator ring + a tiny highlight,
+// thicker handle. Stays readable at favicon sizes (16/20/24).
 
 export function LogoMark({ size = 28 }: { size?: number }) {
   return (
@@ -10,27 +14,32 @@ export function LogoMark({ size = 28 }: { size?: number }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Outer rounded square background */}
+      {/* Outer rounded tile */}
       <rect width="32" height="32" rx="8" fill="#7c3aed" />
 
-      {/* Browser chrome bar */}
+      {/* Browser window body */}
       <rect x="5" y="7" width="22" height="18" rx="2.5" fill="#1e1b4b" />
-      <rect x="5" y="7" width="22" height="5.5" rx="2.5" fill="#4c1d95" />
 
-      {/* Browser dots */}
-      <circle cx="9"  cy="9.75" r="1" fill="#7c3aed" opacity="0.8" />
-      <circle cx="12.5" cy="9.75" r="1" fill="#7c3aed" opacity="0.5" />
-      <circle cx="16" cy="9.75" r="1" fill="#7c3aed" opacity="0.3" />
+      {/* Browser chrome bar — taller, brighter mid-violet */}
+      <rect x="5" y="7" width="22" height="6" rx="2.5" fill="#5b21b6" />
 
-      {/* Page content lines */}
-      <rect x="8"  y="15.5" width="10" height="1.5" rx="0.75" fill="#4c1d95" opacity="0.8" />
-      <rect x="8"  y="18.5" width="7"  height="1.5" rx="0.75" fill="#4c1d95" opacity="0.6" />
-      <rect x="8"  y="21.5" width="8"  height="1.5" rx="0.75" fill="#4c1d95" opacity="0.4" />
+      {/* Window dots — uniform light violet, slightly larger */}
+      <circle cx="9.5"  cy="10" r="1.15" fill="#a78bfa" />
+      <circle cx="13"   cy="10" r="1.15" fill="#a78bfa" />
+      <circle cx="16.5" cy="10" r="1.15" fill="#a78bfa" />
 
-      {/* Magnifying glass — overlapping bottom-right */}
-      <circle cx="20.5" cy="20.5" r="4.5" fill="#7c3aed" />
-      <circle cx="20.5" cy="20.5" r="3"   fill="none" stroke="white" strokeWidth="1.5" />
-      <line   x1="22.6" y1="22.6" x2="25" y2="25"    stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+      {/* Page content lines — fewer, bolder, light accent */}
+      <rect x="8" y="16.5" width="11" height="2" rx="1" fill="#a78bfa" opacity="0.85" />
+      <rect x="8" y="20"   width="7"  height="2" rx="1" fill="#a78bfa" opacity="0.55" />
+
+      {/* Magnifying glass — bigger lens, dark separator for clarity */}
+      <circle cx="21" cy="21" r="5.2" fill="#7c3aed" stroke="#1e1b4b" strokeWidth="0.6" />
+      <circle cx="21" cy="21" r="3.3" fill="none" stroke="#fff" strokeWidth="1.9" />
+      {/* Glass highlight — premium polish */}
+      <circle cx="19.7" cy="19.7" r="0.7" fill="#fff" opacity="0.85" />
+
+      {/* Handle — thicker, slightly longer */}
+      <line x1="23.7" y1="23.7" x2="26.5" y2="26.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
     </svg>
   );
 }
