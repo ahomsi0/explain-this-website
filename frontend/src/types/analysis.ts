@@ -306,6 +306,9 @@ export interface AnalysisResult {
   fontAudit?: FontAudit;
   domainInfo?: DomainInfo;
   usage?: UsageSummary;
+  /** Plain-English 3-paragraph LLM-generated summary. Optional — empty when
+   *  the backend Groq integration is disabled or the call failed. */
+  aiSummary?: string;
 }
 
 export interface AnalysisError {

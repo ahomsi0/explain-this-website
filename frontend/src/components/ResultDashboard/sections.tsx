@@ -1,4 +1,5 @@
 import type { AnalysisResult } from "../../types/analysis";
+import { AISummaryCard }         from "../cards/AISummaryCard";
 import { OverviewCard }          from "../cards/OverviewCard";
 import { TechStackCard }         from "../cards/TechStackCard";
 import { SEOAuditCard }          from "../cards/SeoAuditCard";
@@ -59,6 +60,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       const insights = computeInsights(result);
       return (
         <div className="flex flex-col gap-2">
+          <AISummaryCard summary={result.aiSummary} />
           <ExecutiveSummaryCard insights={insights} />
           <OverviewCard
             overview={result.overview}

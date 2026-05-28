@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/fetcher"
+	"github.com/ahomsi/explain-website/internal/llm"
 	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/ahomsi/explain-website/internal/parser"
 )
@@ -21,6 +23,7 @@ type Config struct {
 	FetchTimeoutSec int
 	MaxBodyBytes    int64
 	PageSpeedAPIKey string
+	Groq            *llm.Client // optional; nil disables AI summary
 }
 
 // AnalyzeHandler returns an http.HandlerFunc for POST /api/analyze.
@@ -115,6 +118,23 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 
 		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
+
+		// AI summary — best-effort. If Groq is unconfigured or the call
+		// fails, the analysis still succeeds and AISummary stays "". The
+		// UI hides the section in that case.
+		if cfg.Groq != nil && cfg.Groq.Enabled() {
+			summaryCtx, cancelSummary := context.WithTimeout(r.Context(), 20*time.Second)
+			summary, err := cfg.Groq.Summarise(summaryCtx, &result)
+			cancelSummary()
+			if err != nil {
+				if err != llm.ErrDisabled {
+					log.Printf("groq summary failed for %s: %v", rawURL, err)
+				}
+			} else {
+				result.AISummary = strings.TrimSpace(summary)
+			}
+		}
+
 		usage, err = incrementUsage(r.Context(), uid, visitorID)
 		if err != nil {
 			if err == errDailyLimitReached {
