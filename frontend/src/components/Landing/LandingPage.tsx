@@ -26,12 +26,9 @@ export function LandingPage({
 }) {
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Ambient gradient blobs — purely decorative */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-violet-600/10 blur-[120px]" />
-        <div className="absolute top-[40%] -left-32 w-[400px] h-[400px] rounded-full bg-blue-600/8 blur-[100px]" />
-        <div className="absolute top-[20%] -right-32 w-[400px] h-[400px] rounded-full bg-pink-500/5 blur-[100px]" />
-      </div>
+      {/* Striped grid backdrop + film-grain noise — replaces the gradient blobs */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[820px] hero-grid" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[820px] hero-noise" aria-hidden="true" />
 
       <div className="relative z-10">
         {/* Top bar */}
@@ -92,7 +89,7 @@ export function LandingPage({
             </h2>
 
             <p className="mt-6 text-center text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
-              Start with 5 free analyses a day without signing in. Create an account to save history, then upgrade to Pro for 50 analyses a day at $2.99/month.
+              Start with 5 free analyses a day without signing in. Create an account to save your audit history.
             </p>
 
             {/* URL input */}
@@ -129,7 +126,7 @@ export function LandingPage({
                 <button onClick={() => setAuthOpen(true)} className="text-violet-400 hover:text-violet-300 font-medium">
                   Create an account
                 </button>{" "}
-                to save your audit history and unlock the paid Pro plan.
+                to save your audit history.
               </p>
             )}
           </div>

@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { createCheckoutSession } from "../../services/authApi";
 
-export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
+export function UserMenu() {
   const { user, logout, refreshUser } = useAuth();
   const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState<"upgrade" | "manage" | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click.
@@ -22,23 +19,6 @@ export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
   if (!user) return null;
   const initial = user.email.charAt(0).toUpperCase();
   const isPro = user.plan === "pro" || user.plan === "owner";
-
-  async function startUpgrade() {
-    setError(null);
-    setBusy("upgrade");
-    try {
-      const { url } = await createCheckoutSession();
-      window.location.href = url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not open checkout");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  function openPortal() {
-    window.location.href = "/go-pro";
-  }
 
   return (
     <div className="relative" ref={ref}>
@@ -71,30 +51,6 @@ export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
           <button
             onClick={() => {
               setOpen(false);
-              if (onGoPro) {
-                onGoPro();
-                return;
-              }
-              window.location.href = "/go-pro";
-            }}
-            className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
-          >
-            Go Pro
-          </button>
-          {user.billingEnabled && (
-            <button
-              onClick={() => {
-                setOpen(false);
-                void (isPro ? openPortal() : startUpgrade());
-              }}
-              className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
-            >
-              {busy ? "Please wait…" : isPro ? "Manage plan" : "Upgrade to Pro"}
-            </button>
-          )}
-          <button
-            onClick={() => {
-              setOpen(false);
               void refreshUser();
             }}
             className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
@@ -107,7 +63,6 @@ export function UserMenu({ onGoPro }: { onGoPro?: () => void }) {
           >
             Sign out
           </button>
-          {error && <p className="px-3 py-2 text-[10px] text-red-300 border-t border-zinc-800/60">{error}</p>}
         </div>
       )}
     </div>

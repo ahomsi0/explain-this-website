@@ -13,7 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { HistoryModal } from "../auth/HistoryModal";
-import { createCheckoutSession, type UsageSummary } from "../../services/authApi";
+import { type UsageSummary } from "../../services/authApi";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -66,8 +66,6 @@ export function ResultDashboard({
   const [searchValue, setSearchValue] = useState("");
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [billingBusy, setBillingBusy] = useState<"upgrade" | "manage" | null>(null);
-  const [billingError, setBillingError] = useState<string | null>(null);
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
@@ -82,24 +80,6 @@ export function ResultDashboard({
     onAnalyze(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
     setSearchValue("");
   };
-
-  async function handleBilling() {
-    if (!user) {
-      setAuthOpen(true);
-      return;
-    }
-    setBillingError(null);
-    setBillingBusy(isPro ? "manage" : "upgrade");
-    try {
-      if (isPro) { window.location.href = "/go-pro"; setBillingBusy(null); return; }
-      const session = await createCheckoutSession();
-      window.location.href = session.url;
-    } catch (err) {
-      setBillingError(err instanceof Error ? err.message : "Could not open billing");
-    } finally {
-      setBillingBusy(null);
-    }
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
@@ -181,15 +161,6 @@ export function ResultDashboard({
             <CopyButton result={result} />
             <DownloadButton result={result} />
             <ShareButton reportId={result.reportId} canShare={isPro} />
-            {user?.billingEnabled && (
-              <button
-                onClick={() => void handleBilling()}
-                disabled={billingBusy !== null}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors disabled:opacity-60"
-              >
-                {billingBusy ? "Please wait…" : isPro ? "Manage plan" : "Upgrade"}
-              </button>
-            )}
             {user ? (
               <UserMenu />
             ) : (
@@ -234,7 +205,6 @@ export function ResultDashboard({
               <MetricTile label="First Impression"  value={result.firstImpression.score}                     suffix="/10"  valueClass={impressionColor(result.firstImpression.score)} />
               <MetricTile label="Conversion Score"  value={result.conversionScores.overall}                  suffix="/100" valueClass={scoreColor(result.conversionScores.overall)} />
             </div>
-            {billingError && <p className="px-4 sm:px-6 pb-3 text-xs text-red-300">{billingError}</p>}
           </div>
 
           {/* Section content */}
