@@ -11,6 +11,7 @@ import (
 
 	"github.com/ahomsi/explain-website/internal/adminstate"
 	"github.com/ahomsi/explain-website/internal/auth"
+	"github.com/ahomsi/explain-website/internal/cache"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/fetcher"
 	"github.com/ahomsi/explain-website/internal/llm"
@@ -95,34 +96,66 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			}
 		}
 
-		// Fetch HTML with a deadline.
-		timeout := time.Duration(cfg.FetchTimeoutSec) * time.Second
-		ctx, cancel := context.WithTimeout(r.Context(), timeout)
-		defer cancel()
+		// Cache lookup — skips the fetch + parse + PageSpeed call when the
+		// same URL was analysed in the last 10 minutes. Demos, shared
+		// examples, and "re-run" clicks all become near-instant. Usage
+		// still counts and the result is still saved to the user's history.
+		var (
+			result          model.AnalysisResult
+			respHeaders     http.Header
+			parseDurationMs int
+			cacheHit        bool
+		)
+		if cached, cachedHeaders, ok := cache.Default.Get(rawURL); ok {
+			result = *cached
+			respHeaders = cachedHeaders
+			cacheHit = true
+		} else {
+			// Fetch HTML with a deadline.
+			timeout := time.Duration(cfg.FetchTimeoutSec) * time.Second
+			ctx, cancel := context.WithTimeout(r.Context(), timeout)
+			defer cancel()
 
-		rawHTML, respHeaders, err := fetcher.FetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
-		if err != nil {
-			adminstate.RecordAnalyzeFailure(rawURL, uid, "fetch: "+err.Error())
-			writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
-			return
+			rawHTML, headers, err := fetcher.FetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
+			if err != nil {
+				adminstate.RecordAnalyzeFailure(rawURL, uid, "fetch: "+err.Error())
+				writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
+				return
+			}
+			respHeaders = headers
+
+			// Parse and analyse.
+			parseStart := time.Now()
+			parsed, err := parser.Parse(rawHTML, rawURL, cfg.PageSpeedAPIKey)
+			parseDurationMs = int(time.Since(parseStart).Milliseconds())
+			if err != nil {
+				adminstate.RecordAnalyzeFailure(rawURL, uid, "parse: "+err.Error())
+				writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
+				return
+			}
+			result = parsed
+
+			// Populate the cache *before* per-request decoration so cached
+			// hits don't carry stale usage/reportID/security-headers state.
+			cache.Default.Set(rawURL, &result, respHeaders)
 		}
 
-		// Parse and analyse.
-		parseStart := time.Now()
-		result, err := parser.Parse(rawHTML, rawURL, cfg.PageSpeedAPIKey)
-		parseDurationMs := int(time.Since(parseStart).Milliseconds())
-		if err != nil {
-			adminstate.RecordAnalyzeFailure(rawURL, uid, "parse: "+err.Error())
-			writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
-			return
-		}
-
+		// Per-request decoration — runs for both fresh and cached results so
+		// security headers reflect whatever the fetch saw, and usage/reportID
+		// are per-caller.
 		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
+		if cacheHit {
+			w.Header().Set("X-Cache", "HIT")
+		} else {
+			w.Header().Set("X-Cache", "MISS")
+		}
 
 		// AI summary — best-effort. If Groq is unconfigured or the call
 		// fails, the analysis still succeeds and AISummary stays "". The
-		// UI hides the section in that case.
-		if cfg.Groq != nil && cfg.Groq.Enabled() {
+		// UI hides the section in that case. Cache hits already include
+		// whatever summary the cached entry was created with, so we skip
+		// the call entirely on hit to save Groq spend.
+		if !cacheHit && cfg.Groq != nil && cfg.Groq.Enabled() {
 			summaryCtx, cancelSummary := context.WithTimeout(r.Context(), 20*time.Second)
 			summary, err := cfg.Groq.Summarise(summaryCtx, &result)
 			cancelSummary()
@@ -132,6 +165,8 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 				}
 			} else {
 				result.AISummary = strings.TrimSpace(summary)
+				// Re-cache so the next hit returns the summary too.
+				cache.Default.Set(rawURL, &result, respHeaders)
 			}
 		}
 

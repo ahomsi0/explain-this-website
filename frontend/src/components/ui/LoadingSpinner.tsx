@@ -122,7 +122,7 @@ export function LoadingSpinner({ url }: { url: string; serverSignaled?: boolean 
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4 py-8">
 
       {/* Brand strip — small anchor above the card */}
       <div className="w-full max-w-[900px] mb-4 flex items-center gap-2.5 px-1">

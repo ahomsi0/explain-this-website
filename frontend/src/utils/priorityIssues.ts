@@ -51,7 +51,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   const issues: PriorityIssue[] = [];
 
   // SEO: FAIL checks
-  result.seoChecks.filter((c) => c.status === "fail").forEach((c) => {
+  (result.seoChecks ?? []).filter((c) => c.status === "fail").forEach((c) => {
     issues.push(makeIssue(
       `seo-fail-${c.id}`,
       `Fix SEO: ${c.label}`,
@@ -65,7 +65,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   });
 
   // SEO: WARNING checks
-  result.seoChecks.filter((c) => c.status === "warning").forEach((c) => {
+  (result.seoChecks ?? []).filter((c) => c.status === "warning").forEach((c) => {
     issues.push(makeIssue(
       `seo-warn-${c.id}`,
       `Improve SEO: ${c.label}`,
@@ -385,7 +385,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
       80,
       "conversion",
     ));
-  } else if (result.copyAnalysis.vaguePhrases.length > 2) {
+  } else if ((result.copyAnalysis?.vaguePhrases?.length ?? 0) > 2) {
     issues.push(makeIssue(
       "vague-copy",
       "Replace vague marketing language",
@@ -399,7 +399,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Security headers
-  const secFails = result.securityHeaders.filter((h) => h.status === "fail").length;
+  const secFails = (result.securityHeaders ?? []).filter((h) => h.status === "fail").length;
   if (secFails >= 3) {
     issues.push(makeIssue(
       "security-headers",
