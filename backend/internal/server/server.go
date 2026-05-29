@@ -17,6 +17,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/config"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/handler"
+	"github.com/ahomsi/explain-website/internal/llm"
 	"github.com/ahomsi/explain-website/internal/model"
 )
 
@@ -32,10 +33,18 @@ func Start(cfg config.Config) error {
 
 	mux := http.NewServeMux()
 
+	groqClient := llm.New(cfg.GroqAPIKey, cfg.GroqModel)
+	if groqClient.Enabled() {
+		log.Printf("groq summary: enabled (model=%s)", cfg.GroqModel)
+	} else {
+		log.Printf("groq summary: disabled (set GROQ_API_KEY to enable)")
+	}
+
 	handlerCfg := handler.Config{
 		FetchTimeoutSec: cfg.FetchTimeoutSec,
 		MaxBodyBytes:    cfg.MaxBodyBytes,
 		PageSpeedAPIKey: cfg.PageSpeedAPIKey,
+		Groq:            groqClient,
 	}
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))

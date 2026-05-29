@@ -14,6 +14,8 @@ type Config struct {
 	FetchTimeoutSec  int
 	MaxBodyBytes     int64
 	PageSpeedAPIKey  string // optional; enables Google PageSpeed Insights integration
+	GroqAPIKey       string // optional; enables LLM-generated plain-English report summary
+	GroqModel        string // override default Groq model (defaults to llama-3.1-70b-versatile)
 }
 
 // Load reads .env (if present) and populates Config with sensible defaults.
@@ -27,6 +29,8 @@ func Load() Config {
 		FetchTimeoutSec: getEnvInt("FETCH_TIMEOUT_SEC", 60),
 		MaxBodyBytes:    getEnvInt64("MAX_BODY_BYTES", 5*1024*1024),
 		PageSpeedAPIKey: getEnv("PAGESPEED_API_KEY", ""),
+		GroqAPIKey:      getEnv("GROQ_API_KEY", ""),
+		GroqModel:       getEnv("GROQ_MODEL", "llama-3.3-70b-versatile"),
 	}
 }
 

@@ -35,6 +35,7 @@ type adminState struct {
 	failureLog      []FailureEntry // newest at index 0
 	pagespeedHealth HealthState
 	resendHealth    HealthState
+	groqHealth      HealthState
 	flags           map[string]bool
 }
 
@@ -85,6 +86,19 @@ func RecordEmailFailure(msg string) {
 	state.mu.Unlock()
 }
 
+// RecordGroqSuccess / RecordGroqFailure track the LLM summary dependency.
+func RecordGroqSuccess() {
+	state.mu.Lock()
+	state.groqHealth.LastSuccessAt = time.Now()
+	state.mu.Unlock()
+}
+func RecordGroqFailure(msg string) {
+	state.mu.Lock()
+	state.groqHealth.LastErrorAt = time.Now()
+	state.groqHealth.LastErrorMsg = msg
+	state.mu.Unlock()
+}
+
 // FlagEnabled reports the current value of a feature flag (defaults to true
 // for unknown flags so a typo doesn't accidentally turn things off).
 func FlagEnabled(name string) bool {
@@ -118,6 +132,15 @@ func SnapshotHealth() (HealthState, HealthState) {
 	state.mu.RLock()
 	defer state.mu.RUnlock()
 	return state.pagespeedHealth, state.resendHealth
+}
+
+// SnapshotGroqHealth returns the current Groq summariser health state. Kept
+// separate from SnapshotHealth so legacy admin-dashboard callers don't need to
+// be updated in the same PR that adds Groq.
+func SnapshotGroqHealth() HealthState {
+	state.mu.RLock()
+	defer state.mu.RUnlock()
+	return state.groqHealth
 }
 
 func SnapshotFlags() map[string]bool {

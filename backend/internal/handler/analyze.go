@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/cache"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/fetcher"
+	"github.com/ahomsi/explain-website/internal/llm"
 	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/ahomsi/explain-website/internal/parser"
 )
@@ -22,6 +24,7 @@ type Config struct {
 	FetchTimeoutSec int
 	MaxBodyBytes    int64
 	PageSpeedAPIKey string
+	Groq            *llm.Client // optional; nil disables AI summary
 }
 
 // AnalyzeHandler returns an http.HandlerFunc for POST /api/analyze.
@@ -146,6 +149,27 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		} else {
 			w.Header().Set("X-Cache", "MISS")
 		}
+
+		// AI summary — best-effort. If Groq is unconfigured or the call
+		// fails, the analysis still succeeds and AISummary stays "". The
+		// UI hides the section in that case. Cache hits already include
+		// whatever summary the cached entry was created with, so we skip
+		// the call entirely on hit to save Groq spend.
+		if !cacheHit && cfg.Groq != nil && cfg.Groq.Enabled() {
+			summaryCtx, cancelSummary := context.WithTimeout(r.Context(), 20*time.Second)
+			summary, err := cfg.Groq.Summarise(summaryCtx, &result)
+			cancelSummary()
+			if err != nil {
+				if err != llm.ErrDisabled {
+					log.Printf("groq summary failed for %s: %v", rawURL, err)
+				}
+			} else {
+				result.AISummary = strings.TrimSpace(summary)
+				// Re-cache so the next hit returns the summary too.
+				cache.Default.Set(rawURL, &result, respHeaders)
+			}
+		}
+
 		usage, err = incrementUsage(r.Context(), uid, visitorID)
 		if err != nil {
 			if err == errDailyLimitReached {
