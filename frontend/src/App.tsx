@@ -74,21 +74,21 @@ function AppInner() {
   // Shared report route takes over the whole page.
   if (loadingShared) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(0 0% 4%)" }}>
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
         <p className="text-zinc-500 text-sm">Loading shared report…</p>
       </div>
     );
   }
   if (sharedResult) {
     return (
-      <div className="min-h-screen" style={{ background: "hsl(0 0% 4%)" }}>
+      <div className="min-h-screen bg-zinc-950">
         <ResultDashboard result={sharedResult} onReset={() => { window.location.href = "/"; }} />
       </div>
     );
   }
   if (sharedError) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(0 0% 4%)" }}>
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
         <div className="text-center">
           <p className="text-zinc-300 text-sm font-medium mb-2">Report not found</p>
           <p className="text-zinc-600 text-xs mb-6">{sharedError}</p>
@@ -102,7 +102,7 @@ function AppInner() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "hsl(0 0% 4%)" }}>
+    <div className="min-h-screen" >
       {status === "idle" && (
         <LandingPage
           user={user}
