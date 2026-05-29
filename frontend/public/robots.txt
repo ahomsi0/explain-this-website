@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /go-pro
+Disallow: /report/
+
+Sitemap: https://explainthewebsite.vercel.app/sitemap.xml
