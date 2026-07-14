@@ -84,22 +84,20 @@ export function LandingPage({
         {/* Hero */}
         <section className="px-4 sm:px-6 pt-16 sm:pt-24 pb-12">
           <div className="max-w-3xl mx-auto fade-up">
-            {/* Pill */}
-            <div className="flex justify-center mb-6">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium text-violet-300 bg-violet-500/10 border border-violet-500/25">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                Free · No signup required
-              </span>
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11px] font-medium text-zinc-500">
+              <span>Free</span>
+              <span className="h-1 w-1 rounded-full bg-zinc-700" aria-hidden="true" />
+              <span>No signup required</span>
+              {usage && (
+                <>
+                  <span className="h-1 w-1 rounded-full bg-zinc-700" aria-hidden="true" />
+                  <span className="inline-flex items-center gap-1.5 text-zinc-400">
+                    <span className={`h-1.5 w-1.5 rounded-full ${usage.plan === "owner" || usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
+                    {usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} analyses left today
+                  </span>
+                </>
+              )}
             </div>
-
-            {usage && (
-              <div className="flex justify-center mb-3">
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-medium text-zinc-300 bg-zinc-900/70 border border-zinc-800">
-                  <span className={`w-1.5 h-1.5 rounded-full ${usage.plan === "owner" || usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} />
-                  {usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} analyses left today
-                </span>
-              </div>
-            )}
 
             <h1 className="text-center text-4xl sm:text-6xl font-bold tracking-tight text-zinc-100 leading-[1.05]">
               Understand any website
