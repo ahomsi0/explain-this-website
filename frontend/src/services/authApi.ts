@@ -1,8 +1,6 @@
 // Auth + audit-history API client. Token is stored in localStorage and attached
 // to every authenticated request via the Authorization header.
 
-import { getVisitorId } from "../lib/visitorId";
-
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const TOKEN_KEY = "etw_auth_token";
 
@@ -138,8 +136,7 @@ export function setToken(token: string | null) {
 
 function authHeaders(): HeadersInit {
   const t = getToken();
-  const base = { "X-Visitor-Id": getVisitorId() };
-  return t ? { ...base, Authorization: `Bearer ${t}` } : base;
+  return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
 async function jsonFetch<T>(path: string, init: RequestInit = {}): Promise<T> {

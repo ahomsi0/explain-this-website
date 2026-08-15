@@ -22,14 +22,14 @@ const userIDKey ctxKey = "userID"
 // tokenTTL is how long an issued JWT remains valid. 30 days = "stay logged in".
 const tokenTTL = 30 * 24 * time.Hour
 
-// jwtSecret is the HMAC signing key. Falls back to a hardcoded dev value when JWT_SECRET
-// is unset so local development "just works" — production MUST set the env var.
-func jwtSecret() []byte {
-	s := os.Getenv("JWT_SECRET")
+// jwtSecret returns the HMAC signing key. Authentication must fail closed when
+// the secret is missing; a predictable fallback would let anyone forge tokens.
+func jwtSecret() ([]byte, error) {
+	s := strings.TrimSpace(os.Getenv("JWT_SECRET"))
 	if s == "" {
-		return []byte("dev-secret-do-not-use-in-prod")
+		return nil, errors.New("JWT_SECRET is not configured")
 	}
-	return []byte(s)
+	return []byte(s), nil
 }
 
 // HashPassword bcrypts a plaintext password.
@@ -48,13 +48,17 @@ func CheckPassword(hash, plain string) error {
 
 // IssueToken creates a signed JWT for the given user ID.
 func IssueToken(userID int64) (string, error) {
+	secret, err := jwtSecret()
+	if err != nil {
+		return "", err
+	}
 	claims := jwt.MapClaims{
 		"sub": userID,
 		"iat": time.Now().Unix(),
 		"exp": time.Now().Add(tokenTTL).Unix(),
 	}
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return tok.SignedString(jwtSecret())
+	return tok.SignedString(secret)
 }
 
 // ParseToken validates a JWT and returns the user ID embedded in `sub`.
@@ -63,7 +67,7 @@ func ParseToken(raw string) (int64, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		return jwtSecret(), nil
+		return jwtSecret()
 	})
 	if err != nil {
 		return 0, err

@@ -43,6 +43,48 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, h
 
 	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 
+	client := NewPublicHTTPClient(timeoutFromContext(ctx, 15*time.Second))
+	client.Jar = jar
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not build request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", chromeUA)
+	for _, h := range browserHeaders {
+		req.Header.Set(h[0], h[1])
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", nil, friendlyFetchError(err)
+	}
+	defer resp.Body.Close()
+
+	if err := friendlyStatusError(resp.StatusCode, targetURL); err != nil {
+		return "", nil, err
+	}
+
+	respHeaders := resp.Header.Clone()
+
+	ct := resp.Header.Get("Content-Type")
+	if ct != "" && !strings.Contains(ct, "text/html") && !strings.Contains(ct, "application/xhtml") {
+		return "", nil, fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s) — try the homepage instead", ct)
+	}
+
+	body, err := readBody(resp, maxBytes)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed reading page content: %w", err)
+	}
+
+	return body, respHeaders, nil
+}
+
+// NewPublicHTTPClient returns an HTTP client that can only connect to public
+// addresses. It is shared by all server-side URL probes so that auxiliary
+// fetches receive the same SSRF and redirect protections as page fetching.
+func NewPublicHTTPClient(timeout time.Duration) *http.Client {
 	// safeDialer resolves DNS fresh at dial time and validates every resolved IP.
 	// This prevents DNS-rebinding attacks where the pre-flight check passes but a
 	// subsequent DNS response returns a private address.
@@ -88,10 +130,9 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, h
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	client := &http.Client{
+	return &http.Client{
 		Transport: transport,
-		Jar:       jar,
-		Timeout:   timeoutFromContext(ctx, 15*time.Second),
+		Timeout:   timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 5 {
 				return fmt.Errorf("too many redirects — the site may require a login")
@@ -100,44 +141,9 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, h
 			if err := validateNoSSRF(req.URL.String()); err != nil {
 				return err
 			}
-			req.Header.Set("User-Agent", chromeUA)
 			return nil
 		},
 	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
-	if err != nil {
-		return "", nil, fmt.Errorf("could not build request: %w", err)
-	}
-
-	req.Header.Set("User-Agent", chromeUA)
-	for _, h := range browserHeaders {
-		req.Header.Set(h[0], h[1])
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", nil, friendlyFetchError(err)
-	}
-	defer resp.Body.Close()
-
-	if err := friendlyStatusError(resp.StatusCode, targetURL); err != nil {
-		return "", nil, err
-	}
-
-	respHeaders := resp.Header.Clone()
-
-	ct := resp.Header.Get("Content-Type")
-	if ct != "" && !strings.Contains(ct, "text/html") && !strings.Contains(ct, "application/xhtml") {
-		return "", nil, fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s) — try the homepage instead", ct)
-	}
-
-	body, err := readBody(resp, maxBytes)
-	if err != nil {
-		return "", nil, fmt.Errorf("failed reading page content: %w", err)
-	}
-
-	return body, respHeaders, nil
 }
 
 // readBody handles gzip-encoded responses (since we request gzip explicitly,

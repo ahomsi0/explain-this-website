@@ -152,7 +152,7 @@ Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data aft
 { "error": "Your account has been suspended. Please contact support." }
 ```
 
-#### `GET /api/share/:id`
+#### `GET /api/report/:id`
 
 Returns a previously saved analysis result by its share ID. No authentication required.
 
@@ -163,8 +163,7 @@ Returns a previously saved analysis result by its share ID. No authentication re
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/auth/signup` | Create account |
-| `POST` | `/api/auth/signin` | Sign in, returns JWT |
-| `POST` | `/api/auth/signout` | Invalidate session |
+| `POST` | `/api/auth/login` | Sign in, returns JWT |
 | `GET` | `/api/auth/me` | Current user info |
 | `POST` | `/api/auth/forgot-password` | Send reset code |
 | `POST` | `/api/auth/reset-password` | Submit new password |
@@ -177,7 +176,6 @@ Returns a previously saved analysis result by its share ID. No authentication re
 |---|---|---|
 | `GET` | `/api/audits` | List saved audits for authenticated user |
 | `DELETE` | `/api/audits/:id` | Delete an audit |
-| `PATCH` | `/api/audits/:id/share` | Toggle public sharing |
 
 ---
 
@@ -187,8 +185,8 @@ These endpoints still exist on the backend but **nothing in the frontend calls t
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/billing/checkout` | Create Tap checkout session |
-| `POST` | `/api/billing/portal` | Open billing portal |
+| `POST` | `/api/billing/checkout-session` | Create Tap checkout session |
+| `POST` | `/api/billing/cancel` | Cancel the current Tap subscription |
 | `POST` | `/api/tap/webhook` | Tap subscription lifecycle events |
 
 ---

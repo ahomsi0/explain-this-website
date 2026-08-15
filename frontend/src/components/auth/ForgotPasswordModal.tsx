@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { requestPasswordReset, resetPassword, setToken } from "../../services/authApi";
 import { fetchMe } from "../../services/authApi";
-import { useAuth } from "../../context/AuthContext";
 
 type Step = "email" | "code";
 
@@ -23,11 +22,6 @@ export function ForgotPasswordModal({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
-
-  // Refresh user state without going through useAuth's setUser directly
-  // (we don't have access to it — we re-trigger /me via fetchMe and let the
-  // provider's polling/initial-load reconcile on next mount via reload).
-  const { } = useAuth();
 
   useEffect(() => {
     if (open) {
@@ -160,9 +154,10 @@ export function ForgotPasswordModal({
           {step === "email" ? (
             <form onSubmit={submitEmail} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Email</label>
+                <label htmlFor="reset-email" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Email</label>
                 <input
                   type="email"
+                  id="reset-email"
                   required
                   autoFocus
                   value={email}
@@ -189,9 +184,10 @@ export function ForgotPasswordModal({
           ) : (
             <form onSubmit={submitCode} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">6-Digit Code</label>
+                <label htmlFor="reset-code" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">6-Digit Code</label>
                 <input
                   type="text"
+                  id="reset-code"
                   inputMode="numeric"
                   pattern="[0-9]{6}"
                   maxLength={6}
@@ -204,9 +200,10 @@ export function ForgotPasswordModal({
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">New Password</label>
+                <label htmlFor="reset-password" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">New Password</label>
                 <input
                   type="password"
+                  id="reset-password"
                   required
                   minLength={8}
                   value={newPassword}

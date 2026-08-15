@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -30,5 +33,24 @@ func TestCheckLinks_Empty(t *testing.T) {
 	result := CheckLinks(doc, "https://example.com")
 	if result.Checked != 0 {
 		t.Errorf("expected 0 checked, got %d", result.Checked)
+	}
+}
+
+func TestCheckLinks_RejectsPrivateTargets(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	doc, _ := html.Parse(strings.NewReader(fmt.Sprintf(`<html><body><a href="%s/private">internal</a></body></html>`, server.URL)))
+	result := CheckLinks(doc, "https://example.com")
+
+	if result.Checked != 1 || result.Broken != 1 {
+		t.Fatalf("expected private target to be reported as broken, got %+v", result)
+	}
+	if requests != 0 {
+		t.Fatalf("private target received %d requests", requests)
 	}
 }

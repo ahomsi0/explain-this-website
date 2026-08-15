@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
 
 type Mode = "login" | "signup";
@@ -90,7 +90,7 @@ export function AuthModal({
           <p className="text-xs text-zinc-500 mt-1">
             {mode === "login"
               ? "Sign in to access your audit history and plan settings."
-              : "Free accounts keep history. Pro adds 50 analyses a day for $2.99/month."}
+              : "Free accounts keep history. Pro adds 50 analyses a day; access is currently admin-granted."}
           </p>
         </div>
 
@@ -119,7 +119,7 @@ export function AuthModal({
 
           <form onSubmit={submit} className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Email</label>
+              <label htmlFor="auth-email" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Email</label>
               <div className="relative">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -127,6 +127,7 @@ export function AuthModal({
                 </svg>
                 <input
                   type="email"
+                  id="auth-email"
                   required
                   autoFocus
                   value={email}
@@ -138,7 +139,7 @@ export function AuthModal({
             </div>
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Password</label>
+                <label htmlFor="auth-password" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Password</label>
                 {mode === "login" && (
                   <button
                     type="button"
@@ -155,6 +156,7 @@ export function AuthModal({
                 </svg>
                 <input
                   type="password"
+                  id="auth-password"
                   required
                   minLength={8}
                   value={password}

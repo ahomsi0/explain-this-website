@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   fetchMe,
   getToken,
@@ -7,33 +7,13 @@ import {
   signup as apiSignup,
   type AuthUser,
 } from "../services/authApi";
-
-interface AuthState {
-  user: AuthUser | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
-  refreshUser: () => Promise<void>;
-  logout: () => void;
-}
-
-const AuthCtx = createContext<AuthState | null>(null);
+import { AuthCtx } from "./authContextValue";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState<boolean>(!!getToken());
 
-  // On mount: if a token exists, validate it against /api/auth/me.
-  // Stale/expired tokens are silently cleared.
-  useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
-    refreshUser().finally(() => setLoading(false));
-  }, []);
-
-  async function refreshUser() {
+  const refreshUser = useCallback(async () => {
     if (!getToken()) {
       setUser(null);
       return;
@@ -45,7 +25,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null);
       setUser(null);
     }
-  }
+  }, []);
+
+  // On mount: if a token exists, validate it against /api/auth/me.
+  // Stale/expired tokens are silently cleared.
+  useEffect(() => {
+    if (!getToken()) return;
+    fetchMe()
+      .then(setUser)
+      .catch(() => {
+        setToken(null);
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   async function login(email: string, password: string) {
     const res = await apiLogin(email, password);
@@ -69,10 +62,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthCtx.Provider>
   );
-}
-
-export function useAuth(): AuthState {
-  const ctx = useContext(AuthCtx);
-  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  return ctx;
 }

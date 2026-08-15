@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/fetcher"
 	"github.com/ahomsi/explain-website/internal/model"
 	"golang.org/x/net/html"
 )
@@ -18,15 +19,7 @@ const (
 	linkCheckConcurrent = 8
 )
 
-var linkClient = &http.Client{
-	Timeout: linkCheckTimeout,
-	CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		if len(via) >= 5 {
-			return http.ErrUseLastResponse
-		}
-		return nil
-	},
-}
+var linkClient = fetcher.NewPublicHTTPClient(linkCheckTimeout)
 
 // CheckLinks extracts up to linkCheckCap external links from doc and HEAD-probes each one.
 func CheckLinks(doc *html.Node, sourceURL string) model.LinkCheckResult {

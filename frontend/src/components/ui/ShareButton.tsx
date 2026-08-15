@@ -34,6 +34,8 @@ export function ShareButton({
   return (
     <button
       onClick={handleShare}
+      aria-label={state === "copied" ? "Share report: link copied" : state === "pro-only" ? "Share report: Pro only" : "Share report"}
+      title="Share report"
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
     >
       {state === "copied" ? (

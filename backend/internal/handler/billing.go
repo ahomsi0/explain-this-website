@@ -33,6 +33,19 @@ func tapMonthlyPlanID() string { return strings.TrimSpace(os.Getenv("TAP_MONTHLY
 func tapYearlyPlanID() string  { return strings.TrimSpace(os.Getenv("TAP_YEARLY_PLAN_ID")) }
 func tapWebhookSecret() string { return strings.TrimSpace(os.Getenv("TAP_WEBHOOK_SECRET")) }
 
+func verifyTapWebhookSignature(payload []byte, signature, secret string) error {
+	if strings.TrimSpace(secret) == "" {
+		return errors.New("TAP_WEBHOOK_SECRET is not configured")
+	}
+	mac := hmac.New(sha256.New, []byte(secret))
+	_, _ = mac.Write(payload)
+	expected := hex.EncodeToString(mac.Sum(nil))
+	if !hmac.Equal([]byte(signature), []byte(expected)) {
+		return errors.New("invalid signature")
+	}
+	return nil
+}
+
 func appURL() string {
 	u := strings.TrimSpace(os.Getenv("APP_URL"))
 	if u == "" {
@@ -257,17 +270,13 @@ func BillingWebhookHandler() http.HandlerFunc {
 
 		// Verify HMAC-SHA256 signature.
 		secret := tapWebhookSecret()
-		if secret == "" {
-			log.Printf("tap webhook: TAP_WEBHOOK_SECRET not set — accepting unverified webhook (configure in production)")
-		} else {
-			sig := r.Header.Get("hashstring")
-			mac := hmac.New(sha256.New, []byte(secret))
-			mac.Write(payload)
-			expected := hex.EncodeToString(mac.Sum(nil))
-			if !hmac.Equal([]byte(sig), []byte(expected)) {
+		if err := verifyTapWebhookSignature(payload, r.Header.Get("hashstring"), secret); err != nil {
+			if secret == "" {
+				http.Error(w, "billing webhook is not configured", http.StatusServiceUnavailable)
+			} else {
 				http.Error(w, "invalid signature", http.StatusBadRequest)
-				return
 			}
+			return
 		}
 
 		var event map[string]any

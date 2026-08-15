@@ -4,16 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
-	"regexp"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/model"
+	"github.com/ahomsi/explain-website/internal/requestip"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -28,7 +26,6 @@ const (
 
 var (
 	errDailyLimitReached = errors.New("daily analysis limit reached")
-	visitorIDPattern     = regexp.MustCompile(`^[A-Za-z0-9_-]{8,128}$`)
 	memUsageStore        = newMemoryUsageStore()
 )
 
@@ -132,21 +129,9 @@ func usageLimitMessage(limit int, signedIn bool) string {
 }
 
 func visitorIDFromRequest(r *http.Request) string {
-	raw := strings.TrimSpace(r.Header.Get("X-Visitor-Id"))
-	if visitorIDPattern.MatchString(raw) {
-		return raw
-	}
-	if fwd := strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-For"), ",")[0]); fwd != "" {
-		return "ip:" + fwd
-	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err == nil && host != "" {
-		return "ip:" + host
-	}
-	if r.RemoteAddr != "" {
-		return "ip:" + r.RemoteAddr
-	}
-	return "anon:unknown"
+	// Client-supplied visitor IDs are intentionally ignored. They made the
+	// anonymous daily quota trivially bypassable by rotating X-Visitor-Id.
+	return "ip:" + requestip.ClientIP(r)
 }
 
 func loadUserPlan(ctx context.Context, userID int64) (userPlan, error) {

@@ -121,7 +121,7 @@ func issueResetCode(emailAddr string) {
 
 	log.Printf("[reset] code issued for email=%s userID=%d — sending email…", emailAddr, userID)
 	if err := email.SendResetCode(ctx, emailAddr, code); err != nil {
-		log.Printf("[reset] send email FAILED for %s: %v (code was: %s)", emailAddr, err, code)
+		log.Printf("[reset] send email FAILED for %s: %v", emailAddr, err)
 		return
 	}
 	log.Printf("[reset] email send ok for %s", emailAddr)

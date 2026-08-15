@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LogoWordmark } from "../ui/Logo";
 import { UserMenu } from "../auth/UserMenu";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { AuthModal } from "../auth/AuthModal";
 import { createCheckoutSession, cancelSubscription } from "../../services/authApi";
 
@@ -20,9 +20,14 @@ export function GoProPage() {
   const [error,     setError]     = useState<string | null>(null);
   const [cancelled, setCancelled] = useState(false);
   const isPro = user?.plan === "pro";
+  const billingEnabled = user?.billingEnabled === true;
 
   async function handleUpgrade() {
     if (!user) { setAuthOpen(true); return; }
+    if (!billingEnabled) {
+      setError("Self-serve billing is currently unavailable. Pro access is admin-granted.");
+      return;
+    }
     setError(null);
     setBusy("upgrade");
     try {
@@ -36,6 +41,10 @@ export function GoProPage() {
   }
 
   async function handleCancel() {
+    if (!billingEnabled) {
+      setError("Self-serve billing is currently unavailable. Contact support to change Pro access.");
+      return;
+    }
     if (!confirm("Cancel your Pro subscription? You'll keep access until the end of your billing period.")) return;
     setError(null);
     setBusy("cancel");
@@ -81,7 +90,7 @@ export function GoProPage() {
             </p>
 
             {/* Monthly / Yearly toggle */}
-            <div className="mt-6 inline-flex items-center gap-1 p-1 rounded-lg bg-zinc-900 border border-zinc-800">
+            {billingEnabled && <div className="mt-6 inline-flex items-center gap-1 p-1 rounded-lg bg-zinc-900 border border-zinc-800">
               {(["monthly", "yearly"] as Interval[]).map(iv => (
                 <button
                   key={iv}
@@ -99,7 +108,7 @@ export function GoProPage() {
                   )}
                 </button>
               ))}
-            </div>
+            </div>}
           </div>
 
           <div className="flex flex-col gap-4">
@@ -132,13 +141,13 @@ export function GoProPage() {
                   <h2 className="text-lg font-semibold text-zinc-100">Pro</h2>
                   <div className="mt-2 flex items-baseline gap-2">
                     <p className="text-3xl font-bold text-zinc-100">
-                      {interval === "yearly" ? YEARLY_PRICE : MONTHLY_PRICE}
+                      {billingEnabled ? (interval === "yearly" ? YEARLY_PRICE : MONTHLY_PRICE) : "Admin-granted"}
                     </p>
-                    <span className="text-sm text-zinc-400 font-medium">
+                    {billingEnabled && <span className="text-sm text-zinc-400 font-medium">
                       /{interval === "yearly" ? "year" : "month"}
-                    </span>
+                    </span>}
                   </div>
-                  {interval === "yearly" && (
+                  {billingEnabled && interval === "yearly" && (
                     <p className="mt-1 text-[11px] text-emerald-400 font-medium">
                       ~$2.08/month · save $10.89 vs monthly
                     </p>
@@ -179,7 +188,7 @@ export function GoProPage() {
                     {busy === "cancel" ? "Cancelling…" : "Cancel subscription"}
                   </button>
                 </div>
-              ) : (
+              ) : billingEnabled ? (
                 <button
                   onClick={() => void handleUpgrade()}
                   disabled={busy !== null}
@@ -191,6 +200,10 @@ export function GoProPage() {
                       ? "Sign in to upgrade"
                       : `Upgrade to Pro — ${interval === "yearly" ? YEARLY_PRICE + "/yr" : MONTHLY_PRICE + "/mo"}`}
                 </button>
+              ) : (
+                <p className="mt-6 text-sm text-violet-300">
+                  Self-serve checkout is currently paused. Pro access is granted by an administrator.
+                </p>
               )}
               {error && <p role="alert" className="mt-3 text-xs text-red-300">{error}</p>}
             </section>

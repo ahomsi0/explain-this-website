@@ -20,6 +20,8 @@ export function CopyButton({ result }: { result: AnalysisResult }) {
   return (
     <button
       onClick={handleCopy}
+      aria-label={copied ? "Copy report: copied" : "Copy report"}
+      title="Copy report"
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
     >
       {copied ? (

@@ -1,13 +1,12 @@
 import type { AnalysisResult } from "../types/analysis";
 import { getToken } from "./authApi";
-import { getVisitorId } from "../lib/visitorId";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
 // Adds Authorization header if a token is present, otherwise omits it.
 function buildHeaders(extra: Record<string, string> = {}): HeadersInit {
   const t = getToken();
-  const base = { ...extra, "X-Visitor-Id": getVisitorId() };
+  const base = { ...extra };
   return t ? { ...base, Authorization: `Bearer ${t}` } : base;
 }
 

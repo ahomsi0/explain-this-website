@@ -91,7 +91,7 @@ export function computeInsights(result: AnalysisResult): Insights {
   const perfScoreMobile  = result.performance?.mobile?.lighthouse?.performance  ?? -1;
   const perfScoreDesktop = result.performance?.desktop?.lighthouse?.performance ?? -1;
 
-  return { overallScore, seoScore, perfScore: perfAvailable ? perfScore : 0, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence, allIssues };
+  return { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence, allIssues };
 }
 
 function buildSummary({

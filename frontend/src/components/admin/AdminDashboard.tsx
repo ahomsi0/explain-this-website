@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LogoWordmark } from "../ui/Logo";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import {
   fetchAdminOverview,
   updateAdminAnonUsage,
@@ -68,7 +68,7 @@ export function AdminDashboard() {
 
   useEffect(() => {
     if (user) void loadOverview();
-  }, [user?.id]);
+  }, [user]);
 
   // ── derived analytics ──────────────────────────────────────────────────────
   const analytics = useMemo(() => {
@@ -289,7 +289,7 @@ export function AdminDashboard() {
                           <tr><td colSpan={5} className="px-5 py-6 text-sm text-zinc-500 text-center">No users match the current filter.</td></tr>
                         ) : filteredUsers.map((row) => (
                           <UserRow
-                            key={row.id}
+                            key={`${row.id}-${row.dailyUsed}`}
                             row={row}
                             busyKey={busyKey}
                             rowError={rowError[row.id]}
@@ -419,8 +419,6 @@ function UserRow({
   const [count, setCount] = useState(String(row.dailyUsed));
   const isBusy = busyKey === `user-usage-${row.id}` || busyKey === `user-plan-${row.id}` || busyKey === `patch-${row.id}`;
 
-  useEffect(() => { setCount(String(row.dailyUsed)); }, [row.dailyUsed]);
-
   return (
     <tr className="border-b border-zinc-800/60 last:border-b-0 align-top">
       <td className="px-5 py-4">
@@ -525,8 +523,6 @@ function VisitorRow({
 }) {
   const [count, setCount] = useState(String(row.dailyUsed));
   const isBusy = busyKey === `anon-usage-${row.visitorId}`;
-
-  useEffect(() => { setCount(String(row.dailyUsed)); }, [row.dailyUsed]);
 
   return (
     <tr className="border-b border-zinc-800/60 last:border-b-0 align-top">

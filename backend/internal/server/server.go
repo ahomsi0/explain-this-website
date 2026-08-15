@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"runtime/debug"
@@ -19,6 +18,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/handler"
 	"github.com/ahomsi/explain-website/internal/llm"
 	"github.com/ahomsi/explain-website/internal/model"
+	"github.com/ahomsi/explain-website/internal/requestip"
 )
 
 // Start wires up routes and begins listening.
@@ -116,6 +116,7 @@ type rlEntry struct {
 const (
 	rlMax       = 10 // anonymous: 10/min
 	rlMaxAuthed = 50 // logged-in: 50/min
+	rlMaxAuth   = 10 // auth mutations: 10/min per source IP and endpoint
 	rlWindow    = time.Minute
 )
 
@@ -152,19 +153,10 @@ func (rl *rateLimiter) allow(key string, max int) bool {
 	return e.count <= max
 }
 
-// realIP extracts the client IP, honouring X-Forwarded-For from trusted proxies.
+// realIP extracts the peer address. Forwarding headers are not trusted because
+// this service does not know which upstream proxy addresses are authoritative.
 func realIP(r *http.Request) string {
-	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
-		// Leftmost entry is the original client.
-		if ip := strings.TrimSpace(strings.SplitN(fwd, ",", 2)[0]); ip != "" {
-			return ip
-		}
-	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return host
+	return requestip.ClientIP(r)
 }
 
 func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
@@ -187,8 +179,27 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				return
 			}
 		}
+		if r.Method == http.MethodPost && isAuthMutation(r.URL.Path) {
+			key := "auth:" + r.URL.Path + ":" + realIP(r)
+			if !rl.allow(key, rlMaxAuth) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Retry-After", "60")
+				w.WriteHeader(http.StatusTooManyRequests)
+				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many authentication attempts — please wait a moment."})
+				return
+			}
+		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func isAuthMutation(path string) bool {
+	switch path {
+	case "/api/auth/signup", "/api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password":
+		return true
+	default:
+		return false
+	}
 }
 
 // ── Security headers ──────────────────────────────────────────────────────────
@@ -263,7 +274,7 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 		}
 
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, DELETE, PATCH, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Visitor-Id")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

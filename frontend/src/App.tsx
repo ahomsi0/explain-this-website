@@ -6,7 +6,8 @@ import { ResultDashboard } from "./components/ResultDashboard/ResultDashboard";
 import { fetchReport } from "./services/analyzeApi";
 import type { AnalysisResult } from "./types/analysis";
 import { ThemeProvider } from "./context/ThemeContext";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import { LandingPage } from "./components/Landing/LandingPage";
 import { fetchUsage, type UsageSummary } from "./services/authApi";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
@@ -14,19 +15,16 @@ import { AdminDashboard } from "./components/admin/AdminDashboard";
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
   const [sharedError, setSharedError] = useState<string | null>(null);
-  const [loadingShared, setLoadingShared] = useState(false);
+  const reportId = window.location.pathname.match(/^\/report\/([a-f0-9]{32})$/)?.[1] ?? null;
 
   useEffect(() => {
-    const match = window.location.pathname.match(/^\/report\/([a-f0-9]{32})$/);
-    if (!match) return;
-    const id = match[1];
-    setLoadingShared(true);
-    fetchReport(id)
-      .then((r) => { setSharedResult(r); setLoadingShared(false); })
-      .catch((e) => { setSharedError(e.message); setLoadingShared(false); });
-  }, []);
+    if (!reportId) return;
+    fetchReport(reportId)
+      .then(setSharedResult)
+      .catch((e) => setSharedError(e instanceof Error ? e.message : "Could not load report"));
+  }, [reportId]);
 
-  return { sharedResult, sharedError, loadingShared };
+  return { sharedResult, sharedError, loadingShared: Boolean(reportId && !sharedResult && !sharedError) };
 }
 
 function useDashboardRoute() {

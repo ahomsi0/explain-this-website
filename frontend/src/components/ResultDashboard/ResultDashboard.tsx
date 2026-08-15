@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/useTheme";
 import { Separator } from "@/components/ui/separator";
 import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
@@ -7,9 +7,10 @@ import { CopyButton }   from "../ui/CopyButton";
 import { DownloadButton } from "../ui/DownloadButton";
 import { ShareButton } from "../ui/ShareButton";
 import { Sidebar, MobileSectionNav } from "./Sidebar";
-import { SECTIONS, SectionView, type SectionId } from "./sections";
+import { SectionView } from "./sections";
+import { SECTIONS, type SectionId } from "./sectionConfig";
 import { ErrorBoundary } from "../ui/ErrorBoundary";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { HistoryModal } from "../auth/HistoryModal";
@@ -191,8 +192,8 @@ export function ResultDashboard({
 
         <main className="flex-1 min-w-0">
           {/* Metrics strip */}
-          <div className="border-b border-zinc-800 bg-zinc-900/30">
-            <div className="flex items-stretch justify-center">
+          <div className="border-b border-zinc-800 bg-zinc-900/30 overflow-x-auto scrollbar-none">
+            <div className="flex items-stretch justify-start md:justify-center min-w-max md:min-w-0">
               <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
               {result.performance?.mobile?.lighthouse ? <>
                 <MetricTile label="Lighthouse SEO"  value={result.performance.mobile.lighthouse.seo}         suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />
@@ -222,14 +223,16 @@ export function ResultDashboard({
       </div>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      <HistoryModal
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        onOpenAudit={(id) => {
-          // App.tsx loads /report/:id from the URL — navigate to that path.
-          window.location.href = `/report/${id}`;
-        }}
-      />
+      {historyOpen && (
+        <HistoryModal
+          open
+          onClose={() => setHistoryOpen(false)}
+          onOpenAudit={(id) => {
+            // App.tsx loads /report/:id from the URL — navigate to that path.
+            window.location.href = `/report/${id}`;
+          }}
+        />
+      )}
     </div>
   );
 }

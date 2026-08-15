@@ -3,7 +3,7 @@ import { URLInput } from "../UrlInput/UrlInput";
 import { UserMenu } from "../auth/UserMenu";
 import { AuthModal } from "../auth/AuthModal";
 import { HistoryModal } from "../auth/HistoryModal";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/useTheme";
 import type { AuthUser, UsageSummary } from "../../services/authApi";
 
 const EXAMPLE_URLS = ["stripe.com", "github.com", "vercel.com", "linear.app"];
@@ -182,7 +182,7 @@ export function LandingPage({
             <p>© {new Date().getFullYear()} Explain This Website</p>
             <div className="flex items-center gap-4">
               <a href="mailto:support@explainthewebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
-              <a href="/api" className="hover:text-zinc-400 transition-colors">API</a>
+              <a href="https://github.com/ahomsi0/explain-this-website#api-reference" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">API</a>
               <a href="https://github.com/ahomsi0/explain-this-website" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a>
             </div>
           </div>
@@ -190,11 +190,13 @@ export function LandingPage({
       </div>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      <HistoryModal
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        onOpenAudit={(id) => { window.location.href = `/report/${id}`; }}
-      />
+      {historyOpen && (
+        <HistoryModal
+          open
+          onClose={() => setHistoryOpen(false)}
+          onOpenAudit={(id) => { window.location.href = `/report/${id}`; }}
+        />
+      )}
     </div>
   );
 }

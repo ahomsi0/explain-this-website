@@ -15,8 +15,6 @@ export function HistoryModal({
 
   useEffect(() => {
     if (!open) return;
-    setItems(null);
-    setError(null);
     fetchAudits()
       .then(setItems)
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load history"));

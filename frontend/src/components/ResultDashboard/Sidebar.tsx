@@ -1,4 +1,4 @@
-import type { SectionId } from "./sections";
+import type { SectionId } from "./sectionConfig";
 
 const ICONS: Record<SectionId, React.ReactNode> = {
   overview: (

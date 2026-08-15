@@ -98,7 +98,8 @@ export function RecentAuditsCard({ rows }: { rows: RecentAuditRow[] }) {
 
 // ─── 2. Failure Log ──────────────────────────────────────────────────────────
 export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
-  const errorsLastDay = rows.filter(r => Date.now() - new Date(r.at).getTime() < 86400_000).length;
+  const [now] = useState(() => Date.now());
+  const errorsLastDay = rows.filter(r => now - new Date(r.at).getTime() < 86400_000).length;
 
   const failsByDomain = rows.reduce((acc, r) => {
     const h = host(r.url);

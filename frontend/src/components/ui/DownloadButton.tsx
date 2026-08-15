@@ -1,8 +1,10 @@
 import { useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import type { AnalysisResult, StrategyData } from "../../types/analysis";
 import { computeInsights } from "../../utils/insights";
+
+type JsPDFDocument = import("jspdf").jsPDF;
+type JsPDFConstructor = typeof import("jspdf").default;
+type AutoTableFunction = typeof import("jspdf-autotable").default;
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 const BG     = [9,   9,  11 ] as const;
@@ -45,7 +47,7 @@ function san(s: string): string {
     .map((ch) => (ch.codePointAt(0) ?? 0) > 0xff ? "?" : ch)
     .join("");
 }
-function lastY(doc: jsPDF): number {
+function lastY(doc: JsPDFDocument): number {
   return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
 }
 function cap(s: string) {
@@ -54,15 +56,23 @@ function cap(s: string) {
 
 export function DownloadButton({ result }: { result: AnalysisResult }) {
   const [loading, setLoading] = useState(false);
-  const handleDownload = () => {
+  const handleDownload = async () => {
     setLoading(true);
-    try { buildPDF(result); }
+    try {
+      const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+      ]);
+      buildPDF(result, JsPDF, autoTable);
+    }
     finally { setLoading(false); }
   };
   return (
     <button
       onClick={handleDownload}
       disabled={loading}
+      aria-label="Download report as PDF"
+      title="Download report as PDF"
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors disabled:opacity-50"
     >
       {loading ? (
@@ -80,8 +90,8 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
 }
 
 // ─── PDF builder — simple, consistent, table-driven ───────────────────────────
-function buildPDF(result: AnalysisResult) {
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: AutoTableFunction) {
+  const doc = new JsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210, H = 297, M = 16, CW = W - M * 2, FOOT = 16;
   let y = 0;
 
