@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/url"
@@ -22,7 +23,7 @@ const (
 var linkClient = fetcher.NewPublicHTTPClient(linkCheckTimeout)
 
 // CheckLinks extracts up to linkCheckCap external links from doc and HEAD-probes each one.
-func CheckLinks(doc *html.Node, sourceURL string) model.LinkCheckResult {
+func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.LinkCheckResult {
 	links := extractExternalLinks(doc, sourceURL)
 	if len(links) > linkCheckCap {
 		links = links[:linkCheckCap]
@@ -38,11 +39,16 @@ func CheckLinks(doc *html.Node, sourceURL string) model.LinkCheckResult {
 
 	for i, u := range links {
 		wg.Add(1)
-		sem <- struct{}{}
+		select {
+		case sem <- struct{}{}:
+		case <-ctx.Done():
+			wg.Done()
+			continue
+		}
 		go func(idx int, target string) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			items[idx] = probeLink(target)
+			items[idx] = probeLink(ctx, target)
 		}(i, u)
 	}
 	wg.Wait()
@@ -98,10 +104,10 @@ func extractExternalLinks(doc *html.Node, sourceURL string) []string {
 }
 
 // probeLink makes a HEAD request (falling back to GET on 405) and returns the result.
-func probeLink(target string) model.LinkCheckItem {
+func probeLink(ctx context.Context, target string) model.LinkCheckItem {
 	item := model.LinkCheckItem{URL: target, FinalURL: target}
 
-	req, err := http.NewRequest(http.MethodHead, target, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, target, nil)
 	if err != nil {
 		item.IsBroken = true
 		return item
@@ -118,7 +124,7 @@ func probeLink(target string) model.LinkCheckItem {
 
 	// Some servers reject HEAD; retry with GET.
 	if resp.StatusCode == http.StatusMethodNotAllowed {
-		req2, _ := http.NewRequest(http.MethodGet, target, nil)
+		req2, _ := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 		req2.Header.Set("User-Agent", req.Header.Get("User-Agent"))
 		resp2, err2 := linkClient.Do(req2)
 		if err2 == nil {

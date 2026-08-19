@@ -239,7 +239,9 @@ export function AdminDashboard() {
                       <span className={`w-1.5 h-1.5 rounded-full ${overview.anySignedInIsAdmin ? "bg-amber-500" : "bg-emerald-500"}`} />
                       {overview.anySignedInIsAdmin
                         ? "Admin lock: OFF — any signed-in user has access"
-                        : `Admin lock: ON — restricted to ${overview.adminEmail}`}
+                        : overview.adminEmail
+                          ? `Admin lock: ON — restricted to ${overview.adminEmail}`
+                          : "Admin lock: ON — administrator is not configured"}
                     </div>
                   </div>
                 </section>

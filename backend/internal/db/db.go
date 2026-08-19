@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -132,6 +133,7 @@ CREATE INDEX IF NOT EXISTS password_resets_user_id_idx ON password_resets (user_
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status TEXT NOT NULL DEFAULT 'inactive';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 -- Legacy Stripe columns; superseded by tap_customer_id / tap_subscription_id.
 -- Kept idempotent so existing DBs are not broken; no application code reads these.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
@@ -174,11 +176,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_tap_customer_id_idx
     ON users (tap_customer_id) WHERE tap_customer_id IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS users_tap_subscription_id_idx
     ON users (tap_subscription_id) WHERE tap_subscription_id IS NOT NULL;
-
-UPDATE users SET plan = 'owner', subscription_status = 'active' WHERE email = 'homsiahmed16@gmail.com';
 `
 
 func migrate(ctx context.Context) error {
-	_, err := Pool.Exec(ctx, schema)
+	if _, err := Pool.Exec(ctx, schema); err != nil {
+		return err
+	}
+
+	// Keep owner access configurable and avoid embedding a personal account in
+	// the schema. If unset, existing owner rows are left unchanged.
+	ownerEmail := strings.ToLower(strings.TrimSpace(os.Getenv("OWNER_EMAIL")))
+	if ownerEmail == "" {
+		return nil
+	}
+	_, err := Pool.Exec(ctx,
+		`UPDATE users SET plan = 'owner', subscription_status = 'active' WHERE lower(email) = $1`,
+		ownerEmail,
+	)
 	return err
 }

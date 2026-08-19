@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -18,6 +19,7 @@ import (
 type ctxKey string
 
 const userIDKey ctxKey = "userID"
+const tokenIssuedAtKey ctxKey = "tokenIssuedAt"
 
 // tokenTTL is how long an issued JWT remains valid. 30 days = "stay logged in".
 const tokenTTL = 30 * 24 * time.Hour
@@ -61,26 +63,38 @@ func IssueToken(userID int64) (string, error) {
 	return tok.SignedString(secret)
 }
 
-// ParseToken validates a JWT and returns the user ID embedded in `sub`.
-func ParseToken(raw string) (int64, error) {
+// ParseTokenDetails validates a JWT and returns its user ID and issued-at time.
+// The issued-at time is used to invalidate tokens created before a password change.
+func ParseTokenDetails(raw string) (int64, time.Time, error) {
 	tok, err := jwt.Parse(raw, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+		if t.Method != jwt.SigningMethodHS256 {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 		return jwtSecret()
 	})
 	if err != nil {
-		return 0, err
+		return 0, time.Time{}, err
 	}
 	claims, ok := tok.Claims.(jwt.MapClaims)
 	if !ok || !tok.Valid {
-		return 0, errors.New("invalid token")
+		return 0, time.Time{}, errors.New("invalid token")
 	}
 	sub, ok := claims["sub"].(float64) // numbers in JSON arrive as float64
-	if !ok {
-		return 0, errors.New("missing sub")
+	if !ok || sub <= 0 || math.Trunc(sub) != sub || sub >= float64(1<<63) {
+		return 0, time.Time{}, errors.New("invalid sub")
 	}
-	return int64(sub), nil
+
+	issuedAt := time.Time{}
+	if value, ok := claims["iat"].(float64); ok && value > 0 && math.Trunc(value) == value && value < float64(1<<63) {
+		issuedAt = time.Unix(int64(value), 0)
+	}
+	return int64(sub), issuedAt, nil
+}
+
+// ParseToken validates a JWT and returns the user ID embedded in `sub`.
+func ParseToken(raw string) (int64, error) {
+	uid, _, err := ParseTokenDetails(raw)
+	return uid, err
 }
 
 // Middleware extracts an "Authorization: Bearer <jwt>" header (if present) and stuffs the
@@ -91,13 +105,30 @@ func Middleware(next http.Handler) http.Handler {
 		header := r.Header.Get("Authorization")
 		if strings.HasPrefix(header, "Bearer ") {
 			raw := strings.TrimPrefix(header, "Bearer ")
-			if uid, err := ParseToken(raw); err == nil {
+			if uid, issuedAt, err := ParseTokenDetails(raw); err == nil {
 				ctx := context.WithValue(r.Context(), userIDKey, uid)
+				ctx = context.WithValue(ctx, tokenIssuedAtKey, issuedAt)
 				r = r.WithContext(ctx)
 			}
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// TokenIssuedAtFromContext returns the authenticated token's issue time, or zero
+// when the request is anonymous or the token did not carry an iat claim.
+func TokenIssuedAtFromContext(ctx context.Context) time.Time {
+	if v, ok := ctx.Value(tokenIssuedAtKey).(time.Time); ok {
+		return v
+	}
+	return time.Time{}
+}
+
+// ClearAuthentication removes authentication established by Middleware while
+// preserving the rest of the request context.
+func ClearAuthentication(ctx context.Context) context.Context {
+	ctx = context.WithValue(ctx, userIDKey, int64(0))
+	return context.WithValue(ctx, tokenIssuedAtKey, time.Time{})
 }
 
 // UserIDFromContext returns the authenticated user ID, or 0 if anonymous.

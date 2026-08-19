@@ -200,7 +200,7 @@ func ResetPasswordHandler() http.HandlerFunc {
 		}
 		defer tx.Rollback(ctx)
 
-		if _, err := tx.Exec(ctx, `UPDATE users SET password_hash = $1 WHERE id = $2`, newHash, userID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE users SET password_hash = $1, password_changed_at = NOW() WHERE id = $2`, newHash, userID); err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not reset password")
 			return
 		}

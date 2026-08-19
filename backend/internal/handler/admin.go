@@ -319,7 +319,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 		writeJSON(w, http.StatusOK, adminOverviewResp{
 			CurrentDate:        time.Now().Format("2006-01-02"),
 			AdminEmail:         adminEmail,
-			AnySignedInIsAdmin: adminEmail == "",
+			AnySignedInIsAdmin: false,
 			Users:              users,
 			AnonymousVisitors:  visitors,
 			RecentAudits:       recent,
@@ -646,7 +646,7 @@ func requireAdmin(ctx context.Context) error {
 
 	adminEmail := strings.TrimSpace(strings.ToLower(os.Getenv("ADMIN_EMAIL")))
 	if adminEmail == "" {
-		adminEmail = "homsiahmed16@gmail.com"
+		return errForbidden("admin access is not configured")
 	}
 
 	var emailAddr string
@@ -666,4 +666,3 @@ type forbiddenError string
 func (e forbiddenError) Error() string { return string(e) }
 
 func errForbidden(msg string) error { return forbiddenError(msg) }
-

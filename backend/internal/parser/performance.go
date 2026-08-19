@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -36,7 +37,6 @@ type lhAudit struct {
 	DisplayValue string  `json:"displayValue"`
 }
 
-
 // pageSpeedResponse holds the subset of the PageSpeed Insights API response we care about.
 type pageSpeedResponse struct {
 	LighthouseResult struct {
@@ -57,7 +57,10 @@ type pageSpeedResponse struct {
 // Desktop is started 1 second after mobile to avoid simultaneous requests
 // hitting the PageSpeed API rate limit (1 QPS on the free/keyless tier).
 // Returns nil, err only if both strategies fail — partial success is allowed.
-func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, error) {
+func fetchPerformance(ctx context.Context, siteURL string, apiKey string) (*model.PerformanceResult, error) {
+	perfCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
 	type stratResult struct {
 		name string
 		data *model.StrategyData
@@ -71,9 +74,16 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 		delay := time.Duration(i) * time.Second
 		go func() {
 			if delay > 0 {
-				time.Sleep(delay)
+				timer := time.NewTimer(delay)
+				defer timer.Stop()
+				select {
+				case <-timer.C:
+				case <-perfCtx.Done():
+					ch <- stratResult{name: s, err: perfCtx.Err()}
+					return
+				}
 			}
-			d, err := fetchStrategy(siteURL, apiKey, s)
+			d, err := fetchStrategy(perfCtx, siteURL, apiKey, s)
 			if err != nil {
 				log.Printf("PageSpeed %s failed for %s: %v", s, siteURL, err)
 			}
@@ -84,7 +94,18 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 	result := &model.PerformanceResult{Available: false}
 	var firstErr error
 	for i := 0; i < 2; i++ {
-		r := <-ch
+		var r stratResult
+		select {
+		case r = <-ch:
+		case <-perfCtx.Done():
+			if firstErr == nil {
+				firstErr = perfCtx.Err()
+			}
+			// The workers will either finish or observe the same context
+			// cancellation; no result is useful after the deadline.
+			i = 1
+			continue
+		}
 		if r.err != nil {
 			if firstErr == nil {
 				firstErr = r.err
@@ -113,7 +134,7 @@ func fetchPerformance(siteURL string, apiKey string) (*model.PerformanceResult, 
 // Timeout is 90s because Google's desktop PageSpeed regularly takes 60–80s on
 // large/heavy pages, and timing out at 55s was silently dropping the desktop
 // result on real-world sites like stripe.com.
-func fetchStrategy(siteURL string, apiKey string, strategy string) (*model.StrategyData, error) {
+func fetchStrategy(ctx context.Context, siteURL string, apiKey string, strategy string) (*model.StrategyData, error) {
 	client := &http.Client{Timeout: 90 * time.Second}
 
 	// Request all four Lighthouse categories — by default the API only returns "performance".
@@ -121,7 +142,11 @@ func fetchStrategy(siteURL string, apiKey string, strategy string) (*model.Strat
 		"%s?url=%s&strategy=%s&key=%s&category=performance&category=accessibility&category=best-practices&category=seo",
 		pageSpeedAPI, url.QueryEscape(siteURL), strategy, url.QueryEscape(apiKey),
 	)
-	resp, err := client.Get(apiURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

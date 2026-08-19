@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,7 +16,7 @@ import (
 
 // FetchDomainInfo calls the RDAP API for the domain in rawURL.
 // Returns nil on any failure — domain info is always optional.
-func FetchDomainInfo(rawURL string) *model.DomainInfo {
+func FetchDomainInfo(ctx context.Context, rawURL string) *model.DomainInfo {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil
@@ -35,7 +36,11 @@ func FetchDomainInfo(rawURL string) *model.DomainInfo {
 			DialContext: (&net.Dialer{Timeout: 5 * time.Second}).DialContext,
 		},
 	}
-	resp, err := client.Get(rdapURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rdapURL, nil)
+	if err != nil {
+		return nil
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil
 	}

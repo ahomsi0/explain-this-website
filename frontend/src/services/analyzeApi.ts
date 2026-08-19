@@ -2,6 +2,7 @@ import type { AnalysisResult } from "../types/analysis";
 import { getToken } from "./authApi";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+const REPORT_TIMEOUT_MS = 180_000;
 
 // Adds Authorization header if a token is present, otherwise omits it.
 function buildHeaders(extra: Record<string, string> = {}): HeadersInit {
@@ -11,10 +12,25 @@ function buildHeaders(extra: Record<string, string> = {}): HeadersInit {
 }
 
 export async function fetchReport(id: string): Promise<AnalysisResult> {
-  const res = await fetch(`${API_URL}/api/report/${id}`, { headers: buildHeaders() });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error ?? `Report not found (${res.status})`);
-  return data as AnalysisResult;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REPORT_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${API_URL}/api/report/${id}`, {
+      headers: buildHeaders(),
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error ?? `Report not found (${res.status})`);
+    return data as AnalysisResult;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("The report server did not respond in time. Please try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // How long to wait for the server in total (covers Render cold-starts which can take 60-90s).

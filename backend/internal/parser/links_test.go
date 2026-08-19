@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -30,7 +31,7 @@ func TestExtractExternalLinks(t *testing.T) {
 
 func TestCheckLinks_Empty(t *testing.T) {
 	doc, _ := html.Parse(strings.NewReader("<html><body></body></html>"))
-	result := CheckLinks(doc, "https://example.com")
+	result := CheckLinks(context.Background(), doc, "https://example.com")
 	if result.Checked != 0 {
 		t.Errorf("expected 0 checked, got %d", result.Checked)
 	}
@@ -45,7 +46,7 @@ func TestCheckLinks_RejectsPrivateTargets(t *testing.T) {
 	defer server.Close()
 
 	doc, _ := html.Parse(strings.NewReader(fmt.Sprintf(`<html><body><a href="%s/private">internal</a></body></html>`, server.URL)))
-	result := CheckLinks(doc, "https://example.com")
+	result := CheckLinks(context.Background(), doc, "https://example.com")
 
 	if result.Checked != 1 || result.Broken != 1 {
 		t.Fatalf("expected private target to be reported as broken, got %+v", result)

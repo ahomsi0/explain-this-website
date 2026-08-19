@@ -2,6 +2,7 @@ package fetcher
 
 import (
 	"compress/gzip"
+	"compress/zlib"
 	"context"
 	"fmt"
 	"io"
@@ -146,23 +147,43 @@ func NewPublicHTTPClient(timeout time.Duration) *http.Client {
 	}
 }
 
-// readBody handles gzip-encoded responses (since we request gzip explicitly,
-// Go's transport won't auto-decompress for us).
+// readBody handles compressed responses (since we request compression explicitly,
+// Go's transport won't auto-decompress for us). It reads one extra byte so an
+// oversized response is rejected instead of being silently truncated.
 func readBody(resp *http.Response, maxBytes int64) (string, error) {
-	var reader io.Reader = resp.Body
+	if maxBytes <= 0 {
+		return "", fmt.Errorf("maximum response size must be positive")
+	}
 
-	if strings.EqualFold(resp.Header.Get("Content-Encoding"), "gzip") {
+	var reader io.Reader = resp.Body
+	var closer io.Closer
+
+	switch strings.ToLower(strings.TrimSpace(resp.Header.Get("Content-Encoding"))) {
+	case "gzip":
 		gz, err := gzip.NewReader(resp.Body)
 		if err != nil {
 			return "", fmt.Errorf("could not decompress response: %w", err)
 		}
-		defer gz.Close()
+		closer = gz
 		reader = gz
+	case "deflate":
+		zr, err := zlib.NewReader(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("could not decompress response: %w", err)
+		}
+		closer = zr
+		reader = zr
+	}
+	if closer != nil {
+		defer closer.Close()
 	}
 
-	b, err := io.ReadAll(io.LimitReader(reader, maxBytes))
+	b, err := io.ReadAll(io.LimitReader(reader, maxBytes+1))
 	if err != nil {
 		return "", err
+	}
+	if int64(len(b)) > maxBytes {
+		return "", fmt.Errorf("response body exceeds maximum size of %d bytes", maxBytes)
 	}
 	return string(b), nil
 }

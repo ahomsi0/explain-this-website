@@ -252,6 +252,7 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 | `DATABASE_URL` | — | PostgreSQL connection string. Schema is applied automatically on startup |
 | `JWT_SECRET` | — | Secret key for signing JWTs. **Required** for auth to work |
 | `ADMIN_EMAIL` | — | Email address that has full admin access to the dashboard |
+| `OWNER_EMAIL` | — | Optional email address to receive the owner plan during startup migration |
 | `PAGESPEED_API_KEY` | — | Google PageSpeed Insights API key. Without this key, PageSpeed requests are unauthenticated and rate-limited to ~1 QPS |
 | `RESEND_API_KEY` | — | Enables email delivery via Resend. Without it, reset codes are logged to stdout only |
 | `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Sender address shown on outbound emails |

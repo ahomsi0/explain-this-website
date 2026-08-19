@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,6 +20,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/llm"
 	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/ahomsi/explain-website/internal/requestip"
+	"github.com/jackc/pgx/v5"
 )
 
 // Start wires up routes and begins listening.
@@ -87,8 +89,10 @@ func Start(cfg config.Config) error {
 	wrapped := recoveryMiddleware(
 		securityHeadersMiddleware(
 			auth.Middleware(
-				rateLimitMiddleware(rl,
-					corsMiddleware(cfg.AllowedOrigin, mux),
+				tokenFreshnessMiddleware(
+					rateLimitMiddleware(rl,
+						corsMiddleware(cfg.AllowedOrigin, mux),
+					),
 				),
 			),
 		),
@@ -206,6 +210,8 @@ func isAuthMutation(path string) bool {
 
 func securityHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// API responses contain account and analysis data; never cache them.
+		w.Header().Set("Cache-Control", "no-store")
 		// Prevent MIME sniffing.
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		// Deny framing (clickjacking protection).
@@ -222,6 +228,42 @@ func securityHeadersMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 		// Disable browser features this API has no reason to access.
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// tokenFreshnessMiddleware rejects otherwise-valid JWTs issued before a user's
+// password was changed. This makes password resets revoke older sessions.
+func tokenFreshnessMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		uid := auth.UserIDFromContext(r.Context())
+		issuedAt := auth.TokenIssuedAtFromContext(r.Context())
+		if uid == 0 || issuedAt.IsZero() || !db.IsAvailable() {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		var changedAt time.Time
+		qctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		err := db.Pool.QueryRow(qctx,
+			`SELECT password_changed_at FROM users WHERE id = $1`, uid,
+		).Scan(&changedAt)
+		cancel()
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			r = r.WithContext(auth.ClearAuthentication(r.Context()))
+			next.ServeHTTP(w, r)
+			return
+		}
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusServiceUnavailable)
+			json.NewEncoder(w).Encode(model.ErrorResponse{Error: "authentication service temporarily unavailable"})
+			return
+		}
+		if issuedAt.Before(changedAt) {
+			r = r.WithContext(auth.ClearAuthentication(r.Context()))
+		}
 		next.ServeHTTP(w, r)
 	})
 }

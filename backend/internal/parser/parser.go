@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -14,7 +15,7 @@ import (
 // Parse takes raw HTML and a source URL, runs all sub-analyses, and returns
 // a complete AnalysisResult. pageSpeedKey is optional; when non-empty the
 // PageSpeed Insights API is called concurrently to fetch real CWV data.
-func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.AnalysisResult, error) {
+func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string) (model.AnalysisResult, error) {
 	if strings.TrimSpace(rawHTML) == "" {
 		return model.AnalysisResult{}, fmt.Errorf("empty HTML response")
 	}
@@ -31,12 +32,12 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 			perfCh <- perfResult{}
 			return
 		}
-		data, err := fetchPerformance(sourceURL, pageSpeedKey)
+		data, err := fetchPerformance(ctx, sourceURL, pageSpeedKey)
 		perfCh <- perfResult{data, err}
 	}()
 
 	domainCh := make(chan *model.DomainInfo, 1)
-	go func() { domainCh <- FetchDomainInfo(sourceURL) }()
+	go func() { domainCh <- FetchDomainInfo(ctx, sourceURL) }()
 
 	doc, err := html.Parse(strings.NewReader(rawHTML))
 	if err != nil {
@@ -57,7 +58,7 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	freshness := auditFreshness(doc, rawHTML)
 	colorPalette := ExtractColorPalette(doc, rawHTML)
 	fontAudit := ExtractFontAudit(doc, rawHTML)
-	linkCheck := CheckLinks(doc, sourceURL)
+	linkCheck := CheckLinks(ctx, doc, sourceURL)
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
 
 	if tech == nil {
@@ -97,13 +98,23 @@ func Parse(rawHTML string, sourceURL string, pageSpeedKey string) (model.Analysi
 	// analysis indefinitely. If CWV is slow or rate-limited, we still return the
 	// rest of the report and simply omit performance data.
 	var perf *model.PerformanceResult
+	perfTimer := time.NewTimer(60 * time.Second)
+	defer perfTimer.Stop()
 	select {
 	case perfRes := <-perfCh:
 		perf = perfRes.data
-	case <-time.After(60 * time.Second):
+	case <-perfTimer.C:
 		perf = nil
+	case <-ctx.Done():
+		return model.AnalysisResult{}, ctx.Err()
 	}
-	domainInfo := <-domainCh
+
+	var domainInfo *model.DomainInfo
+	select {
+	case domainInfo = <-domainCh:
+	case <-ctx.Done():
+		return model.AnalysisResult{}, ctx.Err()
+	}
 
 	// Augment the heuristic tech detection with services Lighthouse confirmed via
 	// real network requests. Try mobile first; fall back to desktop if mobile has

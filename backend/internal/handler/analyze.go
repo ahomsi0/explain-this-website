@@ -126,9 +126,12 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 			// Parse and analyse.
 			parseStart := time.Now()
-			parsed, err := parser.Parse(rawHTML, rawURL, cfg.PageSpeedAPIKey)
+			parsed, err := parser.Parse(r.Context(), rawHTML, rawURL, cfg.PageSpeedAPIKey)
 			parseDurationMs = int(time.Since(parseStart).Milliseconds())
 			if err != nil {
+				if r.Context().Err() != nil {
+					return
+				}
 				adminstate.RecordAnalyzeFailure(rawURL, uid, "parse: "+err.Error())
 				writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
 				return
