@@ -84,9 +84,12 @@ func tapDo(ctx context.Context, method, path string, body any) (map[string]any, 
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20+1))
 	if err != nil {
 		return nil, fmt.Errorf("tap read body (status %d): %w", resp.StatusCode, err)
+	}
+	if len(bodyBytes) > 1<<20 {
+		return nil, fmt.Errorf("tap response body exceeds 1 MB (status %d)", resp.StatusCode)
 	}
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("tap API error %d: %s", resp.StatusCode, string(bodyBytes))
@@ -157,7 +160,10 @@ func BillingCheckoutSessionHandler() http.HandlerFunc {
 		}
 
 		var req checkoutReq
-		_ = json.NewDecoder(r.Body).Decode(&req)
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
 		if req.Interval != "yearly" {
 			req.Interval = "monthly"
 		}

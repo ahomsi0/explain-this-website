@@ -268,3 +268,68 @@ func UsageHandler() http.HandlerFunc {
 		writeJSON(w, http.StatusOK, usage)
 	}
 }
+
+type usageHistoryDay struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
+
+type usageHistoryResponse struct {
+	Current               model.UsageSummary `json:"current"`
+	Days                  []usageHistoryDay  `json:"days"`
+	APIRequestsLast30Days int                `json:"apiRequestsLast30Days"`
+}
+
+// UsageHistoryHandler returns the authenticated user's recent analysis and API
+// request activity for the usage dashboard.
+func UsageHistoryHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !db.IsAvailable() {
+			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
+			return
+		}
+		uid := auth.UserIDFromContext(r.Context())
+		current, err := currentUsage(r.Context(), uid, "")
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load usage")
+			return
+		}
+
+		rows, err := db.Pool.Query(r.Context(), `
+			SELECT usage_date::text, count
+			  FROM user_daily_usage
+			 WHERE user_id = $1 AND usage_date >= CURRENT_DATE - 29
+			 ORDER BY usage_date ASC`, uid)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load usage history")
+			return
+		}
+		defer rows.Close()
+
+		days := []usageHistoryDay{}
+		for rows.Next() {
+			var day usageHistoryDay
+			if err := rows.Scan(&day.Date, &day.Count); err != nil {
+				writeJSONError(w, http.StatusInternalServerError, "could not load usage history")
+				return
+			}
+			days = append(days, day)
+		}
+		if err := rows.Err(); err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load usage history")
+			return
+		}
+
+		var apiRequests int
+		if err := db.Pool.QueryRow(r.Context(), `
+			SELECT COALESCE(SUM(d.request_count), 0)
+			  FROM api_key_daily_usage d
+			  JOIN api_keys k ON k.id = d.api_key_id
+			 WHERE k.user_id = $1 AND d.usage_date >= CURRENT_DATE - 29`, uid).Scan(&apiRequests); err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load API usage")
+			return
+		}
+
+		writeJSON(w, http.StatusOK, usageHistoryResponse{Current: current, Days: days, APIRequestsLast30Days: apiRequests})
+	}
+}

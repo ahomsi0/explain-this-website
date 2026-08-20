@@ -1,6 +1,6 @@
 # Explain This Website
 
-Paste any URL and get an instant analysis report covering SEO, page performance (Google PageSpeed / Lighthouse), UX/conversion signals, tech stack detection, content analysis, and actionable recommendations. Results include an executive summary with scored sub-categories and can be shared via a public link or exported as a PDF.
+Paste any URL and get an instant analysis report covering SEO, page performance (Google PageSpeed / Lighthouse), UX/conversion signals, tech stack detection, content analysis, and actionable recommendations. Results include an executive summary with scored sub-categories and can be shared via a time-limited public link or exported as a PDF. Signed-in users can compare audits over time and connect API keys or webhooks.
 
 Usage model:
 - Anonymous visitors: `5` analyses per day, no account required
@@ -32,7 +32,7 @@ Usage model:
 
 | Layer | Tech |
 |---|---|
-| Frontend | React 18, Vite, TypeScript, Tailwind CSS |
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS |
 | Backend | Go 1.22 (stdlib net/http), PostgreSQL (pgx/v5) |
 | Auth | JWT (HS256), bcrypt password hashing, email-based password reset |
 | Payments | Tap Payments backend (checkout, subscriptions, webhook lifecycle) — wired but currently dormant; Pro is admin-granted while self-serve is paused |
@@ -46,7 +46,7 @@ Usage model:
 ## Prerequisites
 
 - **Go 1.22+**
-- **Node 18+** and **npm**
+- **Node 20.19+** and **npm**
 - **PostgreSQL** (or set `DATABASE_URL` to a managed instance — Render, Supabase, etc.)
 
 ---
@@ -154,7 +154,7 @@ Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data aft
 
 #### `GET /api/report/:id`
 
-Returns a previously saved analysis result by its share ID. No authentication required.
+Returns a previously saved analysis result by its share ID. Active public links expire after 30 days. Private history reports require the owning account or API key.
 
 ---
 
@@ -175,7 +175,27 @@ Returns a previously saved analysis result by its share ID. No authentication re
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/audits` | List saved audits for authenticated user |
+| `GET` | `/api/audits/compare?a={id}&b={id}` | Compare two saved audits and return metric snapshots |
 | `DELETE` | `/api/audits/:id` | Delete an audit |
+| `POST` | `/api/audits/:id/revoke-share` | Revoke an audit's public share link |
+
+### Usage, API keys, and webhooks
+
+API-key requests may use `X-API-Key: etw_...` or `Authorization: Api-Key etw_...`. The key secret is returned only once when created.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/usage` | Current daily usage summary |
+| `GET` | `/api/usage/history` | Last 30 days of analysis and API request activity |
+| `GET` | `/api/api-keys` | List API key metadata |
+| `POST` | `/api/api-keys` | Create a key: `{ "name": "CI audit bot" }` |
+| `DELETE` | `/api/api-keys/:id` | Revoke a key |
+| `GET` | `/api/webhooks` | List webhook endpoints |
+| `POST` | `/api/webhooks` | Create an endpoint: `{ "url": "https://example.com/hook" }` |
+| `DELETE` | `/api/webhooks/:id` | Revoke an endpoint |
+| `POST` | `/api/webhooks/:id/test` | Send a signed test event |
+
+Active webhook endpoints receive `analysis.completed` events. Each request includes `X-Explain-Website-Event: analysis.completed` and an HMAC-SHA256 `X-Explain-Website-Signature: sha256=...` header. The signature is calculated over the raw JSON body using the one-time secret returned when the webhook is created. Webhook payloads are versioned with `"version": "1"`.
 
 ---
 
@@ -253,6 +273,7 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 | `JWT_SECRET` | — | Secret key for signing JWTs. **Required** for auth to work |
 | `ADMIN_EMAIL` | — | Email address that has full admin access to the dashboard |
 | `OWNER_EMAIL` | — | Optional email address to receive the owner plan during startup migration |
+| `WEBHOOK_ENCRYPTION_KEY` | — | 32-byte hex or base64 key used to encrypt webhook signing secrets at rest |
 | `PAGESPEED_API_KEY` | — | Google PageSpeed Insights API key. Without this key, PageSpeed requests are unauthenticated and rate-limited to ~1 QPS |
 | `RESEND_API_KEY` | — | Enables email delivery via Resend. Without it, reset codes are logged to stdout only |
 | `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Sender address shown on outbound emails |

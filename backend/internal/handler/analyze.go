@@ -196,6 +196,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		// If the user is logged in, also save to their permanent history.
 		if uid != 0 {
 			saveAuditForUser(r.Context(), uid, reportID, result, shareable, parseDurationMs, perfAvailable)
+			dispatchAnalysisCompleted(uid, reportID, result)
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -235,9 +236,24 @@ func ReportHandler() http.HandlerFunc {
 			var raw []byte
 			var ownerID int64
 			var shareable bool
-			err := db.Pool.QueryRow(ctx, `SELECT result, COALESCE(user_id, 0), is_shareable FROM audits WHERE id = $1`, id).Scan(&raw, &ownerID, &shareable)
+			var shareExpiresAt *time.Time
+			var shareRevokedAt *time.Time
+			err := db.Pool.QueryRow(ctx, `
+				SELECT result, COALESCE(user_id, 0), is_shareable, share_expires_at, share_revoked_at
+				  FROM audits
+				 WHERE id = $1 AND deleted_at IS NULL`, id).Scan(&raw, &ownerID, &shareable, &shareExpiresAt, &shareRevokedAt)
 			if err == nil {
-				if shareable || (uid != 0 && uid == ownerID) {
+				publicShareActive := shareable && shareRevokedAt == nil && shareExpiresAt != nil && shareExpiresAt.After(time.Now())
+				if publicShareActive || (uid != 0 && uid == ownerID) {
+					if !publicShareActive {
+						var privateResult model.AnalysisResult
+						if json.Unmarshal(raw, &privateResult) == nil {
+							privateResult.ReportID = ""
+							w.WriteHeader(http.StatusOK)
+							json.NewEncoder(w).Encode(privateResult)
+							return
+						}
+					}
 					w.WriteHeader(http.StatusOK)
 					w.Write(raw)
 					return

@@ -31,6 +31,73 @@ export interface AuditListItem {
   url: string;
   title?: string;
   createdAt: string;
+  shareable: boolean;
+  shareExpiresAt?: string;
+}
+
+export interface UsageHistoryDay {
+  date: string;
+  count: number;
+}
+
+export interface UsageHistory {
+  current: UsageSummary;
+  days: UsageHistoryDay[];
+  apiRequestsLast30Days: number;
+}
+
+export interface ApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  createdAt: string;
+  lastUsedAt?: string;
+  revokedAt?: string;
+  todayRequests: number;
+}
+
+export interface CreatedApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  key: string;
+  createdAt: string;
+}
+
+export interface Webhook {
+  id: string;
+  url: string;
+  createdAt: string;
+  lastDeliveredAt?: string;
+  lastStatus?: number;
+  failureCount: number;
+  revokedAt?: string;
+}
+
+export interface CreatedWebhook {
+  id: string;
+  url: string;
+  createdAt: string;
+  secret: string;
+}
+
+export interface AuditComparisonSnapshot {
+  id: string;
+  url: string;
+  title: string;
+  createdAt: string;
+  seoScore: number;
+  uxScore: number;
+  conversionScore: number;
+  performanceScore?: number;
+  priorityIssueCount: number;
+  brokenLinkCount: number;
+  securityFailureCount: number;
+}
+
+export interface AuditComparison {
+  before: AuditComparisonSnapshot;
+  after: AuditComparisonSnapshot;
 }
 
 export interface AdminUserRow {
@@ -178,8 +245,54 @@ export async function fetchAudits(): Promise<AuditListItem[]> {
   return jsonFetch<AuditListItem[]>("/api/audits");
 }
 
+export async function compareAudits(a: string, b: string): Promise<AuditComparison> {
+  return jsonFetch<AuditComparison>(`/api/audits/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
+}
+
+export async function revokeShare(id: string): Promise<void> {
+  await jsonFetch<void>(`/api/audits/${id}/revoke-share`, { method: "POST" });
+}
+
 export async function fetchUsage(): Promise<UsageSummary> {
   return jsonFetch<UsageSummary>("/api/usage");
+}
+
+export async function fetchUsageHistory(): Promise<UsageHistory> {
+  return jsonFetch<UsageHistory>("/api/usage/history");
+}
+
+export async function listApiKeys(): Promise<ApiKey[]> {
+  return jsonFetch<ApiKey[]>("/api/api-keys");
+}
+
+export async function createApiKey(name: string): Promise<CreatedApiKey> {
+  return jsonFetch<CreatedApiKey>("/api/api-keys", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function revokeApiKey(id: string): Promise<void> {
+  await jsonFetch<void>(`/api/api-keys/${id}`, { method: "DELETE" });
+}
+
+export async function listWebhooks(): Promise<Webhook[]> {
+  return jsonFetch<Webhook[]>("/api/webhooks");
+}
+
+export async function createWebhook(url: string): Promise<CreatedWebhook> {
+  return jsonFetch<CreatedWebhook>("/api/webhooks", {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
+}
+
+export async function revokeWebhook(id: string): Promise<void> {
+  await jsonFetch<void>(`/api/webhooks/${id}`, { method: "DELETE" });
+}
+
+export async function testWebhook(id: string): Promise<void> {
+  await jsonFetch<{ ok: boolean }>(`/api/webhooks/${id}/test`, { method: "POST" });
 }
 
 export async function fetchAdminOverview(): Promise<AdminOverview> {

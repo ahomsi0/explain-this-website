@@ -37,10 +37,30 @@ func (s *reportStore) save(result model.AnalysisResult, userID int64, shared boo
 }
 
 func (s *reportStore) get(id string) (reportEntry, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	e, ok := s.entries[id]
+	if ok && e.createdAt.Before(time.Now().Add(-reportTTL)) {
+		delete(s.entries, id)
+		return reportEntry{}, false
+	}
 	return e, ok
+}
+
+func (s *reportStore) remove(id string) {
+	s.mu.Lock()
+	delete(s.entries, id)
+	s.mu.Unlock()
+}
+
+func (s *reportStore) removeUser(userID int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for id, entry := range s.entries {
+		if entry.userID == userID {
+			delete(s.entries, id)
+		}
+	}
 }
 
 func (s *reportStore) sweep() {

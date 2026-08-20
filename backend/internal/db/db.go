@@ -80,6 +80,8 @@ func Init(ctx context.Context) error {
 	log.Println("Connected to Postgres")
 
 	if err := migrate(ctx); err != nil {
+		pool.Close()
+		Pool = nil
 		return fmt.Errorf("migrate: %w", err)
 	}
 	return nil
@@ -88,7 +90,9 @@ func Init(ctx context.Context) error {
 // Close releases the connection pool.
 func Close() {
 	if Pool != nil {
-		Pool.Close()
+		pool := Pool
+		Pool = nil
+		pool.Close()
 	}
 }
 
@@ -119,6 +123,47 @@ CREATE INDEX IF NOT EXISTS audits_user_id_created_at_idx
 
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS is_shareable BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE audits ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS share_expires_at TIMESTAMPTZ;
+ALTER TABLE audits ADD COLUMN IF NOT EXISTS share_revoked_at TIMESTAMPTZ;
+
+-- Existing shared links receive the same finite lifetime as new links.
+UPDATE audits
+   SET share_expires_at = created_at + INTERVAL '30 days'
+ WHERE is_shareable AND share_expires_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id            TEXT PRIMARY KEY,
+    user_id       BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name          TEXT NOT NULL,
+    key_prefix    TEXT NOT NULL,
+    key_hash      TEXT NOT NULL UNIQUE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_used_at  TIMESTAMPTZ,
+    revoked_at    TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS api_keys_user_id_idx ON api_keys (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS api_key_daily_usage (
+    api_key_id    TEXT NOT NULL REFERENCES api_keys(id) ON DELETE CASCADE,
+    usage_date    DATE NOT NULL,
+    request_count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (api_key_id, usage_date)
+);
+
+CREATE TABLE IF NOT EXISTS webhooks (
+    id                 TEXT PRIMARY KEY,
+    user_id            BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    url                TEXT NOT NULL,
+    secret_ciphertext  BYTEA NOT NULL,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_delivered_at  TIMESTAMPTZ,
+    last_status        INTEGER,
+    failure_count      INTEGER NOT NULL DEFAULT 0,
+    revoked_at         TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS webhooks_user_id_idx ON webhooks (user_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS password_resets (
     id          BIGSERIAL PRIMARY KEY,

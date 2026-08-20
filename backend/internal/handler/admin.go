@@ -345,6 +345,7 @@ func AdminUpdateUserUsageHandler() http.HandlerFunc {
 			return
 		}
 
+		limitAdminBody(w, r)
 		var body updateUserUsageReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -383,6 +384,7 @@ func AdminUpdateAnonUsageHandler() http.HandlerFunc {
 			return
 		}
 
+		limitAdminBody(w, r)
 		var body updateAnonUsageReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -422,6 +424,7 @@ func AdminUpdateUserPlanHandler() http.HandlerFunc {
 			return
 		}
 
+		limitAdminBody(w, r)
 		var body updateUserPlanReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -480,6 +483,7 @@ func AdminPatchUserHandler() http.HandlerFunc {
 			return
 		}
 
+		limitAdminBody(w, r)
 		var body patchUserReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -547,6 +551,7 @@ func AdminToggleFlagHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusForbidden, err.Error())
 			return
 		}
+		limitAdminBody(w, r)
 		var body toggleFlagReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -574,6 +579,7 @@ func AdminBroadcastHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusForbidden, err.Error())
 			return
 		}
+		limitAdminBody(w, r)
 		var body broadcastReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -659,6 +665,10 @@ func requireAdmin(ctx context.Context) error {
 		return errForbidden("admin access required")
 	}
 	return nil
+}
+
+func limitAdminBody(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 64*1024)
 }
 
 type forbiddenError string

@@ -51,29 +51,39 @@ func Start(cfg config.Config) error {
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
 	mux.HandleFunc("GET /api/usage", handler.UsageHandler())
+	mux.HandleFunc("GET /api/usage/history", auth.RequireSessionAuth(handler.UsageHistoryHandler()))
 	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
+	mux.HandleFunc("GET /api/audits/compare", auth.RequireAuth(handler.CompareAuditsHandler()))
+	mux.HandleFunc("POST /api/audits/{id}/revoke-share", auth.RequireSessionAuth(handler.AuditRevokeShareHandler()))
+	mux.HandleFunc("GET /api/api-keys", auth.RequireSessionAuth(handler.APIKeyListHandler()))
+	mux.HandleFunc("POST /api/api-keys", auth.RequireSessionAuth(handler.APIKeyCreateHandler()))
+	mux.HandleFunc("DELETE /api/api-keys/{id}", auth.RequireSessionAuth(handler.APIKeyRevokeHandler()))
+	mux.HandleFunc("GET /api/webhooks", auth.RequireSessionAuth(handler.WebhookListHandler()))
+	mux.HandleFunc("POST /api/webhooks", auth.RequireSessionAuth(handler.WebhookCreateHandler()))
+	mux.HandleFunc("DELETE /api/webhooks/{id}", auth.RequireSessionAuth(handler.WebhookRevokeHandler()))
+	mux.HandleFunc("POST /api/webhooks/{id}/test", auth.RequireSessionAuth(handler.WebhookTestHandler()))
 
 	// Auth endpoints
 	mux.HandleFunc("POST /api/auth/signup", handler.SignupHandler())
 	mux.HandleFunc("POST /api/auth/login", handler.LoginHandler())
 	mux.HandleFunc("POST /api/auth/forgot-password", handler.ForgotPasswordHandler())
 	mux.HandleFunc("POST /api/auth/reset-password", handler.ResetPasswordHandler())
-	mux.HandleFunc("GET /api/auth/me", auth.RequireAuth(handler.MeHandler()))
-	mux.HandleFunc("POST /api/billing/checkout-session", auth.RequireAuth(handler.BillingCheckoutSessionHandler()))
-	mux.HandleFunc("POST /api/billing/cancel", auth.RequireAuth(handler.BillingCancelHandler()))
+	mux.HandleFunc("GET /api/auth/me", auth.RequireSessionAuth(handler.MeHandler()))
+	mux.HandleFunc("POST /api/billing/checkout-session", auth.RequireSessionAuth(handler.BillingCheckoutSessionHandler()))
+	mux.HandleFunc("POST /api/billing/cancel", auth.RequireSessionAuth(handler.BillingCancelHandler()))
 	mux.HandleFunc("POST /api/tap/webhook", handler.BillingWebhookHandler())
-	mux.HandleFunc("GET /api/admin/overview", auth.RequireAuth(handler.AdminOverviewHandler()))
-	mux.HandleFunc("POST /api/admin/user-usage", auth.RequireAuth(handler.AdminUpdateUserUsageHandler()))
-	mux.HandleFunc("POST /api/admin/anon-usage", auth.RequireAuth(handler.AdminUpdateAnonUsageHandler()))
-	mux.HandleFunc("POST /api/admin/user-plan", auth.RequireAuth(handler.AdminUpdateUserPlanHandler()))
-	mux.HandleFunc("POST /api/admin/flag", auth.RequireAuth(handler.AdminToggleFlagHandler()))
-	mux.HandleFunc("POST /api/admin/broadcast", auth.RequireAuth(handler.AdminBroadcastHandler()))
-	mux.HandleFunc("PATCH /api/admin/users/{id}", auth.RequireAuth(handler.AdminPatchUserHandler()))
+	mux.HandleFunc("GET /api/admin/overview", auth.RequireSessionAuth(handler.AdminOverviewHandler()))
+	mux.HandleFunc("POST /api/admin/user-usage", auth.RequireSessionAuth(handler.AdminUpdateUserUsageHandler()))
+	mux.HandleFunc("POST /api/admin/anon-usage", auth.RequireSessionAuth(handler.AdminUpdateAnonUsageHandler()))
+	mux.HandleFunc("POST /api/admin/user-plan", auth.RequireSessionAuth(handler.AdminUpdateUserPlanHandler()))
+	mux.HandleFunc("POST /api/admin/flag", auth.RequireSessionAuth(handler.AdminToggleFlagHandler()))
+	mux.HandleFunc("POST /api/admin/broadcast", auth.RequireSessionAuth(handler.AdminBroadcastHandler()))
+	mux.HandleFunc("PATCH /api/admin/users/{id}", auth.RequireSessionAuth(handler.AdminPatchUserHandler()))
 
 	// User audit history (account-only)
 	mux.HandleFunc("GET /api/audits", auth.RequireAuth(handler.AuditsListHandler()))
-	mux.HandleFunc("DELETE /api/audits", auth.RequireAuth(handler.AuditsClearHandler()))
-	mux.HandleFunc("DELETE /api/audits/{id}", auth.RequireAuth(handler.AuditDeleteHandler()))
+	mux.HandleFunc("DELETE /api/audits", auth.RequireSessionAuth(handler.AuditsClearHandler()))
+	mux.HandleFunc("DELETE /api/audits/{id}", auth.RequireSessionAuth(handler.AuditDeleteHandler()))
 
 	health := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -89,9 +99,11 @@ func Start(cfg config.Config) error {
 	wrapped := recoveryMiddleware(
 		securityHeadersMiddleware(
 			auth.Middleware(
-				tokenFreshnessMiddleware(
-					rateLimitMiddleware(rl,
-						corsMiddleware(cfg.AllowedOrigin, mux),
+				apiKeyMiddleware(
+					tokenFreshnessMiddleware(
+						rateLimitMiddleware(rl,
+							corsMiddleware(cfg.AllowedOrigin, mux),
+						),
 					),
 				),
 			),
@@ -101,6 +113,52 @@ func Start(cfg config.Config) error {
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("Server listening on %s (CORS origin: %s)", addr, cfg.AllowedOrigin)
 	return http.ListenAndServe(addr, wrapped)
+}
+
+// apiKeyMiddleware authenticates integration requests using X-API-Key or
+// Authorization: Api-Key <secret>. Keys are stored as SHA-256 digests and are
+// never exposed again after creation.
+func apiKeyMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if auth.UserIDFromContext(r.Context()) != 0 || !db.IsAvailable() {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		rawKey := strings.TrimSpace(r.Header.Get("X-API-Key"))
+		if rawKey == "" {
+			authorization := strings.TrimSpace(r.Header.Get("Authorization"))
+			if strings.HasPrefix(authorization, "Api-Key ") {
+				rawKey = strings.TrimSpace(strings.TrimPrefix(authorization, "Api-Key "))
+			}
+		}
+		if rawKey == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		var uid int64
+		err := db.Pool.QueryRow(ctx,
+			`SELECT user_id FROM api_keys WHERE key_hash = $1 AND revoked_at IS NULL`,
+			handler.HashAPIKey(rawKey),
+		).Scan(&uid)
+		if err != nil || uid == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		_, _ = db.Pool.Exec(ctx, `UPDATE api_keys SET last_used_at = NOW() WHERE key_hash = $1`, handler.HashAPIKey(rawKey))
+		_, _ = db.Pool.Exec(ctx, `
+			INSERT INTO api_key_daily_usage (api_key_id, usage_date, request_count)
+			SELECT id, CURRENT_DATE, 1 FROM api_keys WHERE key_hash = $1
+			ON CONFLICT (api_key_id, usage_date) DO UPDATE
+			SET request_count = api_key_daily_usage.request_count + 1`, handler.HashAPIKey(rawKey))
+
+		requestCtx := auth.WithAPIKey(auth.WithUserID(r.Context(), uid))
+		next.ServeHTTP(w, r.WithContext(requestCtx))
+	})
 }
 
 // ── Rate limiter ──────────────────────────────────────────────────────────────
@@ -316,7 +374,7 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 		}
 
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, DELETE, PATCH, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

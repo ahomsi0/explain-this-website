@@ -58,6 +58,7 @@ func ForgotPasswordHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
 			return
 		}
+		r.Body = http.MaxBytesReader(w, r.Body, 8*1024)
 		var body forgotReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -134,6 +135,7 @@ func ResetPasswordHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
 			return
 		}
+		r.Body = http.MaxBytesReader(w, r.Body, 8*1024)
 		var body resetReq
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSONError(w, http.StatusBadRequest, "invalid request body")
@@ -151,6 +153,10 @@ func ResetPasswordHandler() http.HandlerFunc {
 		}
 		if len(body.NewPassword) < 8 {
 			writeJSONError(w, http.StatusBadRequest, "password must be at least 8 characters")
+			return
+		}
+		if len(body.NewPassword) > 72 {
+			writeJSONError(w, http.StatusBadRequest, "password must be 72 bytes or fewer")
 			return
 		}
 

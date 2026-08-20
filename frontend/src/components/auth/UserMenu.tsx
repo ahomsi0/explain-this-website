@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/useAuth";
+import { AccountDashboard } from "./AccountDashboard";
 
 export function UserMenu() {
   const { user, logout, refreshUser } = useAuth();
   const [open, setOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click.
@@ -49,6 +51,12 @@ export function UserMenu() {
             </div>
           </div>
           <button
+            onClick={() => { setOpen(false); setAccountOpen(true); }}
+            className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
+          >
+            Usage & integrations
+          </button>
+          <button
             onClick={() => {
               setOpen(false);
               void refreshUser();
@@ -65,6 +73,7 @@ export function UserMenu() {
           </button>
         </div>
       )}
+      <AccountDashboard open={accountOpen} onClose={() => setAccountOpen(false)} />
     </div>
   );
 }

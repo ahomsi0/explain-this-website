@@ -59,6 +59,9 @@ func parseAuthReq(r *http.Request) (authReq, error) {
 	if len(body.Password) < 8 {
 		return body, errors.New("password must be at least 8 characters")
 	}
+	if len(body.Password) > 72 {
+		return body, errors.New("password must be 72 bytes or fewer")
+	}
 	return body, nil
 }
 
@@ -69,6 +72,7 @@ func SignupHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
 			return
 		}
+		r.Body = http.MaxBytesReader(w, r.Body, 8*1024)
 		body, err := parseAuthReq(r)
 		if err != nil {
 			writeJSONError(w, http.StatusBadRequest, err.Error())
@@ -125,6 +129,7 @@ func LoginHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusServiceUnavailable, "accounts are not enabled on this server")
 			return
 		}
+		r.Body = http.MaxBytesReader(w, r.Body, 8*1024)
 		body, err := parseAuthReq(r)
 		if err != nil {
 			writeJSONError(w, http.StatusBadRequest, err.Error())

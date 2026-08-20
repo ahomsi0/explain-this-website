@@ -20,6 +20,7 @@ type ctxKey string
 
 const userIDKey ctxKey = "userID"
 const tokenIssuedAtKey ctxKey = "tokenIssuedAt"
+const apiKeyRequestKey ctxKey = "apiKeyRequest"
 
 // tokenTTL is how long an issued JWT remains valid. 30 days = "stay logged in".
 const tokenTTL = 30 * 24 * time.Hour
@@ -131,6 +132,24 @@ func ClearAuthentication(ctx context.Context) context.Context {
 	return context.WithValue(ctx, tokenIssuedAtKey, time.Time{})
 }
 
+// WithUserID attaches an authenticated user ID to a request context.
+// It is used by non-JWT authentication middleware such as API keys.
+func WithUserID(ctx context.Context, userID int64) context.Context {
+	return context.WithValue(ctx, userIDKey, userID)
+}
+
+// WithAPIKey marks a request as authenticated with an API key rather than a
+// browser session. API-key management endpoints can require a real session.
+func WithAPIKey(ctx context.Context) context.Context {
+	return context.WithValue(ctx, apiKeyRequestKey, true)
+}
+
+// IsAPIKeyRequest reports whether the request was authenticated with an API key.
+func IsAPIKeyRequest(ctx context.Context) bool {
+	v, _ := ctx.Value(apiKeyRequestKey).(bool)
+	return v
+}
+
 // UserIDFromContext returns the authenticated user ID, or 0 if anonymous.
 func UserIDFromContext(ctx context.Context) int64 {
 	if v, ok := ctx.Value(userIDKey).(int64); ok {
@@ -146,6 +165,21 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte(`{"error":"authentication required"}`))
+			return
+		}
+		next(w, r)
+	}
+}
+
+// RequireSessionAuth requires a browser JWT and rejects API-key requests.
+// Use this for account-management endpoints that must not be controlled by a
+// long-lived integration credential.
+func RequireSessionAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if UserIDFromContext(r.Context()) == 0 || IsAPIKeyRequest(r.Context()) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"error":"browser session required"}`))
 			return
 		}
 		next(w, r)
