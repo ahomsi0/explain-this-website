@@ -219,15 +219,14 @@ func ResetPasswordHandler() http.HandlerFunc {
 			return
 		}
 
-		// Issue a fresh JWT so the user is logged in immediately after reset.
+		// Issue a fresh HttpOnly browser session so the user is logged in
+		// immediately after reset without returning a JWT to JavaScript.
 		token, err := auth.IssueToken(userID)
 		if err != nil {
 			writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 			return
 		}
-		writeJSON(w, http.StatusOK, map[string]any{
-			"ok":    true,
-			"token": token,
-		})
+		auth.SetSessionCookie(w, r, token)
+		writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 	}
 }

@@ -13,7 +13,6 @@ export const testUser = {
 };
 
 export const testAuthResponse = {
-  token: "playwright-test-token",
   user: testUser,
 };
 

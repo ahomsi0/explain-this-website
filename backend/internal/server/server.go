@@ -8,9 +8,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"runtime/debug"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/auth"
@@ -33,23 +36,63 @@ func Start(cfg config.Config) error {
 	}
 	defer db.Close()
 
-	mux := http.NewServeMux()
+	srv := &http.Server{
+		Addr:              fmt.Sprintf(":%s", cfg.Port),
+		Handler:           NewHandler(cfg),
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      4 * time.Minute,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    16 * 1024,
+	}
 
+	shutdownCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	go func() {
+		<-shutdownCtx.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Printf("graceful shutdown failed: %v", err)
+		}
+	}()
+
+	log.Printf("Server listening on %s (CORS origin: %s)", srv.Addr, cfg.AllowedOrigin)
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return nil
+}
+
+// NewHandler wires the API routes and middleware without opening a listener.
+// It is used by Start and by integration tests.
+func NewHandler(cfg config.Config) http.Handler {
 	groqClient := llm.New(cfg.GroqAPIKey, cfg.GroqModel)
+	return NewHandlerWithAnalyzeConfig(cfg, handler.Config{
+		FetchTimeoutSec: cfg.FetchTimeoutSec,
+		MaxBodyBytes:    cfg.MaxBodyBytes,
+		PageSpeedAPIKey: cfg.PageSpeedAPIKey,
+		Groq:            groqClient,
+	})
+}
+
+// NewHandlerWithAnalyzeConfig is the same production route stack with
+// injectable analyze dependencies for integration tests.
+func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) http.Handler {
+	mux := http.NewServeMux()
+	groqClient := handlerCfg.Groq
+	if groqClient == nil {
+		groqClient = llm.New(cfg.GroqAPIKey, cfg.GroqModel)
+		handlerCfg.Groq = groqClient
+	}
+
 	if groqClient.Enabled() {
 		log.Printf("groq summary: enabled (model=%s)", cfg.GroqModel)
 	} else {
 		log.Printf("groq summary: disabled (set GROQ_API_KEY to enable)")
 	}
 
-	handlerCfg := handler.Config{
-		FetchTimeoutSec: cfg.FetchTimeoutSec,
-		MaxBodyBytes:    cfg.MaxBodyBytes,
-		PageSpeedAPIKey: cfg.PageSpeedAPIKey,
-		Groq:            groqClient,
-	}
-
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
+	mux.HandleFunc("POST /api/events", handler.ConversionEventHandler())
 	mux.HandleFunc("GET /api/usage", handler.UsageHandler())
 	mux.HandleFunc("GET /api/usage/history", auth.RequireSessionAuth(handler.UsageHistoryHandler()))
 	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
@@ -66,6 +109,7 @@ func Start(cfg config.Config) error {
 	// Auth endpoints
 	mux.HandleFunc("POST /api/auth/signup", handler.SignupHandler())
 	mux.HandleFunc("POST /api/auth/login", handler.LoginHandler())
+	mux.HandleFunc("POST /api/auth/logout", handler.LogoutHandler())
 	mux.HandleFunc("POST /api/auth/forgot-password", handler.ForgotPasswordHandler())
 	mux.HandleFunc("POST /api/auth/reset-password", handler.ResetPasswordHandler())
 	mux.HandleFunc("GET /api/auth/me", auth.RequireSessionAuth(handler.MeHandler()))
@@ -110,9 +154,7 @@ func Start(cfg config.Config) error {
 		),
 	)
 
-	addr := fmt.Sprintf(":%s", cfg.Port)
-	log.Printf("Server listening on %s (CORS origin: %s)", addr, cfg.AllowedOrigin)
-	return http.ListenAndServe(addr, wrapped)
+	return wrapped
 }
 
 // apiKeyMiddleware authenticates integration requests using X-API-Key or
@@ -176,9 +218,10 @@ type rlEntry struct {
 }
 
 const (
-	rlMax       = 10 // anonymous: 10/min
-	rlMaxAuthed = 50 // logged-in: 50/min
-	rlMaxAuth   = 10 // auth mutations: 10/min per source IP and endpoint
+	rlMax       = 10  // anonymous: 10/min
+	rlMaxAuthed = 50  // logged-in: 50/min
+	rlMaxAuth   = 10  // auth mutations: 10/min per source IP and endpoint
+	rlMaxEvent  = 120 // consented conversion events per minute per IP
 	rlWindow    = time.Minute
 )
 
@@ -251,6 +294,15 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				return
 			}
 		}
+		if r.Method == http.MethodPost && r.URL.Path == "/api/events" {
+			if !rl.allow("event:"+realIP(r), rlMaxEvent) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Retry-After", "60")
+				w.WriteHeader(http.StatusTooManyRequests)
+				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many tracking events — please try again later."})
+				return
+			}
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -319,7 +371,10 @@ func tokenFreshnessMiddleware(next http.Handler) http.Handler {
 			json.NewEncoder(w).Encode(model.ErrorResponse{Error: "authentication service temporarily unavailable"})
 			return
 		}
-		if issuedAt.Before(changedAt) {
+		// JWT iat is second-precision while Postgres timestamps include
+		// fractional seconds. Truncate the DB value so a newly issued token is
+		// not rejected merely because it was created in the same second.
+		if issuedAt.Before(changedAt.Truncate(time.Second)) {
 			r = r.WithContext(auth.ClearAuthentication(r.Context()))
 		}
 		next.ServeHTTP(w, r)
@@ -381,8 +436,28 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+
+		// Browser sessions use cookies, so reject cross-site state changes even
+		// when a deployment intentionally uses SameSite=None for split origins.
+		// API-key requests are header-authenticated and do not need this check.
+		if isUnsafeMethod(r.Method) && auth.UserIDFromContext(r.Context()) != 0 &&
+			!auth.IsAPIKeyRequest(r.Context()) && !isOriginAllowed(allowed, origin) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(model.ErrorResponse{Error: "request origin is not allowed"})
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func isUnsafeMethod(method string) bool {
+	switch method {
+	case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
+		return true
+	default:
+		return false
+	}
 }
 
 func parseAllowedOrigins(raw string) []string {

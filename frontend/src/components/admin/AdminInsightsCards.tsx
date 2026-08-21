@@ -11,6 +11,7 @@ import {
   type BroadcastResult,
   type SlowAuditRow,
   type AuditOutcomeRow,
+  type ConversionFunnel,
 } from "../../services/authApi";
 
 // ─── Business Metrics Row ────────────────────────────────────────────────────
@@ -428,6 +429,34 @@ export function AuditOutcomesCard({ rows }: { rows: AuditOutcomeRow[] }) {
   );
 }
 
+// ─── Conversion funnel ─────────────────────────────────────────────────────
+export function ConversionFunnelCard({ funnel }: { funnel: ConversionFunnel }) {
+  const rows = [
+    { label: "Landing views", value: funnel.landingViews },
+    { label: "Analysis started", value: funnel.analysisStarted },
+    { label: "Analysis completed", value: funnel.analysisCompleted },
+    { label: "Signups completed", value: funnel.signupCompleted },
+    { label: "Repeat usage", value: funnel.repeatUsage },
+  ];
+  const max = Math.max(1, ...rows.map((row) => row.value));
+  return (
+    <Card title="Conversion Funnel" action={<span className="text-[10px] text-zinc-500">last 30 days</span>}>
+      <div className="flex flex-col gap-2.5">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center gap-3">
+            <span className="w-32 text-[11px] text-zinc-400 shrink-0">{row.label}</span>
+            <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div className="h-full rounded-full bg-violet-500/70" style={{ width: `${(row.value / max) * 100}%` }} />
+            </div>
+            <span className="w-10 text-right text-[11px] text-zinc-300 tabular-nums">{row.value}</span>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-[10px] text-zinc-600">Counts include only events recorded after analytics consent.</p>
+    </Card>
+  );
+}
+
 // ─── Bundle for convenient import ────────────────────────────────────────────
 export function AdminInsightsSection({
   overview,
@@ -448,6 +477,7 @@ export function AdminInsightsSection({
       {showSystem  && <FailureLogCard rows={overview.failureLog} />}
       {showMetrics && <AuditsChartCard days={overview.auditsByDay} />}
       {showMetrics && <TopUrlsCard rows={overview.topUrls} />}
+      {showMetrics && <ConversionFunnelCard funnel={overview.conversionFunnel} />}
       {showSystem  && <SystemHealthCard h={overview.systemHealth} />}
       {showSystem  && <FeatureFlagsCard flags={overview.featureFlags} onChange={onChange} />}
       {showSystem  && <BroadcastEmailCard totalUsers={overview.users.length} />}

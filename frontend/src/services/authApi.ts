@@ -1,8 +1,7 @@
-// Auth + audit-history API client. Token is stored in localStorage and attached
-// to every authenticated request via the Authorization header.
+// Auth + audit-history API client. Browser sessions use an HttpOnly cookie set
+// by the API, so JavaScript never needs to read or persist a JWT.
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-const TOKEN_KEY = "etw_auth_token";
 
 export interface UsageSummary {
   plan: "free" | "pro" | "owner";
@@ -22,7 +21,6 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  token: string;
   user: AuthUser;
 }
 
@@ -126,6 +124,14 @@ export interface AuditOutcomeRow {
   perfFail: number;
 }
 
+export interface ConversionFunnel {
+  landingViews: number;
+  analysisStarted: number;
+  analysisCompleted: number;
+  signupCompleted: number;
+  repeatUsage: number;
+}
+
 export interface AdminVisitorRow {
   visitorId: string;
   dailyLimit: number;
@@ -190,28 +196,15 @@ export interface AdminOverview {
   featureFlags: Record<string, boolean>;
   slowAudits: SlowAuditRow[];
   auditOutcomes: AuditOutcomeRow[];
-}
-
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token: string | null) {
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-  else localStorage.removeItem(TOKEN_KEY);
-}
-
-function authHeaders(): HeadersInit {
-  const t = getToken();
-  return t ? { Authorization: `Bearer ${t}` } : {};
+  conversionFunnel: ConversionFunnel;
 }
 
 async function jsonFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...authHeaders(),
       ...(init.headers ?? {}),
     },
   });
@@ -238,7 +231,17 @@ export async function login(email: string, password: string): Promise<AuthRespon
 }
 
 export async function fetchMe(): Promise<AuthUser> {
-  return jsonFetch<AuthUser>("/api/auth/me");
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5_000);
+  try {
+    return await jsonFetch<AuthUser>("/api/auth/me", { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function logout(): Promise<void> {
+  await jsonFetch<void>("/api/auth/logout", { method: "POST" });
 }
 
 export async function fetchAudits(): Promise<AuditListItem[]> {
@@ -357,8 +360,8 @@ export async function requestPasswordReset(email: string): Promise<void> {
   });
 }
 
-export async function resetPassword(email: string, code: string, newPassword: string): Promise<{ token?: string }> {
-  return jsonFetch<{ ok: boolean; token?: string }>("/api/auth/reset-password", {
+export async function resetPassword(email: string, code: string, newPassword: string): Promise<{ ok: boolean }> {
+  return jsonFetch<{ ok: boolean }>("/api/auth/reset-password", {
     method: "POST",
     body: JSON.stringify({ email, code, newPassword }),
   });
@@ -378,7 +381,7 @@ export async function cancelSubscription(): Promise<void> {
 export async function deleteAudit(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/api/audits/${id}`, {
     method: "DELETE",
-    headers: authHeaders(),
+    credentials: "include",
   });
   if (!res.ok) {
     const data = await res.json().catch(() => null);
@@ -389,7 +392,7 @@ export async function deleteAudit(id: string): Promise<void> {
 export async function clearAudits(): Promise<void> {
   const res = await fetch(`${API_URL}/api/audits`, {
     method: "DELETE",
-    headers: authHeaders(),
+    credentials: "include",
   });
   if (!res.ok) {
     const data = await res.json().catch(() => null);

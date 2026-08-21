@@ -22,6 +22,10 @@ const userIDKey ctxKey = "userID"
 const tokenIssuedAtKey ctxKey = "tokenIssuedAt"
 const apiKeyRequestKey ctxKey = "apiKeyRequest"
 
+// SessionCookieName is the browser-session cookie. It is HttpOnly so page
+// scripts cannot read the JWT directly.
+const SessionCookieName = "etw_session"
+
 // tokenTTL is how long an issued JWT remains valid. 30 days = "stay logged in".
 const tokenTTL = 30 * 24 * time.Hour
 
@@ -98,22 +102,70 @@ func ParseToken(raw string) (int64, error) {
 	return uid, err
 }
 
-// Middleware extracts an "Authorization: Bearer <jwt>" header (if present) and stuffs the
-// user ID into the request context. Missing/invalid tokens are NOT rejected — handlers
-// decide whether they require auth via UserIDFromContext.
+// Middleware extracts an Authorization bearer token or browser session cookie
+// and stuffs the user ID into the request context. Missing/invalid tokens are
+// NOT rejected — handlers decide whether they require auth.
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
+		raw := ""
 		if strings.HasPrefix(header, "Bearer ") {
-			raw := strings.TrimPrefix(header, "Bearer ")
-			if uid, issuedAt, err := ParseTokenDetails(raw); err == nil {
-				ctx := context.WithValue(r.Context(), userIDKey, uid)
-				ctx = context.WithValue(ctx, tokenIssuedAtKey, issuedAt)
-				r = r.WithContext(ctx)
+			raw = strings.TrimPrefix(header, "Bearer ")
+		} else if header == "" && r.Header.Get("X-API-Key") == "" {
+			if cookie, err := r.Cookie(SessionCookieName); err == nil {
+				raw = cookie.Value
 			}
+		}
+		if uid, issuedAt, err := ParseTokenDetails(raw); err == nil {
+			ctx := context.WithValue(r.Context(), userIDKey, uid)
+			ctx = context.WithValue(ctx, tokenIssuedAtKey, issuedAt)
+			r = r.WithContext(ctx)
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// SetSessionCookie stores a signed browser session without exposing its JWT to
+// JavaScript. Cross-origin deployments (for example Vercel + Render) need
+// SameSite=None over HTTPS; local development remains SameSite=Lax.
+func SetSessionCookie(w http.ResponseWriter, r *http.Request, token string) {
+	secure := requestIsSecure(r)
+	sameSite := http.SameSiteLaxMode
+	if secure {
+		sameSite = http.SameSiteNoneMode
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     SessionCookieName,
+		Value:    token,
+		Path:     "/",
+		MaxAge:   int(tokenTTL / time.Second),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+}
+
+// ClearSessionCookie expires the browser session during logout.
+func ClearSessionCookie(w http.ResponseWriter, r *http.Request) {
+	secure := requestIsSecure(r)
+	sameSite := http.SameSiteLaxMode
+	if secure {
+		sameSite = http.SameSiteNoneMode
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     SessionCookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Expires:  time.Unix(1, 0),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+}
+
+func requestIsSecure(r *http.Request) bool {
+	return r.TLS != nil || strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")), "https")
 }
 
 // TokenIssuedAtFromContext returns the authenticated token's issue time, or zero

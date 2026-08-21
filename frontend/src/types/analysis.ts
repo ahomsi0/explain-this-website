@@ -37,6 +37,12 @@ export interface Overview {
   pageLoadHint: PageLoadHint;
 }
 
+export interface RenderingInfo {
+  mode: "server-html";
+  likelyClientRendered: boolean;
+  notice?: string;
+}
+
 export interface UXResult {
   // Conversion signals
   hasCTA: boolean;
@@ -278,6 +284,7 @@ export interface AnalysisResult {
   url: string;
   fetchedAt: string;
   overview: Overview;
+  rendering?: RenderingInfo;
   techStack: TechItem[];
   seoChecks: SEOCheck[];
   ux: UXResult;

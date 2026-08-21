@@ -25,13 +25,17 @@ type Config struct {
 	MaxBodyBytes    int64
 	PageSpeedAPIKey string
 	Groq            *llm.Client // optional; nil disables AI summary
+	// FetchHTML and Parse are injectable for API integration tests. Production
+	// uses the secure public fetcher and parser defaults below.
+	FetchHTML func(context.Context, string, int64) (string, http.Header, error)
+	Parse     func(context.Context, string, string, string) (model.AnalysisResult, error)
 }
 
 // AnalyzeHandler returns an http.HandlerFunc for POST /api/analyze.
 func AnalyzeHandler(cfg Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		EnsureVisitorCookie(w, r)
+		visitorID := ensureVisitorCookieValue(w, r)
 
 		// Cap the request body at 8 KB — a URL payload is never legitimately larger.
 		r.Body = http.MaxBytesReader(w, r.Body, 8192)
@@ -72,7 +76,6 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 
 		uid := auth.UserIDFromContext(r.Context())
-		visitorID := visitorIDFromRequest(r)
 		usage, err := currentUsage(r.Context(), uid, visitorID)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not check daily usage")
@@ -112,12 +115,21 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			respHeaders = cachedHeaders
 			cacheHit = true
 		} else {
+			fetchHTML := fetcher.FetchHTML
+			if cfg.FetchHTML != nil {
+				fetchHTML = cfg.FetchHTML
+			}
+			parse := parser.Parse
+			if cfg.Parse != nil {
+				parse = cfg.Parse
+			}
+
 			// Fetch HTML with a deadline.
 			timeout := time.Duration(cfg.FetchTimeoutSec) * time.Second
 			ctx, cancel := context.WithTimeout(r.Context(), timeout)
 			defer cancel()
 
-			rawHTML, headers, err := fetcher.FetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
+			rawHTML, headers, err := fetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
 			if err != nil {
 				adminstate.RecordAnalyzeFailure(rawURL, uid, "fetch: "+err.Error())
 				writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
@@ -127,7 +139,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 			// Parse and analyse.
 			parseStart := time.Now()
-			parsed, err := parser.Parse(r.Context(), rawHTML, rawURL, cfg.PageSpeedAPIKey)
+			parsed, err := parse(ctx, rawHTML, rawURL, cfg.PageSpeedAPIKey)
 			parseDurationMs = int(time.Since(parseStart).Milliseconds())
 			if err != nil {
 				if r.Context().Err() != nil {

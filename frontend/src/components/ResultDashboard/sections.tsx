@@ -39,6 +39,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <ExecutiveSummaryCard insights={insights} />
           <OverviewCard
             overview={result.overview}
+            rendering={result.rendering}
             url={result.url}
             fetchedAt={result.fetchedAt}
             aiDetection={result.aiDetection}

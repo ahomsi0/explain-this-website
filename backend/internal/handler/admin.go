@@ -81,6 +81,7 @@ type adminOverviewResp struct {
 	FeatureFlags       map[string]bool           `json:"featureFlags"`
 	SlowAudits         []slowAuditRow            `json:"slowAudits"`
 	AuditOutcomes      []auditOutcomeRow         `json:"auditOutcomes"`
+	ConversionFunnel   conversionFunnel          `json:"conversionFunnel"`
 }
 
 type updateUserUsageReq struct {
@@ -132,6 +133,14 @@ type auditOutcomeRow struct {
 	Total    int    `json:"total"`
 	PerfOK   int    `json:"perfOk"`
 	PerfFail int    `json:"perfFail"`
+}
+
+type conversionFunnel struct {
+	LandingViews      int `json:"landingViews"`
+	AnalysisStarted   int `json:"analysisStarted"`
+	AnalysisCompleted int `json:"analysisCompleted"`
+	SignupCompleted   int `json:"signupCompleted"`
+	RepeatUsage       int `json:"repeatUsage"`
 }
 
 func AdminOverviewHandler() http.HandlerFunc {
@@ -293,6 +302,35 @@ func AdminOverviewHandler() http.HandlerFunc {
 			}
 		}
 
+		// Consent-gated first-party conversion events over the last 30 days.
+		funnel := conversionFunnel{}
+		if rows, err := db.Pool.Query(ctx, `
+			SELECT event_name, COUNT(*)
+			  FROM conversion_events
+			 WHERE created_at > NOW() - INTERVAL '30 days'
+			 GROUP BY event_name`); err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var name string
+				var count int
+				if err := rows.Scan(&name, &count); err != nil {
+					continue
+				}
+				switch name {
+				case "landing_view":
+					funnel.LandingViews = count
+				case "analysis_started":
+					funnel.AnalysisStarted = count
+				case "analysis_completed":
+					funnel.AnalysisCompleted = count
+				case "signup_completed":
+					funnel.SignupCompleted = count
+				case "repeat_usage":
+					funnel.RepeatUsage = count
+				}
+			}
+		}
+
 		// Failure log + health: in-memory.
 		failures := adminstate.SnapshotFailures()
 		psHealth, resendHealth := adminstate.SnapshotHealth()
@@ -330,6 +368,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 			FeatureFlags:       flags,
 			SlowAudits:         slowAudits,
 			AuditOutcomes:      auditOutcomes,
+			ConversionFunnel:   funnel,
 		})
 	}
 }

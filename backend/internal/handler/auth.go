@@ -21,8 +21,7 @@ type authReq struct {
 }
 
 type authResp struct {
-	Token string  `json:"token"`
-	User  userOut `json:"user"`
+	User userOut `json:"user"`
 }
 
 type userOut struct {
@@ -113,12 +112,11 @@ func SignupHandler() http.HandlerFunc {
 		u.Email = emailAddr
 		u.CreatedAt = createdAt
 
-		token, err := auth.IssueToken(u.ID)
-		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "could not issue token")
+		if err := issueSession(w, r, u.ID); err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not issue session")
 			return
 		}
-		writeJSON(w, http.StatusOK, authResp{Token: token, User: u})
+		writeJSON(w, http.StatusOK, authResp{User: u})
 	}
 }
 
@@ -167,13 +165,30 @@ func LoginHandler() http.HandlerFunc {
 		u.Email = emailAddr
 		u.CreatedAt = createdAt
 
-		token, err := auth.IssueToken(u.ID)
-		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "could not issue token")
+		if err := issueSession(w, r, u.ID); err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not issue session")
 			return
 		}
-		writeJSON(w, http.StatusOK, authResp{Token: token, User: u})
+		writeJSON(w, http.StatusOK, authResp{User: u})
 	}
+}
+
+// LogoutHandler expires the browser session cookie. JWTs are no longer exposed
+// to the frontend, so clearing the cookie is the complete browser logout flow.
+func LogoutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		auth.ClearSessionCookie(w, r)
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func issueSession(w http.ResponseWriter, r *http.Request, userID int64) error {
+	token, err := auth.IssueToken(userID)
+	if err != nil {
+		return err
+	}
+	auth.SetSessionCookie(w, r, token)
+	return nil
 }
 
 // MeHandler returns the current user (requires auth).

@@ -45,6 +45,7 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 	}
 
 	visibleText := extractVisibleText(doc)
+	rendering := AssessRendering(doc, visibleText)
 
 	overview := extractOverview(doc, rawHTML)
 	tech := detectTech(rawHTML, sourceURL)
@@ -135,6 +136,7 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 		URL:                sourceURL,
 		FetchedAt:          time.Now().UTC(),
 		Overview:           overview,
+		Rendering:          rendering,
 		TechStack:          tech,
 		SEOChecks:          seoChecks,
 		UX:                 ux,
