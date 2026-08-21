@@ -51,7 +51,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   const issues: PriorityIssue[] = [];
 
   // SEO: FAIL checks
-  (result.seoChecks ?? []).filter((c) => c.status === "fail").forEach((c) => {
+  (result.seoChecks ?? []).filter((c) => !c.optional && c.status === "fail").forEach((c) => {
     issues.push(makeIssue(
       `seo-fail-${c.id}`,
       `Fix SEO: ${c.label}`,
@@ -65,7 +65,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   });
 
   // SEO: WARNING checks
-  (result.seoChecks ?? []).filter((c) => c.status === "warning").forEach((c) => {
+  (result.seoChecks ?? []).filter((c) => !c.optional && c.status === "warning").forEach((c) => {
     issues.push(makeIssue(
       `seo-warn-${c.id}`,
       `Improve SEO: ${c.label}`,

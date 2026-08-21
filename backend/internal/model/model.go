@@ -71,11 +71,12 @@ type ELI5Item struct {
 
 // SEOCheck represents the result of a single SEO audit check.
 type SEOCheck struct {
-	ID      string   `json:"id"`
-	Label   string   `json:"label"`
-	Status  string   `json:"status"` // pass, warning, fail
-	Detail  string   `json:"detail"`
-	Details []string `json:"details,omitempty"` // optional evidence items shown in expanded view
+	ID       string   `json:"id"`
+	Label    string   `json:"label"`
+	Status   string   `json:"status"` // pass, warning, fail
+	Detail   string   `json:"detail"`
+	Optional bool     `json:"optional,omitempty"`
+	Details  []string `json:"details,omitempty"` // optional evidence items shown in expanded view
 }
 
 // Overview contains high-level page metadata.
@@ -246,11 +247,13 @@ type CoreWebVital struct {
 }
 
 // LighthouseScores holds the four Lighthouse category scores (0–100).
+// A nil field means PageSpeed did not return that category; it is not a score
+// of zero.
 type LighthouseScores struct {
-	Performance   int `json:"performance"`
-	Accessibility int `json:"accessibility"`
-	BestPractices int `json:"bestPractices"`
-	SEO           int `json:"seo"`
+	Performance   *int `json:"performance,omitempty"`
+	Accessibility *int `json:"accessibility,omitempty"`
+	BestPractices *int `json:"bestPractices,omitempty"`
+	SEO           *int `json:"seo,omitempty"`
 }
 
 // ThirdPartyEntity is a single third-party service detected by Lighthouse network analysis.

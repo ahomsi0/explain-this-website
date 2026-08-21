@@ -47,31 +47,9 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
-		rawURL := strings.TrimSpace(req.URL)
-		if rawURL == "" {
-			writeError(w, http.StatusUnprocessableEntity, "url is required")
-			return
-		}
-
-		// Auto-prepend scheme if missing.
-		if !strings.HasPrefix(rawURL, "http://") && !strings.HasPrefix(rawURL, "https://") {
-			rawURL = "https://" + rawURL
-		}
-
-		// Validate URL structure.
-		parsed, err := url.ParseRequestURI(rawURL)
-		if err != nil || parsed.Host == "" {
-			writeError(w, http.StatusUnprocessableEntity, "invalid URL: please provide a full URL (e.g. https://example.com)")
-			return
-		}
-		if parsed.Scheme != "http" && parsed.Scheme != "https" {
-			writeError(w, http.StatusUnprocessableEntity, "invalid URL: must use http or https scheme")
-			return
-		}
-		// Reject URLs that embed credentials (http://user:pass@host) — these
-		// are never needed for public page analysis and can mask intent.
-		if parsed.User != nil {
-			writeError(w, http.StatusUnprocessableEntity, "invalid URL: credentials in URLs are not supported")
+		rawURL, urlError := normalizeAnalyzeURL(req.URL)
+		if urlError != "" {
+			writeError(w, http.StatusUnprocessableEntity, urlError)
 			return
 		}
 
@@ -215,6 +193,34 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(result)
 	}
+}
+
+// normalizeAnalyzeURL validates and canonicalizes user input before it is used
+// as a fetch target or cache key. Fragments never reach the target server, so
+// removing them prevents the same page from producing separate reports.
+func normalizeAnalyzeURL(input string) (string, string) {
+	rawURL := strings.TrimSpace(input)
+	if rawURL == "" {
+		return "", "url is required"
+	}
+	lowerURL := strings.ToLower(rawURL)
+	if !strings.HasPrefix(lowerURL, "http://") && !strings.HasPrefix(lowerURL, "https://") && !strings.Contains(rawURL, "://") {
+		rawURL = "https://" + rawURL
+	}
+
+	parsed, err := url.Parse(rawURL)
+	if err != nil || parsed.Host == "" || parsed.Hostname() == "" {
+		return "", "invalid URL: please provide a full URL (e.g. https://example.com)"
+	}
+	parsed.Scheme = strings.ToLower(parsed.Scheme)
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return "", "invalid URL: must use http or https scheme"
+	}
+	if parsed.User != nil {
+		return "", "invalid URL: credentials in URLs are not supported"
+	}
+	parsed.Fragment = ""
+	return parsed.String(), ""
 }
 
 // ReportHandler returns an http.HandlerFunc for GET /api/report/{id}.

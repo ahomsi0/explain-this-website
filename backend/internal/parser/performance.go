@@ -33,8 +33,9 @@ type thirdPartiesAudit struct {
 
 // lhAudit covers the simple numeric/display audits we use for Core Web Vitals.
 type lhAudit struct {
-	NumericValue float64 `json:"numericValue"`
-	DisplayValue string  `json:"displayValue"`
+	NumericValue     *float64 `json:"numericValue"`
+	DisplayValue     string   `json:"displayValue"`
+	ScoreDisplayMode string   `json:"scoreDisplayMode"`
 }
 
 // pageSpeedResponse holds the subset of the PageSpeed Insights API response we care about.
@@ -163,6 +164,9 @@ func fetchStrategy(ctx context.Context, siteURL string, apiKey string, strategy 
 
 	cats := data.LighthouseResult.Categories
 	audits := data.LighthouseResult.Audits
+	if len(cats) == 0 && len(audits) == 0 {
+		return nil, fmt.Errorf("PageSpeed API (%s): response contained no Lighthouse data", strategy)
+	}
 
 	out := &model.StrategyData{
 		Lighthouse: model.LighthouseScores{
@@ -221,11 +225,18 @@ func fetchStrategy(ctx context.Context, siteURL string, apiKey string, strategy 
 }
 
 // categoryScore safely extracts a Lighthouse category score (0–100) from the map.
-func categoryScore(cats map[string]lhCategory, key string) int {
+func categoryScore(cats map[string]lhCategory, key string) *int {
 	if c, ok := cats[key]; ok && c.Score != nil {
-		return int(math.Round(*c.Score * 100))
+		score := int(math.Round(*c.Score * 100))
+		if score < 0 {
+			score = 0
+		}
+		if score > 100 {
+			score = 100
+		}
+		return &score
 	}
-	return 0
+	return nil
 }
 
 // auditMetric extracts a named audit entry and rates it.
@@ -242,10 +253,15 @@ func auditMetric(
 	if err := json.Unmarshal(raw, &a); err != nil {
 		return model.CoreWebVital{}
 	}
+	if a.NumericValue == nil || a.ScoreDisplayMode == "notApplicable" ||
+		a.ScoreDisplayMode == "not_applicable" || a.ScoreDisplayMode == "manual" ||
+		a.ScoreDisplayMode == "informative" || a.ScoreDisplayMode == "error" {
+		return model.CoreWebVital{}
+	}
 	return model.CoreWebVital{
-		Value:        a.NumericValue,
+		Value:        *a.NumericValue,
 		DisplayValue: a.DisplayValue,
-		Rating:       rate(a.NumericValue),
+		Rating:       rate(*a.NumericValue),
 	}
 }
 
@@ -258,7 +274,7 @@ func fieldMetric(percentile float64, unit string, rate func(float64) string) mod
 // Rating threshold functions — thresholds from web.dev/vitals.
 
 func lcpRating(ms float64) string {
-	if ms < 2500 {
+	if ms <= 2500 {
 		return "good"
 	}
 	if ms < 4000 {
@@ -268,7 +284,7 @@ func lcpRating(ms float64) string {
 }
 
 func fcpRating(ms float64) string {
-	if ms < 1800 {
+	if ms <= 1800 {
 		return "good"
 	}
 	if ms < 3000 {
@@ -278,7 +294,7 @@ func fcpRating(ms float64) string {
 }
 
 func tbtRating(ms float64) string {
-	if ms < 200 {
+	if ms <= 200 {
 		return "good"
 	}
 	if ms < 600 {
@@ -288,7 +304,7 @@ func tbtRating(ms float64) string {
 }
 
 func clsRating(score float64) string {
-	if score < 0.1 {
+	if score <= 0.1 {
 		return "good"
 	}
 	if score < 0.25 {
@@ -298,7 +314,7 @@ func clsRating(score float64) string {
 }
 
 func speedIndexRating(ms float64) string {
-	if ms < 3400 {
+	if ms <= 3400 {
 		return "good"
 	}
 	if ms < 5800 {
@@ -308,7 +324,7 @@ func speedIndexRating(ms float64) string {
 }
 
 func inpRating(ms float64) string {
-	if ms < 200 {
+	if ms <= 200 {
 		return "good"
 	}
 	if ms < 500 {

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -25,6 +26,7 @@ type seoState struct {
 	ogDesc            string
 	ogImage           string
 	hasSchemaJSON     bool
+	invalidSchemaJSON bool
 	hasMicrodata      bool
 	schemaTypes       []string
 	hasHreflang       bool
@@ -37,7 +39,7 @@ type seoState struct {
 func auditSEO(doc *html.Node, rawHTML, sourceURL string) []model.SEOCheck {
 	state := &seoState{}
 	walkSEO(doc, state)
-	return buildChecks(state, rawHTML, sourceURL)
+	return buildChecks(state, rawHTML, sourceURL, doc)
 }
 
 func walkSEO(n *html.Node, s *seoState) {
@@ -53,7 +55,7 @@ func walkSEO(n *html.Node, s *seoState) {
 		case "meta":
 			name := strings.ToLower(getAttr(n, "name"))
 			property := strings.ToLower(getAttr(n, "property"))
-			content := getAttr(n, "content")
+			content := strings.TrimSpace(getAttr(n, "content"))
 
 			switch name {
 			case "description":
@@ -77,15 +79,23 @@ func walkSEO(n *html.Node, s *seoState) {
 			}
 
 		case "link":
-			rel := strings.ToLower(getAttr(n, "rel"))
-			switch rel {
-			case "canonical":
+			rels := strings.Fields(strings.ToLower(getAttr(n, "rel")))
+			hasRel := func(want string) bool {
+				for _, rel := range rels {
+					if rel == want {
+						return true
+					}
+				}
+				return false
+			}
+			switch {
+			case hasRel("canonical"):
 				s.canonicalURL = getAttr(n, "href")
-			case "sitemap":
+			case hasRel("sitemap"):
 				s.hasSitemapLink = true
 				s.sitemapLinkHref = getAttr(n, "href")
-			case "alternate":
-				lang := getAttr(n, "hreflang")
+			case hasRel("alternate"):
+				lang := strings.TrimSpace(getAttr(n, "hreflang"))
 				if lang != "" {
 					s.hasHreflang = true
 					s.hreflangLangs = append(s.hreflangLangs, lang)
@@ -119,18 +129,21 @@ func walkSEO(n *html.Node, s *seoState) {
 			}
 
 		case "script":
-			if strings.ToLower(getAttr(n, "type")) == "application/ld+json" {
-				s.hasSchemaJSON = true
-				// Extract @type values from the inline JSON text
-				if n.FirstChild != nil && n.FirstChild.Type == html.TextNode {
-					for _, t := range extractSchemaTypes(n.FirstChild.Data) {
+			if strings.HasPrefix(strings.ToLower(strings.TrimSpace(getAttr(n, "type"))), "application/ld+json") {
+				jsonText := getTextContent(n)
+				if json.Valid([]byte(jsonText)) {
+					s.hasSchemaJSON = true
+					// Extract @type values from valid JSON-LD only.
+					for _, t := range extractSchemaTypes(jsonText) {
 						s.schemaTypes = append(s.schemaTypes, t)
 					}
+				} else if strings.TrimSpace(jsonText) != "" {
+					s.invalidSchemaJSON = true
 				}
 			}
 		}
 
-		if getAttr(n, "itemscope") != "" || getAttr(n, "itemtype") != "" {
+		if hasAttr(n, "itemscope") || hasAttr(n, "itemtype") {
 			s.hasMicrodata = true
 		}
 	}
@@ -140,7 +153,7 @@ func walkSEO(n *html.Node, s *seoState) {
 	}
 }
 
-func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
+func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model.SEOCheck {
 	checks := []model.SEOCheck{}
 	lower := strings.ToLower(rawHTML)
 
@@ -156,7 +169,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 
 	// ── Mixed content ──────────────────────────────────────────────────────────
 	if isHTTPS {
-		mixedURLs := extractMixedContentURLs(rawHTML)
+		mixedURLs := extractMixedContentURLs(doc)
 		if len(mixedURLs) > 0 {
 			details := make([]string, 0, len(mixedURLs))
 			for _, u := range mixedURLs {
@@ -221,10 +234,15 @@ func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 	if s.canonicalURL == "" {
 		checks = append(checks, model.SEOCheck{ID: "canonical", Label: "Canonical URL", Status: "fail",
 			Detail: "No <link rel=\"canonical\"> tag found"})
+	} else if canonical, ok := resolveHTTPLink(sourceURL, s.canonicalURL); !ok {
+		checks = append(checks, model.SEOCheck{ID: "canonical", Label: "Canonical URL", Status: "warning",
+			Detail:  "Canonical tag is present but does not contain a valid HTTP(S) URL",
+			Details: []string{s.canonicalURL},
+		})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "canonical", Label: "Canonical URL", Status: "pass",
 			Detail:  "Canonical tag present",
-			Details: []string{s.canonicalURL},
+			Details: []string{canonical.String()},
 		})
 	}
 
@@ -290,7 +308,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 	case s.ogTitle != "" && s.ogDesc != "" && s.ogImage != "":
 		checks = append(checks, model.SEOCheck{ID: "og_tags", Label: "Open Graph Tags", Status: "pass",
 			Detail: "og:title, og:description, and og:image all present", Details: ogDetails})
-	case s.ogTitle != "" || s.ogDesc != "":
+	case s.ogTitle != "" || s.ogDesc != "" || s.ogImage != "":
 		missing := []string{}
 		if s.ogTitle == "" {
 			missing = append(missing, "og:title")
@@ -320,11 +338,14 @@ func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 		for _, t := range unique(s.schemaTypes) {
 			details = append(details, t)
 		}
-		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "pass",
+		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "pass", Optional: true,
 			Detail: fmt.Sprintf("%s schema detected", schemaType), Details: details})
+	} else if s.invalidSchemaJSON {
+		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "warning", Optional: true,
+			Detail: "JSON-LD markup was found but is not valid JSON — rich results may be ignored"})
 	} else {
-		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "fail",
-			Detail: "No JSON-LD or Microdata found — missing rich snippet opportunities"})
+		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "warning", Optional: true,
+			Detail: "No structured data detected — rich-result markup is optional and depends on your page type"})
 	}
 
 	// ── Viewport ───────────────────────────────────────────────────────────────
@@ -351,12 +372,12 @@ func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 
 	// ── Hreflang ───────────────────────────────────────────────────────────────
 	if s.hasHreflang {
-		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "pass",
+		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "pass", Optional: true,
 			Detail:  fmt.Sprintf("Multilingual targeting configured (%d lang entries)", len(s.hreflangLangs)),
 			Details: unique(s.hreflangLangs),
 		})
 	} else {
-		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "warning",
+		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "warning", Optional: true,
 			Detail: "No hreflang tags — add if you target multiple languages or regions"})
 	}
 
@@ -400,10 +421,10 @@ func buildChecks(s *seoState, rawHTML, sourceURL string) []model.SEOCheck {
 	}
 
 	if sitemapFound {
-		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap", Status: "pass",
+		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap", Status: "pass", Optional: true,
 			Detail: "Sitemap detected", Details: sitemapDetails})
 	} else {
-		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap", Status: "warning",
+		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap", Status: "warning", Optional: true,
 			Detail: "No sitemap reference found — add a sitemap and submit it to Google Search Console"})
 	}
 
@@ -422,6 +443,15 @@ func getAttr(n *html.Node, key string) string {
 	return ""
 }
 
+func hasAttr(n *html.Node, key string) bool {
+	for _, a := range n.Attr {
+		if strings.EqualFold(a.Key, key) {
+			return true
+		}
+	}
+	return false
+}
+
 // getTextContent recursively collects all text node content under n.
 func getTextContent(n *html.Node) string {
 	var b strings.Builder
@@ -438,21 +468,53 @@ func getTextContent(n *html.Node) string {
 	return strings.TrimSpace(b.String())
 }
 
-// extractMixedContentURLs finds HTTP src/href values on an HTTPS page (up to 8).
-func extractMixedContentURLs(rawHTML string) []string {
-	re := regexp.MustCompile(`(?i)(?:src|href)=["'](http://[^"'>\s]{4,100})["']`)
-	matches := re.FindAllStringSubmatch(rawHTML, 20)
+// extractMixedContentURLs finds HTTP resource and form-action URLs on an HTTPS
+// page. Ordinary HTTP anchor links are not mixed content and are intentionally
+// excluded.
+func extractMixedContentURLs(doc *html.Node) []string {
 	seen := map[string]bool{}
 	result := []string{}
-	for _, m := range matches {
-		if len(m) > 1 && !seen[m[1]] {
-			seen[m[1]] = true
-			result = append(result, m[1])
-			if len(result) >= 8 {
-				break
-			}
+	add := func(raw string) {
+		raw = strings.TrimSpace(raw)
+		if strings.HasPrefix(strings.ToLower(raw), "http://") && !seen[raw] {
+			seen[raw] = true
+			result = append(result, raw)
 		}
 	}
+	var walk func(*html.Node)
+	walk = func(n *html.Node) {
+		if len(result) >= 8 {
+			return
+		}
+		if n.Type == html.ElementNode {
+			tag := strings.ToLower(n.Data)
+			switch tag {
+			case "img", "script", "iframe", "video", "audio", "source", "track", "embed":
+				add(getAttr(n, "src"))
+				add(getAttr(n, "poster"))
+				for _, candidate := range strings.Split(getAttr(n, "srcset"), ",") {
+					parts := strings.Fields(strings.TrimSpace(candidate))
+					if len(parts) > 0 {
+						add(parts[0])
+					}
+				}
+			case "link":
+				rel := strings.Fields(strings.ToLower(getAttr(n, "rel")))
+				for _, token := range rel {
+					if token == "stylesheet" || token == "preload" || token == "modulepreload" {
+						add(getAttr(n, "href"))
+						break
+					}
+				}
+			case "form":
+				add(getAttr(n, "action"))
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+	walk(doc)
 	return result
 }
 
@@ -501,15 +563,14 @@ func truncate(s string, max int) string {
 // We skip such elements in H1 and img audits to avoid false negatives caused
 // by SEO-spam H1s hidden with CSS, or decorative images without alt text.
 func isHiddenElement(n *html.Node) bool {
-	if getAttr(n, "aria-hidden") == "true" {
+	if strings.EqualFold(strings.TrimSpace(getAttr(n, "aria-hidden")), "true") {
 		return true
 	}
-	if getAttr(n, "hidden") != "" {
+	if hasAttr(n, "hidden") {
 		return true
 	}
-	style := strings.ToLower(getAttr(n, "style"))
+	style := strings.ToLower(strings.NewReplacer(" ", "", "\t", "", "\n", "", "\r", "").Replace(getAttr(n, "style")))
 	return strings.Contains(style, "display:none") ||
-		strings.Contains(style, "display: none") ||
 		strings.Contains(style, "visibility:hidden") ||
-		strings.Contains(style, "visibility: hidden")
+		strings.Contains(style, "content-visibility:hidden")
 }

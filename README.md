@@ -5,7 +5,6 @@ Paste any URL and get an instant analysis report covering SEO, page performance 
 Usage model:
 - Anonymous visitors: `5` analyses per day, no account required
 - Free accounts: `5` analyses per day plus saved audit history
-- Pro accounts: `50` analyses per day — currently admin-granted only (self-serve checkout is paused)
 
 **Live:** [explain-this-website.vercel.app](https://explain-this-website.vercel.app/)
 

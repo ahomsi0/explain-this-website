@@ -80,4 +80,18 @@ describe("computeInsights", () => {
     expect(overallScore).toBeGreaterThanOrEqual(0);
     expect(overallScore).toBeLessThanOrEqual(100);
   });
+
+  it("does not penalize SEO score or priorities for optional checks", () => {
+    const result = {
+      ...base,
+      seoChecks: [
+        { id: "title", label: "Title tag", status: "pass" as const, detail: "Present" },
+        { id: "schema", label: "Structured data", status: "warning" as const, optional: true, detail: "Optional" },
+        { id: "sitemap", label: "Sitemap", status: "fail" as const, optional: true, detail: "Optional" },
+      ],
+    };
+    const insights = computeInsights(result);
+    expect(insights.seoScore).toBe(100);
+    expect(insights.allIssues.some((issue) => issue.id.includes("schema") || issue.id.includes("sitemap"))).toBe(false);
+  });
 });

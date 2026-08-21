@@ -3,6 +3,8 @@ package parser
 import (
 	"net/http"
 	"testing"
+
+	"github.com/ahomsi/explain-website/internal/model"
 )
 
 func TestAuditSecurityHeaders_AllPresent(t *testing.T) {
@@ -53,5 +55,30 @@ func TestAuditSecurityHeaders_UnsafeReferrer(t *testing.T) {
 	}
 	if !found {
 		t.Error("referrer check not found in results")
+	}
+}
+
+func TestAuditSecurityHeadersRejectsWeakOrReportOnlyValues(t *testing.T) {
+	checks := AuditSecurityHeaders(http.Header{
+		"Strict-Transport-Security":           []string{"max-age=0"},
+		"Content-Security-Policy-Report-Only": []string{"default-src 'self'"},
+		"Permissions-Policy":                  []string{"not-a-policy"},
+		"Referrer-Policy":                     []string{"not-a-policy"},
+	})
+	byID := map[string]model.SecurityHeaderCheck{}
+	for _, check := range checks {
+		byID[check.ID] = check
+	}
+	if byID["hsts"].Status != "fail" {
+		t.Fatalf("expected max-age=0 HSTS to fail, got %+v", byID["hsts"])
+	}
+	if byID["csp"].Status != "warning" {
+		t.Fatalf("expected report-only CSP to warn, got %+v", byID["csp"])
+	}
+	if byID["permissions"].Status != "warning" {
+		t.Fatalf("expected invalid Permissions-Policy to warn, got %+v", byID["permissions"])
+	}
+	if byID["referrer"].Status != "warning" {
+		t.Fatalf("expected invalid Referrer-Policy to warn, got %+v", byID["referrer"])
 	}
 }

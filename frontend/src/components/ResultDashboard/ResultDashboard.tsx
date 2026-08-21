@@ -18,8 +18,9 @@ import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 
 function computeScores(result: AnalysisResult) {
-  const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
-  const seoScore = result.seoChecks.length ? Math.round((pass / result.seoChecks.length) * 100) : 0;
+  const requiredChecks = result.seoChecks.filter((c) => !c.optional);
+  const pass     = requiredChecks.filter((c) => c.status === "pass").length;
+  const seoScore = requiredChecks.length ? Math.round((pass / requiredChecks.length) * 100) : 0;
   const uxSigs   = [result.ux.hasCTA, result.ux.hasForms, result.ux.hasSocialProof,
                     result.ux.hasTrustSignals, result.ux.hasContactInfo, result.ux.mobileReady];
   const uxScore  = Math.round((uxSigs.filter(Boolean).length / uxSigs.length) * 100);
@@ -207,10 +208,10 @@ export function ResultDashboard({
           <div className="border-b border-zinc-800 bg-zinc-900/30 overflow-x-auto scrollbar-none">
             <div className="flex items-stretch justify-start md:justify-center min-w-max md:min-w-0">
               <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
-              {result.performance?.mobile?.lighthouse ? <>
-                <MetricTile label="Lighthouse SEO"  value={result.performance.mobile.lighthouse.seo}         suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />
-                <MetricTile label="Performance"     value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />
-              </> : null}
+              {result.performance?.mobile?.lighthouse?.seo !== undefined &&
+                <MetricTile label="Lighthouse SEO" value={result.performance.mobile.lighthouse.seo} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />}
+              {result.performance?.mobile?.lighthouse?.performance !== undefined &&
+                <MetricTile label="Performance" value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />}
               {result.performance?.mobile?.lcp?.displayValue && (
                 <MetricTile label="LCP"             value={result.performance.mobile.lcp.displayValue}       valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
               )}

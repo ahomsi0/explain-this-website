@@ -74,16 +74,19 @@ function VitalRow({ label, vital }: { label: string; vital: CoreWebVital }) {
 function StrategyView({ data }: { data: StrategyData }) {
   const { lighthouse: lh, fcp, lcp, tbt, cls, speedIndex, fieldLcp, fieldCls, fieldInp, fieldFcp } = data;
   const hasFieldData = !!(fieldLcp || fieldCls || fieldInp || fieldFcp);
+  const lighthouseScores = [
+    { label: "Performance", score: lh.performance },
+    { label: "Accessibility", score: lh.accessibility },
+    { label: "Best Practices", score: lh.bestPractices },
+    { label: "SEO", score: lh.seo },
+  ].filter((entry): entry is { label: string; score: number } => entry.score !== undefined);
 
   return (
     <>
       {/* Lighthouse scores */}
-      {lh && (
+      {lighthouseScores.length > 0 && (
         <div className="grid grid-cols-4 gap-2 mb-4 pb-4 border-b border-zinc-800">
-          <ScoreGauge label="Performance"    score={lh.performance ?? 0} />
-          <ScoreGauge label="Accessibility"  score={lh.accessibility ?? 0} />
-          <ScoreGauge label="Best Practices" score={lh.bestPractices ?? 0} />
-          <ScoreGauge label="SEO"            score={lh.seo ?? 0} />
+          {lighthouseScores.map((entry) => <ScoreGauge key={entry.label} label={entry.label} score={entry.score} />)}
         </div>
       )}
 
@@ -134,7 +137,8 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   );
 }
 
-function perfLabel(score: number): { text: string; cls: string } {
+function perfLabel(score?: number): { text: string; cls: string } {
+  if (score === undefined) return { text: "Unavailable", cls: "text-zinc-500 bg-zinc-900 border-zinc-700" };
   if (score >= 90) return { text: "Fast",     cls: "text-emerald-400 bg-emerald-950 border-emerald-800" };
   if (score >= 50) return { text: "Moderate", cls: "text-amber-400   bg-amber-950  border-amber-800"   };
   return                  { text: "Slow",     cls: "text-red-400     bg-red-950    border-red-800"     };
@@ -153,19 +157,23 @@ function detectBottleneck(data: StrategyData): string | null {
 
 function buildSuggestions(data: StrategyData): string[] {
   const suggestions: string[] = [];
-  const score = data.lighthouse?.performance ?? 100;
+  const score = data.lighthouse?.performance;
 
-  if (score < 90) suggestions.push("Compress and convert images to WebP or AVIF format");
+  if (score !== undefined && score < 90) suggestions.push("Compress and convert images to WebP or AVIF format");
   if (data.tbt?.rating !== "good") suggestions.push("Defer or remove unused JavaScript to reduce blocking time");
   if (data.lcp?.rating !== "good") suggestions.push("Preload your largest above-the-fold image or hero element");
   if (data.cls?.rating !== "good") suggestions.push("Set explicit width/height on images to prevent layout shifts");
-  if (score < 75) suggestions.push("Enable browser caching and use a CDN to serve assets faster");
-  if (score < 60) suggestions.push("Minify CSS, JavaScript, and HTML to reduce file sizes");
+  if (score !== undefined && score < 75) suggestions.push("Enable browser caching and use a CDN to serve assets faster");
+  if (score !== undefined && score < 60) suggestions.push("Minify CSS, JavaScript, and HTML to reduce file sizes");
 
   return suggestions.slice(0, 4);
 }
 
-function perfInsightText(score: number): { meaning: string; nextStep: string } {
+function perfInsightText(score?: number): { meaning: string; nextStep: string } {
+  if (score === undefined) return {
+    meaning: "The Lighthouse performance score was not available for this run.",
+    nextStep: "Use the available Core Web Vitals and rerun the analysis when PageSpeed data is available.",
+  };
   if (score >= 90) return {
     meaning: "Your page loads fast — users get a smooth, responsive experience.",
     nextStep: "Maintain these scores by running Lighthouse in CI and monitoring Core Web Vitals.",
@@ -193,7 +201,7 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
     ? (mobileLhScore >= 90 ? "green" : mobileLhScore >= 50 ? "amber" : "red") as "green" | "amber" | "red"
     : "violet" as const;
 
-  const lhScore     = data.lighthouse?.performance ?? 0;
+  const lhScore     = data.lighthouse?.performance;
   const label       = perfLabel(lhScore);
   const bottleneck  = detectBottleneck(data);
   const suggestions = buildSuggestions(data);

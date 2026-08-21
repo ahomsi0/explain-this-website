@@ -33,6 +33,12 @@ function statusLabel(s: string) {
 function scoreColor(n: number): RGB {
   return n >= 75 ? GREEN : n >= 50 ? AMBER : RED;
 }
+function lighthouseScoreText(n?: number): string {
+  return n === undefined ? "N/A" : `${n}/100`;
+}
+function lighthouseScoreLabel(n?: number): string {
+  return n === undefined ? "Unavailable" : rateLabel(n);
+}
 function ratingColor(r: string): RGB {
   return r === "good" ? GREEN : r === "needs-improvement" ? AMBER : RED;
 }
@@ -338,10 +344,10 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
         startY: y,
         head: [["Metric", "Value", "Rating"]],
         body: [
-          ["Lighthouse Performance",  `${s.lighthouse.performance}/100`,  rateLabel(s.lighthouse.performance)],
-          ["Lighthouse Accessibility",`${s.lighthouse.accessibility}/100`,rateLabel(s.lighthouse.accessibility)],
-          ["Lighthouse Best Practices",`${s.lighthouse.bestPractices}/100`,rateLabel(s.lighthouse.bestPractices)],
-          ["Lighthouse SEO",          `${s.lighthouse.seo}/100`,          rateLabel(s.lighthouse.seo)],
+          ["Lighthouse Performance",  lighthouseScoreText(s.lighthouse.performance),  lighthouseScoreLabel(s.lighthouse.performance)],
+          ["Lighthouse Accessibility",lighthouseScoreText(s.lighthouse.accessibility),lighthouseScoreLabel(s.lighthouse.accessibility)],
+          ["Lighthouse Best Practices",lighthouseScoreText(s.lighthouse.bestPractices),lighthouseScoreLabel(s.lighthouse.bestPractices)],
+          ["Lighthouse SEO",          lighthouseScoreText(s.lighthouse.seo),          lighthouseScoreLabel(s.lighthouse.seo)],
           ["LCP",         s.lcp.displayValue,        s.lcp.rating.replace("-", " ")],
           ["CLS",         s.cls.displayValue,        s.cls.rating.replace("-", " ")],
           ["TBT",         s.tbt.displayValue,        s.tbt.rating.replace("-", " ")],
@@ -358,8 +364,10 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
           const idx = data.row.index;
           if (idx <= 3) {
             const lh = [s.lighthouse.performance, s.lighthouse.accessibility, s.lighthouse.bestPractices, s.lighthouse.seo];
-            const c = rgb(scoreColor(lh[idx]));
-            if (data.column.index === 1 || data.column.index === 2) data.cell.styles.textColor = c;
+            const score = lh[idx];
+            if (score !== undefined && (data.column.index === 1 || data.column.index === 2)) {
+              data.cell.styles.textColor = rgb(scoreColor(score));
+            }
           } else {
             const cwv = [s.lcp, s.cls, s.tbt, s.fcp, s.speedIndex];
             const c = rgb(ratingColor(cwv[idx - 4].rating));

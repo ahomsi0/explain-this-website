@@ -31,8 +31,9 @@ function clamp(n: number) {
 }
 
 function computeSeoScore(result: AnalysisResult): number {
-  const pass = result.seoChecks.filter((c) => c.status === "pass").length;
-  return result.seoChecks.length ? clamp((pass / result.seoChecks.length) * 100) : 0;
+  const requiredChecks = result.seoChecks.filter((c) => !c.optional);
+  const pass = requiredChecks.filter((c) => c.status === "pass").length;
+  return requiredChecks.length ? clamp((pass / requiredChecks.length) * 100) : 0;
 }
 
 /** Returns the Lighthouse performance score, or -1 when no data is available. */

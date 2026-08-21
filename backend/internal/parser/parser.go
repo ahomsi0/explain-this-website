@@ -170,14 +170,17 @@ func extractVisibleText(doc *html.Node) string {
 	var sb strings.Builder
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
+		if n.Type == html.ElementNode {
+			tag := strings.ToLower(n.Data)
+			if tag == "script" || tag == "style" || tag == "noscript" || tag == "template" || isHiddenElement(n) {
+				return
+			}
+		}
 		if n.Type == html.TextNode && n.Parent != nil {
-			parent := strings.ToLower(n.Parent.Data)
-			if parent != "script" && parent != "style" && parent != "noscript" {
-				t := strings.TrimSpace(n.Data)
-				if t != "" {
-					sb.WriteString(t)
-					sb.WriteByte(' ')
-				}
+			t := strings.TrimSpace(n.Data)
+			if t != "" {
+				sb.WriteString(t)
+				sb.WriteByte(' ')
 			}
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -204,6 +207,9 @@ func computePageStats(doc *html.Node, sourceURL, rawHTML string) model.PageStats
 	walk = func(n *html.Node) {
 		if n.Type == html.ElementNode {
 			tag := strings.ToLower(n.Data)
+			if isHiddenElement(n) {
+				return
+			}
 
 			// Track head scope for render-blocking detection
 			if tag == "head" {
@@ -264,15 +270,14 @@ func computePageStats(doc *html.Node, sourceURL, rawHTML string) model.PageStats
 				stats.H3Count++
 
 			case "a":
-				href := getAttr(n, "href")
+				href := strings.TrimSpace(getAttr(n, "href"))
+				hrefLower := strings.ToLower(href)
 				if href == "" || strings.HasPrefix(href, "#") ||
-					strings.HasPrefix(href, "mailto:") || strings.HasPrefix(href, "tel:") {
+					strings.HasPrefix(hrefLower, "mailto:") || strings.HasPrefix(hrefLower, "tel:") {
 					break
 				}
-				if strings.HasPrefix(href, "/") || strings.HasPrefix(href, "./") || strings.HasPrefix(href, "../") {
-					stats.InternalLinks++
-				} else if u, err := url.Parse(href); err == nil && u.Host != "" {
-					if u.Hostname() == sourceHost {
+				if u, ok := resolveHTTPLink(sourceURL, href); ok {
+					if normalizedHostname(u.Hostname()) == normalizedHostname(sourceHost) {
 						stats.InternalLinks++
 					} else {
 						stats.ExternalLinks++

@@ -62,14 +62,19 @@ func loadOwnedAudit(ctx context.Context, id string, userID int64) (model.Analysi
 
 func comparisonSnapshot(id, title string, createdAt time.Time, result model.AnalysisResult) auditComparisonSnapshot {
 	pass := 0
+	required := 0
 	for _, check := range result.SEOChecks {
+		if check.Optional {
+			continue
+		}
+		required++
 		if check.Status == "pass" {
 			pass++
 		}
 	}
 	seoScore := 0
-	if len(result.SEOChecks) > 0 {
-		seoScore = (pass * 100) / len(result.SEOChecks)
+	if required > 0 {
+		seoScore = (pass * 100) / required
 	}
 	uxSignals := []bool{
 		result.UX.HasCTA,
@@ -110,8 +115,7 @@ func comparisonSnapshot(id, title string, createdAt time.Time, result model.Anal
 			strategy = result.Performance.Desktop
 		}
 		if strategy != nil {
-			score := strategy.Lighthouse.Performance
-			snapshot.PerformanceScore = &score
+			snapshot.PerformanceScore = strategy.Lighthouse.Performance
 		}
 	}
 	return snapshot

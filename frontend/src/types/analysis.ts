@@ -26,6 +26,7 @@ export interface SEOCheck {
   label: string;
   status: SEOStatus;
   detail: string;
+  optional?: boolean;
   details?: string[]; // expandable evidence items
 }
 
@@ -146,10 +147,10 @@ export interface CoreWebVital {
 }
 
 export interface LighthouseScores {
-  performance: number;
-  accessibility: number;
-  bestPractices: number;
-  seo: number;
+  performance?: number;
+  accessibility?: number;
+  bestPractices?: number;
+  seo?: number;
 }
 
 export interface ThirdPartyEntity {
