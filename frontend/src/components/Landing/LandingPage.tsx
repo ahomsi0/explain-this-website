@@ -222,6 +222,7 @@ export function LandingPage({
               <a href="mailto:support@explainthewebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
               <a href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</a>
               <a href="/terms" className="hover:text-zinc-400 transition-colors">Terms</a>
+              <a href="/whats-new" className="hover:text-zinc-400 transition-colors">What&apos;s new</a>
               <a href="https://github.com/ahomsi0/explain-this-website#api-reference" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">API</a>
               <a href="https://github.com/ahomsi0/explain-this-website" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a>
             </div>

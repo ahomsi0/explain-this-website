@@ -132,10 +132,11 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 	walkUX(doc, &result)
 
 	lower := strings.ToLower(rawHTML)
+	visibleLower := strings.ToLower(extractVisibleText(doc))
 
 	// ── Phone numbers ─────────────────────────────────────────────────────────
 	// Validate digit count to avoid matching product IDs, date strings, etc.
-	for _, m := range phoneRegex.FindAllString(lower, -1) {
+	for _, m := range phoneRegex.FindAllString(visibleLower, -1) {
 		if looksLikePhone(m) {
 			result.HasContactInfo = true
 			break
@@ -147,7 +148,7 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 	// articles or blog posts that mention a single keyword in passing.
 	trustHits := 0
 	for _, kw := range trustKeywords {
-		if strings.Contains(lower, kw) {
+		if strings.Contains(visibleLower, kw) {
 			trustHits++
 			if trustHits >= 2 {
 				result.HasTrustSignals = true
@@ -158,7 +159,7 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 
 	// ── Social proof ──────────────────────────────────────────────────────────
 	for _, kw := range socialProofKeywords {
-		if strings.Contains(lower, kw) {
+		if strings.Contains(visibleLower, kw) {
 			result.HasSocialProof = true
 			break
 		}
@@ -184,50 +185,51 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 	// Require an email input AND a newsletter keyword within ±500 characters of
 	// that input. This avoids flagging contact forms on pages that happen to
 	// mention the word "newsletter" in unrelated body copy.
-	result.HasNewsletterSignup = detectNewsletter(lower)
+	result.HasNewsletterSignup = detectNewsletter(doc)
 
 	return result
 }
 
 // detectNewsletter checks for an email <input> with a newsletter-related keyword
 // appearing within a 500-character window around it.
-func detectNewsletter(lower string) bool {
-	const proximity = 500
-
-	// Find the byte offset of the first email input.
-	emailIdx := -1
-	for _, pat := range []string{`type="email"`, `type='email'`} {
-		if idx := strings.Index(lower, pat); idx != -1 {
-			if emailIdx == -1 || idx < emailIdx {
-				emailIdx = idx
+func detectNewsletter(doc *html.Node) bool {
+	var walk func(*html.Node) bool
+	walk = func(n *html.Node) bool {
+		if n.Type == html.ElementNode {
+			if isHiddenElement(n) {
+				return false
+			}
+			if strings.EqualFold(n.Data, "input") && strings.EqualFold(getAttr(n, "type"), "email") {
+				// Prefer the nearest form/container so unrelated page copy does not
+				// turn a contact field into a newsletter detection.
+				for parent, depth := n.Parent, 0; parent != nil && depth < 4; parent, depth = parent.Parent, depth+1 {
+					context := strings.ToLower(extractText(parent))
+					for _, kw := range newsletterKeywords {
+						if strings.Contains(context, kw) {
+							return true
+						}
+					}
+					if strings.EqualFold(parent.Data, "form") {
+						break
+					}
+				}
 			}
 		}
-	}
-	if emailIdx < 0 {
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			if walk(c) {
+				return true
+			}
+		}
 		return false
 	}
-
-	// Extract a window around the email input and scan for newsletter keywords.
-	start := emailIdx - proximity
-	if start < 0 {
-		start = 0
-	}
-	end := emailIdx + proximity
-	if end > len(lower) {
-		end = len(lower)
-	}
-	window := lower[start:end]
-
-	for _, kw := range newsletterKeywords {
-		if strings.Contains(window, kw) {
-			return true
-		}
-	}
-	return false
+	return walk(doc)
 }
 
 func walkUX(n *html.Node, result *model.UXResult) {
 	if n.Type == html.ElementNode {
+		if isHiddenElement(n) {
+			return
+		}
 		tag := strings.ToLower(n.Data)
 
 		switch tag {

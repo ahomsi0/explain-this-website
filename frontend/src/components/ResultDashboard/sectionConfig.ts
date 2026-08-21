@@ -15,7 +15,7 @@ export const SECTIONS: SectionMeta[] = [
   { id: "tech",        label: "Tech Stack",  title: "Technology Stack",
     description: "Frameworks, analytics, CDNs, and platforms detected on the page." },
   { id: "seo",         label: "SEO Audit",   title: "SEO Audit",
-    description: "13 critical SEO checks with pass/fail status and actionable details." },
+    description: "Core SEO checks plus optional enhancements with actionable details." },
   { id: "ux",          label: "UX Review",   title: "User Experience",
     description: "Conversion-relevant UX signals, trust markers, and engagement features." },
   { id: "performance", label: "Performance", title: "Performance & Loading",

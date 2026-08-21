@@ -52,6 +52,7 @@ function CheckRow({ check }: { check: SEOCheck }) {
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-zinc-200">{check.label}</span>
             <span className={`text-[10px] font-semibold ${s.label}`}>{s.text}</span>
+            {check.optional && <span className="text-[10px] font-medium text-zinc-600">Optional</span>}
           </div>
           <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{check.detail}</p>
         </div>
@@ -105,18 +106,20 @@ function seoInsightText(score: number): { meaning: string; nextStep: string } {
 }
 
 export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
-  const pass    = seoChecks.filter((c) => c.status === "pass").length;
+  const requiredChecks = seoChecks.filter((c) => !c.optional);
+  const pass    = requiredChecks.filter((c) => c.status === "pass").length;
   const warning = seoChecks.filter((c) => c.status === "warning").length;
   const fail    = seoChecks.filter((c) => c.status === "fail").length;
-  const score   = seoChecks.length ? Math.round((pass / seoChecks.length) * 100) : 0;
+  const score   = requiredChecks.length ? Math.round((pass / requiredChecks.length) * 100) : 0;
+  const requiredPassRatio = requiredChecks.length ? pass / requiredChecks.length : 0;
   const insight = seoInsightText(score);
 
   return (
     <CardShell>
       <CardHeader
         title="SEO Audit"
-        badge={`${pass}/${seoChecks.length}`}
-        badgeColor={pass / seoChecks.length >= 0.8 ? "green" : pass / seoChecks.length >= 0.5 ? "amber" : "red"}
+        badge={`${pass}/${requiredChecks.length}`}
+        badgeColor={requiredPassRatio >= 0.8 ? "green" : requiredPassRatio >= 0.5 ? "amber" : "red"}
       />
       <div className="p-4">
         <div className="flex items-center justify-between mb-1">
@@ -129,7 +132,7 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
         </div>
 
         <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
-          Our 13-point check covering OG tags, structured data, sitemap and more — click any fail/warn row for guidance.
+          We check core SEO signals and show optional enhancements separately — click any fail/warn row for guidance.
         </p>
 
         <div className="h-0.5 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">

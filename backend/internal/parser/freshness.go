@@ -48,7 +48,7 @@ func auditFreshness(doc *html.Node, rawHTML string) model.SiteFreshness {
 			if dt == "" {
 				dt = getAttr(n, "data-datetime")
 			}
-			if m := reISODate.FindString(dt); m != "" {
+			if m := reISODate.FindString(dt); m != "" && !isFutureDate(m, now) {
 				if m > latestDate {
 					latestDate = m
 				}
@@ -80,7 +80,7 @@ func auditFreshness(doc *html.Node, rawHTML string) model.SiteFreshness {
 			switch key {
 			case "article:published_time", "article:modified_time",
 				"og:updated_time", "date", "last-modified":
-				if m := reISODate.FindString(content); m != "" {
+				if m := reISODate.FindString(content); m != "" && !isFutureDate(m, now) {
 					if m > latestDate {
 						latestDate = m
 					}
@@ -108,8 +108,8 @@ func auditFreshness(doc *html.Node, rawHTML string) model.SiteFreshness {
 			if idx == -1 {
 				continue
 			}
-			snippet := rawHTML[idx : min(idx+60, len(rawHTML))]
-			if m := reISODate.FindString(snippet); m != "" {
+			snippet := rawHTML[idx:min(idx+60, len(rawHTML))]
+			if m := reISODate.FindString(snippet); m != "" && !isFutureDate(m, now) {
 				if m > latestDate {
 					latestDate = m
 				}
@@ -125,7 +125,7 @@ func auditFreshness(doc *html.Node, rawHTML string) model.SiteFreshness {
 	if latestDate == "" {
 		matches := reISODate.FindAllString(rawHTML, 20)
 		for _, m := range matches {
-			if m > latestDate {
+			if !isFutureDate(m, now) && m > latestDate {
 				latestDate = m
 			}
 		}
@@ -164,6 +164,9 @@ func rateAge(latestYear int, latestDate string, currentYear int, now time.Time) 
 	// Use ISO date if available (more precise than year alone)
 	if latestDate != "" {
 		if t, err := time.Parse("2006-01-02", latestDate); err == nil {
+			if t.After(now) {
+				return "unknown"
+			}
 			age := now.Sub(t)
 			if age < 180*24*time.Hour {
 				return "fresh"
@@ -185,6 +188,11 @@ func rateAge(latestYear int, latestDate string, currentYear int, now time.Time) 
 		return "aging"
 	}
 	return "stale"
+}
+
+func isFutureDate(value string, now time.Time) bool {
+	t, err := time.Parse("2006-01-02", value)
+	return err == nil && t.After(now)
 }
 
 func prettyMetaKey(key string) string {

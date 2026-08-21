@@ -22,6 +22,45 @@ const (
 
 var linkClient = fetcher.NewPublicHTTPClient(linkCheckTimeout)
 
+// resolveHTTPLink resolves a page link against the analyzed page URL and
+// accepts only navigable HTTP(S) URLs. This keeps relative and protocol-
+// relative links from being silently dropped or probed with an invalid URL.
+func resolveHTTPLink(baseURL, href string) (*url.URL, bool) {
+	raw := strings.TrimSpace(href)
+	if raw == "" {
+		return nil, false
+	}
+
+	ref, err := url.Parse(raw)
+	if err != nil {
+		return nil, false
+	}
+	scheme := strings.ToLower(ref.Scheme)
+	if scheme == "mailto" || scheme == "tel" || scheme == "javascript" || scheme == "data" {
+		return nil, false
+	}
+	// A fragment-only reference never leaves the current document.
+	if ref.Scheme == "" && ref.Host == "" && ref.Path == "" && ref.RawQuery == "" {
+		return nil, false
+	}
+
+	base, err := url.Parse(baseURL)
+	if err != nil || base.Scheme == "" || base.Host == "" {
+		return nil, false
+	}
+	resolved := base.ResolveReference(ref)
+	resolvedScheme := strings.ToLower(resolved.Scheme)
+	if (resolvedScheme != "http" && resolvedScheme != "https") || resolved.Hostname() == "" {
+		return nil, false
+	}
+	resolved.Fragment = ""
+	return resolved, true
+}
+
+func normalizedHostname(host string) string {
+	return strings.ToLower(strings.TrimSuffix(host, "."))
+}
+
 // CheckLinks extracts up to linkCheckCap external links from doc and HEAD-probes each one.
 func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.LinkCheckResult {
 	links := extractExternalLinks(doc, sourceURL)
@@ -34,10 +73,14 @@ func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.Lin
 	}
 
 	items := make([]model.LinkCheckItem, len(links))
+	completed := make([]bool, len(links))
 	sem := make(chan struct{}, linkCheckConcurrent)
 	var wg sync.WaitGroup
 
 	for i, u := range links {
+		if ctx.Err() != nil {
+			break
+		}
 		wg.Add(1)
 		select {
 		case sem <- struct{}{}:
@@ -48,13 +91,28 @@ func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.Lin
 		go func(idx int, target string) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			items[idx] = probeLink(ctx, target)
+			if ctx.Err() != nil {
+				return
+			}
+			item := probeLink(ctx, target)
+			if ctx.Err() != nil {
+				return
+			}
+			items[idx] = item
+			completed[idx] = true
 		}(i, u)
 	}
 	wg.Wait()
 
-	result := model.LinkCheckResult{Checked: len(items), Items: items}
-	for _, item := range items {
+	checkedItems := make([]model.LinkCheckItem, 0, len(links))
+	for i, item := range items {
+		if !completed[i] {
+			continue
+		}
+		checkedItems = append(checkedItems, item)
+	}
+	result := model.LinkCheckResult{Checked: len(checkedItems), Items: checkedItems}
+	for _, item := range checkedItems {
 		switch {
 		case item.IsBroken:
 			result.Broken++
@@ -71,7 +129,7 @@ func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.Lin
 func extractExternalLinks(doc *html.Node, sourceURL string) []string {
 	var sourceHost string
 	if u, err := url.Parse(sourceURL); err == nil {
-		sourceHost = u.Hostname()
+		sourceHost = normalizedHostname(u.Hostname())
 	}
 
 	seen := map[string]bool{}
@@ -79,22 +137,16 @@ func extractExternalLinks(doc *html.Node, sourceURL string) []string {
 
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "a" {
+		if n.Type == html.ElementNode && strings.EqualFold(n.Data, "a") {
 			href := getAttr(n, "href")
-			if href == "" || strings.HasPrefix(href, "#") ||
-				strings.HasPrefix(href, "mailto:") || strings.HasPrefix(href, "tel:") ||
-				strings.HasPrefix(href, "/") || strings.HasPrefix(href, "./") {
-				goto next
-			}
-			if u, err := url.Parse(href); err == nil && u.Host != "" && u.Hostname() != sourceHost {
-				norm := u.Scheme + "://" + u.Host + u.Path
+			if u, ok := resolveHTTPLink(sourceURL, href); ok && normalizedHostname(u.Hostname()) != sourceHost {
+				norm := u.String()
 				if !seen[norm] {
 					seen[norm] = true
-					links = append(links, href)
+					links = append(links, norm)
 				}
 			}
 		}
-	next:
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			walk(c)
 		}
@@ -122,13 +174,15 @@ func probeLink(ctx context.Context, target string) model.LinkCheckItem {
 	}
 	defer resp.Body.Close()
 
-	// Some servers reject HEAD; retry with GET.
-	if resp.StatusCode == http.StatusMethodNotAllowed {
+	// Some servers reject or block HEAD while serving the same URL via GET;
+	// retry those responses before calling a link broken.
+	if resp.StatusCode == http.StatusMethodNotAllowed ||
+		resp.StatusCode == http.StatusNotImplemented || resp.StatusCode == http.StatusForbidden {
 		req2, _ := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 		req2.Header.Set("User-Agent", req.Header.Get("User-Agent"))
 		resp2, err2 := linkClient.Do(req2)
 		if err2 == nil {
-			io.Copy(io.Discard, resp2.Body)
+			_, _ = io.Copy(io.Discard, io.LimitReader(resp2.Body, 1<<20))
 			resp2.Body.Close()
 			resp = resp2
 		}

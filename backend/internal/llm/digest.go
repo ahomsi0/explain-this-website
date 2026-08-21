@@ -63,9 +63,13 @@ func buildDigest(r *model.AnalysisResult) string {
 
 	// SEO summary
 	if len(r.SEOChecks) > 0 {
-		var pass, warn, fail int
+		var pass, warn, fail, optional int
 		var failed []string
 		for _, c := range r.SEOChecks {
+			if c.Optional {
+				optional++
+				continue
+			}
 			switch c.Status {
 			case "pass":
 				pass++
@@ -79,6 +83,9 @@ func buildDigest(r *model.AnalysisResult) string {
 			}
 		}
 		fmt.Fprintf(&b, "SEO checks: %d pass, %d warning, %d fail\n", pass, warn, fail)
+		if optional > 0 {
+			fmt.Fprintf(&b, "SEO optional enhancements: %d (not included in the core score)\n", optional)
+		}
 		if len(failed) > 0 {
 			fmt.Fprintf(&b, "SEO failures: %s\n", strings.Join(failed, "; "))
 		}
@@ -87,9 +94,21 @@ func buildDigest(r *model.AnalysisResult) string {
 	// Performance — mobile Lighthouse is the single best perf signal
 	if r.Performance != nil && r.Performance.Mobile != nil {
 		lh := r.Performance.Mobile.Lighthouse
-		if lh.Performance > 0 || lh.SEO > 0 || lh.BestPractices > 0 || lh.Accessibility > 0 {
-			fmt.Fprintf(&b, "Mobile Lighthouse: performance %d, accessibility %d, best-practices %d, seo %d\n",
-				lh.Performance, lh.Accessibility, lh.BestPractices, lh.SEO)
+		var scores []string
+		if lh.Performance != nil {
+			scores = append(scores, fmt.Sprintf("performance %d", *lh.Performance))
+		}
+		if lh.Accessibility != nil {
+			scores = append(scores, fmt.Sprintf("accessibility %d", *lh.Accessibility))
+		}
+		if lh.BestPractices != nil {
+			scores = append(scores, fmt.Sprintf("best-practices %d", *lh.BestPractices))
+		}
+		if lh.SEO != nil {
+			scores = append(scores, fmt.Sprintf("seo %d", *lh.SEO))
+		}
+		if len(scores) > 0 {
+			fmt.Fprintf(&b, "Mobile Lighthouse: %s\n", strings.Join(scores, ", "))
 		}
 	}
 
