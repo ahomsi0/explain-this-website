@@ -179,14 +179,16 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
   // Simple bullet list
   function bullets(items: string[], color: RGB = TEXT, marker = "•") {
     for (const item of items) {
-      need(7);
       doc.setFontSize(8);
+      const lines = doc.splitTextToSize(san(item), CW - 6) as string[];
+      // Reserve room for every wrapped line, not just the first, so items
+      // near the page bottom can't overrun into the footer band.
+      need(lines.length * 4.5 + 2);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...rgb(color));
       doc.text(marker, M, y);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(...rgb(TEXT));
-      const lines = doc.splitTextToSize(san(item), CW - 6) as string[];
       doc.text(lines, M + 5, y);
       y += lines.length * 4.5 + 2;
     }
@@ -549,7 +551,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
     };
     const rows = result.techStack.map(t => [
       catLabels[t.category] ?? t.category,
-      t.name,
+      san(t.name),
       t.confidence === "low" ? "possible" : t.confidence,
     ]);
     table({
@@ -600,7 +602,8 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
 
   // ═══ Content ══════════════════════════════════════════════════════════════
   if (result.contentStats) {
-    const cs3 = result.contentStats;
+    // Legacy audits may lack contentStats entirely.
+    const cs3 = result.contentStats ?? { topKeywords: [] as string[], avgSentenceLen: 0, readingLevel: "" };
     section("Content Analysis");
     table({
       startY: y,
@@ -608,7 +611,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
       body: [
         ["Reading Level",    cap(cs3.readingLevel)],
         ["Avg Sentence Len", `${cs3.avgSentenceLen} words`],
-        ["Top Keywords",     cs3.topKeywords.slice(0, 8).join("  ·  ") || "—"],
+        ["Top Keywords",     cs3.topKeywords.slice(0, 8).map(san).join("  ·  ") || "—"],
       ],
       columnStyles: {
         0: { cellWidth: 36, fontStyle: "bold", textColor: rgb(DIM) },
