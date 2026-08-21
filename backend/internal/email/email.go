@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/http"
@@ -30,11 +31,13 @@ func fromAddress() string {
 // SendBroadcast sends a plain-text admin announcement to a single recipient.
 // The body is rendered as both plain text and a minimal HTML version.
 func SendBroadcast(ctx context.Context, to, subject, body string) error {
+	escSubject := html.EscapeString(subject)
+	escBody := html.EscapeString(body)
 	htmlBody := fmt.Sprintf(`<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1f2937">
   <h2 style="color:#111827;margin:0 0 16px">%s</h2>
   <div style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;white-space:pre-wrap">%s</div>
   <p style="margin:24px 0 0;font-size:11px;color:#9ca3af">Sent by Explain The Website</p>
-</div>`, subject, body)
+</div>`, escSubject, escBody)
 	return send(ctx, to, subject, body, htmlBody)
 }
 

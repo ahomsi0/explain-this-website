@@ -60,7 +60,8 @@ export function computeInsights(result: AnalysisResult): Insights {
   const seoScore        = computeSeoScore(result);
   const perfScore       = computePerfScore(result);
   const uxScore         = computeUxScore(result);
-  const conversionScore = result.conversionScores.overall;
+  // Legacy saved audits may predate conversionScores — treat as neutral 0.
+  const conversionScore = result.conversionScores?.overall ?? 0;
 
   // When perfScore is -1 (no data), exclude it from the weighted average
   const perfAvailable = perfScore >= 0;

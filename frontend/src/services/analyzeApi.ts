@@ -40,6 +40,23 @@ function isNetworkError(err: unknown): boolean {
   return err instanceof TypeError;
 }
 
+// AbortSignal.any is unavailable on older browsers; fall back to a manual
+// relay so the caller's signal still aborts the attempt.
+function anySignal(signals: AbortSignal[]): AbortSignal {
+  if (typeof AbortSignal.any === "function") {
+    return AbortSignal.any(signals);
+  }
+  const controller = new AbortController();
+  for (const s of signals) {
+    if (s.aborted) {
+      controller.abort(s.reason);
+      break;
+    }
+    s.addEventListener("abort", () => controller.abort(s.reason), { once: true });
+  }
+  return controller.signal;
+}
+
 export async function analyzeWebsite(
   url: string,
   onServerReached?: () => void,
@@ -66,7 +83,7 @@ export async function analyzeWebsite(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
         credentials: "include",
-        signal: signal ? AbortSignal.any([controller.signal, signal]) : controller.signal,
+        signal: signal ? anySignal([controller.signal, signal]) : controller.signal,
       });
 
       let data: { error?: string } | undefined;

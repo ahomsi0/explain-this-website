@@ -52,9 +52,13 @@ func parseAuthReq(r *http.Request) (authReq, error) {
 		return body, errors.New("invalid request body")
 	}
 	body.Email = strings.ToLower(strings.TrimSpace(body.Email))
-	if _, err := mail.ParseAddress(body.Email); err != nil {
+	addr, err := mail.ParseAddress(body.Email)
+	if err != nil {
 		return body, errors.New("please enter a valid email address")
 	}
+	// ParseAddress also accepts RFC-style named addresses ("Bob <bob@x.com>");
+	// store and match on the bare address only.
+	body.Email = strings.ToLower(strings.TrimSpace(addr.Address))
 	if len(body.Password) < 8 {
 		return body, errors.New("password must be at least 8 characters")
 	}
@@ -63,6 +67,11 @@ func parseAuthReq(r *http.Request) (authReq, error) {
 	}
 	return body, nil
 }
+
+// dummyPasswordHash is computed once at startup so login attempts for unknown
+// emails perform the same bcrypt work as real lookups, keeping response times
+// uniform and preventing account enumeration via request latency.
+var dummyPasswordHash, _ = auth.HashPassword("explain-website-timing-equalizer")
 
 // SignupHandler creates a new user account.
 func SignupHandler() http.HandlerFunc {
@@ -147,6 +156,9 @@ func LoginHandler() http.HandlerFunc {
 		).Scan(&userID, &emailAddr, &createdAt, &hash)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				// Burn the same bcrypt time a real lookup would so latency
+				// doesn't reveal whether the email is registered.
+				_ = auth.CheckPassword(dummyPasswordHash, body.Password)
 				writeJSONError(w, http.StatusUnauthorized, "incorrect email or password")
 				return
 			}

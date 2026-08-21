@@ -21,13 +21,18 @@ export function ShareButton({
       return;
     }
     const link = `${window.location.origin}/report/${reportId}`;
-    try { await navigator.clipboard.writeText(link); }
+    let copied = false;
+    try { await navigator.clipboard.writeText(link); copied = true; }
     catch {
-      const el = document.createElement("textarea");
-      el.value = link; document.body.appendChild(el); el.select();
-      document.execCommand("copy"); document.body.removeChild(el);
+      // Clipboard API unavailable/denied — try the legacy path and honour its result.
+      try {
+        const el = document.createElement("textarea");
+        el.value = link; document.body.appendChild(el); el.select();
+        copied = document.execCommand("copy");
+        document.body.removeChild(el);
+      } catch { copied = false; }
     }
-    setState("copied");
+    setState(copied ? "copied" : "unavailable");
     setTimeout(() => setState("idle"), 2500);
   };
 

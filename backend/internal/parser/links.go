@@ -61,6 +61,17 @@ func normalizedHostname(host string) string {
 	return strings.ToLower(strings.TrimSuffix(host, "."))
 }
 
+// sameSiteHost reports whether two hostnames refer to the same site, treating
+// the www and non-www forms as equivalent so a site linking its own canonical
+// variant isn't counted (and probed) as an external link.
+func sameSiteHost(a, b string) bool {
+	a, b = normalizedHostname(a), normalizedHostname(b)
+	if a == b {
+		return true
+	}
+	return strings.TrimPrefix(a, "www.") == strings.TrimPrefix(b, "www.")
+}
+
 // CheckLinks extracts up to linkCheckCap external links from doc and HEAD-probes each one.
 func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.LinkCheckResult {
 	links := extractExternalLinks(doc, sourceURL)
@@ -139,7 +150,7 @@ func extractExternalLinks(doc *html.Node, sourceURL string) []string {
 	walk = func(n *html.Node) {
 		if n.Type == html.ElementNode && strings.EqualFold(n.Data, "a") {
 			href := getAttr(n, "href")
-			if u, ok := resolveHTTPLink(sourceURL, href); ok && normalizedHostname(u.Hostname()) != sourceHost {
+			if u, ok := resolveHTTPLink(sourceURL, href); ok && !sameSiteHost(u.Hostname(), sourceHost) {
 				norm := u.String()
 				if !seen[norm] {
 					seen[norm] = true
@@ -203,6 +214,6 @@ func probeLink(ctx context.Context, target string) model.LinkCheckItem {
 			}
 		}
 	}
-	item.IsBroken = resp.StatusCode == 0 || resp.StatusCode >= 400
+	item.IsBroken = resp.StatusCode >= 400
 	return item
 }

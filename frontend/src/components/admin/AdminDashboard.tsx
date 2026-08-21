@@ -74,7 +74,9 @@ export function AdminDashboard() {
   const analytics = useMemo(() => {
     if (!overview) return null;
     const totalUsers    = overview.users.length;
-    const proUsers      = overview.users.filter((u) => u.plan === "pro").length;
+    // Owner accounts get Pro-level access everywhere else in the app — count
+    // them as Pro here too so the Free count and conversion rate stay honest.
+    const proUsers      = overview.users.filter((u) => u.plan === "pro" || u.plan === "owner").length;
     const freeUsers     = totalUsers - proUsers;
     const totalAnalyses = overview.users.reduce((s, u) => s + u.dailyUsed, 0)
                         + overview.anonymousVisitors.reduce((s, v) => s + v.dailyUsed, 0);
@@ -138,11 +140,21 @@ export function AdminDashboard() {
     }
   }
 
+  // Quote a CSV field when needed and neutralize spreadsheet formula
+  // injection (=, +, -, @ prefixes) so exported user data can't execute
+  // as a formula when opened in Excel/Sheets.
+  function csvField(value: string | number): string {
+    let s = String(value);
+    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+    if (/[",\n\r]/.test(s)) s = `"${s.replace(/"/g, '""')}"`;
+    return s;
+  }
+
   function exportUsersCsv(users: typeof filteredUsers) {
     const header = "ID,Email,Plan,Status,Daily Used,Daily Limit,Joined";
     const rows = users.map(u =>
       [u.id, u.email, u.plan, u.subscriptionStatus,
-       u.dailyUsed, u.dailyLimit, u.createdAt.slice(0, 10)].join(",")
+       u.dailyUsed, u.dailyLimit, u.createdAt.slice(0, 10)].map(csvField).join(",")
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);

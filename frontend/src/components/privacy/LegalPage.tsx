@@ -1,4 +1,5 @@
 import { LogoWordmark } from "../ui/Logo";
+import { SiteFooter } from "../ui/SiteFooter";
 
 type LegalKind = "privacy" | "terms";
 
@@ -51,13 +52,7 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
           ))}
         </div>
       </main>
-      <footer className="mx-auto max-w-3xl border-t border-zinc-900 px-4 py-8 text-xs text-zinc-600 sm:px-6">
-        <a href="/whats-new" className="hover:text-zinc-300">What&apos;s new</a>
-        <span className="mx-2">·</span>
-        <a href="/privacy" className="hover:text-zinc-300">Privacy</a>
-        <span className="mx-2">·</span>
-        <a href="/terms" className="hover:text-zinc-300">Terms</a>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

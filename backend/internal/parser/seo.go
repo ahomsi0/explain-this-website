@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/ahomsi/explain-website/internal/model"
 	"golang.org/x/net/html"
@@ -187,45 +188,49 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 	}
 
 	// ── Title ──────────────────────────────────────────────────────────────────
+	// Lengths are counted in characters (runes), matching how the detail
+	// messages describe them and how search engines measure snippets.
+	titleLen := utf8.RuneCountInString(s.titleText)
 	switch {
 	case s.titleText == "":
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "fail",
 			Detail: "No <title> tag found"})
-	case len(s.titleText) < 10:
+	case titleLen < 10:
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "warning",
-			Detail:  fmt.Sprintf("Title is very short (%d chars)", len(s.titleText)),
+			Detail:  fmt.Sprintf("Title is very short (%d chars)", titleLen),
 			Details: []string{s.titleText},
 		})
-	case len(s.titleText) > 60:
+	case titleLen > 60:
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "warning",
-			Detail:  fmt.Sprintf("Title may be truncated in SERPs (%d chars, recommended <= 60)", len(s.titleText)),
+			Detail:  fmt.Sprintf("Title may be truncated in SERPs (%d chars, recommended <= 60)", titleLen),
 			Details: []string{s.titleText},
 		})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "pass",
-			Detail:  fmt.Sprintf("%d chars — within the recommended range", len(s.titleText)),
+			Detail:  fmt.Sprintf("%d chars — within the recommended range", titleLen),
 			Details: []string{s.titleText},
 		})
 	}
 
 	// ── Meta description ───────────────────────────────────────────────────────
+	descLen := utf8.RuneCountInString(s.metaDesc)
 	switch {
 	case s.metaDesc == "":
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "fail",
 			Detail: "No meta description found — search snippet will be auto-generated"})
-	case len(s.metaDesc) < 70:
+	case descLen < 70:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "warning",
-			Detail:  fmt.Sprintf("Description is short (%d chars, recommended 120-160)", len(s.metaDesc)),
+			Detail:  fmt.Sprintf("Description is short (%d chars, recommended 120-160)", descLen),
 			Details: []string{s.metaDesc},
 		})
-	case len(s.metaDesc) > 160:
+	case descLen > 160:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "warning",
-			Detail:  fmt.Sprintf("Description may be truncated (%d chars, recommended <= 160)", len(s.metaDesc)),
+			Detail:  fmt.Sprintf("Description may be truncated (%d chars, recommended <= 160)", descLen),
 			Details: []string{s.metaDesc},
 		})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "pass",
-			Detail:  fmt.Sprintf("%d chars — within the recommended range", len(s.metaDesc)),
+			Detail:  fmt.Sprintf("%d chars — within the recommended range", descLen),
 			Details: []string{s.metaDesc},
 		})
 	}
@@ -553,10 +558,11 @@ func unique(items []string) []string {
 }
 
 func truncate(s string, max int) string {
-	if len(s) <= max {
+	if utf8.RuneCountInString(s) <= max {
 		return s
 	}
-	return s[:max] + "..."
+	runes := []rune(s)
+	return string(runes[:max]) + "..."
 }
 
 // isHiddenElement returns true when a node is visually or semantically hidden.

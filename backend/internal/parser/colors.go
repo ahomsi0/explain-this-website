@@ -13,7 +13,9 @@ import (
 
 // reHexColor matches a CSS property value containing a hex colour.
 // Looks for hex after a colon (CSS property context) to avoid matching HTML IDs.
-var reHexColor = regexp.MustCompile(`(?i):\s*#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b`)
+// Supports 3-, 4-, 6-, and 8-digit forms; the alpha digits of 4/8-digit values
+// are captured separately and ignored.
+var reHexColor = regexp.MustCompile(`(?i):\s*#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b`)
 
 // ExtractColorPalette pulls brand colours from <style> blocks, inline styles, and meta theme-color.
 func ExtractColorPalette(doc *html.Node, rawHTML string) model.ColorPalette {
@@ -55,7 +57,13 @@ func ExtractColorPalette(doc *html.Node, rawHTML string) model.ColorPalette {
 			sorted = append(sorted, kv{hex, f})
 		}
 	}
-	sort.Slice(sorted, func(i, j int) bool { return sorted[i].freq > sorted[j].freq })
+	sort.SliceStable(sorted, func(i, j int) bool {
+		if sorted[i].freq != sorted[j].freq {
+			return sorted[i].freq > sorted[j].freq
+		}
+		// Deterministic tie order so equal-frequency colours always list the same way.
+		return sorted[i].hex < sorted[j].hex
+	})
 	if len(sorted) > 8 {
 		sorted = sorted[:8]
 	}
@@ -75,14 +83,20 @@ func extractHexColors(css string, freq map[string]int) {
 }
 
 // normalizeHex expands 3-digit hex to 6-digit lowercase (#abc → #aabbcc).
+// 4- and 8-digit forms keep only the RGB digits (alpha is dropped).
 func normalizeHex(s string) string {
 	s = strings.TrimSpace(strings.ToLower(s))
 	if !strings.HasPrefix(s, "#") {
 		return ""
 	}
 	h := s[1:]
-	if len(h) == 3 {
+	switch len(h) {
+	case 3:
 		h = string([]byte{h[0], h[0], h[1], h[1], h[2], h[2]})
+	case 4:
+		h = string([]byte{h[0], h[0], h[1], h[1], h[2], h[2]})
+	case 8:
+		h = h[:6]
 	}
 	if len(h) != 6 {
 		return ""

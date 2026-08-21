@@ -9,7 +9,8 @@ import (
 	"golang.org/x/net/html"
 )
 
-var reFontFace = regexp.MustCompile(`(?i)@font-face\s*\{[^}]*font-family\s*:\s*['"]?([^'";}\n]+)['"]?`)
+var reFontFace = regexp.MustCompile(`(?i)@font-face\s*\{[^}]*\}`)
+var reFontFamily = regexp.MustCompile(`(?i)font-family\s*:\s*['"]?([^'";}\n]+)['"]?`)
 var reFontWeight = regexp.MustCompile(`(?i)font-weight\s*:\s*([0-9]+)`)
 
 // ExtractFontAudit detects web fonts used on the page from link tags and inline CSS.
@@ -21,21 +22,22 @@ func ExtractFontAudit(doc *html.Node, rawHTML string) model.FontAudit {
 	walk = func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "link" {
 			href := getAttr(n, "href")
+			hrefLower := strings.ToLower(href)
 			rel := strings.ToLower(getAttr(n, "rel"))
 			if rel != "stylesheet" && rel != "preload" {
 				goto children
 			}
-			if strings.Contains(href, "fonts.googleapis.com") {
+			if strings.Contains(hrefLower, "fonts.googleapis.com") {
 				entries = append(entries, parseGoogleFontsURL(href, "Google Fonts")...)
-			} else if strings.Contains(href, "fonts.bunny.net") {
+			} else if strings.Contains(hrefLower, "fonts.bunny.net") {
 				entries = append(entries, parseGoogleFontsURL(href, "Bunny Fonts")...)
-			} else if strings.Contains(href, "use.typekit.net") || strings.Contains(href, "use.typekit.com") {
+			} else if strings.Contains(hrefLower, "use.typekit.net") || strings.Contains(hrefLower, "use.typekit.com") {
 				entries = append(entries, model.FontEntry{Family: "Adobe Fonts (Typekit)", Source: "Adobe Fonts"})
 			}
 		}
 		if n.Type == html.ElementNode && n.Data == "script" {
-			src := getAttr(n, "src")
-			if strings.Contains(src, "use.typekit.net") {
+			srcLower := strings.ToLower(getAttr(n, "src"))
+			if strings.Contains(srcLower, "use.typekit.net") {
 				entries = append(entries, model.FontEntry{Family: "Adobe Fonts (Typekit)", Source: "Adobe Fonts"})
 			}
 		}
@@ -47,10 +49,12 @@ func ExtractFontAudit(doc *html.Node, rawHTML string) model.FontAudit {
 	walk(doc)
 
 	// Scan rawHTML for @font-face blocks.
-	for _, m := range reFontFace.FindAllStringSubmatch(rawHTML, -1) {
-		family := strings.Trim(strings.TrimSpace(m[1]), `'"`)
-		// Find weight in the full block match.
-		block := m[0]
+	for _, block := range reFontFace.FindAllString(rawHTML, -1) {
+		famMatch := reFontFamily.FindStringSubmatch(block)
+		if famMatch == nil {
+			continue
+		}
+		family := strings.Trim(strings.TrimSpace(famMatch[1]), `'"`)
 		var weights []string
 		for _, wm := range reFontWeight.FindAllStringSubmatch(block, -1) {
 			weights = append(weights, wm[1])
@@ -62,15 +66,18 @@ func ExtractFontAudit(doc *html.Node, rawHTML string) model.FontAudit {
 		})
 	}
 
-	// Deduplicate by family name (case-insensitive).
-	seen := map[string]bool{}
+	// Deduplicate by family name (case-insensitive), merging the weights of
+	// sibling @font-face blocks (self-hosted fonts declare one block per weight).
+	seen := map[string]int{}
 	var unique []model.FontEntry
 	for _, e := range entries {
 		key := strings.ToLower(e.Family)
-		if !seen[key] {
-			seen[key] = true
-			unique = append(unique, e)
+		if idx, ok := seen[key]; ok {
+			unique[idx].Weights = mergeWeights(unique[idx].Weights, e.Weights)
+			continue
 		}
+		seen[key] = len(unique)
+		unique = append(unique, e)
 	}
 	if unique == nil {
 		unique = []model.FontEntry{}
@@ -97,6 +104,28 @@ func ExtractFontAudit(doc *html.Node, rawHTML string) model.FontAudit {
 		TotalWeights:  totalWeights,
 		HasPerfIssue:  len(unique) > 3 || totalWeights > 6,
 	}
+}
+
+// mergeWeights unions two weight lists preserving first-seen order.
+func mergeWeights(a, b []string) []string {
+	if len(b) == 0 {
+		return a
+	}
+	seen := make(map[string]bool, len(a)+len(b))
+	out := make([]string, 0, len(a)+len(b))
+	for _, w := range a {
+		if !seen[w] {
+			seen[w] = true
+			out = append(out, w)
+		}
+	}
+	for _, w := range b {
+		if !seen[w] {
+			seen[w] = true
+			out = append(out, w)
+		}
+	}
+	return out
 }
 
 // parseGoogleFontsURL extracts font families and weights from a Google/Bunny Fonts URL.
@@ -138,9 +167,10 @@ func parseGoogleFontsURL(rawURL, source string) []model.FontEntry {
 			if at := strings.Index(weightsPart, "@"); at != -1 {
 				weightsPart = weightsPart[at+1:]
 			}
-			// "400;500;700" or "400,700" (ital format uses comma)
-			for _, w := range strings.FieldsFunc(weightsPart, func(r rune) bool { return r == ';' || r == ',' }) {
-				// italic variants look like "0,400" — take the weight part
+			// "400;500;700" or "0,400;1,700" (ital,wght tuples — take the weight part)
+			for _, w := range strings.Split(weightsPart, ";") {
+				w = strings.TrimSpace(w)
+				// Italic variants look like "0,400" — keep only the weight after the last comma.
 				if idx2 := strings.LastIndex(w, ","); idx2 != -1 {
 					w = w[idx2+1:]
 				}
