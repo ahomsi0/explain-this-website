@@ -1,5 +1,4 @@
 import { LogoWordmark } from "../ui/Logo";
-import { SiteFooter } from "../ui/SiteFooter";
 
 type UpdateTone = "violet" | "emerald" | "amber";
 
@@ -210,8 +209,6 @@ export function WhatsNewPage() {
             </a>
           </section>
         </main>
-
-        <SiteFooter />
       </div>
     </div>
   );

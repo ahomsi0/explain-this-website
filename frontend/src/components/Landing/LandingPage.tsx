@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { LogoWordmark } from "../ui/Logo";
-import { SiteFooter } from "../ui/SiteFooter";
 import { URLInput } from "../UrlInput/UrlInput";
 import { UserMenu } from "../auth/UserMenu";
 import { AuthModal } from "../auth/AuthModal";
@@ -214,8 +213,6 @@ export function LandingPage({
             </div>
           </div>
         </section>
-
-        <SiteFooter />
       </div>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

@@ -1,5 +1,4 @@
 import { LogoWordmark } from "../ui/Logo";
-import { SiteFooter } from "../ui/SiteFooter";
 
 type LegalKind = "privacy" | "terms";
 
@@ -52,7 +51,6 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
           ))}
         </div>
       </main>
-      <SiteFooter />
     </div>
   );
 }
