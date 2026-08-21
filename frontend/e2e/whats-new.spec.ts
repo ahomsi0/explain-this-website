@@ -12,7 +12,7 @@ test.describe("what's new page", () => {
     await expect(page).toHaveTitle("What’s New · Explain This Website");
     await expect(page.getByRole("heading", { name: "What's new" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Reports now explain the full picture" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Back to analyzer" })).toHaveAttribute("href", "/");
+    await expect(page.getByRole("link", { name: "Explain This Website home" })).toHaveAttribute("href", "/");
     await expect(page.getByRole("link", { name: "Privacy", exact: true })).toHaveAttribute("href", "/privacy");
   });
 

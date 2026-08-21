@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBanner } from "./components/ui/ErrorBanner";
@@ -15,10 +15,27 @@ import { GoProPage } from "./components/billing/GoProPage";
 import { ConsentBanner } from "./components/privacy/ConsentBanner";
 import { LegalPage } from "./components/privacy/LegalPage";
 import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
+import { SiteFooter } from "./components/ui/SiteFooter";
+import { SiteHeader } from "./components/ui/SiteHeader";
+import { AuthModal } from "./components/auth/AuthModal";
+import { HistoryModal } from "./components/auth/HistoryModal";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
 
 type AnalysisSource = "landing" | "example" | "report";
+
+// Single app shell: every route renders inside this so the whole site shares
+// one footer, and pre-analysis pages additionally mount the shared header.
+// Pages keep their own backgrounds and heights.
+function PageShell({ children, header }: { children: ReactNode; header?: ReactNode }) {
+  return (
+    <div className="min-h-screen flex flex-col bg-zinc-950">
+      {header}
+      <div className="flex-1 flex flex-col">{children}</div>
+      <SiteFooter />
+    </div>
+  );
+}
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -111,55 +128,73 @@ function AppInner() {
     }
   }, [pathname, status, result]);
 
+  // Shared header + global auth/history modals for every pre-analysis page.
+  // The results dashboard, shared reports, and admin keep their own chrome.
+  const chrome = (
+    <>
+      <SiteHeader onSignIn={() => setAuthOpen(true)} onShowHistory={() => setHistoryOpen(true)} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      {historyOpen && (
+        <HistoryModal
+          open
+          onClose={() => setHistoryOpen(false)}
+          onOpenAudit={(id) => { window.location.href = `/report/${id}`; }}
+        />
+      )}
+    </>
+  );
+
   if (isDashboardRoute) {
-    return <AdminDashboard />;
+    return <PageShell><AdminDashboard /></PageShell>;
   }
 
-  if (pathname === "/privacy") return <LegalPage kind="privacy" />;
-  if (pathname === "/terms") return <LegalPage kind="terms" />;
-  if (pathname === "/go-pro") return <GoProPage />;
-  if (pathname === "/whats-new") return <WhatsNewPage />;
+  if (pathname === "/privacy") return <PageShell header={chrome}><LegalPage kind="privacy" /></PageShell>;
+  if (pathname === "/terms") return <PageShell header={chrome}><LegalPage kind="terms" /></PageShell>;
+  if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
+  if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
 
   // Shared report route takes over the whole page.
   if (loadingShared) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <p className="text-zinc-500 text-sm">Loading shared report…</p>
-      </div>
+      <PageShell>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-zinc-500 text-sm">Loading shared report…</p>
+        </div>
+      </PageShell>
     );
   }
   if (sharedResult) {
     return (
-      <div className="min-h-screen bg-zinc-950">
+      <PageShell>
         <ResultDashboard result={sharedResult} onReset={() => { window.location.href = "/"; }} />
-      </div>
+      </PageShell>
     );
   }
   if (sharedError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="text-center">
-          <p className="text-zinc-300 text-sm font-medium mb-2">Report not found</p>
-          <p className="text-zinc-600 text-xs mb-6">{sharedError}</p>
-          <button onClick={() => { window.location.href = "/"; }}
-            className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2">
-            Analyze a new site
-          </button>
+      <PageShell>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-zinc-300 text-sm font-medium mb-2">Report not found</p>
+            <p className="text-zinc-600 text-xs mb-6">{sharedError}</p>
+            <button onClick={() => { window.location.href = "/"; }}
+              className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2">
+              Analyze a new site
+            </button>
+          </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen" >
+    <PageShell header={status === "success" ? undefined : chrome}>
       {status === "idle" && (
         <LandingPage
           user={user}
           usage={usage}
           onAnalyze={handleAnalyze}
-          authOpen={authOpen}
           setAuthOpen={setAuthOpen}
-          historyOpen={historyOpen}
           setHistoryOpen={setHistoryOpen}
         />
       )}
@@ -178,7 +213,7 @@ function AppInner() {
       {status === "success" && result && (
         <ResultDashboard result={result} usage={usage} onReset={reset} onAnalyze={handleAnalyze} />
       )}
-    </div>
+    </PageShell>
   );
 }
 

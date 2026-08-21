@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { LogoWordmark } from "../ui/Logo";
-import { UserMenu } from "../auth/UserMenu";
 import { useAuth } from "../../context/useAuth";
 import { AuthModal } from "../auth/AuthModal";
 import { createCheckoutSession, cancelSubscription } from "../../services/authApi";
@@ -66,26 +64,6 @@ export function GoProPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
-        <div className="px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={() => { window.location.href = "/"; }}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-md text-zinc-400 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
-              aria-label="Back to home"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6"/>
-              </svg>
-            </button>
-            <LogoWordmark size={20} />
-            <span className="hidden sm:block text-zinc-700">/</span>
-            <span className="text-sm font-semibold text-zinc-300 truncate">Go Pro</span>
-          </div>
-          {user && <UserMenu />}
-        </div>
-      </header>
-
       <main className="px-4 sm:px-6 py-10">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
