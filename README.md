@@ -85,6 +85,20 @@ Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data aft
 
 The frontend has `/privacy` and `/terms` pages and explains analysis boundaries on the landing page. Google Analytics is loaded only after explicit opt-in. When consent is granted, the product records `landing_view`, `analysis_started`, `analysis_completed`, `analysis_failed`, `signup_completed`, and `repeat_usage` events so the funnel can be measured from first visit through return analysis. Repeat usage is counted in the browser and does not require sending an account identifier to analytics.
 
+## Testing
+
+Frontend checks run from `frontend/`:
+
+```bash
+npm run lint
+npm test -- --run
+npm run build
+npx playwright install chromium       # first browser-test run only
+npm run test:e2e
+```
+
+Vitest covers utilities, API behavior, and component rendering/interactions. Playwright covers critical browser flows with mocked API responses: landing → analysis → signup, auth errors and password reset, consent behavior, shared reports, history comparison, and analysis cancellation. GitHub Actions runs these checks plus `go test ./...` and `go vet ./...` on pushes to `main` and pull requests.
+
 ---
 
 ## Project Structure
