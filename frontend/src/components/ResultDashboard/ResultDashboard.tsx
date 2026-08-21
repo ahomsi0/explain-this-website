@@ -15,6 +15,7 @@ import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { HistoryModal } from "../auth/HistoryModal";
 import { type UsageSummary } from "../../services/authApi";
+import { normalizeInputUrl } from "../../lib/urls";
 
 function computeScores(result: AnalysisResult) {
   const pass     = result.seoChecks.filter((c) => c.status === "pass").length;
@@ -60,11 +61,12 @@ export function ResultDashboard({
   result: AnalysisResult;
   usage?: UsageSummary | null;
   onReset: () => void;
-  onAnalyze?: (url: string) => void;
+  onAnalyze?: (url: string, source?: "landing" | "example" | "report") => void;
 }) {
   const { seoScore, uxScore } = computeScores(result);
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [searchValue, setSearchValue] = useState("");
+  const [searchError, setSearchError] = useState("");
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const { user } = useAuth();
@@ -76,9 +78,14 @@ export function ResultDashboard({
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = searchValue.trim();
-    if (!trimmed || !onAnalyze) return;
-    onAnalyze(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    if (!onAnalyze) return;
+    const normalized = normalizeInputUrl(searchValue);
+    if (!normalized) {
+      setSearchError("Enter a valid public URL");
+      return;
+    }
+    setSearchError("");
+    onAnalyze(normalized, "report");
     setSearchValue("");
   };
 
@@ -121,15 +128,19 @@ export function ResultDashboard({
             )}
 
             {onAnalyze && (
-              <form onSubmit={submitSearch} className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors flex-1 max-w-md">
+              <form onSubmit={submitSearch} aria-label="Analyze another website" className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors flex-1 max-w-md">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 shrink-0">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
+                <label htmlFor="report-url-input" className="sr-only">Website URL to analyze</label>
                 <input
+                  id="report-url-input"
                   type="text"
                   value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  onChange={(e) => { setSearchValue(e.target.value); setSearchError(""); }}
                   placeholder="Analyze another URL…"
+                  aria-invalid={Boolean(searchError)}
+                  aria-describedby={searchError ? "report-url-error" : undefined}
                   className="flex-1 bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none min-w-0"
                 />
                 {searchValue && (
@@ -137,6 +148,7 @@ export function ResultDashboard({
                 )}
               </form>
             )}
+            {searchError && <span id="report-url-error" role="alert" className="hidden lg:block text-[10px] text-red-400">{searchError}</span>}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">

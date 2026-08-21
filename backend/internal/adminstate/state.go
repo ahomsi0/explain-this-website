@@ -1,6 +1,6 @@
-// Package adminstate holds runtime, in-memory observability and feature-flag
-// state shared between the analyzer pipeline (parser, email, etc.) and the
-// admin dashboard handlers. Process-local — restart resets the data.
+// Package adminstate holds runtime observability and feature-flag state shared
+// between the analyzer pipeline (parser, email, etc.) and the admin dashboard.
+// Observability is process-local; feature flags can be restored from storage.
 package adminstate
 
 import (
@@ -151,4 +151,14 @@ func SnapshotFlags() map[string]bool {
 		out[k] = v
 	}
 	return out
+}
+
+// LoadFlags restores persisted feature flags without removing defaults that are
+// absent from storage (useful when a new flag is introduced in a later build).
+func LoadFlags(flags map[string]bool) {
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	for name, enabled := range flags {
+		state.flags[name] = enabled
+	}
 }

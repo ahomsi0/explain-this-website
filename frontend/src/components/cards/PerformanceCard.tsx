@@ -88,7 +88,7 @@ function StrategyView({ data }: { data: StrategyData }) {
       )}
 
       {/* Lab metrics */}
-      <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Lab Data (Simulated)</p>
+      <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Lab Data (Lighthouse)</p>
       <div className="mb-3">
         {lcp && <VitalRow label="Largest Contentful Paint" vital={lcp} />}
         {fcp && <VitalRow label="First Contentful Paint"   vital={fcp} />}
@@ -120,7 +120,9 @@ type Strategy = "mobile" | "desktop";
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
         active
           ? "bg-violet-500/10 text-violet-300 border border-violet-500/30"

@@ -17,7 +17,7 @@ const STEPS: Step[] = [
   { id: "cwv",     label: "Core Web Vitals" },
 ];
 
-// Plausible per-step log lines that stream into the right pane.
+// A lightweight progress view while the server performs the actual analysis.
 const STEP_LOGS: Record<string, string[]> = {
   tech: [
     "fetching response headers",
@@ -64,13 +64,7 @@ const SEQUENTIAL_STEPS = ["tech", "seo", "ux", "trust", "content", "cwv"] as con
 const WARMUP_S = 1.5;
 const STEP_DURATION_S = 2.4;
 
-// Deterministic "fake" durations to fill in done rows.
-function fakeDuration(idx: number) {
-  const ms = 800 + (idx * 137) % 700;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
-
-export function LoadingSpinner({ url }: { url: string; serverSignaled?: boolean }) {
+export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?: boolean; onCancel?: () => void }) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -166,7 +160,7 @@ export function LoadingSpinner({ url }: { url: string; serverSignaled?: boolean 
                       </svg>
                     </span>
                     <span className="text-xs text-zinc-300 flex-1 truncate">{s.label}</span>
-                    <span className="font-mono text-[10px] text-zinc-500">{fakeDuration(s.idx)}</span>
+                    <span className="font-mono text-[10px] text-zinc-500">done</span>
                   </div>
                 );
               }
@@ -230,17 +224,28 @@ export function LoadingSpinner({ url }: { url: string; serverSignaled?: boolean 
                 />
               </div>
               <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500">
-                <span><span className="text-violet-400">●</span> live</span>
+                <span><span className="text-violet-400">●</span> progress</span>
                 <span className="tabular-nums">
                   {activeStep ? activeStep.label.toLowerCase() : "warming up"}
                   {" · "}
                   {Math.max(0, activeElapsedInStep).toFixed(1)}s
                 </span>
               </div>
+              <p className="mt-2 text-[10px] leading-relaxed text-zinc-700">The progress view is illustrative; the report appears when the backend finishes.</p>
             </div>
           </div>
         </div>
       </section>
+
+      {onCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="mt-5 rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200"
+        >
+          Cancel analysis
+        </button>
+      )}
 
       {elapsed > 45 && (
         <p className="mt-6 text-[11px] text-amber-400/70 max-w-xs text-center leading-relaxed">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
+import { track } from "../../lib/analytics";
 
 type Mode = "login" | "signup";
 
@@ -45,11 +46,14 @@ export function AuthModal({
     e.preventDefault();
     setError(null);
     setBusy(true);
+    track(mode === "login" ? "login_started" : "signup_started");
     try {
       if (mode === "login") await login(email, password);
       else                  await signup(email, password);
+      track(mode === "login" ? "login_completed" : "signup_completed");
       onClose();
     } catch (err) {
+      track(mode === "login" ? "login_failed" : "signup_failed");
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBusy(false);
@@ -58,10 +62,14 @@ export function AuthModal({
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
         className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -84,7 +92,7 @@ export function AuthModal({
             </svg>
           </div>
 
-          <h2 className="text-lg font-semibold text-zinc-100 leading-tight">
+          <h2 id="auth-modal-title" className="text-lg font-semibold text-zinc-100 leading-tight">
             {mode === "login" ? "Welcome back" : "Create your account"}
           </h2>
           <p className="text-xs text-zinc-500 mt-1">

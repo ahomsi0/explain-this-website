@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBanner } from "./components/ui/ErrorBanner";
@@ -11,6 +11,13 @@ import { useAuth } from "./context/useAuth";
 import { LandingPage } from "./components/Landing/LandingPage";
 import { fetchUsage, type UsageSummary } from "./services/authApi";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
+import { GoProPage } from "./components/billing/GoProPage";
+import { ConsentBanner } from "./components/privacy/ConsentBanner";
+import { LegalPage } from "./components/privacy/LegalPage";
+import { track } from "./lib/analytics";
+import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
+
+type AnalysisSource = "landing" | "example" | "report";
 
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
@@ -35,14 +42,21 @@ function useDashboardRoute() {
 function AppInner() {
   const { user, refreshUser } = useAuth();
   const isDashboardRoute = useDashboardRoute();
+  const pathname = window.location.pathname.toLowerCase();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
-  const { status, result, error, serverSignaled, analyze, reset } = useAnalysis(async (analysisResult) => {
+  const analysisSource = useRef<AnalysisSource>("landing");
+  const { status, result, error, serverSignaled, analyze, cancel, reset } = useAnalysis(async (analysisResult) => {
     if (analysisResult.usage) {
       setUsage(analysisResult.usage);
     }
     if (user) {
       await refreshUser();
     }
+    recordAnalysisCompleted({
+      signedIn: Boolean(user),
+      source: analysisSource.current,
+      performanceAvailable: Boolean(analysisResult.performance?.available),
+    });
   });
   const [currentUrl, setCurrentUrl] = useState("");
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
@@ -53,7 +67,12 @@ function AppInner() {
     fetchUsage().then(setUsage).catch(() => {});
   }, [user?.id]);
 
-  const handleAnalyze = (url: string) => { setCurrentUrl(url); analyze(url); };
+  const handleAnalyze = (url: string, source: AnalysisSource = status === "success" ? "report" : "landing") => {
+    analysisSource.current = source;
+    track("analysis_started", { source, repeat_user: isRepeatUser(), signed_in: Boolean(user) });
+    setCurrentUrl(url);
+    void analyze(url);
+  };
   const isBotProtectionError = !!error && (
     error.toLowerCase().includes("bot protection") ||
     error.toLowerCase().includes("http 403") ||
@@ -62,12 +81,40 @@ function AppInner() {
   );
   const handleTryAgain = () => {
     if (!currentUrl) { reset(); return; }
-    analyze(currentUrl);
+    handleAnalyze(currentUrl, analysisSource.current);
   };
+
+  useEffect(() => {
+    if (status === "error" && error) {
+      track("analysis_failed", {
+        source: analysisSource.current,
+        reason: error.toLowerCase().includes("limit") ? "quota" : "request",
+      });
+    }
+  }, [status, error]);
+
+  useEffect(() => {
+    if (status === "success" && result) {
+      try { document.title = `${new URL(result.url).hostname} audit · Explain This Website`; }
+      catch { document.title = "Website audit · Explain This Website"; }
+    } else if (pathname === "/privacy") {
+      document.title = "Privacy Policy · Explain This Website";
+    } else if (pathname === "/terms") {
+      document.title = "Terms of Service · Explain This Website";
+    } else if (pathname === "/go-pro") {
+      document.title = "Go Pro · Explain This Website";
+    } else {
+      document.title = "Explain This Website — Instant Website Analyzer";
+    }
+  }, [pathname, status, result]);
 
   if (isDashboardRoute) {
     return <AdminDashboard />;
   }
+
+  if (pathname === "/privacy") return <LegalPage kind="privacy" />;
+  if (pathname === "/terms") return <LegalPage kind="terms" />;
+  if (pathname === "/go-pro") return <GoProPage />;
 
   // Shared report route takes over the whole page.
   if (loadingShared) {
@@ -113,7 +160,7 @@ function AppInner() {
         />
       )}
 
-      {status === "loading" && <LoadingSpinner url={currentUrl} serverSignaled={serverSignaled} />}
+      {status === "loading" && <LoadingSpinner url={currentUrl} serverSignaled={serverSignaled} onCancel={cancel} />}
 
       {status === "error" && (
         <ErrorBanner
@@ -135,7 +182,10 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppInner />
+        <>
+          <AppInner />
+          <ConsentBanner />
+        </>
       </AuthProvider>
     </ThemeProvider>
   );

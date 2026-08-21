@@ -1,6 +1,6 @@
 // Package email sends transactional emails. Uses Resend's HTTP API when
-// RESEND_API_KEY is configured; otherwise falls back to logging to stdout
-// (handy for local dev — the dev can read the code from server logs).
+// RESEND_API_KEY is configured. Password reset codes are never logged in
+// production; local development can explicitly opt into the stdout fallback.
 package email
 
 import (
@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/adminstate"
@@ -38,7 +39,7 @@ func SendBroadcast(ctx context.Context, to, subject, body string) error {
 }
 
 // SendResetCode emails a password reset code to the recipient. If no email backend
-// is configured (RESEND_API_KEY unset) it logs the code instead so dev still works.
+// is configured, delivery is allowed only when APP_ENV is explicitly development.
 func SendResetCode(ctx context.Context, to, code string) error {
 	subject := "Your password reset code"
 	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.", code)
@@ -57,8 +58,10 @@ func send(ctx context.Context, to, subject, text, html string) error {
 	}
 	apiKey := os.Getenv("RESEND_API_KEY")
 	if apiKey == "" {
-		// Dev fallback: log the email instead of sending. The user can copy the
-		// code straight from the server log.
+		if !isDevelopment() {
+			return fmt.Errorf("email delivery is not configured")
+		}
+		// Explicit local-dev fallback. Never enable this implicitly in production.
 		log.Printf("[email/dev] To=%s | Subject=%s\n--- TEXT ---\n%s\n", to, subject, text)
 		return nil
 	}
@@ -98,4 +101,13 @@ func send(ctx context.Context, to, subject, text, html string) error {
 	adminstate.RecordEmailSuccess()
 	log.Printf("[email] resend ok: %s", string(respBody))
 	return nil
+}
+
+func isDevelopment() bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV"))) {
+	case "dev", "development", "local", "test":
+		return true
+	default:
+		return false
+	}
 }

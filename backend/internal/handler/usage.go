@@ -2,9 +2,15 @@ package handler
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -27,7 +33,19 @@ const (
 var (
 	errDailyLimitReached = errors.New("daily analysis limit reached")
 	memUsageStore        = newMemoryUsageStore()
+	visitorProcessSecret = newVisitorProcessSecret()
 )
+
+const visitorCookieName = "etw_visitor"
+
+func newVisitorProcessSecret() []byte {
+	secret := make([]byte, 32)
+	if _, err := rand.Read(secret); err == nil {
+		return secret
+	}
+	sum := sha256.Sum256([]byte(fmt.Sprintf("%d", time.Now().UnixNano())))
+	return sum[:]
+}
 
 type memoryUsageStore struct {
 	mu      sync.Mutex
@@ -129,9 +147,61 @@ func usageLimitMessage(limit int, signedIn bool) string {
 }
 
 func visitorIDFromRequest(r *http.Request) string {
-	// Client-supplied visitor IDs are intentionally ignored. They made the
-	// anonymous daily quota trivially bypassable by rotating X-Visitor-Id.
+	if cookie, err := r.Cookie(visitorCookieName); err == nil && validVisitorCookie(cookie.Value) {
+		return "cookie:" + strings.SplitN(cookie.Value, ".", 2)[0]
+	}
 	return "ip:" + requestip.ClientIP(r)
+}
+
+func visitorCookieSecret() []byte {
+	if secret := strings.TrimSpace(os.Getenv("JWT_SECRET")); secret != "" {
+		return []byte(secret)
+	}
+	return visitorProcessSecret
+}
+
+func validVisitorCookie(value string) bool {
+	parts := strings.SplitN(value, ".", 2)
+	if len(parts) != 2 || len(parts[0]) != 32 || len(parts[1]) != 64 {
+		return false
+	}
+	if _, err := hex.DecodeString(parts[0]); err != nil {
+		return false
+	}
+	sig := hmac.New(sha256.New, visitorCookieSecret())
+	_, _ = sig.Write([]byte(parts[0]))
+	expected := hex.EncodeToString(sig.Sum(nil))
+	return hmac.Equal([]byte(parts[1]), []byte(expected))
+}
+
+// EnsureVisitorCookie gives anonymous browsers a stable, signed quota key. IP
+// remains the safe fallback for first requests and clients that reject cookies.
+func EnsureVisitorCookie(w http.ResponseWriter, r *http.Request) {
+	if cookie, err := r.Cookie(visitorCookieName); err == nil && validVisitorCookie(cookie.Value) {
+		return
+	}
+	id := make([]byte, 16)
+	if _, err := rand.Read(id); err != nil {
+		return
+	}
+	idHex := hex.EncodeToString(id)
+	sig := hmac.New(sha256.New, visitorCookieSecret())
+	_, _ = sig.Write([]byte(idHex))
+	value := idHex + "." + hex.EncodeToString(sig.Sum(nil))
+	secure := r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
+	sameSite := http.SameSiteLaxMode
+	if secure {
+		sameSite = http.SameSiteNoneMode
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     visitorCookieName,
+		Value:    value,
+		Path:     "/",
+		MaxAge:   365 * 24 * 60 * 60,
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
 }
 
 func loadUserPlan(ctx context.Context, userID int64) (userPlan, error) {

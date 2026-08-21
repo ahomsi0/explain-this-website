@@ -57,7 +57,10 @@ export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
           {/* Small screenshot thumbnail — click to enlarge */}
           {screenshotState !== "failed" && (
             <button
+              type="button"
               onClick={() => screenshotState === "loaded" && setLightboxOpen(true)}
+              disabled={screenshotState !== "loaded"}
+              aria-label={screenshotState === "loaded" ? "Open page screenshot" : "Loading page screenshot"}
               className={`shrink-0 w-24 h-16 rounded border border-zinc-700 overflow-hidden bg-zinc-800 transition-all ${screenshotState === "loaded" ? "hover:border-violet-500/60 hover:ring-1 hover:ring-violet-500/30 cursor-zoom-in" : "cursor-default"}`}
             >
               {screenshotState === "loading" && <div className="w-full h-full animate-pulse bg-zinc-800" />}
@@ -99,15 +102,20 @@ export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
         <p className="mt-3 text-[11px] text-zinc-500">
           {new Date(fetchedAt).toLocaleString()}
         </p>
+        <p className="mt-2 text-[10px] text-zinc-600">Page preview provided by Microlink. It may be unavailable for blocked or private pages.</p>
 
         {/* Lightbox */}
         {lightboxOpen && (
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Page screenshot"
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
             onClick={() => setLightboxOpen(false)}
           >
             <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
               <button
+                type="button"
                 onClick={() => setLightboxOpen(false)}
                 className="absolute -top-9 right-0 text-zinc-400 hover:text-zinc-100 text-xs flex items-center gap-1.5 transition-colors"
               >

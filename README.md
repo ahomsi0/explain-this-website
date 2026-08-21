@@ -33,7 +33,7 @@ Usage model:
 | Layer | Tech |
 |---|---|
 | Frontend | React 19, Vite, TypeScript, Tailwind CSS |
-| Backend | Go 1.22 (stdlib net/http), PostgreSQL (pgx/v5) |
+| Backend | Go 1.25+ (stdlib net/http), PostgreSQL (pgx/v5) |
 | Auth | JWT (HS256), bcrypt password hashing, email-based password reset |
 | Payments | Tap Payments backend (checkout, subscriptions, webhook lifecycle) — wired but currently dormant; Pro is admin-granted while self-serve is paused |
 | Email | Resend API |
@@ -45,7 +45,7 @@ Usage model:
 
 ## Prerequisites
 
-- **Go 1.22+**
+- **Go 1.25+**
 - **Node 20.19+** and **npm**
 - **PostgreSQL** (or set `DATABASE_URL` to a managed instance — Render, Supabase, etc.)
 
@@ -80,6 +80,10 @@ Open [http://localhost:5173](http://localhost:5173), paste a URL, and click **An
 ## Development without a backend (mock mode)
 
 Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data after a short delay — no Go server or database required.
+
+## Privacy and conversion measurement
+
+The frontend has `/privacy` and `/terms` pages and explains analysis boundaries on the landing page. Google Analytics is loaded only after explicit opt-in. When consent is granted, the product records `landing_view`, `analysis_started`, `analysis_completed`, `analysis_failed`, `signup_completed`, and `repeat_usage` events so the funnel can be measured from first visit through return analysis. Repeat usage is counted in the browser and does not require sending an account identifier to analytics.
 
 ---
 
@@ -219,10 +223,10 @@ All admin routes require the `ADMIN_EMAIL` account to be authenticated.
 |---|---|---|
 | `GET` | `/api/admin/overview` | Full dashboard data — users, audits, health, metrics |
 | `PATCH` | `/api/admin/users/{id}` | Override plan, suspend/unsuspend, set note |
-| `POST` | `/api/admin/users/{id}/reset-usage` | Reset a user's daily usage count |
-| `POST` | `/api/admin/users/{id}/plan` | Legacy plan update |
-| `POST` | `/api/admin/visitors/{id}/usage` | Update anonymous visitor usage |
-| `POST` | `/api/admin/flags/{name}` | Toggle a feature flag |
+| `POST` | `/api/admin/user-usage` | Reset or set a user's daily usage count |
+| `POST` | `/api/admin/user-plan` | Update a user's plan |
+| `POST` | `/api/admin/anon-usage` | Update anonymous visitor usage |
+| `POST` | `/api/admin/flag` | Toggle a feature flag |
 | `POST` | `/api/admin/broadcast` | Send email to all users |
 
 #### `PATCH /api/admin/users/{id}` body

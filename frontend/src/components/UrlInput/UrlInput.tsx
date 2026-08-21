@@ -1,11 +1,5 @@
 import { useState, type FormEvent } from "react";
-
-function isValidUrl(value: string): boolean {
-  try {
-    const url = value.startsWith("http") ? value : `https://${value}`;
-    return new URL(url).hostname.includes(".");
-  } catch { return false; }
-}
+import { normalizeInputUrl } from "../../lib/urls";
 
 export function URLInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) => void; isLoading: boolean }) {
   const [value, setValue]   = useState("");
@@ -15,9 +9,10 @@ export function URLInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) =>
     e.preventDefault();
     const trimmed = value.trim();
     if (!trimmed)             { setError("Enter a URL to analyze"); return; }
-    if (!isValidUrl(trimmed)) { setError("Enter a valid URL, e.g. example.com"); return; }
+    const normalized = normalizeInputUrl(trimmed);
+    if (!normalized)           { setError("Enter a valid URL, e.g. example.com"); return; }
     setError("");
-    onAnalyze(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    onAnalyze(normalized);
   };
 
   return (

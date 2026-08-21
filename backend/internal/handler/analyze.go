@@ -31,6 +31,7 @@ type Config struct {
 func AnalyzeHandler(cfg Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		EnsureVisitorCookie(w, r)
 
 		// Cap the request body at 8 KB — a URL payload is never legitimately larger.
 		r.Body = http.MaxBytesReader(w, r.Body, 8192)

@@ -14,6 +14,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,15 +26,34 @@ import (
 // reload/share/demo bursts but short enough that scores stay roughly fresh.
 const DefaultTTL = 10 * time.Minute
 
+// NormalizeURL creates a stable cache key without changing the URL sent to
+// the fetcher. Fragments never reach the server and default ports are redundant.
+func NormalizeURL(raw string) string {
+	parsed, err := url.Parse(raw)
+	if err != nil {
+		return raw
+	}
+	parsed.Scheme = strings.ToLower(parsed.Scheme)
+	parsed.Host = strings.ToLower(parsed.Host)
+	parsed.Fragment = ""
+	if (parsed.Scheme == "https" && parsed.Port() == "443") || (parsed.Scheme == "http" && parsed.Port() == "80") {
+		parsed.Host = parsed.Hostname()
+	}
+	if parsed.Path == "" {
+		parsed.Path = "/"
+	}
+	return parsed.String()
+}
+
 // maxEntries caps the cache to keep memory bounded. Entries past this count
 // are evicted on Set in insertion order (cheap, no LRU). 500 × ~50 KB = 25 MB.
 const maxEntries = 500
 
 type entry struct {
-	resultBytes  []byte
-	respHeaders  http.Header
-	expiresAt    time.Time
-	insertedAt   time.Time
+	resultBytes []byte
+	respHeaders http.Header
+	expiresAt   time.Time
+	insertedAt  time.Time
 }
 
 // Cache is a goroutine-safe TTL cache of analysis results.
@@ -58,6 +79,7 @@ func New(ttl time.Duration) *Cache {
 // Get returns a deep copy of the cached result + the original response headers
 // for the given URL, or (nil, nil, false) on miss / expiry.
 func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
+	url = NormalizeURL(url)
 	c.mu.RLock()
 	e, ok := c.entries[url]
 	c.mu.RUnlock()
@@ -99,6 +121,7 @@ func (c *Cache) Set(url string, result *model.AnalysisResult, respHeaders http.H
 	if result == nil {
 		return
 	}
+	url = NormalizeURL(url)
 	var buf bytes.Buffer
 	if err := gob.NewEncoder(&buf).Encode(result); err != nil {
 		return // best-effort; skip caching on encode failure

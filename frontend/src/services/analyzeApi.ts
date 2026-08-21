@@ -18,6 +18,7 @@ export async function fetchReport(id: string): Promise<AnalysisResult> {
   try {
     const res = await fetch(`${API_URL}/api/report/${id}`, {
       headers: buildHeaders(),
+      credentials: "include",
       signal: controller.signal,
     });
     const data = await res.json().catch(() => null);
@@ -51,6 +52,7 @@ function isNetworkError(err: unknown): boolean {
 export async function analyzeWebsite(
   url: string,
   onServerReached?: () => void,
+  signal?: AbortSignal,
 ): Promise<AnalysisResult> {
   const deadline = Date.now() + TOTAL_TIMEOUT_MS;
   let serverReachedFired = false;
@@ -72,7 +74,8 @@ export async function analyzeWebsite(
         method: "POST",
         headers: buildHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ url }),
-        signal: controller.signal,
+        credentials: "include",
+        signal: signal ? AbortSignal.any([controller.signal, signal]) : controller.signal,
       });
 
       let data: { error?: string } | undefined;
@@ -97,6 +100,7 @@ export async function analyzeWebsite(
 
       return data as AnalysisResult;
     } catch (err) {
+      if (signal?.aborted) throw err;
       // If it's an application-level error (from the throw above), don't retry.
       if (!isNetworkError(err) && !(err instanceof DOMException)) {
         throw err;

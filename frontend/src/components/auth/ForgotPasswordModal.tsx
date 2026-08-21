@@ -109,10 +109,14 @@ export function ForgotPasswordModal({
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="forgot-password-title"
         className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -133,7 +137,7 @@ export function ForgotPasswordModal({
             </svg>
           </div>
 
-          <h2 className="text-lg font-semibold text-zinc-100 leading-tight">
+          <h2 id="forgot-password-title" className="text-lg font-semibold text-zinc-100 leading-tight">
             {step === "email" ? "Reset your password" : "Enter your code"}
           </h2>
           <p className="text-xs text-zinc-500 mt-1">

@@ -47,7 +47,7 @@ type recentAuditRow struct {
 }
 
 type dayCount struct {
-	Date  string `json:"date"`  // YYYY-MM-DD
+	Date  string `json:"date"` // YYYY-MM-DD
 	Count int    `json:"count"`
 }
 
@@ -57,30 +57,30 @@ type urlCount struct {
 }
 
 type systemHealth struct {
-	DBOK             bool                    `json:"dbOk"`
-	DBLatencyMs      int64                   `json:"dbLatencyMs"`
-	PageSpeedKeySet  bool                    `json:"pagespeedKeySet"`
-	ResendKeySet     bool                    `json:"resendKeySet"`
-	JWTSecretSet     bool                    `json:"jwtSecretSet"`
-	TapKeySet        bool                    `json:"tapKeySet"`
-	PageSpeed        adminstate.HealthState  `json:"pagespeed"`
-	Resend           adminstate.HealthState  `json:"resend"`
+	DBOK            bool                   `json:"dbOk"`
+	DBLatencyMs     int64                  `json:"dbLatencyMs"`
+	PageSpeedKeySet bool                   `json:"pagespeedKeySet"`
+	ResendKeySet    bool                   `json:"resendKeySet"`
+	JWTSecretSet    bool                   `json:"jwtSecretSet"`
+	TapKeySet       bool                   `json:"tapKeySet"`
+	PageSpeed       adminstate.HealthState `json:"pagespeed"`
+	Resend          adminstate.HealthState `json:"resend"`
 }
 
 type adminOverviewResp struct {
-	CurrentDate        string                   `json:"currentDate"`
-	AdminEmail         string                   `json:"adminEmail,omitempty"`
-	AnySignedInIsAdmin bool                     `json:"anySignedInIsAdmin"`
-	Users              []adminUserRow           `json:"users"`
-	AnonymousVisitors  []adminVisitorRow        `json:"anonymousVisitors"`
-	RecentAudits       []recentAuditRow         `json:"recentAudits"`
-	AuditsByDay        []dayCount               `json:"auditsByDay"`
-	TopURLs            []urlCount               `json:"topUrls"`
+	CurrentDate        string                    `json:"currentDate"`
+	AdminEmail         string                    `json:"adminEmail,omitempty"`
+	AnySignedInIsAdmin bool                      `json:"anySignedInIsAdmin"`
+	Users              []adminUserRow            `json:"users"`
+	AnonymousVisitors  []adminVisitorRow         `json:"anonymousVisitors"`
+	RecentAudits       []recentAuditRow          `json:"recentAudits"`
+	AuditsByDay        []dayCount                `json:"auditsByDay"`
+	TopURLs            []urlCount                `json:"topUrls"`
 	FailureLog         []adminstate.FailureEntry `json:"failureLog"`
-	SystemHealth       systemHealth             `json:"systemHealth"`
-	FeatureFlags       map[string]bool          `json:"featureFlags"`
-	SlowAudits         []slowAuditRow           `json:"slowAudits"`
-	AuditOutcomes      []auditOutcomeRow        `json:"auditOutcomes"`
+	SystemHealth       systemHealth              `json:"systemHealth"`
+	FeatureFlags       map[string]bool           `json:"featureFlags"`
+	SlowAudits         []slowAuditRow            `json:"slowAudits"`
+	AuditOutcomes      []auditOutcomeRow         `json:"auditOutcomes"`
 }
 
 type updateUserUsageReq struct {
@@ -544,7 +544,7 @@ func AdminPatchUserHandler() http.HandlerFunc {
 	}
 }
 
-// AdminToggleFlagHandler turns a feature flag on or off in-memory. Restart resets.
+// AdminToggleFlagHandler turns a feature flag on or off and persists it when a DB is available.
 func AdminToggleFlagHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := requireAdmin(r.Context()); err != nil {
@@ -561,6 +561,19 @@ func AdminToggleFlagHandler() http.HandlerFunc {
 		if body.Name == "" {
 			writeJSONError(w, http.StatusBadRequest, "flag name is required")
 			return
+		}
+		if db.IsAvailable() {
+			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+			_, err := db.Pool.Exec(ctx, `
+				INSERT INTO feature_flags (name, enabled, updated_at)
+				VALUES ($1, $2, NOW())
+				ON CONFLICT (name) DO UPDATE SET enabled = EXCLUDED.enabled, updated_at = NOW()`,
+				body.Name, body.Enabled)
+			cancel()
+			if err != nil {
+				writeJSONError(w, http.StatusInternalServerError, "could not persist feature flag")
+				return
+			}
 		}
 		adminstate.SetFlag(body.Name, body.Enabled)
 		writeJSON(w, http.StatusOK, map[string]any{"ok": true, "name": body.Name, "enabled": body.Enabled})

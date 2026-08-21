@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LogoWordmark } from "../ui/Logo";
 import { UserMenu } from "../auth/UserMenu";
 import { useAuth } from "../../context/useAuth";
 import { AuthModal } from "../auth/AuthModal";
 import { createCheckoutSession, cancelSubscription } from "../../services/authApi";
+import { track } from "../../lib/analytics";
 
 type Interval = "monthly" | "yearly";
 
@@ -22,7 +23,10 @@ export function GoProPage() {
   const isPro = user?.plan === "pro";
   const billingEnabled = user?.billingEnabled === true;
 
+  useEffect(() => { track("pricing_view", { signed_in: Boolean(user) }); }, [user]);
+
   async function handleUpgrade() {
+    track("upgrade_started", { interval, signed_in: Boolean(user) });
     if (!user) { setAuthOpen(true); return; }
     if (!billingEnabled) {
       setError("Self-serve billing is currently unavailable. Pro access is admin-granted.");
@@ -35,6 +39,7 @@ export function GoProPage() {
       window.location.href = session.url;
       // Keep busy=true after redirect — page is navigating away
     } catch (err) {
+      track("upgrade_failed");
       setError(err instanceof Error ? err.message : "Could not start checkout");
       setBusy(null);
     }
@@ -50,6 +55,7 @@ export function GoProPage() {
     setBusy("cancel");
     try {
       await cancelSubscription();
+      track("subscription_cancelled");
       setCancelled(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not cancel subscription");

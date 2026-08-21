@@ -100,10 +100,10 @@ export function HistoryModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
-        <div className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-lg border border-zinc-800 bg-zinc-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div role="dialog" aria-modal="true" aria-labelledby="history-modal-title" className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-lg border border-zinc-800 bg-zinc-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-zinc-800">
             <div>
-              <h2 className="text-sm font-semibold text-zinc-100">Audit history</h2>
+              <h2 id="history-modal-title" className="text-sm font-semibold text-zinc-100">Audit history</h2>
               <p className="mt-1 text-[11px] text-zinc-500">Select two audits to compare changes over time.</p>
             </div>
             <div className="flex items-center gap-3">

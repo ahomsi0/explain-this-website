@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ahomsi/explain-website/internal/adminstate"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -84,6 +85,7 @@ func Init(ctx context.Context) error {
 		Pool = nil
 		return fmt.Errorf("migrate: %w", err)
 	}
+	loadPersistedFlags(ctx)
 	return nil
 }
 
@@ -107,6 +109,12 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS feature_flags (
+    name       TEXT PRIMARY KEY,
+    enabled    BOOLEAN NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS audits (
@@ -239,4 +247,22 @@ func migrate(ctx context.Context) error {
 		ownerEmail,
 	)
 	return err
+}
+
+func loadPersistedFlags(ctx context.Context) {
+	rows, err := Pool.Query(ctx, `SELECT name, enabled FROM feature_flags`)
+	if err != nil {
+		log.Printf("could not load persisted feature flags: %v", err)
+		return
+	}
+	defer rows.Close()
+	flags := map[string]bool{}
+	for rows.Next() {
+		var name string
+		var enabled bool
+		if err := rows.Scan(&name, &enabled); err == nil {
+			flags[name] = enabled
+		}
+	}
+	adminstate.LoadFlags(flags)
 }

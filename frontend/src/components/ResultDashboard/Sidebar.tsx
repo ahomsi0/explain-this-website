@@ -73,7 +73,9 @@ export function Sidebar({
           return (
             <button
               key={item.id}
+              type="button"
               onClick={() => onSelect(item.id)}
+              aria-current={isActive ? "page" : undefined}
               className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 isActive
                   ? "text-violet-300 border border-transparent shadow-[inset_3px_0_0_#7c3aed]"
@@ -93,6 +95,7 @@ export function Sidebar({
       <div className="mt-auto flex flex-col gap-3 pt-4">
         {onNewAudit && (
           <button
+            type="button"
             onClick={onNewAudit}
             className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-violet-300 hover:bg-violet-200 text-violet-950 transition-colors"
           >
@@ -106,6 +109,7 @@ export function Sidebar({
         <div className="border-t border-zinc-800/60 pt-3 flex flex-col gap-0.5">
           {isSignedIn && onShowHistory && (
             <button
+              type="button"
               onClick={onShowHistory}
               className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
             >
@@ -129,6 +133,18 @@ export function Sidebar({
               </svg>
             </span>
             <span>Support</span>
+          </a>
+          <a
+            href="/privacy"
+            className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
+          >
+            <span>Privacy</span>
+          </a>
+          <a
+            href="/terms"
+            className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
+          >
+            <span>Terms</span>
           </a>
         </div>
 
@@ -158,7 +174,9 @@ export function MobileSectionNav({
           return (
             <button
               key={item.id}
+              type="button"
               onClick={() => onSelect(item.id)}
+              aria-current={isActive ? "page" : undefined}
               className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 isActive
                   ? "bg-violet-500/10 text-violet-300 border border-violet-500/30"
