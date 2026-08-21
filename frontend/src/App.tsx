@@ -16,17 +16,21 @@ import { ConsentBanner } from "./components/privacy/ConsentBanner";
 import { LegalPage } from "./components/privacy/LegalPage";
 import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
 import { SiteFooter } from "./components/ui/SiteFooter";
+import { SiteHeader } from "./components/ui/SiteHeader";
+import { AuthModal } from "./components/auth/AuthModal";
+import { HistoryModal } from "./components/auth/HistoryModal";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
 
 type AnalysisSource = "landing" | "example" | "report";
 
 // Single app shell: every route renders inside this so the whole site shares
-// one footer. Pages keep their own backgrounds and heights; the footer always
-// closes the page.
-function PageShell({ children }: { children: ReactNode }) {
+// one footer, and pre-analysis pages additionally mount the shared header.
+// Pages keep their own backgrounds and heights.
+function PageShell({ children, header }: { children: ReactNode; header?: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
+      {header}
       <div className="flex-1 flex flex-col">{children}</div>
       <SiteFooter />
     </div>
@@ -124,14 +128,30 @@ function AppInner() {
     }
   }, [pathname, status, result]);
 
+  // Shared header + global auth/history modals for every pre-analysis page.
+  // The results dashboard, shared reports, and admin keep their own chrome.
+  const chrome = (
+    <>
+      <SiteHeader onSignIn={() => setAuthOpen(true)} onShowHistory={() => setHistoryOpen(true)} />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      {historyOpen && (
+        <HistoryModal
+          open
+          onClose={() => setHistoryOpen(false)}
+          onOpenAudit={(id) => { window.location.href = `/report/${id}`; }}
+        />
+      )}
+    </>
+  );
+
   if (isDashboardRoute) {
     return <PageShell><AdminDashboard /></PageShell>;
   }
 
-  if (pathname === "/privacy") return <PageShell><LegalPage kind="privacy" /></PageShell>;
-  if (pathname === "/terms") return <PageShell><LegalPage kind="terms" /></PageShell>;
-  if (pathname === "/go-pro") return <PageShell><GoProPage /></PageShell>;
-  if (pathname === "/whats-new") return <PageShell><WhatsNewPage /></PageShell>;
+  if (pathname === "/privacy") return <PageShell header={chrome}><LegalPage kind="privacy" /></PageShell>;
+  if (pathname === "/terms") return <PageShell header={chrome}><LegalPage kind="terms" /></PageShell>;
+  if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
+  if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
 
   // Shared report route takes over the whole page.
   if (loadingShared) {
@@ -168,15 +188,13 @@ function AppInner() {
   }
 
   return (
-    <PageShell>
+    <PageShell header={status === "success" ? undefined : chrome}>
       {status === "idle" && (
         <LandingPage
           user={user}
           usage={usage}
           onAnalyze={handleAnalyze}
-          authOpen={authOpen}
           setAuthOpen={setAuthOpen}
-          historyOpen={historyOpen}
           setHistoryOpen={setHistoryOpen}
         />
       )}

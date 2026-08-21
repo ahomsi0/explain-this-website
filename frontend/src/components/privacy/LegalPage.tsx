@@ -1,5 +1,3 @@
-import { LogoWordmark } from "../ui/Logo";
-
 type LegalKind = "privacy" | "terms";
 
 const CONTENT: Record<LegalKind, { title: string; intro: string; sections: { title: string; body: string }[] }> = {
@@ -31,12 +29,6 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
   const content = CONTENT[kind];
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <header className="border-b border-zinc-900/80 px-4 sm:px-6">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between">
-          <a href="/" aria-label="Explain This Website home"><LogoWordmark size={20} /></a>
-          <a href="/" className="text-xs text-zinc-400 transition-colors hover:text-zinc-100">Back to analyzer</a>
-        </div>
-      </header>
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Explain This Website</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{content.title}</h1>

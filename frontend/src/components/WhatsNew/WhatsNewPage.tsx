@@ -1,5 +1,3 @@
-import { LogoWordmark } from "../ui/Logo";
-
 type UpdateTone = "violet" | "emerald" | "amber";
 
 type Update = {
@@ -95,17 +93,6 @@ export function WhatsNewPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] hero-noise" aria-hidden="true" />
 
       <div className="relative z-10">
-        <header className="border-b border-zinc-900/80 px-4 sm:px-6 backdrop-blur-md bg-zinc-950/40">
-          <div className="mx-auto flex h-14 max-w-4xl items-center justify-between">
-            <a href="/" aria-label="Explain This Website home">
-              <LogoWordmark size={20} />
-            </a>
-            <a href="/" className="text-xs text-zinc-400 transition-colors hover:text-zinc-100">
-              Back to analyzer
-            </a>
-          </div>
-        </header>
-
         <main className="mx-auto max-w-4xl px-4 sm:px-6">
           {/* Page header */}
           <section className="pt-14 pb-12 sm:pt-20 sm:pb-16 fade-up">
