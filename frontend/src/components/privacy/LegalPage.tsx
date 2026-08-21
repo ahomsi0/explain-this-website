@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { LogoWordmark } from "../ui/Logo";
-import { getAnalyticsConsent, setAnalyticsConsent } from "../../lib/analytics";
 
 type LegalKind = "privacy" | "terms";
 
@@ -31,7 +29,6 @@ const CONTENT: Record<LegalKind, { title: string; intro: string; sections: { tit
 
 export function LegalPage({ kind }: { kind: LegalKind }) {
   const content = CONTENT[kind];
-  const [consent, setConsent] = useState(getAnalyticsConsent);
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <header className="border-b border-zinc-900/80 px-4 sm:px-6">
@@ -45,15 +42,6 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{content.title}</h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">{content.intro}</p>
         <p className="mt-3 text-xs text-zinc-600">Last updated: August 21, 2026</p>
-        {kind === "privacy" && (
-          <div className="mt-6 rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-            <p className="text-xs text-zinc-400">Analytics preference: <span className="font-medium text-zinc-200">{consent === "granted" ? "allowed" : consent === "denied" ? "declined" : "not set"}</span></p>
-            <div className="mt-3 flex gap-2">
-              <button type="button" onClick={() => { setAnalyticsConsent("granted"); setConsent("granted"); }} className="rounded-md bg-violet-500 px-3 py-2 text-xs font-semibold text-white hover:bg-violet-400">Allow analytics</button>
-              <button type="button" onClick={() => { setAnalyticsConsent("denied"); setConsent("denied"); }} className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-zinc-800">Decline</button>
-            </div>
-          </div>
-        )}
         <div className="mt-10 space-y-8">
           {content.sections.map((section) => (
             <section key={section.title}>
