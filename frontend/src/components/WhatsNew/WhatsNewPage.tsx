@@ -1,4 +1,5 @@
 import { LogoWordmark } from "../ui/Logo";
+import { SiteFooter } from "../ui/SiteFooter";
 
 type UpdateTone = "violet" | "emerald" | "amber";
 
@@ -210,16 +211,7 @@ export function WhatsNewPage() {
           </section>
         </main>
 
-        <footer className="border-t border-zinc-900/80 px-4 py-8 sm:px-6">
-          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 text-[11px] text-zinc-600">
-            <span>© {new Date().getFullYear()} Explain This Website</span>
-            <div className="flex items-center gap-4">
-              <a href="/whats-new" className="text-zinc-400">What&apos;s new</a>
-              <a href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy</a>
-              <a href="/terms" className="hover:text-zinc-300 transition-colors">Terms</a>
-            </div>
-          </div>
-        </footer>
+        <SiteFooter />
       </div>
     </div>
   );
