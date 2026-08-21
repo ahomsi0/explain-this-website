@@ -10,6 +10,10 @@ export const mockAnalysisResult: AnalysisResult = {
     language: "en",
     pageLoadHint: "medium",
   },
+  rendering: {
+    mode: "server-html",
+    likelyClientRendered: false,
+  },
   techStack: [
     { name: "Shopify", category: "ecommerce", confidence: "high" },
     { name: "Google Analytics 4", category: "analytics", confidence: "high" },

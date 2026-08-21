@@ -28,7 +28,6 @@ test.describe("report, history, and cancellation flows", () => {
   });
 
   test("opens history and compares two saved audits", async ({ page }) => {
-    await page.addInitScript((token) => localStorage.setItem("etw_auth_token", token), "playwright-test-token");
     await installApiFallback(page);
     await mockJson(page, "/api/auth/me", testUser);
     await mockJson(page, "/api/usage", testUser.usage);

@@ -174,15 +174,22 @@ func validVisitorCookie(value string) bool {
 	return hmac.Equal([]byte(parts[1]), []byte(expected))
 }
 
-// EnsureVisitorCookie gives anonymous browsers a stable, signed quota key. IP
-// remains the safe fallback for first requests and clients that reject cookies.
+// EnsureVisitorCookie gives anonymous browsers a stable, signed quota key.
 func EnsureVisitorCookie(w http.ResponseWriter, r *http.Request) {
+	_ = ensureVisitorCookieValue(w, r)
+}
+
+// ensureVisitorCookieValue returns a stable pseudonymous visitor ID and sets a
+// cookie when the request does not already have one. Returning the ID lets the
+// first request use the cookie-backed key immediately instead of falling back
+// to storing an IP address in usage or conversion data.
+func ensureVisitorCookieValue(w http.ResponseWriter, r *http.Request) string {
 	if cookie, err := r.Cookie(visitorCookieName); err == nil && validVisitorCookie(cookie.Value) {
-		return
+		return "cookie:" + strings.SplitN(cookie.Value, ".", 2)[0]
 	}
 	id := make([]byte, 16)
 	if _, err := rand.Read(id); err != nil {
-		return
+		return "cookie:unavailable"
 	}
 	idHex := hex.EncodeToString(id)
 	sig := hmac.New(sha256.New, visitorCookieSecret())
@@ -202,6 +209,7 @@ func EnsureVisitorCookie(w http.ResponseWriter, r *http.Request) {
 		Secure:   secure,
 		SameSite: sameSite,
 	})
+	return "cookie:" + idHex
 }
 
 func loadUserPlan(ctx context.Context, userID int64) (userPlan, error) {

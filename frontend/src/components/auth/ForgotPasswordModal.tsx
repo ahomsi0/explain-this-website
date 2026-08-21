@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { requestPasswordReset, resetPassword, setToken } from "../../services/authApi";
-import { fetchMe } from "../../services/authApi";
+import { requestPasswordReset, resetPassword } from "../../services/authApi";
 
 type Step = "email" | "code";
 
@@ -73,11 +72,9 @@ export function ForgotPasswordModal({
     setBusy(true);
     try {
       const res = await resetPassword(email, code, newPassword);
-      if (res.token) {
-        setToken(res.token);
-        // Trigger a fetch so any other parts of the app see the user immediately.
-        await fetchMe().catch(() => {});
-        // Easiest "now you're logged in" UX: reload so AuthProvider picks it up.
+      if (res.ok) {
+        // The API sets an HttpOnly session cookie. Reload so AuthProvider
+        // validates that cookie and updates the rest of the app.
         window.location.reload();
         return;
       }

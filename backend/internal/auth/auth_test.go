@@ -50,3 +50,29 @@ func TestRequireSessionAuthRejectsAPIKeys(t *testing.T) {
 		t.Fatalf("API-key request status = %d, want %d", response.Code, http.StatusUnauthorized)
 	}
 }
+
+func TestSessionCookieIsHttpOnlyAndMiddlewareReadsIt(t *testing.T) {
+	t.Setenv("JWT_SECRET", "test-only-secret")
+	token, err := IssueToken(42)
+	if err != nil {
+		t.Fatalf("IssueToken() error = %v", err)
+	}
+
+	request := httptest.NewRequest(http.MethodGet, "https://frontend.test", nil)
+	response := httptest.NewRecorder()
+	SetSessionCookie(response, request, token)
+	cookie := response.Result().Cookies()[0]
+	if cookie.Name != SessionCookieName || !cookie.HttpOnly || !cookie.Secure {
+		t.Fatalf("unexpected session cookie: %+v", cookie)
+	}
+
+	request = httptest.NewRequest(http.MethodGet, "https://frontend.test", nil)
+	request.AddCookie(cookie)
+	var got int64
+	Middleware(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+		got = UserIDFromContext(r.Context())
+	})).ServeHTTP(httptest.NewRecorder(), request)
+	if got != 42 {
+		t.Fatalf("cookie middleware user id = %d, want 42", got)
+	}
+}

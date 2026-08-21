@@ -1,3 +1,5 @@
+import { recordServerEvent } from "./serverEvents";
+
 const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID ?? "G-7GDKBRCPKM";
 const CONSENT_KEY = "etw_analytics_consent";
 const CONSENT_EVENT = "etw-analytics-consent-change";
@@ -61,6 +63,8 @@ export function onAnalyticsConsentChange(listener: () => void): () => void {
 
 export function track(eventName: string, params: EventParams = {}): void {
   if (!hasAnalyticsConsent()) return;
+  const source = typeof params.source === "string" ? params.source : "";
+  recordServerEvent(eventName, source, params);
   enableAnalytics();
   window.gtag?.("event", eventName, params);
 }

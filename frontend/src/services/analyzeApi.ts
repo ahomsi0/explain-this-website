@@ -1,15 +1,7 @@
 import type { AnalysisResult } from "../types/analysis";
-import { getToken } from "./authApi";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const REPORT_TIMEOUT_MS = 180_000;
-
-// Adds Authorization header if a token is present, otherwise omits it.
-function buildHeaders(extra: Record<string, string> = {}): HeadersInit {
-  const t = getToken();
-  const base = { ...extra };
-  return t ? { ...base, Authorization: `Bearer ${t}` } : base;
-}
 
 export async function fetchReport(id: string): Promise<AnalysisResult> {
   const controller = new AbortController();
@@ -17,7 +9,6 @@ export async function fetchReport(id: string): Promise<AnalysisResult> {
 
   try {
     const res = await fetch(`${API_URL}/api/report/${id}`, {
-      headers: buildHeaders(),
       credentials: "include",
       signal: controller.signal,
     });
@@ -72,7 +63,7 @@ export async function analyzeWebsite(
     try {
       const response = await fetch(`${API_URL}/api/analyze`, {
         method: "POST",
-        headers: buildHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
         credentials: "include",
         signal: signal ? AbortSignal.any([controller.signal, signal]) : controller.signal,

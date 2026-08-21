@@ -216,6 +216,21 @@ CREATE TABLE IF NOT EXISTS anonymous_daily_usage (
     PRIMARY KEY (visitor_id, usage_date)
 );
 
+CREATE TABLE IF NOT EXISTS conversion_events (
+    id           BIGSERIAL PRIMARY KEY,
+    event_name   TEXT NOT NULL,
+    anonymous_id TEXT NOT NULL,
+    user_id      BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    source       TEXT,
+    properties   JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS conversion_events_created_at_idx
+    ON conversion_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS conversion_events_name_created_at_idx
+    ON conversion_events (event_name, created_at DESC);
+
 ALTER TABLE users   ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMPTZ;
 ALTER TABLE users   ADD COLUMN IF NOT EXISTS admin_note   TEXT;
 ALTER TABLE audits  ADD COLUMN IF NOT EXISTS duration_ms   INTEGER;

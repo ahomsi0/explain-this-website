@@ -87,6 +87,15 @@ type Overview struct {
 	PageLoadHint string `json:"pageLoadHint"` // lightweight, medium, heavy
 }
 
+// RenderingInfo describes how complete the server-delivered HTML appears to
+// be. The analyzer does not execute target-site JavaScript, so this notice
+// prevents a sparse app shell from looking like a complete audit.
+type RenderingInfo struct {
+	Mode                 string `json:"mode"` // server-html
+	LikelyClientRendered bool   `json:"likelyClientRendered"`
+	Notice               string `json:"notice,omitempty"`
+}
+
 // UXResult holds the results of conversion and UX heuristic analysis.
 type UXResult struct {
 	// Conversion signals
@@ -308,16 +317,17 @@ type UsageSummary struct {
 
 // AnalysisResult is the full response returned by POST /api/analyze.
 type AnalysisResult struct {
-	URL             string       `json:"url"`
-	FetchedAt       time.Time    `json:"fetchedAt"`
-	Overview        Overview     `json:"overview"`
-	TechStack       []TechItem   `json:"techStack"`
-	SEOChecks       []SEOCheck   `json:"seoChecks"`
-	UX              UXResult     `json:"ux"`
-	PageStats       PageStats    `json:"pageStats"`
-	ContentStats    ContentStats `json:"contentStats"`
-	WeakPoints      []string     `json:"weakPoints"`
-	Recommendations []string     `json:"recommendations"`
+	URL             string        `json:"url"`
+	FetchedAt       time.Time     `json:"fetchedAt"`
+	Overview        Overview      `json:"overview"`
+	Rendering       RenderingInfo `json:"rendering"`
+	TechStack       []TechItem    `json:"techStack"`
+	SEOChecks       []SEOCheck    `json:"seoChecks"`
+	UX              UXResult      `json:"ux"`
+	PageStats       PageStats     `json:"pageStats"`
+	ContentStats    ContentStats  `json:"contentStats"`
+	WeakPoints      []string      `json:"weakPoints"`
+	Recommendations []string      `json:"recommendations"`
 	// Insight layer
 	Intent             IntentSummary         `json:"intent"`
 	CustomerView       CustomerView          `json:"customerView"`

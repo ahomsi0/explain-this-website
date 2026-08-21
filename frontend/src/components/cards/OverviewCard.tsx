@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Overview, PageLoadHint, AIDetection } from "../../types/analysis";
+import type { Overview, PageLoadHint, AIDetection, RenderingInfo } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 
@@ -13,8 +13,8 @@ function screenshotUrl(url: string) {
   return `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
 }
 
-export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
-  overview: Overview; url: string; fetchedAt: string; aiDetection?: AIDetection;
+export function OverviewCard({ overview, rendering, url, fetchedAt, aiDetection }: {
+  overview: Overview; rendering?: RenderingInfo; url: string; fetchedAt: string; aiDetection?: AIDetection;
 }) {
   const load = loadLabel[overview.pageLoadHint];
   const [screenshotState, setScreenshotState] = useState<"loading" | "loaded" | "failed">("loading");
@@ -103,6 +103,12 @@ export function OverviewCard({ overview, url, fetchedAt, aiDetection }: {
           {new Date(fetchedAt).toLocaleString()}
         </p>
         <p className="mt-2 text-[10px] text-zinc-600">Page preview provided by Microlink. It may be unavailable for blocked or private pages.</p>
+
+        {rendering?.likelyClientRendered && (
+          <div className="mt-3 rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-300">
+            {rendering.notice ?? "This page appears to rely on client-side JavaScript, so some rendered content may be missing from this audit."}
+          </div>
+        )}
 
         {/* Lightbox */}
         {lightboxOpen && (

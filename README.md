@@ -83,7 +83,7 @@ Set `VITE_USE_MOCK=true` in `frontend/.env.local`. The app returns mock data aft
 
 ## Privacy and conversion measurement
 
-The frontend has `/privacy` and `/terms` pages and explains analysis boundaries on the landing page. Google Analytics is loaded only after explicit opt-in. When consent is granted, the product records `landing_view`, `analysis_started`, `analysis_completed`, `analysis_failed`, `signup_completed`, and `repeat_usage` events so the funnel can be measured from first visit through return analysis. Repeat usage is counted in the browser and does not require sending an account identifier to analytics.
+The frontend has `/privacy` and `/terms` pages and explains analysis boundaries on the landing page. Google Analytics and first-party conversion events are loaded/recorded only after explicit opt-in. Consent enables `landing_view`, `analysis_started`, `analysis_completed`, `analysis_failed`, `signup_completed`, and `repeat_usage` events. First-party events use a signed pseudonymous visitor ID and optional account ID so the admin dashboard can measure the funnel without storing page contents or credentials. Browser storage remains a local convenience for identifying repeat usage before an account exists.
 
 ## Testing
 
@@ -97,7 +97,7 @@ npx playwright install chromium       # first browser-test run only
 npm run test:e2e
 ```
 
-Vitest covers utilities, API behavior, and component rendering/interactions. Playwright covers critical browser flows with mocked API responses: landing → analysis → signup, auth errors and password reset, consent behavior, shared reports, history comparison, and analysis cancellation. GitHub Actions runs these checks plus `go test ./...` and `go vet ./...` on pushes to `main` and pull requests.
+Vitest covers utilities, API behavior, and component rendering/interactions. Playwright covers critical browser flows with mocked API responses: landing → analysis → signup, auth errors and password reset, consent behavior, shared reports, history comparison, and analysis cancellation. The backend also has an opt-in HTTP/database integration flow test; set `INTEGRATION_DATABASE_URL` locally to run it. GitHub Actions runs the integration test against a temporary Postgres service plus `go vet ./...` on pushes to `dev` and `main` and pull requests.
 
 ---
 
@@ -181,10 +181,13 @@ Returns a previously saved analysis result by its share ID. Active public links 
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/auth/signup` | Create account |
-| `POST` | `/api/auth/login` | Sign in, returns JWT |
+| `POST` | `/api/auth/login` | Sign in and set an HttpOnly session cookie |
+| `POST` | `/api/auth/logout` | Clear the browser session cookie |
 | `GET` | `/api/auth/me` | Current user info |
 | `POST` | `/api/auth/forgot-password` | Send reset code |
 | `POST` | `/api/auth/reset-password` | Submit new password |
+
+The browser session is stored in an HttpOnly cookie. Cross-origin browser calls must use `credentials: include` and an allowed `Origin`.
 
 ---
 
@@ -200,6 +203,8 @@ Returns a previously saved analysis result by its share ID. Active public links 
 ### Usage, API keys, and webhooks
 
 API-key requests may use `X-API-Key: etw_...` or `Authorization: Api-Key etw_...`. The key secret is returned only once when created.
+
+`POST /api/events` accepts the consent-gated conversion events sent by the frontend. Events are stored with a signed pseudonymous visitor ID and optional account ID for the admin funnel dashboard.
 
 | Method | Path | Description |
 |---|---|---|
