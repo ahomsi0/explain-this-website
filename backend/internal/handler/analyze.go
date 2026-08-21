@@ -31,6 +31,12 @@ type Config struct {
 	Parse     func(context.Context, string, string, string) (model.AnalysisResult, error)
 }
 
+// parseTimeoutSec bounds the parse phase (PageSpeed + link probes + heuristics).
+// It is deliberately longer than FETCH_TIMEOUT_SEC: desktop PageSpeed runs
+// regularly take 60–80s. Worst case fetch(60s) + parse(150s) + AI summary(20s)
+// stays inside the server's 4-minute write timeout.
+const parseTimeoutSec = 150 * time.Second
+
 // AnalyzeHandler returns an http.HandlerFunc for POST /api/analyze.
 func AnalyzeHandler(cfg Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -103,11 +109,9 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			}
 
 			// Fetch HTML with a deadline.
-			timeout := time.Duration(cfg.FetchTimeoutSec) * time.Second
-			ctx, cancel := context.WithTimeout(r.Context(), timeout)
-			defer cancel()
-
-			rawHTML, headers, err := fetchHTML(ctx, rawURL, cfg.MaxBodyBytes)
+			fetchCtx, fetchCancel := context.WithTimeout(r.Context(), time.Duration(cfg.FetchTimeoutSec)*time.Second)
+			rawHTML, headers, err := fetchHTML(fetchCtx, rawURL, cfg.MaxBodyBytes)
+			fetchCancel()
 			if err != nil {
 				adminstate.RecordAnalyzeFailure(rawURL, uid, "fetch: "+err.Error())
 				writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
@@ -115,9 +119,13 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			}
 			respHeaders = headers
 
-			// Parse and analyse.
+			// Parse and analyse. Parsing gets its own, longer budget because it
+			// includes the PageSpeed calls, whose desktop runs regularly take
+			// 60–80s and must not be cut off by the HTML-fetch deadline.
+			parseCtx, parseCancel := context.WithTimeout(r.Context(), parseTimeoutSec)
+			defer parseCancel()
 			parseStart := time.Now()
-			parsed, err := parse(ctx, rawHTML, rawURL, cfg.PageSpeedAPIKey)
+			parsed, err := parse(parseCtx, rawHTML, rawURL, cfg.PageSpeedAPIKey)
 			parseDurationMs = int(time.Since(parseStart).Milliseconds())
 			if err != nil {
 				if r.Context().Err() != nil {
@@ -177,17 +185,22 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		shareable := uid != 0 && usage.Plan == planPro
 		perfAvailable := result.Performance != nil && result.Performance.Available
 
+		// Persist a copy without the caller's usage snapshot: shared reports
+		// are public and must not expose the owner's plan or daily quota.
+		persisted := result
+		persisted.Usage = nil
+
 		// Persist result so it can be retrieved via history and, for Pro users,
 		// via public shared links.
-		reportID := globalStore.save(result, uid, shareable)
+		reportID := globalStore.save(persisted, uid, shareable)
 		if shareable {
 			result.ReportID = reportID
 		}
 
 		// If the user is logged in, also save to their permanent history.
 		if uid != 0 {
-			saveAuditForUser(r.Context(), uid, reportID, result, shareable, parseDurationMs, perfAvailable)
-			dispatchAnalysisCompleted(uid, reportID, result)
+			saveAuditForUser(r.Context(), uid, reportID, persisted, shareable, parseDurationMs, perfAvailable)
+			dispatchAnalysisCompleted(uid, reportID, persisted)
 		}
 
 		w.WriteHeader(http.StatusOK)

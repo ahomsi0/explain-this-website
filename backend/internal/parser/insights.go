@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/ahomsi/explain-website/internal/model"
 )
@@ -249,8 +250,8 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 
 // buildCustomerView produces a first-time visitor evaluation of the page.
 func buildCustomerView(overview model.Overview, ux model.UXResult, seo map[string]string, stats model.PageStats, isHTTPS bool) model.CustomerView {
-	titleOK := overview.Title != "" && len(overview.Title) >= 15
-	descOK := overview.Description != "" && len(overview.Description) >= 50
+	titleOK := overview.Title != "" && utf8.RuneCountInString(overview.Title) >= 15
+	descOK := overview.Description != "" && utf8.RuneCountInString(overview.Description) >= 50
 	h1OK := stats.H1Count == 1
 	offerClear := titleOK && (h1OK || descOK)
 
@@ -488,7 +489,7 @@ func computeFirstImpression(overview model.Overview, ux model.UXResult, seo map[
 	if ux.HasTrustSignals || ux.HasSocialProof {
 		score++ // credibility signal
 	}
-	if overview.Description != "" && len(overview.Description) >= 50 {
+	if overview.Description != "" && utf8.RuneCountInString(overview.Description) >= 50 {
 		score++ // offer described
 	}
 	if stats.RenderBlockingScripts == 0 && stats.ScriptCount <= 8 {

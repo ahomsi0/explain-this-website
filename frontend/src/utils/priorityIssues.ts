@@ -47,11 +47,33 @@ function makeIssue(
   };
 }
 
+// Older saved audits (history / shared reports) predate some newer result
+// sections. Backfill them with neutral defaults so downstream reads never
+// crash on undefined — missing sections simply produce no issues.
+function withLegacyDefaults(result: AnalysisResult): AnalysisResult {
+  return {
+    ...result,
+    ux: result.ux ?? ({} as AnalysisResult["ux"]),
+    pageStats: result.pageStats ?? ({} as AnalysisResult["pageStats"]),
+    contentStats: result.contentStats ?? ({} as AnalysisResult["contentStats"]),
+    seoChecks: result.seoChecks ?? [],
+    linkCheck: result.linkCheck ?? { checked: 0, ok: 0, broken: 0, redirects: 0, items: [] },
+    securityHeaders: result.securityHeaders ?? [],
+    imageAudit: result.imageAudit ?? ({} as AnalysisResult["imageAudit"]),
+    siteFreshness: result.siteFreshness ?? ({} as AnalysisResult["siteFreshness"]),
+    conversionScores: result.conversionScores ?? ({} as AnalysisResult["conversionScores"]),
+    copyAnalysis: result.copyAnalysis ?? ({} as AnalysisResult["copyAnalysis"]),
+    // Default to a passing score so legacy reports don't raise a false intent issue.
+    intentAlignment: result.intentAlignment ?? { score: 100, checks: [] },
+  };
+}
+
 export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
+  const r = withLegacyDefaults(result);
   const issues: PriorityIssue[] = [];
 
   // SEO: FAIL checks
-  (result.seoChecks ?? []).filter((c) => !c.optional && c.status === "fail").forEach((c) => {
+  (r.seoChecks ?? []).filter((c) => !c.optional && c.status === "fail").forEach((c) => {
     issues.push(makeIssue(
       `seo-fail-${c.id}`,
       `Fix SEO: ${c.label}`,
@@ -65,7 +87,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   });
 
   // SEO: WARNING checks
-  (result.seoChecks ?? []).filter((c) => !c.optional && c.status === "warning").forEach((c) => {
+  (r.seoChecks ?? []).filter((c) => !c.optional && c.status === "warning").forEach((c) => {
     issues.push(makeIssue(
       `seo-warn-${c.id}`,
       `Improve SEO: ${c.label}`,
@@ -79,8 +101,8 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   });
 
   // Broken links
-  if (result.linkCheck.broken > 0) {
-    const n = result.linkCheck.broken;
+  if (r.linkCheck.broken > 0) {
+    const n = r.linkCheck.broken;
     issues.push(makeIssue(
       "broken-links",
       `Fix ${n} broken link${n > 1 ? "s" : ""}`,
@@ -94,7 +116,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Intent alignment
-  if (result.intentAlignment.score < 50) {
+  if (r.intentAlignment.score < 50) {
     issues.push(makeIssue(
       "low-intent",
       "Content doesn't match user intent",
@@ -108,7 +130,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Performance: LCP poor
-  const lcp = result.performance?.mobile?.lcp;
+  const lcp = r.performance?.mobile?.lcp;
   if (lcp?.rating === "poor") {
     issues.push(makeIssue(
       "lcp-poor",
@@ -134,7 +156,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Performance: CLS poor
-  const cls = result.performance?.mobile?.cls;
+  const cls = r.performance?.mobile?.cls;
   if (cls?.rating === "poor") {
     issues.push(makeIssue(
       "cls-poor",
@@ -149,7 +171,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Performance: TBT poor
-  const tbt = result.performance?.mobile?.tbt;
+  const tbt = r.performance?.mobile?.tbt;
   if (tbt?.rating === "poor") {
     issues.push(makeIssue(
       "tbt-poor",
@@ -164,7 +186,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Performance: mobile lighthouse score
-  const mobilePerfScore = result.performance?.mobile?.lighthouse?.performance;
+  const mobilePerfScore = r.performance?.mobile?.lighthouse?.performance;
   if (mobilePerfScore !== undefined) {
     if (mobilePerfScore < 50) {
       issues.push(makeIssue(
@@ -192,11 +214,11 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Image format
-  if (result.imageAudit.modernPct < 50) {
+  if (r.imageAudit.modernPct < 50) {
     issues.push(makeIssue(
       "image-format",
       "Convert images to WebP/AVIF",
-      `Only ${result.imageAudit.modernPct}% of images use modern formats. Switching saves significant bandwidth.`,
+      `Only ${r.imageAudit.modernPct}% of images use modern formats. Switching saves significant bandwidth.`,
       "Re-export or convert all images to WebP or AVIF format and update your image tags.",
       "medium",
       "easy",
@@ -206,11 +228,11 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Lazy loading
-  if (result.imageAudit.missingLazy > 3) {
+  if (r.imageAudit.missingLazy > 3) {
     issues.push(makeIssue(
       "lazy-loading",
       "Add lazy loading to images",
-      `${result.imageAudit.missingLazy} images lack lazy loading — off-screen images delay initial page render.`,
+      `${r.imageAudit.missingLazy} images lack lazy loading — off-screen images delay initial page render.`,
       'Add loading="lazy" to all images that are not in the initial viewport.',
       "medium",
       "easy",
@@ -220,7 +242,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Render-blocking scripts
-  const renderBlockingCount = result.pageStats?.renderBlockingScripts ?? 0;
+  const renderBlockingCount = r.pageStats?.renderBlockingScripts ?? 0;
   if (renderBlockingCount > 2) {
     issues.push(makeIssue(
       "render-blocking",
@@ -235,7 +257,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // UX: No CTA
-  if (!result.ux.hasCTA) {
+  if (!r.ux.hasCTA) {
     issues.push(makeIssue(
       "no-cta",
       "Add a clear call-to-action",
@@ -246,11 +268,11 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
       98,
       "ux",
     ));
-  } else if (result.conversionScores.ctaStrength < 50) {
+  } else if (r.conversionScores.ctaStrength < 50) {
     issues.push(makeIssue(
       "weak-cta",
       "Strengthen the call-to-action",
-      `CTA strength is ${result.conversionScores.ctaStrength}/100. Make the primary action obvious and specific.`,
+      `CTA strength is ${r.conversionScores.ctaStrength}/100. Make the primary action obvious and specific.`,
       "Replace generic labels ('Submit', 'Click here') with specific action text ('Start Free Trial').",
       "high",
       "easy",
@@ -260,7 +282,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // UX: No trust signals
-  if (!result.ux.hasTrustSignals) {
+  if (!r.ux.hasTrustSignals) {
     issues.push(makeIssue(
       "no-trust",
       "No trust signals on the page",
@@ -274,7 +296,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // UX: No social proof
-  if (!result.ux.hasSocialProof) {
+  if (!r.ux.hasSocialProof) {
     issues.push(makeIssue(
       "no-social-proof",
       "Add social proof",
@@ -288,7 +310,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // UX: Not mobile ready
-  if (!result.ux.mobileReady) {
+  if (!r.ux.mobileReady) {
     issues.push(makeIssue(
       "not-mobile",
       "Improve mobile readiness",
@@ -302,7 +324,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // UX: No contact info
-  if (!result.ux.hasContactInfo) {
+  if (!r.ux.hasContactInfo) {
     issues.push(makeIssue(
       "no-contact",
       "Add contact information",
@@ -316,7 +338,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // UX: No privacy policy
-  if (!result.ux.hasPrivacyPolicy) {
+  if (!r.ux.hasPrivacyPolicy) {
     issues.push(makeIssue(
       "no-privacy",
       "Add a privacy policy",
@@ -330,8 +352,8 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: low clarity
-  if (result.conversionScores.clarity < 40) {
-    const n = result.conversionScores.clarity;
+  if (r.conversionScores.clarity < 40) {
+    const n = r.conversionScores.clarity;
     issues.push(makeIssue(
       "low-clarity",
       "Clarify what your site offers",
@@ -345,11 +367,11 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: low trust score
-  if (result.conversionScores.trust < 40) {
+  if (r.conversionScores.trust < 40) {
     issues.push(makeIssue(
       "low-trust-score",
       "Improve trust signals for conversions",
-      `Trust score is ${result.conversionScores.trust}/100 — low trust (below 40) directly reduces conversion rates.`,
+      `Trust score is ${r.conversionScores.trust}/100 — low trust (below 40) directly reduces conversion rates.`,
       "Add verified reviews, security certificates, or money-back guarantees to your page.",
       "high",
       "medium",
@@ -359,8 +381,8 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: high friction
-  if (result.conversionScores.friction > 65) {
-    const n = result.conversionScores.friction;
+  if (r.conversionScores.friction > 65) {
+    const n = r.conversionScores.friction;
     issues.push(makeIssue(
       "high-friction",
       "Reduce conversion friction",
@@ -374,7 +396,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Conversion: generic copy
-  if (result.copyAnalysis.label === "Generic") {
+  if (r.copyAnalysis.label === "Generic") {
     issues.push(makeIssue(
       "generic-copy",
       "Replace generic marketing copy",
@@ -385,11 +407,11 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
       80,
       "conversion",
     ));
-  } else if ((result.copyAnalysis?.vaguePhrases?.length ?? 0) > 2) {
+  } else if ((r.copyAnalysis?.vaguePhrases?.length ?? 0) > 2) {
     issues.push(makeIssue(
       "vague-copy",
       "Replace vague marketing language",
-      `${result.copyAnalysis.vaguePhrases.length} generic phrases detected. Specific copy converts better.`,
+      `${r.copyAnalysis.vaguePhrases.length} generic phrases detected. Specific copy converts better.`,
       "Replace phrases like 'world-class' or 'best-in-class' with concrete facts and numbers.",
       "medium",
       "easy",
@@ -399,7 +421,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Security headers
-  const secFails = (result.securityHeaders ?? []).filter((h) => h.status === "fail").length;
+  const secFails = (r.securityHeaders ?? []).filter((h) => h.status === "fail").length;
   if (secFails >= 3) {
     issues.push(makeIssue(
       "security-headers",
@@ -414,7 +436,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Content: stale
-  if (result.siteFreshness.rating === "stale") {
+  if (r.siteFreshness.rating === "stale") {
     issues.push(makeIssue(
       "stale-content",
       "Update stale content",
@@ -428,7 +450,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   }
 
   // Content: complex reading level
-  if (result.contentStats?.readingLevel === "advanced") {
+  if (r.contentStats?.readingLevel === "advanced") {
     issues.push(makeIssue(
       "complex-content",
       "Content is too complex to read",

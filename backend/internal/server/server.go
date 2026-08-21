@@ -28,6 +28,7 @@ import (
 
 // Start wires up routes and begins listening.
 func Start(cfg config.Config) error {
+	warnIfUntrustedProxy()
 	// Init DB (no-op when DATABASE_URL is unset).
 	dbCtx, dbCancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer dbCancel()
@@ -96,7 +97,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux.HandleFunc("GET /api/usage", handler.UsageHandler())
 	mux.HandleFunc("GET /api/usage/history", auth.RequireSessionAuth(handler.UsageHistoryHandler()))
 	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
-	mux.HandleFunc("GET /api/audits/compare", auth.RequireAuth(handler.CompareAuditsHandler()))
+	mux.HandleFunc("GET /api/audits/compare", auth.RequireSessionAuth(handler.CompareAuditsHandler()))
 	mux.HandleFunc("POST /api/audits/{id}/revoke-share", auth.RequireSessionAuth(handler.AuditRevokeShareHandler()))
 	mux.HandleFunc("GET /api/api-keys", auth.RequireSessionAuth(handler.APIKeyListHandler()))
 	mux.HandleFunc("POST /api/api-keys", auth.RequireSessionAuth(handler.APIKeyCreateHandler()))
@@ -262,6 +263,19 @@ func (rl *rateLimiter) allow(key string, max int) bool {
 // this service does not know which upstream proxy addresses are authoritative.
 func realIP(r *http.Request) string {
 	return requestip.ClientIP(r)
+}
+
+// warnIfUntrustedProxy surfaces a deployment misconfiguration at startup: when
+// running behind a reverse proxy without TRUSTED_PROXY_CIDRS, every request
+// shares the proxy's peer address, collapsing per-IP rate limits (and the
+// IP-based anonymous usage fallback) into one sitewide bucket.
+func warnIfUntrustedProxy() {
+	if strings.TrimSpace(os.Getenv("TRUSTED_PROXY_CIDRS")) != "" {
+		return
+	}
+	log.Printf("WARNING: TRUSTED_PROXY_CIDRS is not set — client IPs fall back to the direct peer address. " +
+		"Behind a reverse proxy (Render, Vercel, nginx, …) all traffic shares one bucket, so per-IP rate limits " +
+		"become sitewide limits. Set TRUSTED_PROXY_CIDRS to your proxy's IPs/CIDRs to restore per-client limits.")
 }
 
 func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {

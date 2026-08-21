@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -121,13 +120,23 @@ func auditFreshness(doc *html.Node, rawHTML string) model.SiteFreshness {
 		}
 	}
 
-	// 5. ISO dates in raw HTML as a last-resort scan (capped to avoid noise)
+	// 5. ISO dates in raw HTML as a last-resort scan. Scan the whole document
+	// (not just the first matches) so the truly latest date wins, and record
+	// both the year and an evidence signal.
 	if latestDate == "" {
-		matches := reISODate.FindAllString(rawHTML, 20)
-		for _, m := range matches {
-			if !isFutureDate(m, now) && m > latestDate {
-				latestDate = m
+		for _, m := range reISODate.FindAllString(rawHTML, -1) {
+			if isFutureDate(m, now) {
+				continue
 			}
+			if m > latestDate {
+				latestDate = m
+				if y, err := strconv.Atoi(m[:4]); err == nil && y <= currentYear {
+					latestYear = y
+				}
+			}
+		}
+		if latestDate != "" {
+			signals = append(signals, fmt.Sprintf("Date found in page: %s", latestDate))
 		}
 	}
 
@@ -226,38 +235,4 @@ func min(a, b int) int {
 		return a
 	}
 	return b
-}
-
-// jsonLDDate is a fallback struct for extracting raw date fields from any JSON-LD block.
-type jsonLDDate struct {
-	DatePublished string `json:"datePublished"`
-	DateModified  string `json:"dateModified"`
-}
-
-// extractJSONLDDates parses all <script type="application/ld+json"> blocks for dates.
-func extractJSONLDDates(doc *html.Node) []string {
-	var dates []string
-	var walk func(*html.Node)
-	walk = func(n *html.Node) {
-		if n.Type == html.ElementNode && strings.ToLower(n.Data) == "script" {
-			if strings.Contains(strings.ToLower(getAttr(n, "type")), "ld+json") {
-				if n.FirstChild != nil {
-					var d jsonLDDate
-					if err := json.Unmarshal([]byte(n.FirstChild.Data), &d); err == nil {
-						if d.DatePublished != "" {
-							dates = append(dates, d.DatePublished)
-						}
-						if d.DateModified != "" {
-							dates = append(dates, d.DateModified)
-						}
-					}
-				}
-			}
-		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			walk(c)
-		}
-	}
-	walk(doc)
-	return dates
 }

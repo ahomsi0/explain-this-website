@@ -59,8 +59,14 @@ type pageSpeedResponse struct {
 // hitting the PageSpeed API rate limit (1 QPS on the free/keyless tier).
 // Returns nil, err only if both strategies fail — partial success is allowed.
 func fetchPerformance(ctx context.Context, siteURL string, apiKey string) (*model.PerformanceResult, error) {
-	perfCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	// Desktop PageSpeed runs regularly take 60–80s, which does not fit inside
+	// shorter upstream deadlines (the HTML-fetch budget inherited by callers).
+	// Derive the budget from scratch so the full window is always available,
+	// while still aborting early when the caller gives up entirely.
+	perfCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 90*time.Second)
 	defer cancel()
+	stopInherit := context.AfterFunc(ctx, cancel)
+	defer stopInherit()
 
 	type stratResult struct {
 		name string
@@ -132,9 +138,8 @@ func fetchPerformance(ctx context.Context, siteURL string, apiKey string) (*mode
 }
 
 // fetchStrategy calls the PageSpeed Insights API for one strategy and parses the response.
-// Timeout is 90s because Google's desktop PageSpeed regularly takes 60–80s on
-// large/heavy pages, and timing out at 55s was silently dropping the desktop
-// result on real-world sites like stripe.com.
+// The HTTP client timeout is 90s to match fetchPerformance's budget, because
+// Google's desktop PageSpeed regularly takes 60–80s on large/heavy pages.
 func fetchStrategy(ctx context.Context, siteURL string, apiKey string, strategy string) (*model.StrategyData, error) {
 	client := &http.Client{Timeout: 90 * time.Second}
 

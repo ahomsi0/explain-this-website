@@ -3,6 +3,7 @@ import { useTheme } from "../../context/useTheme";
 import { Separator } from "@/components/ui/separator";
 import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
+import { scoreColor as sharedScoreColor } from "../../utils/scoreColors";
 import { CopyButton }   from "../ui/CopyButton";
 import { DownloadButton } from "../ui/DownloadButton";
 import { ShareButton } from "../ui/ShareButton";
@@ -27,9 +28,9 @@ function computeScores(result: AnalysisResult) {
   return { seoScore, uxScore };
 }
 
-function scoreColor(n: number) {
-  return n >= 80 ? "text-emerald-400" : n >= 50 ? "text-amber-400" : "text-red-400";
-}
+// Delegates to the shared threshold (green ≥ 75) so the dashboard, admin
+// cards, and PDF export all colour the same score identically.
+const scoreColor = sharedScoreColor;
 
 function impressionColor(n: number) {
   return n >= 8 ? "text-emerald-400" : n >= 6 ? "text-amber-400" : n >= 4 ? "text-orange-400" : "text-red-400";
@@ -216,8 +217,8 @@ export function ResultDashboard({
                 <MetricTile label="LCP"             value={result.performance.mobile.lcp.displayValue}       valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
               )}
               <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
-              <MetricTile label="First Impression"  value={result.firstImpression.score}                     suffix="/10"  valueClass={impressionColor(result.firstImpression.score)} />
-              <MetricTile label="Conversion Score"  value={result.conversionScores.overall}                  suffix="/100" valueClass={scoreColor(result.conversionScores.overall)} />
+              <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
+              <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
             </div>
           </div>
 

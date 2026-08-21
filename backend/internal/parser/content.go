@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/ahomsi/explain-website/internal/model"
 )
@@ -41,8 +43,30 @@ var stopWords = map[string]bool{
 	"try": true, "leave": true, "call": true, "keep": true, "need": true,
 }
 
-var nonAlpha = regexp.MustCompile(`[^a-zA-Z]+`)
 var sentenceEnder = regexp.MustCompile(`[.!?]+\s+`)
+
+// splitWords lowercases text and splits it into runs of letters. Unlike an
+// ASCII-only pattern it keeps accented and non-Latin letters intact, so
+// "café" stays one word instead of being mangled into "caf".
+func splitWords(text string) []string {
+	words := []string{}
+	var b strings.Builder
+	flush := func() {
+		if b.Len() > 0 {
+			words = append(words, b.String())
+			b.Reset()
+		}
+	}
+	for _, r := range strings.ToLower(text) {
+		if unicode.IsLetter(r) {
+			b.WriteRune(r)
+		} else {
+			flush()
+		}
+	}
+	flush()
+	return words
+}
 
 // analyzeContent derives readability and keyword stats from visible page text.
 func analyzeContent(text string) model.ContentStats {
@@ -54,9 +78,9 @@ func analyzeContent(text string) model.ContentStats {
 
 	// ── Keyword frequency ────────────────────────────────────────────────────
 	freq := make(map[string]int)
-	for _, w := range nonAlpha.Split(strings.ToLower(text), -1) {
+	for _, w := range splitWords(text) {
 		// Require 5+ chars to filter UI fragments like "espa", "fran", "nav"
-		if len(w) >= 5 && !stopWords[w] {
+		if utf8.RuneCountInString(w) >= 5 && !stopWords[w] {
 			freq[w]++
 		}
 	}
@@ -101,9 +125,9 @@ func analyzeContent(text string) model.ContentStats {
 	// Longer words (e.g. "implementation", "configuration") indicate more
 	// technical or formal writing, independent of sentence length.
 	totalCharLen, wordCount := 0, 0
-	for _, w := range nonAlpha.Split(strings.ToLower(text), -1) {
-		if len(w) >= 4 && !stopWords[w] {
-			totalCharLen += len(w)
+	for _, w := range splitWords(text) {
+		if n := utf8.RuneCountInString(w); n >= 4 && !stopWords[w] {
+			totalCharLen += n
 			wordCount++
 		}
 	}

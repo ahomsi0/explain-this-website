@@ -4,17 +4,28 @@ import { formatReport } from "../../utils/reportFormatter";
 
 export function CopyButton({ result }: { result: AnalysisResult }) {
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const handleCopy = async () => {
     const text = formatReport(result);
-    try { await navigator.clipboard.writeText(text); }
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; }
     catch {
-      const el = document.createElement("textarea");
-      el.value = text; document.body.appendChild(el); el.select();
-      document.execCommand("copy"); document.body.removeChild(el);
+      // Clipboard API unavailable/denied — try the legacy path and honour its result.
+      try {
+        const el = document.createElement("textarea");
+        el.value = text; document.body.appendChild(el); el.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(el);
+      } catch { ok = false; }
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      setFailed(true);
+      setTimeout(() => setFailed(false), 2500);
+    }
   };
 
   return (
@@ -28,6 +39,11 @@ export function CopyButton({ result }: { result: AnalysisResult }) {
         <>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span className="text-emerald-400 hidden sm:inline">Copied</span>
+        </>
+      ) : failed ? (
+        <>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span className="text-red-400 hidden sm:inline">Copy failed</span>
         </>
       ) : (
         <>

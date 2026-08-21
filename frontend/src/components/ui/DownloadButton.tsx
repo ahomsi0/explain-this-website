@@ -62,14 +62,20 @@ function cap(s: string) {
 
 export function DownloadButton({ result }: { result: AnalysisResult }) {
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
   const handleDownload = async () => {
     setLoading(true);
+    setFailed(false);
     try {
       const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([
         import("jspdf"),
         import("jspdf-autotable"),
       ]);
       buildPDF(result, JsPDF, autoTable);
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      setFailed(true);
+      setTimeout(() => setFailed(false), 4000);
     }
     finally { setLoading(false); }
   };
@@ -90,7 +96,7 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       )}
-      <span className="hidden sm:inline">PDF</span>
+      <span className="hidden sm:inline">{failed ? "Failed" : "PDF"}</span>
     </button>
   );
 }
@@ -646,7 +652,8 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
 
   let host = "report";
   try { host = new URL(result.url).hostname.replace(/^www\./, ""); } catch { /**/ }
-  const date = new Date(result.fetchedAt).toISOString().slice(0, 10);
+  const fetched = new Date(result.fetchedAt);
+  const date = Number.isNaN(fetched.getTime()) ? "unknown" : fetched.toISOString().slice(0, 10);
   doc.save(`analysis-${host}-${date}.pdf`);
 }
 

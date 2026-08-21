@@ -66,7 +66,25 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
   if (!open) return null;
 
   async function copy(value: string, label: string) {
-    await navigator.clipboard.writeText(value);
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      ok = true;
+    } catch {
+      // Clipboard API unavailable/denied — fall back to the legacy path.
+      const el = document.createElement("textarea");
+      el.value = value;
+      document.body.appendChild(el);
+      el.select();
+      try {
+        ok = document.execCommand("copy");
+      } catch {
+        ok = false;
+      } finally {
+        document.body.removeChild(el);
+      }
+    }
+    if (!ok) return;
     setCopied(label);
     window.setTimeout(() => setCopied(null), 1600);
   }

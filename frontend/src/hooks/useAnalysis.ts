@@ -53,10 +53,15 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
         data = await analyzeWebsite(url, () => setServerSignaled(true), controller.signal);
       }
 
+      // A newer analyze()/cancel()/reset() has taken over — drop this stale
+      // response instead of clobbering the newer request's state.
+      if (controllerRef.current !== controller) return;
       setResult(data);
       void onSuccess?.(data);
       setStatus("success");
     } catch (err) {
+      // Superseded by a newer request — its state updates must win.
+      if (controllerRef.current !== controller) return;
       if (controller.signal.aborted) {
         setStatus("idle");
         return;

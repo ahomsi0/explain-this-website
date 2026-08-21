@@ -289,6 +289,7 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 |---|---|---|
 | `PORT` | `8080` | Port the API server listens on |
 | `ALLOWED_ORIGIN` | `http://localhost:5173` | CORS allowed origin(s). Accepts `*`, a single origin, or comma-separated list |
+| `TRUSTED_PROXY_CIDRS` | — | Proxy IPs/CIDRs whose `X-Forwarded-For` is trusted. **Set this in production behind a reverse proxy** (Render, Vercel, nginx…) — without it every request shares the proxy's address and per-IP rate limits collapse into one sitewide bucket |
 | `FETCH_TIMEOUT_SEC` | `60` | Seconds before aborting a page fetch |
 | `MAX_BODY_BYTES` | `5242880` | Max response body size (5 MB) |
 | `DATABASE_URL` | — | PostgreSQL connection string. Schema is applied automatically on startup |

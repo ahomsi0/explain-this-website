@@ -139,7 +139,7 @@ type PageStats struct {
 
 // SiteFreshness holds signals about how recently a site was updated.
 type SiteFreshness struct {
-	CopyrightYear int      `json:"copyrightYear"` // latest year found in © text
+	CopyrightYear int      `json:"copyrightYear"` // latest year from © text, else the year of LatestDate
 	LatestDate    string   `json:"latestDate"`    // ISO date from <time>/OG/JSON-LD, may be empty
 	Rating        string   `json:"rating"`        // "fresh" | "aging" | "stale" | "unknown"
 	Signals       []string `json:"signals"`       // human-readable evidence lines

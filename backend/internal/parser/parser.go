@@ -99,7 +99,9 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 	// analysis indefinitely. If CWV is slow or rate-limited, we still return the
 	// rest of the report and simply omit performance data.
 	var perf *model.PerformanceResult
-	perfTimer := time.NewTimer(60 * time.Second)
+	// Matches fetchPerformance's 90s PageSpeed budget (plus a small margin) so
+	// a slow-but-successful desktop run is not abandoned just before it lands.
+	perfTimer := time.NewTimer(95 * time.Second)
 	defer perfTimer.Stop()
 	select {
 	case perfRes := <-perfCh:

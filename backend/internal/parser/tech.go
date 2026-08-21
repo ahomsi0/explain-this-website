@@ -874,30 +874,80 @@ func snippetAround(s string, idx int, patternLen int, span int) string {
 		end = len(s)
 	}
 	snippet := strings.TrimSpace(s[start:end])
-	if len(snippet) > span {
-		snippet = snippet[:span]
+	runes := []rune(snippet)
+	if len(runes) > span {
+		runes = runes[:span]
 	}
-	return snippet
+	return string(runes)
 }
 
 // onlyTags returns just the HTML tag content (without text nodes) to support
-// tag-only matching for ambiguous patterns.
+// tag-only matching for ambiguous patterns. Script bodies, style blocks, and
+// comments are skipped so `<`/`>` inside code never masquerade as tag markup.
 func onlyTags(lowerHTML string) string {
 	var b strings.Builder
 	b.Grow(len(lowerHTML))
 
-	inTag := false
-	for _, r := range lowerHTML {
-		switch r {
-		case '<':
-			inTag = true
-			b.WriteRune(' ')
-		case '>':
-			inTag = false
-			b.WriteRune(' ')
-		default:
-			if inTag {
-				b.WriteRune(r)
+	const (
+		modeNormal = iota
+		modeTag
+		modeScript
+		modeStyle
+		modeComment
+	)
+	mode := modeNormal
+
+	skipThroughGt := func(i int) int {
+		// Advance past the next '>', returning the index of that byte.
+		if end := strings.IndexByte(lowerHTML[i:], '>'); end != -1 {
+			return i + end
+		}
+		return len(lowerHTML) - 1
+	}
+
+	for i := 0; i < len(lowerHTML); i++ {
+		c := lowerHTML[i]
+		switch mode {
+		case modeNormal:
+			if c != '<' {
+				// Text nodes are excluded — this function returns tag content only.
+				continue
+			}
+			rest := lowerHTML[i:]
+			switch {
+			case strings.HasPrefix(rest, "<script"):
+				mode = modeScript
+				i = skipThroughGt(i)
+			case strings.HasPrefix(rest, "<style"):
+				mode = modeStyle
+				i = skipThroughGt(i)
+			case strings.HasPrefix(rest, "<!--"):
+				mode = modeComment
+				i += 3
+			default:
+				mode = modeTag
+			}
+			b.WriteByte(' ')
+		case modeTag:
+			if c == '>' {
+				mode = modeNormal
+			} else {
+				b.WriteByte(c)
+			}
+		case modeScript:
+			if strings.HasPrefix(lowerHTML[i:], "</script") {
+				i = skipThroughGt(i)
+				mode = modeNormal
+			}
+		case modeStyle:
+			if strings.HasPrefix(lowerHTML[i:], "</style") {
+				i = skipThroughGt(i)
+				mode = modeNormal
+			}
+		case modeComment:
+			if strings.HasPrefix(lowerHTML[i:], "-->") {
+				i += 2
+				mode = modeNormal
 			}
 		}
 	}

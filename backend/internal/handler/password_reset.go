@@ -65,10 +65,12 @@ func ForgotPasswordHandler() http.HandlerFunc {
 			return
 		}
 		body.Email = strings.ToLower(strings.TrimSpace(body.Email))
-		if _, err := mail.ParseAddress(body.Email); err != nil {
+		addr, addrErr := mail.ParseAddress(body.Email)
+		if addrErr != nil {
 			writeJSONError(w, http.StatusBadRequest, "please enter a valid email address")
 			return
 		}
+		body.Email = strings.ToLower(strings.TrimSpace(addr.Address))
 
 		// Always respond success regardless of whether the email is registered.
 		// This prevents email enumeration attacks. We still perform the work
@@ -92,7 +94,7 @@ func issueResetCode(emailAddr string) {
 	var userID int64
 	err := db.Pool.QueryRow(ctx, `SELECT id FROM users WHERE email = $1`, emailAddr).Scan(&userID)
 	if err != nil {
-		log.Printf("[reset] no user for email=%s", emailAddr)
+		log.Printf("[reset] no user for submitted email")
 		return
 	}
 
@@ -120,12 +122,12 @@ func issueResetCode(emailAddr string) {
 		return
 	}
 
-	log.Printf("[reset] code issued for email=%s userID=%d — sending email…", emailAddr, userID)
+	log.Printf("[reset] code issued for userID=%d — sending email…", userID)
 	if err := email.SendResetCode(ctx, emailAddr, code); err != nil {
-		log.Printf("[reset] send email FAILED for %s: %v", emailAddr, err)
+		log.Printf("[reset] send email FAILED for userID=%d: %v", userID, err)
 		return
 	}
-	log.Printf("[reset] email send ok for %s", emailAddr)
+	log.Printf("[reset] email send ok for userID=%d", userID)
 }
 
 // ResetPasswordHandler verifies a reset code and sets a new password.
@@ -143,9 +145,11 @@ func ResetPasswordHandler() http.HandlerFunc {
 		}
 		body.Email = strings.ToLower(strings.TrimSpace(body.Email))
 		body.Code = strings.TrimSpace(body.Code)
-		if _, err := mail.ParseAddress(body.Email); err != nil {
+		if addr, addrErr := mail.ParseAddress(body.Email); addrErr != nil {
 			writeJSONError(w, http.StatusBadRequest, "please enter a valid email address")
 			return
+		} else {
+			body.Email = strings.ToLower(strings.TrimSpace(addr.Address))
 		}
 		if len(body.Code) != 6 {
 			writeJSONError(w, http.StatusBadRequest, "reset code must be 6 digits")

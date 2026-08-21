@@ -2,6 +2,7 @@ package parser
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/ahomsi/explain-website/internal/model"
@@ -121,8 +122,33 @@ func digitCount(s string) int {
 // the range that covers real phone numbers while excluding product codes,
 // ZIP+4 codes, and other numeric strings.
 func looksLikePhone(match string) bool {
+	if isYearRange(match) {
+		return false
+	}
 	d := digitCount(match)
 	return d >= 7 && d <= 15
+}
+
+// isYearRange detects strings like "2023 - 2024", "2023-2024", or "2019/2020"
+// — copyright/fiscal-year ranges that are common on marketing pages but are
+// never phone numbers. Every digit group must be a plausible 4-digit year.
+func isYearRange(match string) bool {
+	parts := strings.FieldsFunc(match, func(r rune) bool {
+		return r < '0' || r > '9'
+	})
+	if len(parts) < 2 {
+		return false
+	}
+	for _, p := range parts {
+		if len(p) != 4 {
+			return false
+		}
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 1900 || n > 2100 {
+			return false
+		}
+	}
+	return true
 }
 
 // analyzeUX scans the HTML tree for conversion and UX signals.

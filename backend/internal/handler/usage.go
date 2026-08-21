@@ -61,6 +61,19 @@ func newMemoryUsageStore() *memoryUsageStore {
 	return &memoryUsageStore{entries: make(map[string]memoryUsageEntry)}
 }
 
+// maxMemUsageEntries bounds the in-memory fallback store. When the cap is
+// reached, entries from earlier days are swept so the map cannot grow
+// without limit under high anonymous traffic.
+const maxMemUsageEntries = 100_000
+
+func (s *memoryUsageStore) sweepLocked(today string) {
+	for k, e := range s.entries {
+		if e.day != today {
+			delete(s.entries, k)
+		}
+	}
+}
+
 func (s *memoryUsageStore) get(key string, limit int) model.UsageSummary {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -78,6 +91,9 @@ func (s *memoryUsageStore) increment(key string, limit int) (model.UsageSummary,
 	defer s.mu.Unlock()
 
 	day := time.Now().UTC().Format("2006-01-02")
+	if len(s.entries) >= maxMemUsageEntries {
+		s.sweepLocked(day)
+	}
 	entry := s.entries[key]
 	if entry.day != day {
 		entry = memoryUsageEntry{day: day}

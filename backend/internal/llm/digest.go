@@ -3,6 +3,7 @@ package llm
 import (
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/ahomsi/explain-website/internal/model"
@@ -49,10 +50,16 @@ func buildDigest(r *model.AnalysisResult) string {
 			r.ConversionScores.Trust, r.ConversionScores.CTAStrength, r.ConversionScores.Friction)
 	}
 
-	// Tech stack — top 5 by confidence
+	// Tech stack — top 5 by confidence. TechStack is in detection order, and
+	// Lighthouse-confirmed entries are appended last, so sort by the internal
+	// confidence score (descending) before truncating or the most reliable
+	// signals get cut first.
 	if len(r.TechStack) > 0 {
+		sorted := make([]model.TechItem, len(r.TechStack))
+		copy(sorted, r.TechStack)
+		sort.SliceStable(sorted, func(i, j int) bool { return sorted[i].Score > sorted[j].Score })
 		names := make([]string, 0, 5)
-		for i, t := range r.TechStack {
+		for i, t := range sorted {
 			if i >= 5 {
 				break
 			}

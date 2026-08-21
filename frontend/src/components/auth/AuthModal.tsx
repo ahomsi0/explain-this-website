@@ -32,13 +32,14 @@ export function AuthModal({
     }
   }, [open, initialMode]);
 
-  // ESC closes.
+  // ESC closes — but only this modal. When the forgot-password sub-modal is
+  // open on top, let it handle Escape first so one press doesn't dismiss both.
   useEffect(() => {
-    if (!open) return;
+    if (!open || forgotOpen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+  }, [open, forgotOpen, onClose]);
 
   if (!open) return null;
 

@@ -83,8 +83,24 @@ func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
 	c.mu.RLock()
 	e, ok := c.entries[url]
 	c.mu.RUnlock()
-	if !ok || time.Now().After(e.expiresAt) {
+	if !ok {
 		c.mu.Lock()
+		c.misses++
+		c.mu.Unlock()
+		return nil, nil, false
+	}
+	if time.Now().After(e.expiresAt) {
+		// Expired — drop the entry so it stops occupying capacity.
+		c.mu.Lock()
+		if e2, still := c.entries[url]; still && time.Now().After(e2.expiresAt) {
+			delete(c.entries, url)
+			for i, k := range c.order {
+				if k == url {
+					c.order = append(c.order[:i], c.order[i+1:]...)
+					break
+				}
+			}
+		}
 		c.misses++
 		c.mu.Unlock()
 		return nil, nil, false
