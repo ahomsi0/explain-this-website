@@ -14,6 +14,7 @@ import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { GoProPage } from "./components/billing/GoProPage";
 import { ConsentBanner } from "./components/privacy/ConsentBanner";
 import { LegalPage } from "./components/privacy/LegalPage";
+import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
 
@@ -103,6 +104,8 @@ function AppInner() {
       document.title = "Terms of Service · Explain This Website";
     } else if (pathname === "/go-pro") {
       document.title = "Go Pro · Explain This Website";
+    } else if (pathname === "/whats-new") {
+      document.title = "What’s New · Explain This Website";
     } else {
       document.title = "Explain This Website — Instant Website Analyzer";
     }
@@ -115,6 +118,7 @@ function AppInner() {
   if (pathname === "/privacy") return <LegalPage kind="privacy" />;
   if (pathname === "/terms") return <LegalPage kind="terms" />;
   if (pathname === "/go-pro") return <GoProPage />;
+  if (pathname === "/whats-new") return <WhatsNewPage />;
 
   // Shared report route takes over the whole page.
   if (loadingShared) {
