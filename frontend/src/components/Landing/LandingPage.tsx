@@ -110,7 +110,7 @@ export function LandingPage({
 
             <h1 className="text-center text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">
               <span className="text-zinc-100">Understand any website </span>
-              <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="text-violet-300">
                 in seconds.
               </span>
             </h1>

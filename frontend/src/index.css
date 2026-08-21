@@ -76,7 +76,7 @@ html.light .hero-noise { opacity: 0.06; mix-blend-mode: multiply; }
 
 /* ── Card shell styles ──────────────────────────────────────────────── */
 .card-shell {
-  background: linear-gradient(135deg, #18181b 0%, #1c1917 100%);
+  background: #18181b;
 }
 
 .card-header {
