@@ -16,6 +16,13 @@ import (
 // a complete AnalysisResult. pageSpeedKey is optional; when non-empty the
 // PageSpeed Insights API is called concurrently to fetch real CWV data.
 func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string) (model.AnalysisResult, error) {
+	return ParseWithOptions(ctx, rawHTML, sourceURL, pageSpeedKey, false)
+}
+
+// ParseWithOptions is Parse with an optional deep scan: when deep is true a
+// handful of key subpages (/pricing, /about, …) are fetched and audited too,
+// producing a per-page rollup on the result.
+func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string, deep bool) (model.AnalysisResult, error) {
 	if strings.TrimSpace(rawHTML) == "" {
 		return model.AnalysisResult{}, fmt.Errorf("empty HTML response")
 	}
@@ -47,7 +54,7 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 	visibleText := extractVisibleText(doc)
 	rendering := AssessRendering(doc, visibleText)
 
-	overview := extractOverview(doc, rawHTML)
+	overview := extractOverview(doc, rawHTML, sourceURL)
 	tech := detectTech(rawHTML, sourceURL)
 	seoChecks := auditSEO(doc, rawHTML, sourceURL)
 	ux := analyzeUX(doc, rawHTML)
@@ -85,7 +92,7 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 	firstImpression := computeFirstImpression(overview, ux, seoIndex, pageStats, isHTTPS)
 	biggestOpp := findBiggestOpportunity(seoIndex, ux, pageStats)
 	competitorInsight := buildCompetitorInsight(intent, tech, ux, pageStats)
-	prioritized := buildPrioritizedIssues(seoIndex, ux, pageStats, isHTTPS)
+	prioritized := buildPrioritizedIssues(seoIndex, ux, pageStats, isHTTPS, rendering.LikelyClientRendered)
 	eli5 := buildELI5(seoIndex, ux)
 
 	if prioritized == nil {
@@ -134,7 +141,7 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 		}
 	}
 
-	return model.AnalysisResult{
+	result := model.AnalysisResult{
 		URL:                sourceURL,
 		FetchedAt:          time.Now().UTC(),
 		Overview:           overview,
@@ -164,7 +171,13 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 		FontAudit:          fontAudit,
 		LinkCheck:          linkCheck,
 		DomainInfo:         domainInfo,
-	}, nil
+	}
+
+	if deep {
+		result.SitePages = auditSubpages(ctx, doc, sourceURL, SEOScore(result.SEOChecks))
+	}
+
+	return result, nil
 }
 
 // extractVisibleText collects all user-visible text from the parsed HTML tree.
@@ -342,7 +355,7 @@ func computePageStats(doc *html.Node, sourceURL, rawHTML string) model.PageStats
 }
 
 // extractOverview pulls high-level page metadata from the parsed tree.
-func extractOverview(doc *html.Node, rawHTML string) model.Overview {
+func extractOverview(doc *html.Node, rawHTML, sourceURL string) model.Overview {
 	o := model.Overview{}
 
 	var walk func(*html.Node)
@@ -373,9 +386,19 @@ func extractOverview(doc *html.Node, rawHTML string) model.Overview {
 					o.Description = content
 				}
 			case "link":
-				rel := strings.ToLower(getAttr(n, "rel"))
-				if (rel == "icon" || rel == "shortcut icon") && o.Favicon == "" {
-					o.Favicon = getAttr(n, "href")
+				// Token-based rel matching: covers rel="icon",
+				// rel="shortcut icon", and any extra tokens in between.
+				isIcon := false
+				for _, token := range strings.Fields(strings.ToLower(getAttr(n, "rel"))) {
+					if token == "icon" {
+						isIcon = true
+						break
+					}
+				}
+				if isIcon && o.Favicon == "" {
+					// Resolve relative hrefs ("/favicon.ico") so reports always
+					// carry a usable absolute URL.
+					o.Favicon = resolvePageURL(getAttr(n, "href"), sourceURL)
 				}
 			}
 		}
@@ -396,4 +419,30 @@ func extractOverview(doc *html.Node, rawHTML string) model.Overview {
 	}
 
 	return o
+}
+
+// resolvePageURL resolves a possibly-relative attribute value against the
+// analyzed page URL. Self-contained data: URIs pass through unchanged; any
+// other non-http(s) scheme yields "" so reports never emit unusable links.
+func resolvePageURL(raw, baseURL string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	if strings.HasPrefix(strings.ToLower(raw), "data:") {
+		return raw
+	}
+	base, err := url.Parse(baseURL)
+	if err != nil || base.Scheme == "" || base.Host == "" {
+		return ""
+	}
+	ref, err := url.Parse(raw)
+	if err != nil {
+		return ""
+	}
+	resolved := base.ResolveReference(ref)
+	if scheme := strings.ToLower(resolved.Scheme); scheme != "http" && scheme != "https" {
+		return ""
+	}
+	return resolved.String()
 }

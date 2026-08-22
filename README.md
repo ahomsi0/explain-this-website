@@ -159,8 +159,10 @@ Vitest covers utilities, API behavior, and component rendering/interactions. Pla
 
 **Request**
 ```json
-{ "url": "https://example.com" }
+{ "url": "https://example.com", "refresh": false, "deep": false }
 ```
+
+`refresh: true` bypasses the 10-minute result cache ("Re-run fresh"). `deep: true` additionally audits up to 4 key subpages (/pricing, /about, /contact…) and attaches a `sitePages` rollup with per-page SEO scores.
 
 **Success (200)** — returns a full `AnalysisResult` including `overview`, `techStack`, `seoChecks`, `performance`, `ux`, `pageStats`, `contentStats`, `weakPoints`, `recommendations`.
 
@@ -168,6 +170,26 @@ Vitest covers utilities, API behavior, and component rendering/interactions. Pla
 ```json
 { "error": "Your account has been suspended. Please contact support." }
 ```
+
+#### `GET /api/badge?url=example.com`
+
+Returns an SVG score shield for the URL based on its latest server-side analysis (recent cache entry, else most recent saved audit). Never-analyzed URLs get a neutral badge. Cacheable (`max-age=3600`) — designed for READMEs and site footers:
+
+```html
+<a href="https://explain-this-website.vercel.app">
+  <img src="https://api.explainthewebsite.com/api/badge?url=example.com" alt="Website audit score" height="20">
+</a>
+```
+
+#### `POST /api/compare-live`
+
+Requires a session. Runs fresh analyses of two URLs concurrently and returns the same before/after snapshot shape as saved-audit comparison:
+
+```json
+{ "yours": "https://yoursite.com", "competitor": "https://rival.com" }
+```
+
+Rate-limited to 5 comparisons per minute per user.
 
 #### `GET /api/report/:id`
 

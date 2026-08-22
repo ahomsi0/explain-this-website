@@ -12,6 +12,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/model"
+	"github.com/ahomsi/explain-website/internal/parser"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -61,44 +62,13 @@ func loadOwnedAudit(ctx context.Context, id string, userID int64) (model.Analysi
 }
 
 func comparisonSnapshot(id, title string, createdAt time.Time, result model.AnalysisResult) auditComparisonSnapshot {
-	pass := 0
-	required := 0
-	for _, check := range result.SEOChecks {
-		if check.Optional {
-			continue
-		}
-		required++
-		if check.Status == "pass" {
-			pass++
-		}
-	}
-	seoScore := 0
-	if required > 0 {
-		seoScore = (pass * 100) / required
-	}
-	uxSignals := []bool{
-		result.UX.HasCTA,
-		result.UX.HasForms,
-		result.UX.HasSocialProof,
-		result.UX.HasTrustSignals,
-		result.UX.HasContactInfo,
-		result.UX.MobileReady,
-	}
-	uxPassed := 0
-	for _, signal := range uxSignals {
-		if signal {
-			uxPassed++
-		}
-	}
-	uxScore := (uxPassed * 100) / len(uxSignals)
-
 	snapshot := auditComparisonSnapshot{
 		ID:                   id,
 		URL:                  result.URL,
 		Title:                title,
 		CreatedAt:            createdAt,
-		SEOScore:             seoScore,
-		UXScore:              uxScore,
+		SEOScore:             parser.SEOScore(result.SEOChecks),
+		UXScore:              parser.UXScore(result.UX),
 		ConversionScore:      result.ConversionScores.Overall,
 		PriorityIssueCount:   len(result.PrioritizedIssues),
 		BrokenLinkCount:      result.LinkCheck.Broken,

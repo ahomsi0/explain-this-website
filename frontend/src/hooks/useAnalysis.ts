@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import type { AnalysisResult, AnalysisStatus } from "../types/analysis";
-import { analyzeWebsite } from "../services/analyzeApi";
+import { analyzeWebsite, type AnalyzeOptions } from "../services/analyzeApi";
 import { mockAnalysisResult } from "../mock/mockData";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
@@ -10,7 +10,7 @@ interface UseAnalysisReturn {
   result: AnalysisResult | null;
   error: string | null;
   serverSignaled: boolean;
-  analyze: (url: string) => Promise<void>;
+  analyze: (url: string, opts?: AnalyzeOptions) => Promise<void>;
   cancel: () => void;
   reset: () => void;
 }
@@ -22,7 +22,7 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
   const [serverSignaled, setServerSignaled] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
 
-  const analyze = useCallback(async (url: string) => {
+  const analyze = useCallback(async (url: string, opts: AnalyzeOptions = {}) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -50,7 +50,7 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
         // Render holds the TCP connection while waking the service, so the
         // fetch naturally waits. onServerReached fires the moment we get any
         // HTTP response back, advancing the loading spinner.
-        data = await analyzeWebsite(url, () => setServerSignaled(true), controller.signal);
+        data = await analyzeWebsite(url, () => setServerSignaled(true), controller.signal, opts);
       }
 
       // A newer analyze()/cancel()/reset() has taken over — drop this stale

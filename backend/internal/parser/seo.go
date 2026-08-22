@@ -65,7 +65,10 @@ func walkSEO(n *html.Node, s *seoState) {
 				s.metaViewport = true
 			case "robots":
 				s.metaRobotsContent = content
-				if strings.Contains(strings.ToLower(content), "noindex") {
+				// "noindex" is explicit; "none" is the spec shorthand for
+				// "noindex, nofollow" and must be treated the same way.
+				lowerContent := strings.ToLower(content)
+				if strings.Contains(lowerContent, "noindex") || hasToken(lowerContent, "none") {
 					s.metaRobotsNoindex = true
 				}
 			}
@@ -172,14 +175,11 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 	if isHTTPS {
 		mixedURLs := extractMixedContentURLs(doc)
 		if len(mixedURLs) > 0 {
-			details := make([]string, 0, len(mixedURLs))
-			for _, u := range mixedURLs {
-				details = append(details, u)
-			}
+			// Report the true total; only the displayed evidence list is capped.
 			checks = append(checks, model.SEOCheck{
 				ID: "mixed_content", Label: "Mixed Content", Status: "warning",
 				Detail:  fmt.Sprintf("%d HTTP resource(s) found on HTTPS page", len(mixedURLs)),
-				Details: details,
+				Details: capList(mixedURLs, 8),
 			})
 		} else {
 			checks = append(checks, model.SEOCheck{ID: "mixed_content", Label: "Mixed Content",
@@ -488,7 +488,8 @@ func extractMixedContentURLs(doc *html.Node) []string {
 	}
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
-		if len(result) >= 8 {
+		// Hard safety cap for pathological documents; far above any real page.
+		if len(result) >= 100 {
 			return
 		}
 		if n.Type == html.ElementNode {
@@ -542,6 +543,17 @@ func capList(items []string, n int) []string {
 		return items
 	}
 	return items[:n]
+}
+
+// hasToken reports whether value contains the exact directive token among
+// comma/space-separated robots directives ("none", "nofollow", …).
+func hasToken(value, token string) bool {
+	for _, part := range strings.FieldsFunc(value, func(r rune) bool { return r == ',' || r == ' ' || r == ';' }) {
+		if part == token {
+			return true
+		}
+	}
+	return false
 }
 
 // unique deduplicates a string slice preserving order.

@@ -12,6 +12,7 @@ import { LandingPage } from "./components/Landing/LandingPage";
 import { fetchUsage, type UsageSummary } from "./services/authApi";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { GoProPage } from "./components/billing/GoProPage";
+import { ComparePage } from "./components/compare/ComparePage";
 import { ConsentBanner } from "./components/privacy/ConsentBanner";
 import { LegalPage } from "./components/privacy/LegalPage";
 import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
@@ -21,6 +22,7 @@ import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryModal } from "./components/auth/HistoryModal";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
+import type { AnalyzeOptions } from "./services/analyzeApi";
 
 type AnalysisSource = "landing" | "example" | "report";
 
@@ -85,11 +87,15 @@ function AppInner() {
     fetchUsage().then(setUsage).catch(() => {});
   }, [user?.id]);
 
-  const handleAnalyze = (url: string, source: AnalysisSource = status === "success" ? "report" : "landing") => {
+  const handleAnalyze = (
+    url: string,
+    source: AnalysisSource = status === "success" ? "report" : "landing",
+    opts?: AnalyzeOptions,
+  ) => {
     analysisSource.current = source;
     track("analysis_started", { source, repeat_user: isRepeatUser(), signed_in: Boolean(user) });
     setCurrentUrl(url);
-    void analyze(url);
+    void analyze(url, opts);
   };
   const isBotProtectionError = !!error && (
     error.toLowerCase().includes("bot protection") ||
@@ -123,6 +129,8 @@ function AppInner() {
       document.title = "Go Pro · Explain This Website";
     } else if (pathname === "/whats-new") {
       document.title = "What’s New · Explain This Website";
+    } else if (pathname === "/compare") {
+      document.title = "Compare Sites · Explain This Website";
     } else {
       document.title = "Explain This Website — Instant Website Analyzer";
     }
@@ -152,6 +160,7 @@ function AppInner() {
   if (pathname === "/terms") return <PageShell header={chrome}><LegalPage kind="terms" /></PageShell>;
   if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
   if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
+  if (pathname === "/compare") return <PageShell header={chrome}><ComparePage /></PageShell>;
 
   // Shared report route takes over the whole page.
   if (loadingShared) {

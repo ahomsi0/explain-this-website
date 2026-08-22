@@ -57,10 +57,18 @@ function anySignal(signals: AbortSignal[]): AbortSignal {
   return controller.signal;
 }
 
+export interface AnalyzeOptions {
+  /** Bypass the server's short-lived result cache ("Re-run fresh"). */
+  refresh?: boolean;
+  /** Deep scan: also audit a few key subpages (/pricing, /about, …). */
+  deep?: boolean;
+}
+
 export async function analyzeWebsite(
   url: string,
   onServerReached?: () => void,
   signal?: AbortSignal,
+  opts: AnalyzeOptions = {},
 ): Promise<AnalysisResult> {
   const deadline = Date.now() + TOTAL_TIMEOUT_MS;
   let serverReachedFired = false;
@@ -81,7 +89,11 @@ export async function analyzeWebsite(
       const response = await fetch(`${API_URL}/api/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({
+          url,
+          refresh: opts.refresh === true,
+          deep: opts.deep === true,
+        }),
         credentials: "include",
         signal: signal ? anySignal([controller.signal, signal]) : controller.signal,
       });

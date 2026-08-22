@@ -600,7 +600,11 @@ func buildCompetitorInsight(intent model.IntentSummary, tech []model.TechItem, u
 // ── Prioritized issues ────────────────────────────────────────────────────────
 
 // buildPrioritizedIssues ranks the top issues by real-world impact.
-func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats model.PageStats, isHTTPS bool) []model.PrioritizedIssue {
+// buildPrioritizedIssues ranks the most impactful problems. clientRendered
+// marks pages whose content is injected by JavaScript: rather than silently
+// hiding content-dependent findings, a leading notice explains why they may
+// be incomplete so the report stays honest about its own limits.
+func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats model.PageStats, isHTTPS bool, clientRendered bool) []model.PrioritizedIssue {
 	type candidate struct {
 		priority int
 		issue    model.PrioritizedIssue
@@ -611,6 +615,10 @@ func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats mode
 		candidates = append(candidates, candidate{priority, model.PrioritizedIssue{Issue: issue, Impact: impact, Why: why}})
 	}
 
+	if clientRendered {
+		add(-1, "Audit based on server-delivered HTML only", "Notice",
+			"This page appears to render its content with JavaScript. Findings that depend on visible content — CTAs, headings, trust signals, contact info — may be incomplete. Verify them against the live page.")
+	}
 	if seo["robots"] == "fail" {
 		add(1, "Page set to noindex", "SEO", "The page will not appear in search results — complete loss of organic traffic.")
 	}

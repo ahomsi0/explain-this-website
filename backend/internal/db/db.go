@@ -85,6 +85,7 @@ func Init(ctx context.Context) error {
 		Pool = nil
 		return fmt.Errorf("migrate: %w", err)
 	}
+	applyRetention(ctx)
 	loadPersistedFlags(ctx)
 	return nil
 }
@@ -244,7 +245,32 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_tap_customer_id_idx
     ON users (tap_customer_id) WHERE tap_customer_id IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS users_tap_subscription_id_idx
     ON users (tap_subscription_id) WHERE tap_subscription_id IS NOT NULL;
+
+-- Admin dashboard queries order audits by recency (Recent Audits, slowest,
+-- per-day charts); without this index they scan the whole table.
+CREATE INDEX IF NOT EXISTS audits_created_at_idx ON audits (created_at DESC);
 `
+
+// retentionStatements prune rows that only serve time-boxed views (30-day
+// admin windows, 35-minute reset codes). Runs once at startup so tables with
+// per-request inserts don't grow without bound.
+var retentionStatements = []string{
+	`DELETE FROM password_resets
+	   WHERE expires_at < NOW() - INTERVAL '7 days'
+	      OR used_at < NOW() - INTERVAL '7 days'`,
+	`DELETE FROM user_daily_usage       WHERE usage_date < CURRENT_DATE - 90`,
+	`DELETE FROM anonymous_daily_usage  WHERE usage_date < CURRENT_DATE - 90`,
+	`DELETE FROM api_key_daily_usage    WHERE usage_date < CURRENT_DATE - 90`,
+	`DELETE FROM conversion_events      WHERE created_at < NOW() - INTERVAL '180 days'`,
+}
+
+func applyRetention(ctx context.Context) {
+	for _, stmt := range retentionStatements {
+		if _, err := Pool.Exec(ctx, stmt); err != nil {
+			log.Printf("retention: %v", err)
+		}
+	}
+}
 
 func migrate(ctx context.Context) error {
 	if _, err := Pool.Exec(ctx, schema); err != nil {

@@ -19,6 +19,7 @@ import { ImageAuditCard }        from "../cards/ImageAuditCard";
 import { SiteFreshnessCard }     from "../cards/SiteFreshnessCard";
 import { FontAuditCard }         from "../cards/FontAuditCard";
 import { DomainInfoCard }        from "../cards/DomainInfoCard";
+import { SitePagesCard }         from "../cards/SitePagesCard";
 import { SecurityHeadersCard }   from "../cards/SecurityHeadersCard";
 import { LinkCheckCard }         from "../cards/LinkCheckCard";
 import { ColorPaletteCard }      from "../cards/ColorPaletteCard";
@@ -55,6 +56,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <RecommendationsCard recommendations={result.recommendations ?? []} />
           <SiteFreshnessCard freshness={result.siteFreshness} />
           {result.domainInfo && <DomainInfoCard domainInfo={result.domainInfo} />}
+          {result.sitePages && <SitePagesCard sitePages={result.sitePages} />}
         </div>
       );
     }

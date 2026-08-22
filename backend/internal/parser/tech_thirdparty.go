@@ -151,6 +151,7 @@ func mergeThirdParties(existing []model.TechItem, thirdParties []model.ThirdPart
 			Name:       meta.Name,
 			Category:   meta.Category,
 			Confidence: "high", // Lighthouse confirmed via network requests
+			Score:      90,     // keeps Score consistent with the "high" label
 			RuleID:     "lighthouse-third-party",
 		})
 	}

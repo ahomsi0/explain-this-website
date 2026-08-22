@@ -4,6 +4,7 @@ export function SiteFooter() {
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-zinc-600">
         <p>© {new Date().getFullYear()} Explain This Website</p>
         <div className="flex items-center gap-4">
+          <a href="/compare" className="hover:text-zinc-400 transition-colors">Compare sites</a>
           <a href="mailto:support@explainthewebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
           <a href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</a>
           <a href="/terms" className="hover:text-zinc-400 transition-colors">Terms</a>

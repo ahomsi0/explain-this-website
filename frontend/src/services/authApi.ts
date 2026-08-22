@@ -252,6 +252,15 @@ export async function compareAudits(a: string, b: string): Promise<AuditComparis
   return jsonFetch<AuditComparison>(`/api/audits/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
 }
 
+// compareLive runs fresh analyses of two sites and returns the same
+// before/after shape as saved-audit comparison (before = "yours").
+export async function compareLive(yours: string, competitor: string): Promise<AuditComparison> {
+  return jsonFetch<AuditComparison>("/api/compare-live", {
+    method: "POST",
+    body: JSON.stringify({ yours, competitor }),
+  });
+}
+
 export async function revokeShare(id: string): Promise<void> {
   await jsonFetch<void>(`/api/audits/${id}/revoke-share`, { method: "POST" });
 }
