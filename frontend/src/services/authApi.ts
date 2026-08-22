@@ -232,12 +232,21 @@ export async function login(email: string, password: string): Promise<AuthRespon
 }
 
 export async function fetchMe(): Promise<AuthUser> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5_000);
+  // The backend can cold-start for 30s+ (Render free tier). A slow response
+  // must NOT be treated as "signed out" — only a real 401 means that.
+  // Network-level failures get one retry; HTTP errors fail immediately.
+  const attempt = (): Promise<AuthUser> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20_000);
+    return jsonFetch<AuthUser>("/api/auth/me", { signal: controller.signal }).finally(() => clearTimeout(timer));
+  };
   try {
-    return await jsonFetch<AuthUser>("/api/auth/me", { signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
+    return await attempt();
+  } catch (err) {
+    const isNetworkFailure = err instanceof TypeError || (err instanceof DOMException && err.name === "AbortError");
+    if (!isNetworkFailure) throw err;
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    return attempt();
   }
 }
 
