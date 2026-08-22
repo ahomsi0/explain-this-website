@@ -101,15 +101,26 @@ export function LandingPage({
 
             {/* Deep scan toggle */}
             <div className="mt-3 flex justify-center">
-              <label className="inline-flex items-center gap-2 text-[11px] text-zinc-500 cursor-pointer select-none hover:text-zinc-400 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={deepScan}
-                  onChange={(e) => setDeepScan(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-900 accent-violet-500 cursor-pointer"
-                />
-                Deep scan — also audit key subpages (pricing, about, contact…)
-              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={deepScan}
+                onClick={() => setDeepScan((v) => !v)}
+                title="Also audit up to 4 key subpages (pricing, about, contact…)"
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  deepScan
+                    ? "border-violet-500/50 bg-violet-500/15 text-violet-200 shadow-[0_0_12px_-2px_rgba(124,58,237,0.4)]"
+                    : "border-zinc-800 bg-zinc-900/60 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                }`}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill={deepScan ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Deep scan
+                <span className={deepScan ? "text-violet-400/80" : "text-zinc-600"}>
+                  · pricing, about, contact…
+                </span>
+              </button>
             </div>
 
             {/* Recently analyzed sites */}
