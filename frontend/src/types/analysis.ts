@@ -313,10 +313,26 @@ export interface AnalysisResult {
   intentAlignment: IntentAlignment;
   fontAudit?: FontAudit;
   domainInfo?: DomainInfo;
+  /** Per-page rollup from a deep scan (opt-in on the landing page). */
+  sitePages?: SitePagesAudit;
   usage?: UsageSummary;
   /** Plain-English 3-paragraph LLM-generated summary. Optional — empty when
    *  the backend Groq integration is disabled or the call failed. */
   aiSummary?: string;
+}
+
+export interface SitePageAudit {
+  url: string;
+  title?: string;
+  seoScore: number;
+  status: "ok" | "error";
+  error?: string;
+}
+
+export interface SitePagesAudit {
+  pages: SitePageAudit[];
+  avgSeoScore: number;
+  fetchedAt: string;
 }
 
 export interface AnalysisError {

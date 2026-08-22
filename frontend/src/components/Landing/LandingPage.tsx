@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { URLInput } from "../UrlInput/UrlInput";
 import type { AuthUser, UsageSummary } from "../../services/authApi";
+import type { AnalyzeOptions } from "../../services/analyzeApi";
 import { onAnalyticsConsentChange, trackOnce } from "../../lib/analytics";
 
 const EXAMPLE_URLS = ["stripe.com", "github.com", "vercel.com", "linear.app"];
@@ -14,10 +15,14 @@ export function LandingPage({
 }: {
   user: AuthUser | null;
   usage: UsageSummary | null;
-  onAnalyze: (url: string, source?: "landing" | "example" | "report") => void;
+  onAnalyze: (url: string, source?: "landing" | "example" | "report", opts?: AnalyzeOptions) => void;
   setAuthOpen: (v: boolean) => void;
   setHistoryOpen: (v: boolean) => void;
 }) {
+  const [deepScan, setDeepScan] = useState(false);
+
+  const analyze = (url: string, source?: "landing" | "example" | "report") =>
+    onAnalyze(url, source, deepScan ? { deep: true } : undefined);
 
   useEffect(() => {
     const recordLandingView = () => trackOnce("landing_view", "landing_view");
@@ -65,7 +70,20 @@ export function LandingPage({
 
             {/* URL input */}
             <div className="mt-10">
-              <URLInput onAnalyze={onAnalyze} isLoading={false} />
+              <URLInput onAnalyze={analyze} isLoading={false} />
+            </div>
+
+            {/* Deep scan toggle */}
+            <div className="mt-3 flex justify-center">
+              <label className="inline-flex items-center gap-2 text-[11px] text-zinc-500 cursor-pointer select-none hover:text-zinc-400 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={deepScan}
+                  onChange={(e) => setDeepScan(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-900 accent-violet-500 cursor-pointer"
+                />
+                Deep scan — also audit key subpages (pricing, about, contact…)
+              </label>
             </div>
 
             {/* Example URL chips */}
@@ -75,7 +93,7 @@ export function LandingPage({
                 <button
                   key={u}
                   type="button"
-                  onClick={() => onAnalyze(`https://${u}`, "example")}
+                  onClick={() => analyze(`https://${u}`, "example")}
                   className="text-[11px] px-2.5 py-1 rounded-full text-zinc-400 hover:text-violet-300 bg-zinc-900/60 hover:bg-violet-500/10 border border-zinc-800 hover:border-violet-500/30 transition-colors"
                 >
                   {u}

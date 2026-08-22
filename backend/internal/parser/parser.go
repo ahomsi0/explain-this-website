@@ -16,6 +16,13 @@ import (
 // a complete AnalysisResult. pageSpeedKey is optional; when non-empty the
 // PageSpeed Insights API is called concurrently to fetch real CWV data.
 func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string) (model.AnalysisResult, error) {
+	return ParseWithOptions(ctx, rawHTML, sourceURL, pageSpeedKey, false)
+}
+
+// ParseWithOptions is Parse with an optional deep scan: when deep is true a
+// handful of key subpages (/pricing, /about, …) are fetched and audited too,
+// producing a per-page rollup on the result.
+func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string, deep bool) (model.AnalysisResult, error) {
 	if strings.TrimSpace(rawHTML) == "" {
 		return model.AnalysisResult{}, fmt.Errorf("empty HTML response")
 	}
@@ -134,7 +141,7 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 		}
 	}
 
-	return model.AnalysisResult{
+	result := model.AnalysisResult{
 		URL:                sourceURL,
 		FetchedAt:          time.Now().UTC(),
 		Overview:           overview,
@@ -164,7 +171,13 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 		FontAudit:          fontAudit,
 		LinkCheck:          linkCheck,
 		DomainInfo:         domainInfo,
-	}, nil
+	}
+
+	if deep {
+		result.SitePages = auditSubpages(ctx, doc, sourceURL, SEOScore(result.SEOChecks))
+	}
+
+	return result, nil
 }
 
 // extractVisibleText collects all user-visible text from the parsed HTML tree.

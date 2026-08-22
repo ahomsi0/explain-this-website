@@ -93,6 +93,8 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	}
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
+	mux.HandleFunc("GET /api/badge", handler.BadgeHandler())
+	mux.HandleFunc("POST /api/compare-live", auth.RequireAuth(handler.CompareLiveHandler(handlerCfg)))
 	mux.HandleFunc("POST /api/events", handler.ConversionEventHandler())
 	mux.HandleFunc("GET /api/usage", handler.UsageHandler())
 	mux.HandleFunc("GET /api/usage/history", auth.RequireSessionAuth(handler.UsageHistoryHandler()))
@@ -219,11 +221,12 @@ type rlEntry struct {
 }
 
 const (
-	rlMax       = 10  // anonymous: 10/min
-	rlMaxAuthed = 50  // logged-in: 50/min
-	rlMaxAuth   = 10  // auth mutations: 10/min per source IP and endpoint
-	rlMaxEvent  = 120 // consented conversion events per minute per IP
-	rlWindow    = time.Minute
+	rlMax          = 10  // anonymous: 10/min
+	rlMaxAuthed    = 50  // logged-in: 50/min
+	rlMaxAuth      = 10  // auth mutations: 10/min per source IP and endpoint
+	rlMaxEvent     = 120 // consented conversion events per minute per IP
+	rlMaxCompare   = 5   // live competitor comparisons per minute (doubles analysis cost)
+	rlWindow       = time.Minute
 )
 
 func newRateLimiter() *rateLimiter {
@@ -314,6 +317,19 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
 				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many tracking events — please try again later."})
+				return
+			}
+		}
+		if r.Method == http.MethodPost && r.URL.Path == "/api/compare-live" {
+			key := "compare:ip:" + realIP(r)
+			if uid := auth.UserIDFromContext(r.Context()); uid != 0 {
+				key = fmt.Sprintf("compare:user:%d", uid)
+			}
+			if !rl.allow(key, rlMaxCompare) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Retry-After", "60")
+				w.WriteHeader(http.StatusTooManyRequests)
+				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many comparisons — please wait a moment before trying again."})
 				return
 			}
 		}

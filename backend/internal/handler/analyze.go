@@ -88,54 +88,38 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		// same URL was analysed in the last 10 minutes. Demos, shared
 		// examples, and "re-run" clicks all become near-instant. Usage
 		// still counts and the result is still saved to the user's history.
+		// ?refresh=true (the dashboard's "Re-run fresh") bypasses it.
 		var (
 			result          model.AnalysisResult
 			respHeaders     http.Header
 			parseDurationMs int
 			cacheHit        bool
 		)
-		if cached, cachedHeaders, ok := cache.Default.Get(rawURL); ok {
-			result = *cached
-			respHeaders = cachedHeaders
-			cacheHit = true
-		} else {
-			fetchHTML := fetcher.FetchHTML
-			if cfg.FetchHTML != nil {
-				fetchHTML = cfg.FetchHTML
+		if !req.Refresh {
+			if cached, cachedHeaders, ok := cache.Default.Get(rawURL); ok {
+				result = *cached
+				respHeaders = cachedHeaders
+				cacheHit = true
 			}
-			parse := parser.Parse
-			if cfg.Parse != nil {
-				parse = cfg.Parse
-			}
-
-			// Fetch HTML with a deadline.
-			fetchCtx, fetchCancel := context.WithTimeout(r.Context(), time.Duration(cfg.FetchTimeoutSec)*time.Second)
-			rawHTML, headers, err := fetchHTML(fetchCtx, rawURL, cfg.MaxBodyBytes)
-			fetchCancel()
-			if err != nil {
-				adminstate.RecordAnalyzeFailure(rawURL, uid, "fetch: "+err.Error())
-				writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
-				return
-			}
-			respHeaders = headers
-
-			// Parse and analyse. Parsing gets its own, longer budget because it
-			// includes the PageSpeed calls, whose desktop runs regularly take
-			// 60–80s and must not be cut off by the HTML-fetch deadline.
-			parseCtx, parseCancel := context.WithTimeout(r.Context(), parseTimeoutSec)
-			defer parseCancel()
+		}
+		if !cacheHit {
 			parseStart := time.Now()
-			parsed, err := parse(parseCtx, rawHTML, rawURL, cfg.PageSpeedAPIKey)
+			parsed, headers, stage, err := runAnalysis(r.Context(), cfg, rawURL, req.Deep)
 			parseDurationMs = int(time.Since(parseStart).Milliseconds())
 			if err != nil {
 				if r.Context().Err() != nil {
 					return
 				}
-				adminstate.RecordAnalyzeFailure(rawURL, uid, "parse: "+err.Error())
-				writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
+				adminstate.RecordAnalyzeFailure(rawURL, uid, stage+": "+err.Error())
+				if stage == "fetch" {
+					writeError(w, http.StatusUnprocessableEntity, "could not fetch URL: "+err.Error())
+				} else {
+					writeError(w, http.StatusInternalServerError, "analysis failed: "+err.Error())
+				}
 				return
 			}
 			result = parsed
+			respHeaders = headers
 
 			// Populate the cache *before* per-request decoration so cached
 			// hits don't carry stale usage/reportID/security-headers state.
@@ -301,4 +285,41 @@ func ReportHandler() http.HandlerFunc {
 func writeError(w http.ResponseWriter, status int, msg string) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(model.ErrorResponse{Error: msg})
+}
+
+// runAnalysis performs the fetch+parse core shared by /api/analyze and
+// /api/compare-live. It returns the stage that failed ("fetch" or "parse")
+// alongside the bare error so callers can pick status codes and messages.
+func runAnalysis(ctx context.Context, cfg Config, rawURL string, deep bool) (model.AnalysisResult, http.Header, string, error) {
+	fetchHTML := fetcher.FetchHTML
+	if cfg.FetchHTML != nil {
+		fetchHTML = cfg.FetchHTML
+	}
+	parse := parser.Parse
+	if cfg.Parse != nil {
+		parse = cfg.Parse
+	} else if deep {
+		parse = func(pctx context.Context, html, url, key string) (model.AnalysisResult, error) {
+			return parser.ParseWithOptions(pctx, html, url, key, true)
+		}
+	}
+
+	// Fetch HTML with a deadline.
+	fetchCtx, fetchCancel := context.WithTimeout(ctx, time.Duration(cfg.FetchTimeoutSec)*time.Second)
+	rawBody, headers, err := fetchHTML(fetchCtx, rawURL, cfg.MaxBodyBytes)
+	fetchCancel()
+	if err != nil {
+		return model.AnalysisResult{}, nil, "fetch", err
+	}
+
+	// Parse and analyse. Parsing gets its own, longer budget because it
+	// includes the PageSpeed calls, whose desktop runs regularly take 60–80s
+	// and must not be cut off by the HTML-fetch deadline.
+	parseCtx, parseCancel := context.WithTimeout(ctx, parseTimeoutSec)
+	defer parseCancel()
+	parsed, err := parse(parseCtx, rawBody, rawURL, cfg.PageSpeedAPIKey)
+	if err != nil {
+		return model.AnalysisResult{}, nil, "parse", err
+	}
+	return parsed, headers, "", nil
 }

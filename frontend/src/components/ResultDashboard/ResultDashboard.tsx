@@ -3,10 +3,12 @@ import { useTheme } from "../../context/useTheme";
 import { Separator } from "@/components/ui/separator";
 import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
+import type { AnalyzeOptions } from "../../services/analyzeApi";
 import { scoreColor as sharedScoreColor } from "../../utils/scoreColors";
 import { CopyButton }   from "../ui/CopyButton";
 import { DownloadButton } from "../ui/DownloadButton";
 import { ShareButton } from "../ui/ShareButton";
+import { BadgeButton } from "../ui/BadgeButton";
 import { Sidebar, MobileSectionNav } from "./Sidebar";
 import { SectionView } from "./sections";
 import { SECTIONS, type SectionId } from "./sectionConfig";
@@ -63,7 +65,7 @@ export function ResultDashboard({
   result: AnalysisResult;
   usage?: UsageSummary | null;
   onReset: () => void;
-  onAnalyze?: (url: string, source?: "landing" | "example" | "report") => void;
+  onAnalyze?: (url: string, source?: "landing" | "example" | "report", opts?: AnalyzeOptions) => void;
 }) {
   const { seoScore, uxScore } = computeScores(result);
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
@@ -175,7 +177,20 @@ export function ResultDashboard({
             </button>
             <CopyButton result={result} />
             <DownloadButton result={result} />
+            <BadgeButton url={result.url} reportId={result.reportId} />
             <ShareButton reportId={result.reportId} canShare={isPro} />
+            {onAnalyze && (
+              <button
+                onClick={() => onAnalyze(result.url, "report", { refresh: true })}
+                title="Re-fetch and re-analyze this page, bypassing the recent-results cache"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+                <span className="hidden lg:inline">Re-run fresh</span>
+              </button>
+            )}
             {user ? (
               <UserMenu />
             ) : (
@@ -209,6 +224,19 @@ export function ResultDashboard({
           <div className="border-b border-zinc-800 bg-zinc-900/30 overflow-x-auto scrollbar-none">
             <div className="flex items-stretch justify-start md:justify-center min-w-max md:min-w-0">
               <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
+              {(() => {
+                // Prefer mobile; fall back to desktop when PageSpeed only
+                // returned one strategy for this run.
+                const lh = result.performance?.mobile?.lighthouse ?? result.performance?.desktop?.lighthouse;
+                return (
+                  <>
+                    {lh?.accessibility !== undefined &&
+                      <MetricTile label="Accessibility" value={lh.accessibility} suffix="/100" valueClass={scoreColor(lh.accessibility)} />}
+                    {lh?.bestPractices !== undefined &&
+                      <MetricTile label="Best Practices" value={lh.bestPractices} suffix="/100" valueClass={scoreColor(lh.bestPractices)} />}
+                  </>
+                );
+              })()}
               {result.performance?.mobile?.lighthouse?.seo !== undefined &&
                 <MetricTile label="Lighthouse SEO" value={result.performance.mobile.lighthouse.seo} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />}
               {result.performance?.mobile?.lighthouse?.performance !== undefined &&
