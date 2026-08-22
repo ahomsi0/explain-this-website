@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { URLInput } from "../UrlInput/UrlInput";
-import type { AuthUser, UsageSummary } from "../../services/authApi";
+import { fetchAudits, type AuthUser, type UsageSummary } from "../../services/authApi";
 import type { AnalyzeOptions } from "../../services/analyzeApi";
+import { getRecentUrls } from "../../lib/recentUrls";
 import { onAnalyticsConsentChange, trackOnce } from "../../lib/analytics";
-
-const EXAMPLE_URLS = ["stripe.com", "github.com", "vercel.com", "linear.app"];
 
 export function LandingPage({
   user,
@@ -20,9 +19,36 @@ export function LandingPage({
   setHistoryOpen: (v: boolean) => void;
 }) {
   const [deepScan, setDeepScan] = useState(false);
+  // Local recents render immediately; signed-in users get their authoritative
+  // server history merged in below.
+  const [recents, setRecents] = useState<string[]>(() => getRecentUrls().slice(0, 4));
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    fetchAudits()
+      .then((items) => {
+        if (cancelled) return;
+        const local = getRecentUrls();
+        const seen = new Set(items.map((i) => i.url.toLowerCase()));
+        const merged = [...items.map((i) => i.url), ...local.filter((u) => !seen.has(u.toLowerCase()))];
+        setRecents(merged.slice(0, 4));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user]);
 
   const analyze = (url: string, source?: "landing" | "example" | "report") =>
     onAnalyze(url, source, deepScan ? { deep: true } : undefined);
+
+  const chipLabel = (raw: string) => {
+    try {
+      const u = new URL(raw);
+      return u.hostname.replace(/^www\./, "") + (u.pathname !== "/" ? u.pathname : "");
+    } catch {
+      return raw;
+    }
+  };
 
   useEffect(() => {
     const recordLandingView = () => trackOnce("landing_view", "landing_view");
@@ -86,20 +112,23 @@ export function LandingPage({
               </label>
             </div>
 
-            {/* Example URL chips */}
-            <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-              <span className="text-[11px] text-zinc-500 self-center mr-1">Try:</span>
-              {EXAMPLE_URLS.map((u) => (
-                <button
-                  key={u}
-                  type="button"
-                  onClick={() => analyze(`https://${u}`, "example")}
-                  className="text-[11px] px-2.5 py-1 rounded-full text-zinc-400 hover:text-violet-300 bg-zinc-900/60 hover:bg-violet-500/10 border border-zinc-800 hover:border-violet-500/30 transition-colors"
-                >
-                  {u}
-                </button>
-              ))}
-            </div>
+            {/* Recently analyzed sites */}
+            {recents.length > 0 && (
+              <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+                <span className="text-[11px] text-zinc-500 self-center mr-1">Recent:</span>
+                {recents.map((u) => (
+                  <button
+                    key={u}
+                    type="button"
+                    onClick={() => analyze(u, "example")}
+                    title={u}
+                    className="max-w-[220px] truncate text-[11px] px-2.5 py-1 rounded-full text-zinc-400 hover:text-violet-300 bg-zinc-900/60 hover:bg-violet-500/10 border border-zinc-800 hover:border-violet-500/30 transition-colors"
+                  >
+                    {chipLabel(u)}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {user ? (
               <p className="mt-8 text-center text-xs text-zinc-500">

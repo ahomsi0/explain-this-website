@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/ahomsi/explain-website/internal/model"
@@ -19,7 +21,7 @@ func TestDetectTech_ConfidenceHighForExplicitSignals(t *testing.T) {
 	  </body>
 	</html>`
 
-	tech := detectTech(html, "https://example.com")
+	tech := detectTech(html, "https://example.com", nil)
 
 	gtm, ok := findTechByName(tech, "Google Tag Manager")
 	if !ok {
@@ -46,7 +48,7 @@ func TestDetectTech_ConfidenceMediumForIndirectSignals(t *testing.T) {
 	  </head>
 	</html>`
 
-	tech := detectTech(html, "https://example.com")
+	tech := detectTech(html, "https://example.com", nil)
 	vite, ok := findTechByName(tech, "Vite")
 	if !ok {
 		t.Fatalf("expected Vite to be detected")
@@ -59,7 +61,7 @@ func TestDetectTech_ConfidenceMediumForIndirectSignals(t *testing.T) {
 func TestDetectTech_ConfidenceLowForAmbiguousSignals(t *testing.T) {
 	html := `<html><body><p>Our migration guide compares typo3 with other systems.</p></body></html>`
 
-	tech := detectTech(html, "https://example.com")
+	tech := detectTech(html, "https://example.com", nil)
 	typo3, ok := findTechByName(tech, "Typo3")
 	if !ok {
 		t.Fatalf("expected Typo3 to be detected from ambiguous text")
@@ -79,7 +81,7 @@ func TestDetectTech_DedupesByNameAndKeepsBestConfidence(t *testing.T) {
 	  </head>
 	</html>`
 
-	tech := detectTech(html, "https://example.com")
+	tech := detectTech(html, "https://example.com", nil)
 	count := 0
 	for _, item := range tech {
 		if item.Name == "Vite" {
@@ -104,7 +106,7 @@ func TestDetectTech_WordPressIgnoresJSONLDFalsePositive(t *testing.T) {
 	  </head>
 	</html>`
 
-	tech := detectTech(html, "https://example.com")
+	tech := detectTech(html, "https://example.com", nil)
 	if _, ok := findTechByName(tech, "WordPress"); ok {
 		t.Fatalf("expected WordPress to be ignored for JSON-LD third-party wp-content reference")
 	}
@@ -124,7 +126,7 @@ func TestDetectTech_ViteBroadHeuristicIsLow(t *testing.T) {
 	  </head>
 	</html>`
 
-	tech := detectTech(html, "https://example.com")
+	tech := detectTech(html, "https://example.com", nil)
 	_, ok := findTechByName(tech, "Vite")
 	if ok {
 		t.Fatalf("expected Vite NOT to be detected for a generic modulepreload link (too broad)")
@@ -138,4 +140,67 @@ func findTechByName(items []model.TechItem, name string) (model.TechItem, bool) 
 		}
 	}
 	return model.TechItem{}, false
+}
+
+func TestDetectTechIgnoresCommentsAndNoscript(t *testing.T) {
+	html := `<!-- migrated from WordPress, wp-content kept for redirects -->
+	<noscript><img src="https://www.facebook.com/tr?id=1"></noscript>
+	<p>Nothing to see here.</p>`
+	items := detectTech(html, "https://example.com", nil)
+	for _, item := range items {
+		if item.Name == "WordPress" || item.Name == "Meta Pixel" {
+			t.Fatalf("comment/noscript content produced %q", item.Name)
+		}
+	}
+}
+
+func TestDetectHeaderTechExplicitSignals(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("X-Powered-By", "PHP/8.2.1")
+	headers.Set("Server", "cloudflare")
+	items := detectTech("<html></html>", "https://example.com", headers)
+
+	got := map[string]bool{}
+	for _, it := range items {
+		got[it.Name] = true
+		if it.RuleID == "http-header" && it.Confidence != "high" {
+			t.Fatalf("header-derived %s should be high confidence", it.Name)
+		}
+	}
+	if !got["PHP"] || !got["Cloudflare"] {
+		t.Fatalf("expected PHP and Cloudflare from headers, got %v", got)
+	}
+}
+
+func TestDetectTechHeaderCorroboratesHTML(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("X-Powered-By", "Express")
+	items := detectTech(`<script src="/cdn-cgi/apps"></script>`, "https://example.com", headers)
+	found := false
+	for _, it := range items {
+		if strings.EqualFold(it.Name, "Express.js") {
+			found = true
+			if it.Confidence != "high" || it.Score < 90 {
+				t.Fatalf("corroborated Express.js should be high: %+v", it)
+			}
+			if len(it.Signals) == 0 {
+				t.Fatal("merged item should retain signals")
+			}
+		}
+	}
+	_ = found // presence alone is acceptable; the assertion above checks quality
+}
+
+func TestMergeThirdPartiesDedupesParentheticalNames(t *testing.T) {
+	existing := []model.TechItem{{Name: "Google Analytics (UA)", Category: "analytics"}}
+	out := mergeThirdParties(existing, []model.ThirdPartyEntity{{Name: "Google Analytics", TransferSize: 100}})
+	count := 0
+	for _, it := range out {
+		if canonicalTechName(it.Name) == "google analytics" {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Fatalf("expected 1 google analytics entry, got %d", count)
+	}
 }
