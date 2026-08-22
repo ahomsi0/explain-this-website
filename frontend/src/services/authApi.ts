@@ -84,6 +84,7 @@ export interface AuditComparisonSnapshot {
   url: string;
   title: string;
   createdAt: string;
+  overallScore: number;
   seoScore: number;
   uxScore: number;
   conversionScore: number;

@@ -21,6 +21,7 @@ type auditComparisonSnapshot struct {
 	URL                  string    `json:"url"`
 	Title                string    `json:"title"`
 	CreatedAt            time.Time `json:"createdAt"`
+	OverallScore         int       `json:"overallScore"`
 	SEOScore             int       `json:"seoScore"`
 	UXScore              int       `json:"uxScore"`
 	ConversionScore      int       `json:"conversionScore"`
@@ -67,6 +68,7 @@ func comparisonSnapshot(id, title string, createdAt time.Time, result model.Anal
 		URL:                  result.URL,
 		Title:                title,
 		CreatedAt:            createdAt,
+		OverallScore:         parser.OverallScore(result),
 		SEOScore:             parser.SEOScore(result.SEOChecks),
 		UXScore:              parser.UXScore(result.UX),
 		ConversionScore:      result.ConversionScores.Overall,

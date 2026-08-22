@@ -149,7 +149,14 @@ export function ComparePage() {
       </main>
 
       {comparison && (
-        <AuditComparisonView comparison={comparison} onClose={() => setComparison(null)} />
+        <AuditComparisonView
+          comparison={comparison}
+          onClose={() => setComparison(null)}
+          leftLabel="Yours"
+          rightLabel="Competitor"
+          title="Head-to-head results"
+          subtitle="Your site on the left, the competitor on the right. Green bars mark the winner on each metric."
+        />
       )}
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
