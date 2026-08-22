@@ -19,6 +19,7 @@ import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
 import { SiteFooter } from "./components/ui/SiteFooter";
 import { SiteHeader } from "./components/ui/SiteHeader";
 import { LogoMark } from "./components/ui/Logo";
+import { ReportSkeleton } from "./components/ui/Skeletons";
 import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryModal } from "./components/auth/HistoryModal";
 import { track } from "./lib/analytics";
@@ -190,10 +191,8 @@ function AppInner() {
   // Shared report route takes over the whole page.
   if (loadingShared) {
     return (
-      <PageShell>
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-zinc-500 text-sm">Loading shared report…</p>
-        </div>
+      <PageShell footer={false}>
+        <ReportSkeleton />
       </PageShell>
     );
   }

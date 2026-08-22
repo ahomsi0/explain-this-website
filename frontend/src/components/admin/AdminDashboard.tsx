@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LogoWordmark } from "../ui/Logo";
+import { AdminSkeleton } from "../ui/Skeletons";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { useAuth } from "../../context/useAuth";
@@ -167,7 +168,7 @@ export function AdminDashboard() {
 
   // ── render ─────────────────────────────────────────────────────────────────
   if (loading) {
-    return <Shell title="Dashboard"><p className="text-sm text-zinc-500">Loading account…</p></Shell>;
+    return <Shell title="Dashboard"><AdminSkeleton /></Shell>;
   }
 
   if (!user) {

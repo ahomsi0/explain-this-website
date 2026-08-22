@@ -8,6 +8,7 @@ import {
   type CreatedApiKey,
   type UsageHistory,
 } from "../../services/authApi";
+import { AccountSkeleton } from "../ui/Skeletons";
 
 type AccountTab = "usage" | "keys";
 
@@ -135,7 +136,7 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
         </div>
 
         <div className="p-5">
-          {loading && <p className="py-10 text-center text-xs text-zinc-500">Loading account data…</p>}
+          {loading && <AccountSkeleton />}
           {error && <div className="mb-4 rounded border border-red-800/40 bg-red-950/50 px-3 py-2 text-xs text-red-300">{error}</div>}
 
           {!loading && tab === "usage" && usage && (

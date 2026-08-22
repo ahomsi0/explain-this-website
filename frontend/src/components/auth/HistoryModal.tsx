@@ -9,6 +9,7 @@ import {
   type AuditListItem,
 } from "../../services/authApi";
 import { AuditComparison } from "./AuditComparison";
+import { RowSkeleton } from "../ui/Skeletons";
 
 export function HistoryModal({
   open,
@@ -118,7 +119,11 @@ export function HistoryModal({
           </div>
 
           <div className="flex-1 overflow-y-auto p-2">
-            {!items && !error && <p className="text-xs text-zinc-500 text-center py-10">Loading…</p>}
+            {!items && !error && (
+              <div className="p-3">
+                <RowSkeleton rows={5} />
+              </div>
+            )}
             {error && <div className="m-3 text-xs text-red-400 bg-red-950/50 border border-red-800/40 rounded px-3 py-2">{error}</div>}
             {items && items.length === 0 && <p className="text-xs text-zinc-500 text-center py-10">No audits yet — run your first analysis to see it here.</p>}
             {items && items.length > 0 && (
