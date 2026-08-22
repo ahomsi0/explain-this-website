@@ -138,10 +138,13 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 		// AI summary — best-effort. If Groq is unconfigured or the call
 		// fails, the analysis still succeeds and AISummary stays "". The
-		// UI hides the section in that case. Cache hits already include
-		// whatever summary the cached entry was created with, so we skip
-		// the call entirely on hit to save Groq spend.
-		if !cacheHit && cfg.Groq != nil && cfg.Groq.Enabled() {
+		// UI hides the section in that case.
+		//
+		// Generation runs on fresh analyses AND on cache hits whose entry
+		// lacks a summary (e.g. it was created during a transient Groq
+		// failure and re-cached without one) so poisoned entries self-heal
+		// instead of serving summary-less reports for the whole TTL.
+		if cfg.Groq != nil && cfg.Groq.Enabled() && result.AISummary == "" {
 			summaryCtx, cancelSummary := context.WithTimeout(r.Context(), 20*time.Second)
 			summary, err := cfg.Groq.Summarise(summaryCtx, &result)
 			cancelSummary()
@@ -151,6 +154,7 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 				}
 			} else {
 				result.AISummary = strings.TrimSpace(summary)
+				log.Printf("groq summary generated for %s (%d chars, cacheHit=%v)", rawURL, len(result.AISummary), cacheHit)
 				// Re-cache so the next hit returns the summary too.
 				cache.Default.Set(rawURL, &result, respHeaders)
 			}
