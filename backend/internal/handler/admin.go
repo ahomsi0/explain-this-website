@@ -63,6 +63,8 @@ type systemHealth struct {
 	ResendKeySet    bool                   `json:"resendKeySet"`
 	JWTSecretSet    bool                   `json:"jwtSecretSet"`
 	TapKeySet       bool                   `json:"tapKeySet"`
+	GroqKeySet      bool                   `json:"groqKeySet"`
+	Groq            adminstate.HealthState `json:"groq"`
 	PageSpeed       adminstate.HealthState `json:"pagespeed"`
 	Resend          adminstate.HealthState `json:"resend"`
 }
@@ -342,6 +344,8 @@ func AdminOverviewHandler() http.HandlerFunc {
 			ResendKeySet:    os.Getenv("RESEND_API_KEY") != "",
 			JWTSecretSet:    os.Getenv("JWT_SECRET") != "",
 			TapKeySet:       os.Getenv("TAP_SECRET_KEY") != "",
+			GroqKeySet:      os.Getenv("GROQ_API_KEY") != "",
+			Groq:            adminstate.SnapshotGroqHealth(),
 			PageSpeed:       psHealth,
 			Resend:          resendHealth,
 		}

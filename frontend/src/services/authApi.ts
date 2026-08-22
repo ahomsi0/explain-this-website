@@ -179,8 +179,10 @@ export interface SystemHealth {
   resendKeySet: boolean;
   jwtSecretSet: boolean;
   tapKeySet: boolean;
+  groqKeySet: boolean;
   pagespeed: HealthState;
   resend: HealthState;
+  groq: HealthState;
 }
 
 export interface AdminOverview {

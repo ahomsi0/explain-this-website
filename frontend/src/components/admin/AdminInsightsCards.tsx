@@ -217,17 +217,22 @@ function HealthRow({ label, ok, detail }: { label: string; ok: boolean; detail?:
 export function SystemHealthCard({ h }: { h: SystemHealth }) {
   const psHealthy = !!h.pagespeedKeySet && (!h.pagespeed.lastErrorAt || h.pagespeed.lastErrorAt < h.pagespeed.lastSuccessAt);
   const reHealthy = !!h.resendKeySet && (!h.resend.lastErrorAt || h.resend.lastErrorAt < h.resend.lastSuccessAt);
+  const groqHealthy = !!h.groqKeySet && (!h.groq.lastErrorAt || h.groq.lastErrorAt < h.groq.lastSuccessAt);
   return (
     <Card title="System Health">
       <div className="flex flex-col">
         <HealthRow label="Database"          ok={h.dbOk}             detail={h.dbOk ? `${h.dbLatencyMs}ms` : "down"} />
         <HealthRow label="JWT Secret"        ok={h.jwtSecretSet}     detail={h.jwtSecretSet ? "configured" : "missing"} />
         <HealthRow label="PageSpeed API"     ok={psHealthy}          detail={h.pagespeedKeySet ? `success ${timeAgo(h.pagespeed.lastSuccessAt)}` : "no key"} />
+        <HealthRow label="Groq (AI summary)" ok={groqHealthy}        detail={h.groqKeySet ? `success ${timeAgo(h.groq.lastSuccessAt)}` : "no key"} />
         <HealthRow label="Resend (email)"    ok={reHealthy}          detail={h.resendKeySet ? `success ${timeAgo(h.resend.lastSuccessAt)}` : "no key"} />
         <HealthRow label="Tap Payments" ok={h.tapKeySet}        detail={h.tapKeySet ? "configured" : "no key"} />
       </div>
       {h.pagespeed.lastErrorMsg && (
         <p className="mt-3 text-[10px] text-red-400 break-words">PageSpeed last error: {h.pagespeed.lastErrorMsg}</p>
+      )}
+      {h.groq.lastErrorMsg && (
+        <p className="mt-1 text-[10px] text-red-400 break-words">Groq last error: {h.groq.lastErrorMsg}</p>
       )}
       {h.resend.lastErrorMsg && (
         <p className="mt-1 text-[10px] text-red-400 break-words">Resend last error: {h.resend.lastErrorMsg}</p>
