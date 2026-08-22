@@ -18,6 +18,7 @@ import { LegalPage } from "./components/privacy/LegalPage";
 import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
 import { SiteFooter } from "./components/ui/SiteFooter";
 import { SiteHeader } from "./components/ui/SiteHeader";
+import { LogoMark } from "./components/ui/Logo";
 import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryModal } from "./components/auth/HistoryModal";
 import { track } from "./lib/analytics";
@@ -60,7 +61,7 @@ function useDashboardRoute() {
 }
 
 function AppInner() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, loading: authLoading } = useAuth();
   const isDashboardRoute = useDashboardRoute();
   const pathname = window.location.pathname.toLowerCase();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
@@ -160,6 +161,19 @@ function AppInner() {
       )}
     </>
   );
+
+  // Wait for session restoration before rendering any route — otherwise each
+  // refresh briefly shows the signed-out landing page, then flips to
+  // signed-in once /api/auth/me resolves.
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950" aria-busy="true" aria-label="Restoring your session">
+        <div className="animate-pulse">
+          <LogoMark size={28} />
+        </div>
+      </div>
+    );
+  }
 
   if (isDashboardRoute) {
     return <PageShell><AdminDashboard /></PageShell>;
