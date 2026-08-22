@@ -58,7 +58,13 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
     if (!open) return;
     const handler = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    // Lock background scrolling while the modal is open.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open, onClose]);
 
   const maxDayCount = useMemo(() => Math.max(1, usage?.current.dailyLimit ?? 1, ...(usage?.days.map((day) => day.count) ?? [])), [usage]);

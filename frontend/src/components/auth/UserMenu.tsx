@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../../context/useAuth";
 import { AccountDashboard } from "./AccountDashboard";
 
@@ -79,7 +80,13 @@ export function UserMenu() {
           </button>
         </div>
       )}
-      <AccountDashboard open={accountOpen} onClose={() => setAccountOpen(false)} />
+      {/* Portal to <body>: this menu sits inside the blurred sticky header,
+          and backdrop-filter makes browsers treat it as the containing block
+          for fixed children — which clipped the account modal to the header. */}
+      {createPortal(
+        <AccountDashboard open={accountOpen} onClose={() => setAccountOpen(false)} />,
+        document.body,
+      )}
     </div>
   );
 }
