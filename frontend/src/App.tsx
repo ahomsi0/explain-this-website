@@ -26,15 +26,15 @@ import type { AnalyzeOptions } from "./services/analyzeApi";
 
 type AnalysisSource = "landing" | "example" | "report";
 
-// Single app shell: every route renders inside this so the whole site shares
-// one footer, and pre-analysis pages additionally mount the shared header.
-// Pages keep their own backgrounds and heights.
-function PageShell({ children, header }: { children: ReactNode; header?: ReactNode }) {
+// Single app shell: every route renders inside this so pre-analysis pages
+// share one header/footer. App-like views (loading, reports) can opt out of
+// the footer via `footer={false}`.
+function PageShell({ children, header, footer = true }: { children: ReactNode; header?: ReactNode; footer?: boolean }) {
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
       {header}
       <div className="flex-1 flex flex-col">{children}</div>
-      <SiteFooter />
+      {footer && <SiteFooter />}
     </div>
   );
 }
@@ -136,6 +136,15 @@ function AppInner() {
     }
   }, [pathname, status, result]);
 
+  // Lock background scrolling while an analysis is running — the loading
+  // screen is a single fixed view.
+  useEffect(() => {
+    if (status !== "loading") return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [status]);
+
   // Shared header + global auth/history modals for every pre-analysis page.
   // The results dashboard, shared reports, and admin keep their own chrome.
   const chrome = (
@@ -174,7 +183,7 @@ function AppInner() {
   }
   if (sharedResult) {
     return (
-      <PageShell>
+      <PageShell footer={false}>
         <ResultDashboard result={sharedResult} onReset={() => { window.location.href = "/"; }} />
       </PageShell>
     );
@@ -196,8 +205,11 @@ function AppInner() {
     );
   }
 
+  // The results dashboard is an app-like view: its sidebar already carries
+  // the secondary links, so the global footer would be redundant. Loading is
+  // a fixed view — no footer and no page scroll.
   return (
-    <PageShell header={status === "success" ? undefined : chrome}>
+    <PageShell header={status === "success" ? undefined : chrome} footer={status !== "loading" && status !== "success"}>
       {status === "idle" && (
         <LandingPage
           user={user}
