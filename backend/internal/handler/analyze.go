@@ -295,14 +295,6 @@ func runAnalysis(ctx context.Context, cfg Config, rawURL string, deep bool) (mod
 	if cfg.FetchHTML != nil {
 		fetchHTML = cfg.FetchHTML
 	}
-	parse := parser.Parse
-	if cfg.Parse != nil {
-		parse = cfg.Parse
-	} else if deep {
-		parse = func(pctx context.Context, html, url, key string) (model.AnalysisResult, error) {
-			return parser.ParseWithOptions(pctx, html, url, key, true)
-		}
-	}
 
 	// Fetch HTML with a deadline.
 	fetchCtx, fetchCancel := context.WithTimeout(ctx, time.Duration(cfg.FetchTimeoutSec)*time.Second)
@@ -314,10 +306,16 @@ func runAnalysis(ctx context.Context, cfg Config, rawURL string, deep bool) (mod
 
 	// Parse and analyse. Parsing gets its own, longer budget because it
 	// includes the PageSpeed calls, whose desktop runs regularly take 60–80s
-	// and must not be cut off by the HTML-fetch deadline.
+	// and must not be cut off by the HTML-fetch deadline. The fetched response
+	// headers are passed through so tech detection can use explicit signals.
 	parseCtx, parseCancel := context.WithTimeout(ctx, parseTimeoutSec)
 	defer parseCancel()
-	parsed, err := parse(parseCtx, rawBody, rawURL, cfg.PageSpeedAPIKey)
+	var parsed model.AnalysisResult
+	if cfg.Parse != nil {
+		parsed, err = cfg.Parse(parseCtx, rawBody, rawURL, cfg.PageSpeedAPIKey)
+	} else {
+		parsed, err = parser.ParseWithOptions(parseCtx, rawBody, rawURL, cfg.PageSpeedAPIKey, deep, headers)
+	}
 	if err != nil {
 		return model.AnalysisResult{}, nil, "parse", err
 	}

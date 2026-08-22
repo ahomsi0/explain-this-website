@@ -123,9 +123,20 @@ var thirdPartyEntityMap = map[string]thirdPartyMeta{
 	"WordPress":   {"WordPress", "cms"},
 }
 
+// canonicalTechName normalizes a technology name for dedup: lowercase with
+// any parenthetical qualifier stripped, so "Google Analytics (UA)" and
+// "Google Analytics" collapse to the same entry.
+func canonicalTechName(name string) string {
+	n := strings.ToLower(strings.TrimSpace(name))
+	if i := strings.Index(n, "("); i > 0 {
+		n = strings.TrimSpace(n[:i])
+	}
+	return n
+}
+
 // mergeThirdParties augments an existing tech stack with high-confidence services
 // detected by Lighthouse via real network requests. Skips entries already present
-// (deduped by lowercase name) and unknown entities.
+// (deduped by canonical name) and unknown entities.
 func mergeThirdParties(existing []model.TechItem, thirdParties []model.ThirdPartyEntity) []model.TechItem {
 	if len(thirdParties) == 0 {
 		return existing
@@ -133,7 +144,7 @@ func mergeThirdParties(existing []model.TechItem, thirdParties []model.ThirdPart
 
 	have := make(map[string]struct{}, len(existing))
 	for _, t := range existing {
-		have[strings.ToLower(t.Name)] = struct{}{}
+		have[canonicalTechName(t.Name)] = struct{}{}
 	}
 
 	out := existing
@@ -142,7 +153,7 @@ func mergeThirdParties(existing []model.TechItem, thirdParties []model.ThirdPart
 		if !ok {
 			continue
 		}
-		key := strings.ToLower(meta.Name)
+		key := canonicalTechName(meta.Name)
 		if _, dup := have[key]; dup {
 			continue
 		}

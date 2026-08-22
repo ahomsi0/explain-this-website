@@ -3,6 +3,7 @@ package parser
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -16,13 +17,13 @@ import (
 // a complete AnalysisResult. pageSpeedKey is optional; when non-empty the
 // PageSpeed Insights API is called concurrently to fetch real CWV data.
 func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string) (model.AnalysisResult, error) {
-	return ParseWithOptions(ctx, rawHTML, sourceURL, pageSpeedKey, false)
+	return ParseWithOptions(ctx, rawHTML, sourceURL, pageSpeedKey, false, nil)
 }
 
-// ParseWithOptions is Parse with an optional deep scan: when deep is true a
-// handful of key subpages (/pricing, /about, …) are fetched and audited too,
-// producing a per-page rollup on the result.
-func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string, deep bool) (model.AnalysisResult, error) {
+// ParseWithOptions is Parse with an optional deep scan (key subpages audited
+// too) and optional HTTP response headers, whose explicit server signals make
+// tech-stack detection more reliable.
+func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string, deep bool, respHeaders http.Header) (model.AnalysisResult, error) {
 	if strings.TrimSpace(rawHTML) == "" {
 		return model.AnalysisResult{}, fmt.Errorf("empty HTML response")
 	}
@@ -55,7 +56,7 @@ func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pag
 	rendering := AssessRendering(doc, visibleText)
 
 	overview := extractOverview(doc, rawHTML, sourceURL)
-	tech := detectTech(rawHTML, sourceURL)
+	tech := detectTech(rawHTML, sourceURL, respHeaders)
 	seoChecks := auditSEO(doc, rawHTML, sourceURL)
 	ux := analyzeUX(doc, rawHTML)
 	pageStats := computePageStats(doc, sourceURL, rawHTML)

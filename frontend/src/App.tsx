@@ -23,6 +23,7 @@ import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryModal } from "./components/auth/HistoryModal";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
+import { rememberUrl } from "./lib/recentUrls";
 import type { AnalyzeOptions } from "./services/analyzeApi";
 
 type AnalysisSource = "landing" | "example" | "report";
@@ -78,6 +79,7 @@ function AppInner() {
       source: analysisSource.current,
       performanceAvailable: Boolean(analysisResult.performance?.available),
     });
+    rememberUrl(analysisResult.url);
   });
   const [currentUrl, setCurrentUrl] = useState("");
   const { sharedResult, sharedError, loadingShared } = useReportRoute();

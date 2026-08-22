@@ -93,9 +93,9 @@ export function WhatsNewPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] hero-noise" aria-hidden="true" />
 
       <div className="relative z-10">
-        <main className="mx-auto max-w-4xl px-4 sm:px-6">
+        <main className="mx-auto max-w-3xl px-4 sm:px-6">
           {/* Page header */}
-          <section className="pt-14 pb-12 sm:pt-20 sm:pb-16 fade-up">
+          <section className="pt-14 pb-10 sm:pt-20 sm:pb-14 fade-up">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
               Product updates
             </p>
@@ -105,88 +105,62 @@ export function WhatsNewPage() {
             <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">
               The latest improvements to Explain This Website, written in plain English.
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-2 rounded-full border border-violet-500/25 bg-violet-500/10 px-3 py-1.5 text-violet-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-violet-400" aria-hidden="true" />
-                Latest · August 21, 2026
-              </span>
-              <a
-                href="/"
-                className="text-zinc-500 underline decoration-zinc-700 underline-offset-4 transition-colors hover:text-zinc-200"
-              >
-                Run an analysis
-              </a>
-            </div>
           </section>
 
-          {/* Timeline */}
-          <section aria-labelledby="updates-heading" className="pb-16">
+          {/* Changelog cards */}
+          <section aria-labelledby="updates-heading" className="pb-12">
             <h2 id="updates-heading" className="sr-only">Recent updates</h2>
 
-            <div className="relative">
-              {/* Vertical rail line */}
-              <div
-                className="absolute left-[5px] top-2 bottom-0 w-px bg-zinc-800 sm:left-[90px]"
-                aria-hidden="true"
-              />
-
-              <ol className="space-y-0">
-                {UPDATES.map((update, i) => {
-                  const t = TONE[update.tone];
-                  const isLast = i === UPDATES.length - 1;
-                  return (
-                    <li key={update.title} className="relative flex gap-5 sm:gap-0">
-                      {/* Mobile dot */}
-                      <div className="relative z-10 mt-1.5 flex-shrink-0 sm:hidden">
-                        <span className={`block h-[11px] w-[11px] rounded-full ${t.dot} ring-2 ring-zinc-950`} />
-                      </div>
-
-                      {/* Desktop: date column */}
-                      <div className="hidden sm:flex sm:w-[90px] sm:flex-shrink-0 sm:flex-col sm:items-end sm:pr-8 sm:pt-1">
-                        <span className="relative z-10 text-[11px] text-zinc-600 leading-none">
-                          {update.date}
+            <div className="flex flex-col gap-4">
+              {UPDATES.map((update, i) => {
+                const t = TONE[update.tone];
+                const isLatest = i === 0;
+                return (
+                  <article
+                    key={update.title}
+                    className={`fade-up rounded-xl border p-5 transition-colors sm:p-6 ${
+                      isLatest
+                        ? "border-violet-500/30 bg-violet-500/[0.04]"
+                        : "border-zinc-800/80 bg-zinc-900/30 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
+                      >
+                        {update.label}
+                      </span>
+                      {isLatest && (
+                        <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                          New
                         </span>
-                      </div>
+                      )}
+                      <time className="ml-auto text-[11px] text-zinc-600">{update.date}</time>
+                    </div>
 
-                      {/* Desktop dot */}
-                      <div className="relative z-10 mt-1.5 hidden flex-shrink-0 sm:block">
-                        <span className={`block h-[11px] w-[11px] rounded-full ${t.dot} ring-2 ring-zinc-950`} />
-                      </div>
+                    <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-100 sm:text-xl">
+                      {update.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-zinc-400">{update.description}</p>
 
-                      {/* Content */}
-                      <div className={`flex-1 pb-10 sm:pl-8 ${isLast ? "pb-0" : ""}`}>
-                        <div className="flex flex-wrap items-center gap-2 sm:hidden mb-1">
-                          <span className="text-[10px] text-zinc-600">{update.date}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span
-                            className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
-                          >
-                            {update.label}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-semibold tracking-tight text-zinc-100 sm:text-xl">
-                          {update.title}
-                        </h3>
-                        <p className="mt-2 text-sm leading-7 text-zinc-400">{update.description}</p>
-                        <ul className="mt-4 space-y-2">
-                          {update.details.map((detail) => (
-                            <li key={detail} className="flex items-start gap-2.5 text-xs leading-relaxed text-zinc-500">
-                              <span className={`mt-1.5 h-1 w-1 flex-shrink-0 rounded-full ${t.dot} opacity-60`} aria-hidden="true" />
-                              {detail}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
+                    <ul className="mt-4 grid gap-2 sm:grid-cols-1">
+                      {update.details.map((detail) => (
+                        <li key={detail} className="flex items-start gap-2.5 text-xs leading-relaxed text-zinc-500">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mt-0.5 shrink-0 ${t.tag}`} aria-hidden="true">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
             </div>
           </section>
 
           {/* Footer cta */}
-          <section className="border-t border-zinc-900 py-10">
+          <section className="border-t border-zinc-900 py-10 text-center">
             <p className="text-sm text-zinc-500">Have an idea or found something that needs fixing?</p>
             <a
               href="mailto:support@explainthewebsite.com"
@@ -194,6 +168,11 @@ export function WhatsNewPage() {
             >
               Send us a note
             </a>
+            <div className="mt-5">
+              <a href="/" className="text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors">
+                ← Back to the analyzer
+              </a>
+            </div>
           </section>
         </main>
       </div>
