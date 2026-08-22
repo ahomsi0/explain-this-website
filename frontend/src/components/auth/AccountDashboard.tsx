@@ -1,45 +1,39 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   createApiKey,
-  createWebhook,
   fetchUsageHistory,
   listApiKeys,
-  listWebhooks,
   revokeApiKey,
-  revokeWebhook,
-  testWebhook,
   type ApiKey,
   type CreatedApiKey,
-  type CreatedWebhook,
   type UsageHistory,
-  type Webhook,
 } from "../../services/authApi";
 
-type AccountTab = "usage" | "keys" | "webhooks";
+type AccountTab = "usage" | "keys";
 
 export function AccountDashboard({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [tab, setTab] = useState<AccountTab>("usage");
   const [usage, setUsage] = useState<UsageHistory | null>(null);
   const [keys, setKeys] = useState<ApiKey[]>([]);
-  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [keyName, setKeyName] = useState("");
-  const [webhookURL, setWebhookURL] = useState("");
   const [newKey, setNewKey] = useState<CreatedApiKey | null>(null);
-  const [newWebhook, setNewWebhook] = useState<CreatedWebhook | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  // After the first successful load, reopening refreshes silently in place
+  // instead of showing the loading placeholder again.
+  const loadedOnce = useRef(false);
 
   useEffect(() => {
     if (!open) return;
-    setLoading(true);
     setError(null);
-    Promise.all([fetchUsageHistory(), listApiKeys(), listWebhooks()])
-      .then(([usageData, keyData, webhookData]) => {
+    if (!loadedOnce.current) setLoading(true);
+    Promise.all([fetchUsageHistory(), listApiKeys()])
+      .then(([usageData, keyData]) => {
         setUsage(usageData);
         setKeys(keyData);
-        setWebhooks(webhookData);
+        loadedOnce.current = true;
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load account settings"))
       .finally(() => setLoading(false));
@@ -50,7 +44,6 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
     // Secrets are intentionally ephemeral: closing the dashboard removes the
     // only plaintext copy returned by the server.
     setNewKey(null);
-    setNewWebhook(null);
     setCopied(null);
   }, [open]);
 
@@ -122,58 +115,19 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
     }
   }
 
-  async function handleCreateWebhook() {
-    setBusy("create-webhook");
-    setError(null);
-    try {
-      setNewWebhook(await createWebhook(webhookURL));
-      setWebhookURL("");
-      setWebhooks(await listWebhooks());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create webhook");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleRevokeWebhook(id: string) {
-    if (!confirm("Revoke this webhook? It will stop receiving analysis events.")) return;
-    setBusy(id);
-    try {
-      await revokeWebhook(id);
-      setWebhooks((prev) => prev.map((webhook) => webhook.id === id ? { ...webhook, revokedAt: new Date().toISOString() } : webhook));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not revoke webhook");
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  async function handleTestWebhook(id: string) {
-    setBusy(`test-${id}`);
-    try {
-      await testWebhook(id);
-      setWebhooks(await listWebhooks());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Webhook delivery failed");
-    } finally {
-      setBusy(null);
-    }
-  }
-
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-labelledby="account-dashboard-title" className="w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 border-b border-zinc-800 px-5 py-4">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-400">Account</p>
-            <h2 id="account-dashboard-title" className="mt-1 text-base font-semibold text-zinc-100">Usage & integrations</h2>
+            <h2 id="account-dashboard-title" className="mt-1 text-base font-semibold text-zinc-100">Usage & API keys</h2>
           </div>
           <button onClick={onClose} aria-label="Close account dashboard" className="text-xl leading-none text-zinc-500 hover:text-zinc-200">×</button>
         </div>
 
         <div className="flex gap-1 border-b border-zinc-800 px-4 pt-3">
-          {(["usage", "keys", "webhooks"] as AccountTab[]).map((item) => (
+          {(["usage", "keys"] as AccountTab[]).map((item) => (
             <button type="button" key={item} aria-pressed={tab === item} onClick={() => setTab(item)} className={`rounded-t-md px-3 py-2 text-xs font-semibold capitalize transition-colors ${tab === item ? "border-b-2 border-violet-400 text-violet-300" : "text-zinc-500 hover:text-zinc-300"}`}>
               {item === "keys" ? "API keys" : item}
             </button>
@@ -198,7 +152,7 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
                   {usage.days.map((day) => <div key={day.date} className="group flex h-full flex-1 flex-col justify-end gap-1" title={`${day.date}: ${day.count} analyses`}><div className="min-h-1 rounded-sm bg-violet-500/70 group-hover:bg-violet-400" style={{ height: `${Math.max(4, (day.count / maxDayCount) * 100)}%` }} /><span className="truncate text-center text-[8px] text-zinc-700">{day.date.slice(5)}</span></div>)}
                 </div>
               </div>
-              <p className="text-[11px] leading-relaxed text-zinc-500">API keys can run analyses and compare saved audits programmatically. Webhooks receive signed <code className="text-zinc-300">analysis.completed</code> events.</p>
+              <p className="text-[11px] leading-relaxed text-zinc-500">API keys let scripts and CI bots run analyses and compare saved audits programmatically.</p>
             </div>
           )}
 
@@ -208,15 +162,6 @@ export function AccountDashboard({ open, onClose }: { open: boolean; onClose: ()
               {newKey && <div className="rounded-lg border border-amber-700/50 bg-amber-950/20 p-3"><p className="text-xs font-semibold text-amber-300">Copy this key now</p><p className="mt-1 text-[11px] text-amber-200/70">It cannot be displayed again after closing this panel.</p><div className="mt-3 flex gap-2"><code className="min-w-0 flex-1 break-all rounded bg-zinc-950 px-2 py-2 text-[11px] text-zinc-200">{newKey.key}</code><button onClick={() => void copy(newKey.key, "api-key")} className="shrink-0 rounded border border-zinc-700 px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800">{copied === "api-key" ? "Copied" : "Copy"}</button></div><button onClick={() => setNewKey(null)} className="mt-2 text-[10px] text-zinc-500 hover:text-zinc-300">I saved it</button></div>}
               <div className="flex gap-2"><label htmlFor="api-key-name" className="sr-only">API key name</label><input id="api-key-name" value={keyName} onChange={(e) => setKeyName(e.target.value)} maxLength={64} placeholder="Key name, e.g. CI audit bot" className="min-w-0 flex-1 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200 outline-none focus:border-violet-500/50" /><button type="button" onClick={() => void handleCreateKey()} disabled={busy === "create-key"} className="rounded-md bg-violet-500 px-3 py-2 text-xs font-semibold text-white hover:bg-violet-400 disabled:opacity-50">{busy === "create-key" ? "Creating…" : "Create key"}</button></div>
               <div className="space-y-2">{keys.map((key) => <div key={key.id} className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-3"><div className="min-w-0 flex-1"><p className="truncate text-xs font-medium text-zinc-200">{key.name}</p><p className="mt-1 text-[10px] text-zinc-600"><code>{key.prefix}…</code> · {key.todayRequests} requests today · created {new Date(key.createdAt).toLocaleDateString()}</p></div>{key.revokedAt ? <span className="text-[10px] text-red-400">Revoked</span> : <button onClick={() => void handleRevokeKey(key.id)} disabled={busy === key.id} className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-50">Revoke</button>}</div>)}{keys.length === 0 && <p className="py-6 text-center text-xs text-zinc-600">No API keys yet.</p>}</div>
-            </div>
-          )}
-
-          {!loading && tab === "webhooks" && (
-            <div className="space-y-4">
-              <div><h3 className="text-sm font-semibold text-zinc-100">Webhook integrations</h3><p className="mt-1 text-xs text-zinc-500">We POST signed analysis completion events to your endpoint. HTTPS is recommended.</p></div>
-              {newWebhook && <div className="rounded-lg border border-amber-700/50 bg-amber-950/20 p-3"><p className="text-xs font-semibold text-amber-300">Save this signing secret</p><p className="mt-1 text-[11px] text-amber-200/70">Use it to verify the <code>X-Explain-Website-Signature</code> header. It is shown once.</p><div className="mt-3 flex gap-2"><code className="min-w-0 flex-1 break-all rounded bg-zinc-950 px-2 py-2 text-[11px] text-zinc-200">{newWebhook.secret}</code><button onClick={() => void copy(newWebhook.secret, "webhook-secret")} className="shrink-0 rounded border border-zinc-700 px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800">{copied === "webhook-secret" ? "Copied" : "Copy"}</button></div><button onClick={() => setNewWebhook(null)} className="mt-2 text-[10px] text-zinc-500 hover:text-zinc-300">I saved it</button></div>}
-              <div className="flex gap-2"><label htmlFor="webhook-url" className="sr-only">Webhook URL</label><input id="webhook-url" value={webhookURL} onChange={(e) => setWebhookURL(e.target.value)} placeholder="https://example.com/webhooks/website" className="min-w-0 flex-1 rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200 outline-none focus:border-violet-500/50" /><button type="button" onClick={() => void handleCreateWebhook()} disabled={busy === "create-webhook"} className="rounded-md bg-violet-500 px-3 py-2 text-xs font-semibold text-white hover:bg-violet-400 disabled:opacity-50">{busy === "create-webhook" ? "Adding…" : "Add webhook"}</button></div>
-              <div className="space-y-2">{webhooks.map((webhook) => <div key={webhook.id} className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-3"><div className="min-w-0 flex-1"><p className="truncate text-xs font-medium text-zinc-200">{webhook.url}</p><p className="mt-1 text-[10px] text-zinc-600">{webhook.lastStatus ? `Last status ${webhook.lastStatus}` : "Not delivered yet"}{webhook.failureCount ? ` · ${webhook.failureCount} failures` : ""}</p></div>{webhook.revokedAt ? <span className="text-[10px] text-red-400">Revoked</span> : <div className="flex items-center gap-2"><button onClick={() => void handleTestWebhook(webhook.id)} disabled={busy === `test-${webhook.id}`} className="text-[10px] text-violet-300 hover:text-violet-200 disabled:opacity-50">Test</button><button onClick={() => void handleRevokeWebhook(webhook.id)} disabled={busy === webhook.id} className="text-[10px] text-red-400 hover:text-red-300 disabled:opacity-50">Revoke</button></div>}</div>)}{webhooks.length === 0 && <p className="py-6 text-center text-xs text-zinc-600">No webhooks yet.</p>}</div>
             </div>
           )}
         </div>

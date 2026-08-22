@@ -55,7 +55,7 @@ export function UserMenu() {
             onClick={() => { setOpen(false); setAccountOpen(true); }}
             className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
           >
-            Usage & integrations
+            Usage & API keys
           </button>
           <button
             onClick={() => { setOpen(false); window.location.href = "/go-pro"; }}
