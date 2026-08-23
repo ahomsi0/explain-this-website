@@ -4,8 +4,8 @@
 // dramatically faster than the OpenAI/Anthropic equivalents and cheaper per
 // token, which makes a per-report summary affordable to run on every analysis.
 //
-// We use the chat-completions endpoint with a Llama 3.3 70B model by default;
-// override via GROQ_MODEL.
+// We use the chat-completions endpoint with OpenAI's gpt-oss-120b by default
+// (Groq retired llama-3.3-70b-versatile in August 2026); override via GROQ_MODEL.
 package llm
 
 import (
@@ -42,7 +42,7 @@ type Client struct {
 // Summarise will return ErrDisabled.
 func New(apiKey, modelName string) *Client {
 	if modelName == "" {
-		modelName = "llama-3.3-70b-versatile"
+		modelName = "openai/gpt-oss-120b"
 	}
 	return &Client{
 		apiKey: apiKey,

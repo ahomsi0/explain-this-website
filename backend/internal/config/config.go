@@ -30,7 +30,7 @@ func Load() Config {
 		MaxBodyBytes:    getEnvInt64("MAX_BODY_BYTES", 5*1024*1024),
 		PageSpeedAPIKey: getEnv("PAGESPEED_API_KEY", ""),
 		GroqAPIKey:      getEnv("GROQ_API_KEY", ""),
-		GroqModel:       getEnv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+		GroqModel:       getEnv("GROQ_MODEL", "openai/gpt-oss-120b"),
 	}
 }
 
