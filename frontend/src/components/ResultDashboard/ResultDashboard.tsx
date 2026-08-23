@@ -97,7 +97,7 @@ export function ResultDashboard({
     <div className="min-h-screen flex flex-col bg-zinc-950">
 
       {/* ── Top bar ── */}
-      <header className="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
+      <header className="fixed inset-x-0 top-0 z-30 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
         <div className="px-4 sm:px-6 h-12 flex items-center gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <LogoMark size={22} />
@@ -204,6 +204,9 @@ export function ResultDashboard({
           </div>
         </div>
       </header>
+
+      {/* Spacer — the header is position:fixed so flow content must clear it. */}
+      <div className="h-12 shrink-0" aria-hidden="true" />
 
       {/* ── Mobile section nav (only < md) ── */}
       <MobileSectionNav items={SECTIONS} active={activeSection} onSelect={setActiveSection} />
