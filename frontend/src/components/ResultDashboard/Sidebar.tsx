@@ -61,7 +61,7 @@ export function Sidebar({
   onShowHistory?: () => void;
 }) {
   return (
-    <aside className="hidden md:flex flex-col w-[220px] shrink-0 border-r border-zinc-800 bg-zinc-950 px-3 py-5 sticky top-12 h-[calc(100vh-3rem)]">
+    <aside className="hidden md:flex flex-col w-[220px] shrink-0 border-r border-zinc-800 bg-zinc-950 px-3 py-5 fixed left-0 top-12 bottom-0 overflow-y-auto scrollbar-none">
       <div className="px-2 mb-5">
         <p className="text-[11px] font-semibold text-zinc-300 tracking-wide">Audit Reports</p>
         <p className="text-[10px] text-zinc-600 mt-0.5">Section view</p>

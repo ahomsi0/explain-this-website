@@ -211,8 +211,8 @@ export function ResultDashboard({
       {/* ── Mobile section nav (only < md) ── */}
       <MobileSectionNav items={SECTIONS} active={activeSection} onSelect={setActiveSection} />
 
-      {/* ── Body: sidebar + main ── */}
-      <div className="flex-1 flex">
+      {/* ── Body: sidebar + main (sidebar is fixed, so clear it on md+) ── */}
+      <div className="flex-1 flex md:pl-[220px]">
         <Sidebar
           items={SECTIONS}
           active={activeSection}
