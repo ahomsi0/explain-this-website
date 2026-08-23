@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/adminstate"
@@ -65,6 +66,11 @@ type chatRequest struct {
 	Messages    []chatMessage `json:"messages"`
 	MaxTokens   int           `json:"max_tokens"`
 	Temperature float64       `json:"temperature"`
+	// ReasoningEffort caps the hidden chain-of-thought budget on reasoning
+	// models (gpt-oss, qwen3). Without it those models can exhaust
+	// max_tokens on reasoning and return empty content. Omitted for models
+	// that don't accept the parameter.
+	ReasoningEffort string `json:"reasoning_effort,omitempty"`
 }
 
 type chatResponse struct {
@@ -100,6 +106,9 @@ func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (s
 		},
 		MaxTokens:   600,
 		Temperature: 0.4,
+	}
+	if strings.Contains(c.model, "gpt-oss") || strings.Contains(c.model, "qwen") {
+		body.ReasoningEffort = "low"
 	}
 	payload, err := json.Marshal(body)
 	if err != nil {
