@@ -17,7 +17,7 @@ export function SiteHeader({
   const { theme, toggle } = useTheme();
 
   return (
-    <header className="sticky top-0 z-20 backdrop-blur-md bg-zinc-950/40 border-b border-zinc-900/80 px-4 sm:px-6 h-14 flex items-center justify-between">
+    <header className="fixed inset-x-0 top-0 z-40 backdrop-blur-md bg-zinc-950/40 border-b border-zinc-900/80 px-4 sm:px-6 h-14 flex items-center justify-between">
       <a href="/" aria-label="Explain This Website home">
         <LogoWordmark size={20} />
       </a>

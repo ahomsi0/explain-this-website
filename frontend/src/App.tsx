@@ -36,7 +36,8 @@ function PageShell({ children, header, footer = true }: { children: ReactNode; h
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
       {header}
-      <div className="flex-1 flex flex-col">{children}</div>
+      {/* The header is position:fixed, so content needs a spacer to sit below it. */}
+      <div className={`flex-1 flex flex-col ${header ? "pt-14" : ""}`}>{children}</div>
       {footer && <SiteFooter />}
     </div>
   );
