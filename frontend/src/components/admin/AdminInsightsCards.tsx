@@ -202,40 +202,56 @@ export function TopUrlsCard({ rows }: { rows: UrlCount[] }) {
 }
 
 // ─── 8. System Health ────────────────────────────────────────────────────────
-function HealthRow({ label, ok, detail }: { label: string; ok: boolean; detail?: string }) {
+type HealthStateShape = { lastSuccessAt: string; lastErrorAt: string; lastErrorMsg?: string };
+
+function hadSuccess(s: HealthStateShape): boolean {
+  return !!s.lastSuccessAt && !s.lastSuccessAt.startsWith("0001");
+}
+function hadError(s: HealthStateShape): boolean {
+  return !!s.lastErrorAt && !s.lastErrorAt.startsWith("0001");
+}
+// Healthy = at least one success and no error newer than it.
+function healthy(s: HealthStateShape): boolean {
+  return hadSuccess(s) && (!hadError(s) || s.lastErrorAt < s.lastSuccessAt);
+}
+
+function HealthRow({ label, state, detail }: { label: string; state: "ok" | "idle" | "fail"; detail?: string }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5 border-b border-zinc-800/50 last:border-b-0">
       <span className="text-xs text-zinc-300">{label}</span>
       <div className="flex items-center gap-2 shrink-0">
         {detail && <span className="text-[10px] text-zinc-500 tabular-nums">{detail}</span>}
-        <span className={`w-2 h-2 rounded-full ${ok ? "bg-emerald-500" : "bg-red-500"}`} />
+        <span className={`w-2 h-2 rounded-full ${state === "ok" ? "bg-emerald-500" : state === "idle" ? "bg-zinc-600" : "bg-red-500"}`} />
       </div>
     </div>
   );
 }
 
 export function SystemHealthCard({ h }: { h: SystemHealth }) {
-  const psHealthy = !!h.pagespeedKeySet && (!h.pagespeed.lastErrorAt || h.pagespeed.lastErrorAt < h.pagespeed.lastSuccessAt);
-  const reHealthy = !!h.resendKeySet && (!h.resend.lastErrorAt || h.resend.lastErrorAt < h.resend.lastSuccessAt);
-  const groqHealthy = !!h.groqKeySet && (!h.groq.lastErrorAt || h.groq.lastErrorAt < h.groq.lastSuccessAt);
+  // Idle = key configured but this process has never called the API
+  // (counters reset on every deploy — not a failure).
+  const psIdle    = !!h.pagespeedKeySet && !hadSuccess(h.pagespeed) && !hadError(h.pagespeed);
+  const groqIdle  = !!h.groqKeySet     && !hadSuccess(h.groq)     && !hadError(h.groq);
+  const reIdle    = !!h.resendKeySet   && !hadSuccess(h.resend)   && !hadError(h.resend);
   return (
     <Card title="System Health">
       <div className="flex flex-col">
-        <HealthRow label="Database"          ok={h.dbOk}             detail={h.dbOk ? `${h.dbLatencyMs}ms` : "down"} />
-        <HealthRow label="JWT Secret"        ok={h.jwtSecretSet}     detail={h.jwtSecretSet ? "configured" : "missing"} />
-        <HealthRow label="PageSpeed API"     ok={psHealthy}          detail={h.pagespeedKeySet ? `success ${timeAgo(h.pagespeed.lastSuccessAt)}` : "no key"} />
-        <HealthRow label="Groq (AI summary)" ok={groqHealthy}        detail={h.groqKeySet ? `success ${timeAgo(h.groq.lastSuccessAt)}` : "no key"} />
-        <HealthRow label="Resend (email)"    ok={reHealthy}          detail={h.resendKeySet ? `success ${timeAgo(h.resend.lastSuccessAt)}` : "no key"} />
-        <HealthRow label="Tap Payments" ok={h.tapKeySet}        detail={h.tapKeySet ? "configured" : "no key"} />
+        <HealthRow label="Database"          state={h.dbOk ? "ok" : "fail"}              detail={h.dbOk ? `${h.dbLatencyMs}ms` : "down"} />
+        <HealthRow label="JWT Secret"        state={h.jwtSecretSet ? "ok" : "fail"}      detail={h.jwtSecretSet ? "configured" : "missing"} />
+        <HealthRow label="PageSpeed API"     state={psIdle ? "idle" : healthy(h.pagespeed) ? "ok" : "fail"}
+                                             detail={h.pagespeedKeySet ? (psIdle ? "no calls since deploy" : `last success ${timeAgo(h.pagespeed.lastSuccessAt)}`) : "no key"} />
+        <HealthRow label="Groq (AI summary)" state={groqIdle ? "idle" : healthy(h.groq) ? "ok" : "fail"}
+                                             detail={h.groqKeySet ? (groqIdle ? "no calls since deploy" : `last success ${timeAgo(h.groq.lastSuccessAt)}`) : "no key"} />
+        <HealthRow label="Resend (email)"    state={reIdle ? "idle" : healthy(h.resend) ? "ok" : "fail"}
+                                             detail={h.resendKeySet ? (reIdle ? "no emails since deploy" : `last success ${timeAgo(h.resend.lastSuccessAt)}`) : "no key"} />
+        <HealthRow label="Tap Payments"      state={h.tapKeySet ? "ok" : "fail"}         detail={h.tapKeySet ? "configured" : "no key"} />
       </div>
-      {h.pagespeed.lastErrorMsg && (
-        <p className="mt-3 text-[10px] text-red-400 break-words">PageSpeed last error: {h.pagespeed.lastErrorMsg}</p>
-      )}
-      {h.groq.lastErrorMsg && (
-        <p className="mt-1 text-[10px] text-red-400 break-words">Groq last error: {h.groq.lastErrorMsg}</p>
-      )}
-      {h.resend.lastErrorMsg && (
-        <p className="mt-1 text-[10px] text-red-400 break-words">Resend last error: {h.resend.lastErrorMsg}</p>
+      {(h.pagespeed.lastErrorMsg || h.groq.lastErrorMsg || h.resend.lastErrorMsg) && (
+        <div className="mt-3 flex flex-col gap-1">
+          {h.pagespeed.lastErrorMsg && <p className="text-[10px] text-red-400 break-words">PageSpeed last error: {h.pagespeed.lastErrorMsg}</p>}
+          {h.groq.lastErrorMsg && <p className="text-[10px] text-red-400 break-words">Groq last error: {h.groq.lastErrorMsg}</p>}
+          {h.resend.lastErrorMsg && <p className="text-[10px] text-red-400 break-words">Resend last error: {h.resend.lastErrorMsg}</p>}
+        </div>
       )}
     </Card>
   );
