@@ -173,8 +173,8 @@ export function MobileSectionNav({
   onSelect: (id: SectionId) => void;
 }) {
   return (
-    <div className="md:hidden border-b border-zinc-800 bg-zinc-950 sticky top-12 z-10">
-      <div className="flex items-center gap-1 px-3 py-2 overflow-x-auto scrollbar-none">
+    <div className="md:hidden fixed top-12 inset-x-0 z-10 border-b border-zinc-800 bg-zinc-950">
+      <div className="flex items-center gap-1 px-3 h-[42px] overflow-x-auto scrollbar-none">
         {items.map((item) => {
           const isActive = item.id === active;
           return (

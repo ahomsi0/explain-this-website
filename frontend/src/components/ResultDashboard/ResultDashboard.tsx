@@ -210,6 +210,8 @@ export function ResultDashboard({
 
       {/* ── Mobile section nav (only < md) ── */}
       <MobileSectionNav items={SECTIONS} active={activeSection} onSelect={setActiveSection} />
+      {/* Spacer — the mobile nav is position:fixed (42px bar + 1px border). */}
+      <div className="md:hidden h-[43px] shrink-0" aria-hidden="true" />
 
       {/* ── Body: sidebar + main (sidebar is fixed, so clear it on md+) ── */}
       <div className="flex-1 flex md:pl-[220px]">

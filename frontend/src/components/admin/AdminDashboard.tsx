@@ -400,7 +400,7 @@ export function AdminDashboard() {
 function Shell({ title, userMenu, children }: { title: string; userMenu?: ReactNode; children: ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-950">
-      <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
+      <header className="fixed inset-x-0 top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
         <div className="px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <LogoWordmark size={20} />
@@ -410,6 +410,8 @@ function Shell({ title, userMenu, children }: { title: string; userMenu?: ReactN
           <div className="shrink-0">{userMenu}</div>
         </div>
       </header>
+      {/* Spacer — the header is position:fixed so content must clear it. */}
+      <div className="h-14" aria-hidden="true" />
       <main className="px-4 sm:px-6 py-8">
         <div className="max-w-6xl mx-auto">{children}</div>
       </main>
