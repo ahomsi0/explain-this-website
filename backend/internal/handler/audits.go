@@ -230,53 +230,78 @@ func attachScores(ctx context.Context, uid int64, items []auditListItem, ids []s
 	}
 }
 
-// pagedAuditListByScore loads every match, computes scores, sorts by overall
-// score (best first, unscored last), then slices the page in memory.
+// pagedAuditListByScore uses a two-pass approach to avoid loading all JSONB
+// data into memory at once.  Pass 1 fetches only id+result to compute scores
+// (no LIMIT — scores live inside JSONB and cannot be pushed to the DB).
+// Pass 2 fetches the full row data for just the page slice by ID, then
+// re-sorts to restore the score order (ANY($1) does not preserve order).
 func pagedAuditListByScore(ctx context.Context, uid int64, where string, args []any, page, limit int) auditListPage {
-	rows, err := db.Pool.Query(ctx, `
-		SELECT id, url, COALESCE(title, ''), created_at,
-		        is_shareable AND share_revoked_at IS NULL
-		          AND share_expires_at IS NOT NULL AND share_expires_at > NOW(),
-		        share_expires_at, result
-		   FROM audits`+where, args...)
+	// Pass 1: id + result only — no full-row columns, no LIMIT.
+	rows, err := db.Pool.Query(ctx, `SELECT id, result FROM audits`+where, args...)
 	if err != nil {
 		return auditListPage{Items: []auditListItem{}, Page: page, Limit: limit}
 	}
-	defer rows.Close()
-
 	type scored struct {
-		item  auditListItem
+		id    string
 		score int
 	}
 	all := []scored{}
 	for rows.Next() {
-		var a auditListItem
+		var id string
 		var raw []byte
-		if err := rows.Scan(&a.ID, &a.URL, &a.Title, &a.CreatedAt, &a.Shareable, &a.ShareExpiresAt, &raw); err != nil {
+		if err := rows.Scan(&id, &raw); err != nil {
 			continue
 		}
-		a.Scores = scoreSummaryFrom(raw)
 		s := 0
-		if a.Scores != nil && a.Scores.Overall != nil {
-			s = *a.Scores.Overall
+		if scores := scoreSummaryFrom(raw); scores != nil && scores.Overall != nil {
+			s = *scores.Overall
 		}
-		all = append(all, scored{item: a, score: s})
+		all = append(all, scored{id: id, score: s})
 	}
+	rows.Close()
 	sort.SliceStable(all, func(i, j int) bool { return all[i].score > all[j].score })
 
 	total := len(all)
 	start := (page - 1) * limit
-	if start > total {
+	if start >= total {
 		start = total
 	}
 	end := start + limit
 	if end > total {
 		end = total
 	}
-	items := []auditListItem{}
+	pageIDs := make([]string, 0, end-start)
+	scoreByID := map[string]int{}
 	for _, s := range all[start:end] {
-		items = append(items, s.item)
+		pageIDs = append(pageIDs, s.id)
+		scoreByID[s.id] = s.score
 	}
+	if len(pageIDs) == 0 {
+		return auditListPage{Items: []auditListItem{}, Total: total, Page: page, Limit: limit}
+	}
+
+	// Pass 2: fetch full row data for only this page's IDs.
+	rows2, err := db.Pool.Query(ctx, `
+		SELECT id, url, COALESCE(title, ''), created_at,
+		       is_shareable AND share_revoked_at IS NULL
+		         AND share_expires_at IS NOT NULL AND share_expires_at > NOW(),
+		       share_expires_at
+		  FROM audits
+		 WHERE id = ANY($1) AND user_id = $2`, pageIDs, uid)
+	if err != nil {
+		return auditListPage{Items: []auditListItem{}, Total: total, Page: page, Limit: limit}
+	}
+	items, ids, scanErr := scanAuditRows(rows2)
+	if scanErr != nil {
+		return auditListPage{Items: []auditListItem{}, Total: total, Page: page, Limit: limit}
+	}
+	attachScores(ctx, uid, items, ids)
+
+	// Re-sort to match the score order (ANY($1) does not preserve order).
+	sort.SliceStable(items, func(i, j int) bool {
+		return scoreByID[items[i].ID] > scoreByID[items[j].ID]
+	})
+
 	return auditListPage{Items: items, Total: total, Page: page, Limit: limit}
 }
 

@@ -82,9 +82,9 @@ func comparisonSnapshot(id, title string, createdAt time.Time, result model.Anal
 		}
 	}
 	if result.Performance != nil && result.Performance.Available {
-		strategy := result.Performance.Mobile
+		strategy := result.Performance.Desktop
 		if strategy == nil {
-			strategy = result.Performance.Desktop
+			strategy = result.Performance.Mobile
 		}
 		if strategy != nil {
 			snapshot.PerformanceScore = strategy.Lighthouse.Performance

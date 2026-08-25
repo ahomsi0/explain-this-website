@@ -128,7 +128,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux.HandleFunc("PATCH /api/admin/users/{id}", auth.RequireSessionAuth(handler.AdminPatchUserHandler()))
 
 	// User audit history (account-only)
-	mux.HandleFunc("GET /api/audits", auth.RequireAuth(handler.AuditsListHandler()))
+	mux.HandleFunc("GET /api/audits", auth.RequireSessionAuth(handler.AuditsListHandler()))
 	mux.HandleFunc("DELETE /api/audits", auth.RequireSessionAuth(handler.AuditsClearHandler()))
 	mux.HandleFunc("DELETE /api/audits/{id}", auth.RequireSessionAuth(handler.AuditDeleteHandler()))
 

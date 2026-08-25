@@ -46,7 +46,9 @@ function PageShell({ children, header, footer = true }: { children: ReactNode; h
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
   const [sharedError, setSharedError] = useState<string | null>(null);
-  const reportId = window.location.pathname.match(/^\/report\/([a-f0-9]{32})$/)?.[1] ?? null;
+  const [reportId] = useState(() =>
+    window.location.pathname.match(/^\/report\/([a-f0-9]{32})$/)?.[1] ?? null
+  );
 
   useEffect(() => {
     if (!reportId) return;

@@ -171,7 +171,6 @@ func AdminOverviewHandler() http.HandlerFunc {
 			   AND du.usage_date = CURRENT_DATE
 			 ORDER BY u.created_at DESC
 			 LIMIT 200`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var row adminUserRow
 				if err := rows.Scan(
@@ -184,6 +183,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 					users = append(users, row)
 				}
 			}
+			rows.Close()
 		}
 
 		// Anonymous visitors today.
@@ -194,7 +194,6 @@ func AdminOverviewHandler() http.HandlerFunc {
 			 WHERE usage_date = CURRENT_DATE
 			 ORDER BY updated_at DESC
 			 LIMIT 200`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var row adminVisitorRow
 				if err := rows.Scan(&row.VisitorID, &row.DailyUsed, &row.UpdatedAt); err == nil {
@@ -203,6 +202,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 					visitors = append(visitors, row)
 				}
 			}
+			rows.Close()
 		}
 
 		// Recent audits — last 20 across all users. Soft-deleted rows are
@@ -217,13 +217,13 @@ func AdminOverviewHandler() http.HandlerFunc {
 			 WHERE a.deleted_at IS NULL
 			 ORDER BY a.created_at DESC
 			 LIMIT 20`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var row recentAuditRow
 				if err := rows.Scan(&row.ID, &row.URL, &row.Title, &row.Email, &row.CreatedAt); err == nil {
 					recent = append(recent, row)
 				}
 			}
+			rows.Close()
 		}
 
 		// Audits by day for the last 14 days (filling in zero days client-side is easier
@@ -235,7 +235,6 @@ func AdminOverviewHandler() http.HandlerFunc {
 			 WHERE created_at >= NOW() - INTERVAL '14 days'
 			 GROUP BY d
 			 ORDER BY d ASC`); err == nil {
-			defer rows.Close()
 			counts := map[string]int{}
 			for rows.Next() {
 				var d string
@@ -244,6 +243,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 					counts[d] = n
 				}
 			}
+			rows.Close()
 			// Fill zero-count days so the chart renders evenly.
 			for i := 13; i >= 0; i-- {
 				date := time.Now().AddDate(0, 0, -i).Format("2006-01-02")
@@ -260,13 +260,13 @@ func AdminOverviewHandler() http.HandlerFunc {
 			 GROUP BY url
 			 ORDER BY n DESC
 			 LIMIT 10`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var row urlCount
 				if err := rows.Scan(&row.URL, &row.Count); err == nil {
 					topUrls = append(topUrls, row)
 				}
 			}
+			rows.Close()
 		}
 
 		// Slowest 10 audits in last 30 days.
@@ -278,13 +278,13 @@ func AdminOverviewHandler() http.HandlerFunc {
 			   AND created_at > NOW() - INTERVAL '30 days'
 			 ORDER BY duration_ms DESC
 			 LIMIT 10`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var r slowAuditRow
 				if err := rows.Scan(&r.URL, &r.DurationMs, &r.CreatedAt); err == nil {
 					slowAudits = append(slowAudits, r)
 				}
 			}
+			rows.Close()
 		}
 
 		// Audit outcomes (PageSpeed hit rate) last 14 days.
@@ -299,13 +299,13 @@ func AdminOverviewHandler() http.HandlerFunc {
 			   AND created_at > NOW() - INTERVAL '14 days'
 			 GROUP BY d
 			 ORDER BY d DESC`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var r auditOutcomeRow
 				if err := rows.Scan(&r.Date, &r.Total, &r.PerfOK, &r.PerfFail); err == nil {
 					auditOutcomes = append(auditOutcomes, r)
 				}
 			}
+			rows.Close()
 		}
 
 		// Consent-gated first-party conversion events over the last 30 days.
@@ -315,7 +315,6 @@ func AdminOverviewHandler() http.HandlerFunc {
 			  FROM conversion_events
 			 WHERE created_at > NOW() - INTERVAL '30 days'
 			 GROUP BY event_name`); err == nil {
-			defer rows.Close()
 			for rows.Next() {
 				var name string
 				var count int
@@ -335,6 +334,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 					funnel.RepeatUsage = count
 				}
 			}
+			rows.Close()
 		}
 
 		// Failure log + health: in-memory.
@@ -365,7 +365,7 @@ func AdminOverviewHandler() http.HandlerFunc {
 		writeJSON(w, http.StatusOK, adminOverviewResp{
 			CurrentDate:        time.Now().Format("2006-01-02"),
 			AdminEmail:         adminEmail,
-			AnySignedInIsAdmin: false,
+			AnySignedInIsAdmin: adminEmail == "",
 			Users:              users,
 			AnonymousVisitors:  visitors,
 			RecentAudits:       recent,
