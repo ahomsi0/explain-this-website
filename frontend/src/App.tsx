@@ -21,7 +21,7 @@ import { SiteHeader } from "./components/ui/SiteHeader";
 import { LogoMark } from "./components/ui/Logo";
 import { ReportSkeleton } from "./components/ui/Skeletons";
 import { AuthModal } from "./components/auth/AuthModal";
-import { HistoryModal } from "./components/auth/HistoryModal";
+import { HistoryPage } from "./components/auth/HistoryPage";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
 import { rememberUrl } from "./lib/recentUrls";
@@ -86,7 +86,6 @@ function AppInner() {
   const [currentUrl, setCurrentUrl] = useState("");
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
   const [authOpen, setAuthOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     fetchUsage().then(setUsage).catch(() => {});
@@ -150,19 +149,13 @@ function AppInner() {
     return () => { document.body.style.overflow = prev; };
   }, [status]);
 
-  // Shared header + global auth/history modals for every pre-analysis page.
-  // The results dashboard, shared reports, and admin keep their own chrome.
+  // Shared header + global auth modal for every pre-analysis page. History is
+  // a full page at /history; the results dashboard, shared reports, and admin
+  // keep their own chrome.
   const chrome = (
     <>
-      <SiteHeader onSignIn={() => setAuthOpen(true)} onShowHistory={() => setHistoryOpen(true)} />
+      <SiteHeader onSignIn={() => setAuthOpen(true)} onShowHistory={() => { window.location.href = "/history"; }} />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      {historyOpen && (
-        <HistoryModal
-          open
-          onClose={() => setHistoryOpen(false)}
-          onOpenAudit={(id) => { window.location.href = `/report/${id}`; }}
-        />
-      )}
     </>
   );
 
@@ -187,6 +180,7 @@ function AppInner() {
   if (pathname === "/terms") return <PageShell header={chrome}><LegalPage kind="terms" /></PageShell>;
   if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
   if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
+  if (pathname === "/history") return <PageShell header={chrome}><HistoryPage /></PageShell>;
   if (pathname === "/compare") return <PageShell header={chrome}><ComparePage /></PageShell>;
 
   // Shared report route takes over the whole page.
@@ -232,7 +226,6 @@ function AppInner() {
           usage={usage}
           onAnalyze={handleAnalyze}
           setAuthOpen={setAuthOpen}
-          setHistoryOpen={setHistoryOpen}
         />
       )}
 
