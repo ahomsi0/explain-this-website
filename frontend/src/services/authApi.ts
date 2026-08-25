@@ -24,6 +24,14 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface AuditScores {
+  overall?: number;
+  seo?: number;
+  ux?: number;
+  conversion?: number;
+  performance?: number;
+}
+
 export interface AuditListItem {
   id: string;
   url: string;
@@ -31,6 +39,23 @@ export interface AuditListItem {
   createdAt: string;
   shareable: boolean;
   shareExpiresAt?: string;
+  scores?: AuditScores;
+}
+
+export interface AuditListPage {
+  items: AuditListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AuditListQuery {
+  page: number;
+  limit?: number;
+  q?: string;
+  sort?: "newest" | "oldest" | "score" | "url";
+  shared?: boolean;
+  days?: 0 | 7 | 30;
 }
 
 export interface UsageHistoryDay {
@@ -258,6 +283,17 @@ export async function logout(): Promise<void> {
 
 export async function fetchAudits(): Promise<AuditListItem[]> {
   return jsonFetch<AuditListItem[]>("/api/audits");
+}
+
+// fetchAuditsPage hits the paginated envelope: search, sort, filters, and
+// per-row score summaries computed server-side.
+export async function fetchAuditsPage(query: AuditListQuery): Promise<AuditListPage> {
+  const p = new URLSearchParams({ page: String(query.page), limit: String(query.limit ?? 20) });
+  if (query.q) p.set("q", query.q);
+  if (query.sort) p.set("sort", query.sort);
+  if (query.shared) p.set("shared", "1");
+  if (query.days) p.set("days", String(query.days));
+  return jsonFetch<AuditListPage>(`/api/audits?${p.toString()}`);
 }
 
 export async function compareAudits(a: string, b: string): Promise<AuditComparison> {
