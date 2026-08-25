@@ -87,6 +87,8 @@ func Init(ctx context.Context) error {
 	}
 	applyRetention(ctx)
 	loadPersistedFlags(ctx)
+	loadSystemHealth(ctx)
+	adminstate.SetPersistHook(persistHealth)
 	return nil
 }
 
@@ -249,6 +251,16 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_tap_subscription_id_idx
 -- Admin dashboard queries order audits by recency (Recent Audits, slowest,
 -- per-day charts); without this index they scan the whole table.
 CREATE INDEX IF NOT EXISTS audits_created_at_idx ON audits (created_at DESC);
+
+-- Durable dependency-health mirror for the admin System tab. In-memory state
+-- (adminstate) resets on every deploy and is per-instance; this table is
+-- loaded at startup and written asynchronously on every health mutation.
+CREATE TABLE IF NOT EXISTS system_health (
+    component       TEXT PRIMARY KEY,
+    last_success_at TIMESTAMPTZ,
+    last_error_at   TIMESTAMPTZ,
+    last_error_msg  TEXT NOT NULL DEFAULT ''
+);
 `
 
 // retentionStatements prune rows that only serve time-boxed views (30-day
@@ -306,4 +318,84 @@ func loadPersistedFlags(ctx context.Context) {
 		}
 	}
 	adminstate.LoadFlags(flags)
+}
+
+// loadSystemHealth restores dependency health recorded by any previous
+// process, so a deploy (or a second instance) starts from the real last-known
+// state instead of "success never".
+func loadSystemHealth(ctx context.Context) {
+	rows, err := Pool.Query(ctx,
+		`SELECT component, last_success_at, last_error_at, last_error_msg FROM system_health`)
+	if err != nil {
+		log.Printf("could not load system health: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	states := map[string]adminstate.HealthState{}
+	for rows.Next() {
+		var name, msg string
+		var successAt, errorAt *time.Time
+		if err := rows.Scan(&name, &successAt, &errorAt, &msg); err != nil {
+			log.Printf("scan system_health: %v", err)
+			continue
+		}
+		h := adminstate.HealthState{LastErrorMsg: msg}
+		if successAt != nil {
+			h.LastSuccessAt = *successAt
+		}
+		if errorAt != nil {
+			h.LastErrorAt = *errorAt
+		}
+		states[name] = h
+	}
+	adminstate.LoadHealth(states)
+}
+
+// persistHealth mirrors one component's in-memory health into Postgres. It
+// runs async with a short timeout — observability writes must never slow the
+// request path that produced them, and a failed write only costs freshness.
+// With multiple instances, last writer wins per mutation; that is still far
+// more truthful than per-instance memory.
+func persistHealth(component string) {
+	if Pool == nil {
+		return
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		var h adminstate.HealthState
+		switch component {
+		case "pagespeed":
+			ps, _ := adminstate.SnapshotHealth()
+			h = ps
+		case "resend":
+			_, re := adminstate.SnapshotHealth()
+			h = re
+		case "groq":
+			h = adminstate.SnapshotGroqHealth()
+		default:
+			return
+		}
+
+		if _, err := Pool.Exec(ctx, `
+			INSERT INTO system_health (component, last_success_at, last_error_at, last_error_msg)
+			VALUES ($1, $2, $3, $4)
+			ON CONFLICT (component) DO UPDATE SET
+			    last_success_at = EXCLUDED.last_success_at,
+			    last_error_at   = EXCLUDED.last_error_at,
+			    last_error_msg  = EXCLUDED.last_error_msg`,
+			component, nullableTime(h.LastSuccessAt), nullableTime(h.LastErrorAt), h.LastErrorMsg,
+		); err != nil {
+			log.Printf("persist system health %q: %v", component, err)
+		}
+	}()
+}
+
+func nullableTime(t time.Time) *time.Time {
+	if t.IsZero() {
+		return nil
+	}
+	return &t
 }

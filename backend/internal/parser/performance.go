@@ -3,11 +3,15 @@ package parser
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/adminstate"
@@ -15,6 +19,48 @@ import (
 )
 
 const pageSpeedAPI = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
+
+// psiDailyBudgetLimit caps PageSpeed Insights calls per process per day
+// (override with PSI_DAILY_BUDGET). Google's quota is 25K/day per project and
+// deep-scan multipage runs burn it quickly; a soft cap keeps late-day reports
+// from degrading into 429 failures. It is enforced per instance — with
+// multiple instances the Google-side quota remains the hard stop.
+var psiDailyBudgetLimit = func() int {
+	if v := os.Getenv("PSI_DAILY_BUDGET"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 20000
+}()
+
+// psiBudget is the per-process daily call counter, keyed by local day.
+var psiBudget = struct {
+	mu  sync.Mutex
+	day string
+	n   int
+}{}
+
+// errPSIBudgetExhausted marks a skip that is quota self-protection, not an
+// API failure — it must not paint PageSpeed red on the admin dashboard.
+var errPSIBudgetExhausted = errors.New("PageSpeed daily budget exhausted")
+
+// psiBudgetAllow records one pending PSI call and reports whether the daily
+// budget allows it. Day rollover resets the counter.
+func psiBudgetAllow() bool {
+	psiBudget.mu.Lock()
+	defer psiBudget.mu.Unlock()
+	today := time.Now().Format("2006-01-02")
+	if psiBudget.day != today {
+		psiBudget.day = today
+		psiBudget.n = 0
+	}
+	if psiBudget.n >= psiDailyBudgetLimit {
+		return false
+	}
+	psiBudget.n++
+	return true
+}
 
 // lhCategory is a single Lighthouse category entry. Score is a pointer to handle null.
 type lhCategory struct {
@@ -59,6 +105,11 @@ type pageSpeedResponse struct {
 // hitting the PageSpeed API rate limit (1 QPS on the free/keyless tier).
 // Returns nil, err only if both strategies fail — partial success is allowed.
 func fetchPerformance(ctx context.Context, siteURL string, apiKey string) (*model.PerformanceResult, error) {
+	if !psiBudgetAllow() {
+		log.Printf("PageSpeed skipped for %s: daily budget (%d calls) exhausted", siteURL, psiDailyBudgetLimit)
+		return nil, errPSIBudgetExhausted
+	}
+
 	// Desktop PageSpeed runs regularly take 60–80s, which does not fit inside
 	// shorter upstream deadlines (the HTML-fetch budget inherited by callers).
 	// Derive the budget from scratch so the full window is always available,
@@ -128,7 +179,9 @@ func fetchPerformance(ctx context.Context, siteURL string, apiKey string) (*mode
 	}
 
 	if !result.Available {
-		if firstErr != nil {
+		// Budget exhaustion is deliberate self-throttling, not an API error —
+		// recording it would flip the admin health panel red for a healthy API.
+		if firstErr != nil && !errors.Is(firstErr, errPSIBudgetExhausted) {
 			adminstate.RecordPageSpeedFailure(firstErr.Error())
 		}
 		return nil, firstErr

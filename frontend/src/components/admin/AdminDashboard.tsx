@@ -71,6 +71,14 @@ export function AdminDashboard() {
     if (user) void loadOverview();
   }, [user]);
 
+  // Light polling keeps the System health panel and usage counters current
+  // without a manual reload; the backend endpoint is a single indexed query.
+  useEffect(() => {
+    if (!user) return;
+    const id = setInterval(() => { void loadOverview(); }, 30_000);
+    return () => clearInterval(id);
+  }, [user]);
+
   // ── derived analytics ──────────────────────────────────────────────────────
   const analytics = useMemo(() => {
     if (!overview) return null;
