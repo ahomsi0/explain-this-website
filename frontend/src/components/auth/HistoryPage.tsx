@@ -191,7 +191,7 @@ export function HistoryPage() {
           )}
         </div>
 
-        {data && data.total > 0 && (
+        {(data || hasFilters) && (
           <div className="mt-5 flex items-center gap-2 flex-wrap">
             <div className="flex-1 min-w-[180px] flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 shrink-0">
