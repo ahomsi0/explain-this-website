@@ -10,13 +10,11 @@ export function LandingPage({
   usage,
   onAnalyze,
   setAuthOpen,
-  setHistoryOpen,
 }: {
   user: AuthUser | null;
   usage: UsageSummary | null;
   onAnalyze: (url: string, source?: "landing" | "example" | "report", opts?: AnalyzeOptions) => void;
   setAuthOpen: (v: boolean) => void;
-  setHistoryOpen: (v: boolean) => void;
 }) {
   const [deepScan, setDeepScan] = useState(false);
   // Local recents render immediately; signed-in users get their authoritative
@@ -144,12 +142,12 @@ export function LandingPage({
             {user ? (
               <p className="mt-8 text-center text-xs text-zinc-500">
                 Signed in as <span className="text-zinc-300">{user.email}</span> ·{" "}
-                <button
-                  onClick={() => setHistoryOpen(true)}
+                <a
+                  href="/history"
                   className="text-violet-400 hover:text-violet-300 underline underline-offset-2"
                 >
                   view your audit history
-                </button>
+                </a>
               </p>
             ) : (
               <p className="mt-8 text-center text-xs text-zinc-500">

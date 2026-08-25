@@ -16,7 +16,6 @@ import { ErrorBoundary } from "../ui/ErrorBoundary";
 import { useAuth } from "../../context/useAuth";
 import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
-import { HistoryModal } from "../auth/HistoryModal";
 import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 
@@ -72,7 +71,6 @@ export function ResultDashboard({
   const [searchValue, setSearchValue] = useState("");
   const [searchError, setSearchError] = useState("");
   const [authOpen, setAuthOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
@@ -221,7 +219,7 @@ export function ResultDashboard({
           onSelect={setActiveSection}
           onNewAudit={onReset}
           isSignedIn={!!user}
-          onShowHistory={() => setHistoryOpen(true)}
+          onShowHistory={() => { window.location.href = "/history"; }}
         />
 
         <main className="flex-1 min-w-0">
@@ -270,16 +268,6 @@ export function ResultDashboard({
       </div>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      {historyOpen && (
-        <HistoryModal
-          open
-          onClose={() => setHistoryOpen(false)}
-          onOpenAudit={(id) => {
-            // App.tsx loads /report/:id from the URL — navigate to that path.
-            window.location.href = `/report/${id}`;
-          }}
-        />
-      )}
     </div>
   );
 }
