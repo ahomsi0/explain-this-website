@@ -31,10 +31,15 @@ test.describe("report, history, and cancellation flows", () => {
     await installApiFallback(page);
     await mockJson(page, "/api/auth/me", testUser);
     await mockJson(page, "/api/usage", testUser.usage);
-    await mockJson(page, "/api/audits", [
-      { id: "audit-1", url: "https://before.example.com", title: "Before report", createdAt: "2026-08-19T00:00:00Z", shareable: false },
-      { id: "audit-2", url: "https://after.example.com", title: "After report", createdAt: "2026-08-20T00:00:00Z", shareable: false },
-    ]);
+    await mockJson(page, "/api/audits*", {
+      items: [
+        { id: "audit-1", url: "https://before.example.com", title: "Before report", createdAt: "2026-08-19T00:00:00Z", shareable: false },
+        { id: "audit-2", url: "https://after.example.com", title: "After report", createdAt: "2026-08-20T00:00:00Z", shareable: false },
+      ],
+      total: 2,
+      page: 1,
+      limit: 20,
+    });
     await page.route("**/api/audits/compare**", (route) => route.fulfill({
       status: 200,
       contentType: "application/json",
