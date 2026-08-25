@@ -3,7 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/auth"
@@ -18,11 +22,55 @@ type auditListItem struct {
 	CreatedAt      time.Time  `json:"createdAt"`
 	Shareable      bool       `json:"shareable"`
 	ShareExpiresAt *time.Time `json:"shareExpiresAt,omitempty"`
+	Scores         *auditScores `json:"scores,omitempty"`
+}
+
+// auditScores is the per-audit score summary surfaced in list rows so the
+// history page can show quality at a glance without loading full reports.
+type auditScores struct {
+	Overall     *int `json:"overall"`
+	SEO         *int `json:"seo"`
+	UX          *int `json:"ux"`
+	Conversion  *int `json:"conversion"`
+	Performance *int `json:"performance"`
+}
+
+// auditListPage is the paginated envelope for GET /api/audits?page=….
+type auditListPage struct {
+	Items []auditListItem `json:"items"`
+	Total int             `json:"total"`
+	Page  int             `json:"page"`
+	Limit int             `json:"limit"`
 }
 
 const shareTTL = 30 * 24 * time.Hour
 
+// scoreSummaryFrom unmarshals a stored report and computes its score summary.
+// Returns nil for rows whose JSON predates a field or fails to parse — the
+// row still renders, just without score chips.
+func scoreSummaryFrom(raw []byte) *auditScores {
+	var result model.AnalysisResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil
+	}
+	s := comparisonSnapshot("", "", time.Time{}, result)
+	return &auditScores{
+		Overall:     &s.OverallScore,
+		SEO:         &s.SEOScore,
+		UX:          &s.UXScore,
+		Conversion:  &s.ConversionScore,
+		Performance: s.PerformanceScore,
+	}
+}
+
 // AuditsListHandler returns the authenticated user's audit history.
+//
+// Without ?page= it keeps the legacy shape (plain array, last 100, no scores)
+// that the landing recents merge relies on. With ?page= it returns the full
+// paginated envelope with search (q), sort (newest|oldest|score|url), shared
+// filter, and a day-window filter — scores are computed from the stored
+// reports. Score sorting must load every match (scores live inside JSONB, not
+// a column), which is fine at per-user history volumes.
 func AuditsListHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !db.IsAvailable() {
@@ -33,36 +81,203 @@ func AuditsListHandler() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		rows, err := db.Pool.Query(ctx,
-			`SELECT id, url, COALESCE(title, ''), created_at,
-				        is_shareable AND share_revoked_at IS NULL
-				          AND share_expires_at IS NOT NULL AND share_expires_at > NOW(),
+		q := r.URL.Query()
+		if q.Get("page") == "" {
+			writeJSON(w, http.StatusOK, legacyAuditList(ctx, uid))
+			return
+		}
+
+		page, _ := strconv.Atoi(q.Get("page"))
+		if page < 1 {
+			page = 1
+		}
+		limit, _ := strconv.Atoi(q.Get("limit"))
+		if limit < 1 || limit > 50 {
+			limit = 20
+		}
+		search := strings.TrimSpace(q.Get("q"))
+		sortBy := q.Get("sort")
+		if sortBy != "oldest" && sortBy != "score" && sortBy != "url" {
+			sortBy = "newest"
+		}
+		sharedOnly := q.Get("shared") == "1"
+		days, _ := strconv.Atoi(q.Get("days"))
+
+		where := ` WHERE user_id = $1 AND deleted_at IS NULL`
+		args := []any{uid}
+		if search != "" {
+			args = append(args, "%"+search+"%")
+			where += fmt.Sprintf(` AND (url ILIKE $%d OR COALESCE(title, '') ILIKE $%d)`, len(args), len(args))
+		}
+		if sharedOnly {
+			where += ` AND is_shareable AND share_revoked_at IS NULL
+			           AND share_expires_at IS NOT NULL AND share_expires_at > NOW()`
+		}
+		if days == 7 || days == 30 {
+			args = append(args, days)
+			where += fmt.Sprintf(` AND created_at > NOW() - ($%d || ' days')::interval`, len(args))
+		}
+
+		if sortBy == "score" {
+			writeJSON(w, http.StatusOK, pagedAuditListByScore(ctx, uid, where, args, page, limit))
+			return
+		}
+
+		order := " ORDER BY created_at DESC"
+		if sortBy == "oldest" {
+			order = " ORDER BY created_at ASC"
+		} else if sortBy == "url" {
+			order = " ORDER BY url ASC, created_at DESC"
+		}
+
+		var total int
+		if err := db.Pool.QueryRow(ctx, `SELECT COUNT(*) FROM audits`+where, args...).Scan(&total); err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not load history")
+			return
+		}
+
+		args = append(args, limit, (page-1)*limit)
+		rows, err := db.Pool.Query(ctx, `
+			SELECT id, url, COALESCE(title, ''), created_at,
+			        is_shareable AND share_revoked_at IS NULL
+			          AND share_expires_at IS NOT NULL AND share_expires_at > NOW(),
 			        share_expires_at
-			   FROM audits
-			  WHERE user_id = $1 AND deleted_at IS NULL
-			  ORDER BY created_at DESC
-			  LIMIT 100`, uid)
+			   FROM audits`+where+order+fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)-1, len(args)), args...)
 		if err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not load history")
 			return
 		}
-		defer rows.Close()
-
-		out := []auditListItem{}
-		for rows.Next() {
-			var a auditListItem
-			if err := rows.Scan(&a.ID, &a.URL, &a.Title, &a.CreatedAt, &a.Shareable, &a.ShareExpiresAt); err != nil {
-				writeJSONError(w, http.StatusInternalServerError, "could not load history")
-				return
-			}
-			out = append(out, a)
-		}
-		if err := rows.Err(); err != nil {
+		items, ids, scanErr := scanAuditRows(rows)
+		if scanErr != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not load history")
 			return
 		}
-		writeJSON(w, http.StatusOK, out)
+		attachScores(ctx, uid, items, ids)
+		writeJSON(w, http.StatusOK, auditListPage{Items: items, Total: total, Page: page, Limit: limit})
 	}
+}
+
+// legacyAuditList keeps the original plain-array response for callers that
+// don't paginate (landing recents merge).
+func legacyAuditList(ctx context.Context, uid int64) []auditListItem {
+	rows, err := db.Pool.Query(ctx, `
+		SELECT id, url, COALESCE(title, ''), created_at,
+		        is_shareable AND share_revoked_at IS NULL
+		          AND share_expires_at IS NOT NULL AND share_expires_at > NOW(),
+		        share_expires_at
+		   FROM audits
+		  WHERE user_id = $1 AND deleted_at IS NULL
+		  ORDER BY created_at DESC
+		  LIMIT 100`, uid)
+	if err != nil {
+		return []auditListItem{}
+	}
+	defer rows.Close()
+	items, _, err := scanAuditRows(rows)
+	if err != nil {
+		return []auditListItem{}
+	}
+	return items
+}
+
+func scanAuditRows(rows interface {
+	Next() bool
+	Scan(dest ...any) error
+	Err() error
+	Close()
+}) ([]auditListItem, []string, error) {
+	defer rows.Close()
+	items := []auditListItem{}
+	ids := []string{}
+	for rows.Next() {
+		var a auditListItem
+		if err := rows.Scan(&a.ID, &a.URL, &a.Title, &a.CreatedAt, &a.Shareable, &a.ShareExpiresAt); err != nil {
+			return nil, nil, err
+		}
+		items = append(items, a)
+		ids = append(ids, a.ID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, nil, err
+	}
+	return items, ids, nil
+}
+
+// attachScores fills the score summary for each listed row with one batched
+// query. Failures are silent — rows render without chips.
+func attachScores(ctx context.Context, uid int64, items []auditListItem, ids []string) {
+	if len(ids) == 0 {
+		return
+	}
+	rows, err := db.Pool.Query(ctx,
+		`SELECT id, result FROM audits WHERE user_id = $1 AND id = ANY($2)`, uid, ids)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	byID := map[string][]byte{}
+	for rows.Next() {
+		var id string
+		var raw []byte
+		if err := rows.Scan(&id, &raw); err == nil {
+			byID[id] = raw
+		}
+	}
+	for i := range items {
+		if raw, ok := byID[items[i].ID]; ok {
+			items[i].Scores = scoreSummaryFrom(raw)
+		}
+	}
+}
+
+// pagedAuditListByScore loads every match, computes scores, sorts by overall
+// score (best first, unscored last), then slices the page in memory.
+func pagedAuditListByScore(ctx context.Context, uid int64, where string, args []any, page, limit int) auditListPage {
+	rows, err := db.Pool.Query(ctx, `
+		SELECT id, url, COALESCE(title, ''), created_at,
+		        is_shareable AND share_revoked_at IS NULL
+		          AND share_expires_at IS NOT NULL AND share_expires_at > NOW(),
+		        share_expires_at, result
+		   FROM audits`+where, args...)
+	if err != nil {
+		return auditListPage{Items: []auditListItem{}, Page: page, Limit: limit}
+	}
+	defer rows.Close()
+
+	type scored struct {
+		item  auditListItem
+		score int
+	}
+	all := []scored{}
+	for rows.Next() {
+		var a auditListItem
+		var raw []byte
+		if err := rows.Scan(&a.ID, &a.URL, &a.Title, &a.CreatedAt, &a.Shareable, &a.ShareExpiresAt, &raw); err != nil {
+			continue
+		}
+		a.Scores = scoreSummaryFrom(raw)
+		s := 0
+		if a.Scores != nil && a.Scores.Overall != nil {
+			s = *a.Scores.Overall
+		}
+		all = append(all, scored{item: a, score: s})
+	}
+	sort.SliceStable(all, func(i, j int) bool { return all[i].score > all[j].score })
+
+	total := len(all)
+	start := (page - 1) * limit
+	if start > total {
+		start = total
+	}
+	end := start + limit
+	if end > total {
+		end = total
+	}
+	items := []auditListItem{}
+	for _, s := range all[start:end] {
+		items = append(items, s.item)
+	}
+	return auditListPage{Items: items, Total: total, Page: page, Limit: limit}
 }
 
 // AuditsClearHandler deletes ALL audits owned by the authenticated user.

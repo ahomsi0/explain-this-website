@@ -101,6 +101,18 @@ function AppInner() {
     setCurrentUrl(url);
     void analyze(url, opts);
   };
+
+  // Deep-link support: /?url=… starts that analysis immediately (used by the
+  // history page's re-run button). The param is stripped so a refresh during
+  // loading doesn't restart the run.
+  useEffect(() => {
+    if (status !== "idle") return;
+    const target = new URLSearchParams(window.location.search).get("url");
+    if (!target) return;
+    window.history.replaceState({}, "", window.location.pathname);
+    handleAnalyze(target, "landing");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
   const isBotProtectionError = !!error && (
     error.toLowerCase().includes("bot protection") ||
     error.toLowerCase().includes("http 403") ||

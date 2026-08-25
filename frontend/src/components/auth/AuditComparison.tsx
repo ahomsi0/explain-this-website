@@ -211,7 +211,7 @@ export function AuditComparison({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl"
+        className="w-full max-w-2xl max-h-[88vh] overflow-y-auto scrollbar-none rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
