@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { LogoWordmark } from "../ui/Logo";
 import { AdminSkeleton } from "../ui/Skeletons";
-import { AuthModal } from "../auth/AuthModal";
 import { UserMenu } from "../auth/UserMenu";
 import { useAuth } from "../../context/useAuth";
 import {
@@ -38,7 +37,6 @@ function AnalyticCard({ title, value, sub, color = "text-zinc-100" }: {
 
 export function AdminDashboard() {
   const { user, loading } = useAuth();
-  const [authOpen, setAuthOpen]     = useState(false);
   const [overview, setOverview]     = useState<AdminOverview | null>(null);
   const [error, setError]           = useState<string | null>(null);
   const [busyKey, setBusyKey]       = useState<string | null>(null);
@@ -175,26 +173,15 @@ export function AdminDashboard() {
   }
 
   // ── render ─────────────────────────────────────────────────────────────────
-  if (loading) {
-    return <Shell title="Dashboard"><AdminSkeleton /></Shell>;
-  }
+  // Anonymous visitors are bounced to the landing page — the sign-in prompt
+  // used to advertise that an admin dashboard exists. Admins sign in from the
+  // landing page first, then navigate here.
+  useEffect(() => {
+    if (!loading && !user) window.location.replace("/");
+  }, [loading, user]);
 
-  if (!user) {
-    return (
-      <Shell title="Dashboard">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 max-w-md">
-          <h2 className="text-xl font-semibold text-zinc-100">Sign in to open the dashboard</h2>
-          <p className="mt-2 text-sm text-zinc-400">This page is for managing daily usage, guest limits, and user plans.</p>
-          <button
-            onClick={() => setAuthOpen(true)}
-            className="mt-5 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-semibold text-white bg-violet-500 hover:bg-violet-400 transition-colors"
-          >
-            Sign in
-          </button>
-        </div>
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      </Shell>
-    );
+  if (loading || !user) {
+    return <Shell title="Dashboard"><AdminSkeleton /></Shell>;
   }
 
   return (

@@ -205,12 +205,16 @@ func AdminOverviewHandler() http.HandlerFunc {
 			}
 		}
 
-		// Recent audits — last 20 across all users (left join to capture anonymous too).
+		// Recent audits — last 20 across all users. Soft-deleted rows are
+		// excluded: this is an itemized list, so it must respect deletion.
+		// (Aggregate views below intentionally keep deleted rows so clearing
+		// history can't erase activity analytics.)
 		recent := []recentAuditRow{}
 		if rows, err := db.Pool.Query(ctx, `
 			SELECT a.id, a.url, COALESCE(a.title, ''), COALESCE(u.email, ''), a.created_at
 			  FROM audits a
 			  LEFT JOIN users u ON u.id = a.user_id
+			 WHERE a.deleted_at IS NULL
 			 ORDER BY a.created_at DESC
 			 LIMIT 20`); err == nil {
 			defer rows.Close()
