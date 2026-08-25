@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   clearAudits,
   compareAudits,
@@ -42,6 +42,8 @@ export function HistoryPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [comparison, setComparison] = useState<AuditComparisonData | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const fetchSeqRef = useRef(0);
 
   // Debounce search so typing doesn't fire a request per keystroke.
   useEffect(() => {
@@ -54,10 +56,12 @@ export function HistoryPage() {
 
   useEffect(() => {
     if (!user) return;
+    const seq = ++fetchSeqRef.current;
+    setFetching(true);
     setError(null);
     fetchAuditsPage({ page, limit: PAGE_SIZE, q: search || undefined, sort, shared: sharedOnly, days })
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to load history"));
+      .then((result) => { if (fetchSeqRef.current === seq) { setData(result); setFetching(false); } })
+      .catch((e) => { if (fetchSeqRef.current === seq) { setError(e instanceof Error ? e.message : "Failed to load history"); setFetching(false); } });
   }, [user, page, search, sort, sharedOnly, days]);
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
@@ -249,18 +253,19 @@ export function HistoryPage() {
 
         <div className="mt-4">
           {!data && !error && <RowSkeleton rows={5} />}
+          {fetching && data && <RowSkeleton rows={Math.min(data.items.length || 5, PAGE_SIZE)} />}
           {error && <div className="text-xs text-red-400 bg-red-950/50 border border-red-800/40 rounded px-3 py-2">{error}</div>}
-          {data && data.total === 0 && (
+          {!fetching && data && data.total === 0 && (
             <div className="text-center py-16">
               <p className="text-sm text-zinc-400">{hasFilters ? "No audits match your filters" : "No audits yet"}</p>
               <p className="mt-1 text-xs text-zinc-500">{hasFilters ? "Try clearing the search or filters." : "Run your first analysis to see it here."}</p>
               {!hasFilters && <a href="/" className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-semibold text-white bg-violet-500 hover:bg-violet-400 transition-colors">Analyze a website</a>}
             </div>
           )}
-          {data && data.items.length === 0 && data.total > 0 && (
+          {!fetching && data && data.items.length === 0 && data.total > 0 && (
             <p className="text-xs text-zinc-500 text-center py-10">This page is empty — go back a page.</p>
           )}
-          {items.length > 0 && (
+          {!fetching && items.length > 0 && (
             <ul className="flex flex-col gap-1">
               {items.map((a) => (
                 <HistoryRow
@@ -277,10 +282,10 @@ export function HistoryPage() {
         </div>
 
         {data && data.total > PAGE_SIZE && (
-          <nav aria-label="History pages" className="mt-6 flex items-center justify-center gap-1.5">
+          <nav aria-label="History pages" className={`mt-6 flex items-center justify-center gap-1.5 transition-opacity ${fetching ? "opacity-50 pointer-events-none" : ""}`}>
             <button
               onClick={() => setPage(page - 1)}
-              disabled={page <= 1}
+              disabled={page <= 1 || fetching}
               className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               ← Prev
@@ -301,7 +306,7 @@ export function HistoryPage() {
             )}
             <button
               onClick={() => setPage(page + 1)}
-              disabled={page >= totalPages}
+              disabled={page >= totalPages || fetching}
               className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Next →
