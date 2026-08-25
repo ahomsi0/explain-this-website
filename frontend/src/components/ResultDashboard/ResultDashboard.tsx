@@ -99,11 +99,11 @@ export function ResultDashboard({
       {/* ── Top bar ── */}
       <header className="fixed inset-x-0 top-0 z-30 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
         <div className="px-4 sm:px-6 h-12 flex items-center gap-3">
-          <div className="flex items-center gap-2 shrink-0">
+          <a href="/" aria-label="Explain This Website home" className="flex items-center gap-2 shrink-0">
             <LogoMark size={22} />
             <h1 className="text-xs font-semibold text-zinc-300 hidden sm:block">Explain This Website</h1>
             <span className="sr-only">Explain This Website — Website Analysis Report</span>
-          </div>
+          </a>
 
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />
 

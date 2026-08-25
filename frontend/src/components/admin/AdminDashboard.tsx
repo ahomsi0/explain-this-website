@@ -411,7 +411,9 @@ function Shell({ title, userMenu, children }: { title: string; userMenu?: ReactN
       <header className="fixed inset-x-0 top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
         <div className="px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <LogoWordmark size={20} />
+            <a href="/" aria-label="Explain This Website home" className="flex items-center">
+              <LogoWordmark size={20} />
+            </a>
             <span className="hidden sm:block text-zinc-700">/</span>
             <span className="text-sm font-semibold text-zinc-300 truncate">{title}</span>
           </div>
