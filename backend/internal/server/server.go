@@ -67,7 +67,7 @@ func Start(cfg config.Config) error {
 // NewHandler wires the API routes and middleware without opening a listener.
 // It is used by Start and by integration tests.
 func NewHandler(cfg config.Config) http.Handler {
-	groqClient := llm.New(cfg.GroqAPIKey, cfg.GroqModel)
+	groqClient := llm.New(cfg.GroqAPIKey, cfg.GroqModel, cfg.GroqFallbackModel)
 	return NewHandlerWithAnalyzeConfig(cfg, handler.Config{
 		FetchTimeoutSec: cfg.FetchTimeoutSec,
 		MaxBodyBytes:    cfg.MaxBodyBytes,
@@ -82,7 +82,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux := http.NewServeMux()
 	groqClient := handlerCfg.Groq
 	if groqClient == nil {
-		groqClient = llm.New(cfg.GroqAPIKey, cfg.GroqModel)
+		groqClient = llm.New(cfg.GroqAPIKey, cfg.GroqModel, cfg.GroqFallbackModel)
 		handlerCfg.Groq = groqClient
 	}
 

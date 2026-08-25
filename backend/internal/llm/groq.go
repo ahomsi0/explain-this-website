@@ -5,7 +5,11 @@
 // token, which makes a per-report summary affordable to run on every analysis.
 //
 // We use the chat-completions endpoint with OpenAI's gpt-oss-120b by default
-// (Groq retired llama-3.3-70b-versatile in August 2026); override via GROQ_MODEL.
+// (Groq retired llama-3.3-70b-versatile in August 2026); override via
+// GROQ_MODEL. Because Groq has retired model IDs several times, a failed
+// model lookup or an exhausted per-model rate bucket automatically retries
+// once with a fallback model (GROQ_FALLBACK_MODEL, default qwen/qwen3.6-27b)
+// so a single decommissioned model can't take summaries down silently again.
 package llm
 
 import (
@@ -15,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -23,32 +28,50 @@ import (
 	"github.com/ahomsi/explain-website/internal/model"
 )
 
+var groqChatEndpoint = "https://api.groq.com/openai/v1/chat/completions"
+
 const (
-	groqChatEndpoint = "https://api.groq.com/openai/v1/chat/completions"
-	defaultTimeout   = 20 * time.Second
+	defaultTimeout = 20 * time.Second
+	// defaultModel is the primary summariser. Reasoning-capable — the client
+	// caps its hidden chain-of-thought via reasoning_effort (see chatRequest).
+	defaultModel = "openai/gpt-oss-120b"
+	// defaultFallbackModel absorbs Groq's frequent model deprecations and
+	// per-model rate-limit buckets (RPM/RPD are tracked per model, so the
+	// fallback has its own quota).
+	defaultFallbackModel = "qwen/qwen3.6-27b"
 )
 
 // ErrDisabled is returned by Summarise when no API key is configured. Callers
 // should treat it as a soft failure and continue without a summary.
 var ErrDisabled = errors.New("groq: GROQ_API_KEY not set")
 
-// Client is a thin Groq chat-completions client.
+// Client is a thin Groq chat-completions client with one-level model fallback.
 type Client struct {
-	apiKey string
-	model  string
-	http   *http.Client
+	apiKey   string
+	model    string
+	fallback string // empty = no fallback
+	http     *http.Client
 }
 
 // New returns a Client. If apiKey is empty the client is "disabled" and
-// Summarise will return ErrDisabled.
-func New(apiKey, modelName string) *Client {
+// Summarise will return ErrDisabled. An empty fallbackModelName selects the
+// package default; a fallback equal to the primary model disables fallback.
+func New(apiKey, modelName, fallbackModelName string) *Client {
 	if modelName == "" {
-		modelName = "openai/gpt-oss-120b"
+		modelName = defaultModel
+	}
+	fallback := fallbackModelName
+	if fallback == "" {
+		fallback = defaultFallbackModel
+	}
+	if fallback == modelName {
+		fallback = ""
 	}
 	return &Client{
-		apiKey: apiKey,
-		model:  modelName,
-		http:   &http.Client{Timeout: defaultTimeout},
+		apiKey:   apiKey,
+		model:    modelName,
+		fallback: fallback,
+		http:     &http.Client{Timeout: defaultTimeout},
 	}
 }
 
@@ -83,11 +106,33 @@ type chatResponse struct {
 	} `json:"error,omitempty"`
 }
 
+// apiError is a non-2xx Groq response (or a Groq-reported API error). The
+// status code drives the fallback decision.
+type apiError struct {
+	status int
+	msg    string
+}
+
+func (e *apiError) Error() string {
+	return fmt.Sprintf("groq: HTTP %d: %s", e.status, truncate(e.msg, 200))
+}
+
+// retryableModel reports whether a different model could succeed: the model ID
+// was decommissioned/unknown, or its per-model rate bucket is exhausted.
+func (e *apiError) retryableModel() bool {
+	if e.status == http.StatusNotFound || e.status == http.StatusTooManyRequests {
+		return true
+	}
+	return e.status == http.StatusBadRequest && strings.Contains(strings.ToLower(e.msg), "model")
+}
+
 // Summarise asks the model to write a 3-paragraph plain-English narrative
 // about the analysed site. Returns the raw text on success, or an error.
 //
 // On non-disabled errors the summary call is also recorded in adminstate so
-// failures show up on the admin dashboard.
+// failures show up on the admin dashboard. A model-specific failure (retired
+// ID, per-model 429) is retried once against the fallback model before giving
+// up, so Groq's frequent model deprecations degrade instead of breaking.
 func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (string, error) {
 	if !c.Enabled() {
 		return "", ErrDisabled
@@ -98,8 +143,35 @@ func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (s
 
 	digest := buildDigest(result)
 
+	models := []string{c.model}
+	if c.fallback != "" {
+		models = append(models, c.fallback)
+	}
+
+	var lastErr error
+	for i, m := range models {
+		content, err := c.chat(ctx, m, digest)
+		if err == nil {
+			adminstate.RecordGroqSuccess()
+			return content, nil
+		}
+		lastErr = err
+		var apiErr *apiError
+		if i < len(models)-1 && errors.As(err, &apiErr) && apiErr.retryableModel() {
+			log.Printf("groq: model %s unavailable (%v) — retrying with %s", m, apiErr, models[i+1])
+			continue
+		}
+		break
+	}
+	return "", lastErr
+}
+
+// chat performs one chat-completions request and returns the message content.
+// All failures are recorded in adminstate; success recording lives in
+// Summarise so a fallback retry that eventually succeeds counts as healthy.
+func (c *Client) chat(ctx context.Context, modelName, digest string) (string, error) {
 	body := chatRequest{
-		Model: c.model,
+		Model: modelName,
 		Messages: []chatMessage{
 			{Role: "system", Content: systemPrompt},
 			{Role: "user", Content: digest},
@@ -107,7 +179,7 @@ func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (s
 		MaxTokens:   600,
 		Temperature: 0.4,
 	}
-	if strings.Contains(c.model, "gpt-oss") || strings.Contains(c.model, "qwen") {
+	if strings.Contains(modelName, "gpt-oss") || strings.Contains(modelName, "qwen") {
 		body.ReasoningEffort = "low"
 	}
 	payload, err := json.Marshal(body)
@@ -136,9 +208,9 @@ func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (s
 	}
 
 	if resp.StatusCode >= 400 {
-		msg := fmt.Sprintf("HTTP %d: %s", resp.StatusCode, truncate(string(raw), 200))
-		adminstate.RecordGroqFailure(msg)
-		return "", errors.New("groq: " + msg)
+		apiErr := &apiError{status: resp.StatusCode, msg: string(raw)}
+		adminstate.RecordGroqFailure(apiErr.Error())
+		return "", apiErr
 	}
 
 	var parsed chatResponse
@@ -147,15 +219,15 @@ func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (s
 		return "", fmt.Errorf("groq: decode: %w", err)
 	}
 	if parsed.Error != nil {
-		adminstate.RecordGroqFailure(parsed.Error.Message)
-		return "", errors.New("groq: " + parsed.Error.Message)
+		apiErr := &apiError{status: resp.StatusCode, msg: parsed.Error.Message}
+		adminstate.RecordGroqFailure(apiErr.Error())
+		return "", apiErr
 	}
 	if len(parsed.Choices) == 0 || parsed.Choices[0].Message.Content == "" {
 		adminstate.RecordGroqFailure("empty response")
 		return "", errors.New("groq: empty response")
 	}
 
-	adminstate.RecordGroqSuccess()
 	return parsed.Choices[0].Message.Content, nil
 }
 

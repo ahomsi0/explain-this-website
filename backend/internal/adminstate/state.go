@@ -65,12 +65,14 @@ func RecordPageSpeedSuccess() {
 	state.mu.Lock()
 	state.pagespeedHealth.LastSuccessAt = time.Now()
 	state.mu.Unlock()
+	notifyPersist("pagespeed")
 }
 func RecordPageSpeedFailure(msg string) {
 	state.mu.Lock()
 	state.pagespeedHealth.LastErrorAt = time.Now()
 	state.pagespeedHealth.LastErrorMsg = msg
 	state.mu.Unlock()
+	notifyPersist("pagespeed")
 }
 
 // RecordEmailSuccess / RecordEmailFailure track the Resend dependency.
@@ -78,12 +80,14 @@ func RecordEmailSuccess() {
 	state.mu.Lock()
 	state.resendHealth.LastSuccessAt = time.Now()
 	state.mu.Unlock()
+	notifyPersist("resend")
 }
 func RecordEmailFailure(msg string) {
 	state.mu.Lock()
 	state.resendHealth.LastErrorAt = time.Now()
 	state.resendHealth.LastErrorMsg = msg
 	state.mu.Unlock()
+	notifyPersist("resend")
 }
 
 // RecordGroqSuccess / RecordGroqFailure track the LLM summary dependency.
@@ -91,12 +95,50 @@ func RecordGroqSuccess() {
 	state.mu.Lock()
 	state.groqHealth.LastSuccessAt = time.Now()
 	state.mu.Unlock()
+	notifyPersist("groq")
 }
 func RecordGroqFailure(msg string) {
 	state.mu.Lock()
 	state.groqHealth.LastErrorAt = time.Now()
 	state.groqHealth.LastErrorMsg = msg
 	state.mu.Unlock()
+	notifyPersist("groq")
+}
+
+// persistHook, when set, mirrors health mutations into durable storage. It
+// exists so the db package can persist health without adminstate importing db
+// (db already imports adminstate — a direct call would cycle). The db package
+// installs it via SetPersistHook during Init.
+var persistHook func(component string)
+
+// SetPersistHook installs the durability hook. Pass nil to disable.
+func SetPersistHook(f func(component string)) {
+	persistHook = f
+}
+
+// notifyPersist fires the hook after a health mutation. Never blocks the
+// caller — the hook itself is responsible for being async if it does I/O.
+func notifyPersist(component string) {
+	if persistHook != nil {
+		persistHook(component)
+	}
+}
+
+// LoadHealth restores persisted dependency health (e.g. from Postgres at
+// startup) so deploys and multi-instance deployments don't reset the admin
+// dashboard to "never". Components absent from the map keep their defaults.
+func LoadHealth(states map[string]HealthState) {
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	if h, ok := states["pagespeed"]; ok {
+		state.pagespeedHealth = h
+	}
+	if h, ok := states["resend"]; ok {
+		state.resendHealth = h
+	}
+	if h, ok := states["groq"]; ok {
+		state.groqHealth = h
+	}
 }
 
 // FlagEnabled reports the current value of a feature flag (defaults to true

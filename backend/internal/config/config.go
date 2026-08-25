@@ -15,7 +15,8 @@ type Config struct {
 	MaxBodyBytes     int64
 	PageSpeedAPIKey  string // optional; enables Google PageSpeed Insights integration
 	GroqAPIKey       string // optional; enables LLM-generated plain-English report summary
-	GroqModel        string // override default Groq model (defaults to llama-3.1-70b-versatile)
+	GroqModel        string // override default Groq model (defaults to openai/gpt-oss-120b)
+	GroqFallbackModel string // retry model for retired IDs / per-model 429s (defaults to qwen/qwen3.6-27b)
 }
 
 // Load reads .env (if present) and populates Config with sensible defaults.
@@ -31,6 +32,7 @@ func Load() Config {
 		PageSpeedAPIKey: getEnv("PAGESPEED_API_KEY", ""),
 		GroqAPIKey:      getEnv("GROQ_API_KEY", ""),
 		GroqModel:       getEnv("GROQ_MODEL", "openai/gpt-oss-120b"),
+		GroqFallbackModel: getEnv("GROQ_FALLBACK_MODEL", ""),
 	}
 }
 
