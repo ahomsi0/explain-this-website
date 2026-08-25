@@ -282,10 +282,10 @@ export function HistoryPage() {
         </div>
 
         {data && data.total > PAGE_SIZE && (
-          <nav aria-label="History pages" className={`mt-6 flex items-center justify-center gap-1.5 transition-opacity ${fetching ? "opacity-50 pointer-events-none" : ""}`}>
+          <nav aria-label="History pages" className="mt-6 flex items-center justify-center gap-1.5">
             <button
               onClick={() => setPage(page - 1)}
-              disabled={page <= 1 || fetching}
+              disabled={page <= 1}
               className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               ← Prev
@@ -306,7 +306,7 @@ export function HistoryPage() {
             )}
             <button
               onClick={() => setPage(page + 1)}
-              disabled={page >= totalPages || fetching}
+              disabled={page >= totalPages}
               className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 border border-zinc-800 hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Next →
