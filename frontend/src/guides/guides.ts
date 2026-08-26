@@ -47,7 +47,6 @@ export const GUIDES: Record<string, Guide> = {
       "Re-run your audit after each change — LCP improvements are cumulative and easy to verify.",
     ],
     tools: ["PageSpeed Insights", "Squoosh (image compression)", "WebPageTest (waterfall view)"],
-    stepImages: { 0: { src: "/guides/pagespeed-insights.png", caption: "PageSpeed Insights (pagespeed.web.dev) names the exact element slowing your page." } },
   },
   "cls": {
     slug: "cls",

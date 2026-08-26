@@ -18,13 +18,38 @@ function categoryTone(c: GuideCategory): string {
   }
 }
 
-function categoryIcon(c: GuideCategory): string {
-  switch (c) {
-    case "Performance":      return "⚡";
-    case "SEO":              return "🔍";
-    case "UX & Conversion":  return "🎯";
-    case "Security":         return "🔒";
-    case "Content":          return "📝";
+function CategoryIcon({ category, className = "w-4 h-4" }: { category: GuideCategory; className?: string }) {
+  switch (category) {
+    case "Performance":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      );
+    case "SEO":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      );
+    case "UX & Conversion":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+        </svg>
+      );
+    case "Security":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      );
+    case "Content":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+      );
   }
 }
 
@@ -111,7 +136,7 @@ export function GuidesIndexPage() {
         {grouped.map(({ category, guides }) => (
           <section key={category}>
             <div className="flex items-center gap-2.5 mb-4">
-              <span className="text-lg" aria-hidden="true">{categoryIcon(category)}</span>
+              <CategoryIcon category={category} className="w-4 h-4 text-zinc-400" />
               <h2 className="text-sm sm:text-[15px] font-semibold uppercase tracking-wider text-zinc-300">{category}</h2>
               <span className="text-xs text-zinc-500 font-medium">({guides.length})</span>
             </div>
