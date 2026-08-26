@@ -47,6 +47,7 @@ export const GUIDES: Record<string, Guide> = {
       "Re-run your audit after each change — LCP improvements are cumulative and easy to verify.",
     ],
     tools: ["PageSpeed Insights", "Squoosh (image compression)", "WebPageTest (waterfall view)"],
+    stepImages: { 0: { src: "/guides/pagespeed-insights.png", caption: "PageSpeed Insights (pagespeed.web.dev) names the exact element slowing your page." } },
   },
   "cls": {
     slug: "cls",
@@ -102,6 +103,7 @@ export const GUIDES: Record<string, Guide> = {
       "Check your hosting: if server response (TTFB) is over ~0.8s, a CDN or better hosting will lift every other metric too.",
     ],
     tools: ["PageSpeed Insights", "WebPageTest", "Chrome DevTools → Lighthouse"],
+    stepImages: { 4: { src: "/guides/pagespeed-insights.png", caption: "Re-test after each change — scores move fast once the big items are fixed." } },
   },
   "image-formats": {
     slug: "image-formats",
@@ -119,7 +121,10 @@ export const GUIDES: Record<string, Guide> = {
       "While you're at it, resize images to their display size — a 4000px-wide photo in a 400px slot wastes 90% of its bytes.",
     ],
     tools: ["Squoosh", "TinyPNG", "ShortPixel / Imagify (WordPress)"],
-    stepImages: { 0: { src: "/guides/image-formats-compare.svg", caption: "Typical savings for the same photo." } },
+    stepImages: {
+      0: { src: "/guides/image-formats-compare.svg", caption: "Typical savings for the same photo." },
+      1: { src: "/guides/squoosh-editor.png", caption: "Squoosh.app converts and compresses right in your browser — free, no signup." },
+    },
   },
   "lazy-loading": {
     slug: "lazy-loading",
@@ -522,7 +527,10 @@ export const GUIDES: Record<string, Guide> = {
       "Verify with securityheaders.com until you score A.",
     ],
     tools: ["securityheaders.com", "Mozilla Observatory"],
-    stepImages: { 0: { src: "/guides/security-headers-response.svg", caption: "The four headers to start with, exactly as your server should send them." } },
+    stepImages: {
+      0: { src: "/guides/security-headers-response.svg", caption: "The four headers to start with, exactly as your server should send them." },
+      3: { src: "/guides/securityheaders-scan.png", caption: "Paste your URL at securityheaders.com for an instant grade." },
+    },
   },
   "stale-content": {
     slug: "stale-content",
