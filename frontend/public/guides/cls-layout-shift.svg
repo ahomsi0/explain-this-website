@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" font-family="Inter, system-ui, sans-serif">
+  <rect width="640" height="340" fill="#141417"/>
+  <!-- Left: without dimensions -->
+  <text x="40" y="34" fill="#f87171" font-size="14" font-weight="600">✗ Without width/height</text>
+  <rect x="40" y="52" width="260" height="240" rx="10" fill="#0f0f12" stroke="#3f3f46"/>
+  <rect x="60" y="72" width="220" height="70" rx="6" fill="#3f2d06" stroke="#f59e0b" stroke-dasharray="4 3"/>
+  <text x="170" y="112" fill="#fbbf24" font-size="12" text-anchor="middle">image loading…</text>
+  <text x="60" y="170" fill="#d4d4d8" font-size="13" font-weight="600">Headline text</text>
+  <rect x="60" y="182" width="180" height="8" rx="4" fill="#3f3f46"/>
+  <rect x="60" y="198" width="150" height="8" rx="4" fill="#3f3f46"/>
+  <text x="60" y="238" fill="#71717a" font-size="11">t=0s: layout ready</text>
+  <!-- arrow: content pushed down -->
+  <path d="M170 150 L170 210" stroke="#f87171" stroke-width="2" marker-end="url(#arr)"/>
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#f87171"/></marker></defs>
+  <rect x="60" y="216" width="220" height="60" rx="6" fill="#2a1215" stroke="#f87171" stroke-dasharray="4 3"/>
+  <text x="170" y="252" fill="#f87171" font-size="12" text-anchor="middle">image arrives — text</text>
+  <text x="170" y="268" fill="#f87171" font-size="12" text-anchor="middle">shoves everything down</text>
+  <!-- Right: with dimensions -->
+  <text x="340" y="34" fill="#34d399" font-size="14" font-weight="600">✓ With width/height set</text>
+  <rect x="340" y="52" width="260" height="240" rx="10" fill="#0f0f12" stroke="#3f3f46"/>
+  <rect x="360" y="72" width="220" height="70" rx="6" fill="#1d2b22" stroke="#34d399"/>
+  <text x="470" y="112" fill="#34d399" font-size="12" text-anchor="middle">space reserved</text>
+  <text x="360" y="170" fill="#d4d4d8" font-size="13" font-weight="600">Headline text</text>
+  <rect x="360" y="182" width="180" height="8" rx="4" fill="#3f3f46"/>
+  <rect x="360" y="198" width="150" height="8" rx="4" fill="#3f3f46"/>
+  <rect x="360" y="216" width="220" height="60" rx="6" fill="#12181f" stroke="#3f3f46"/>
+  <text x="470" y="252" fill="#9ca3af" font-size="12" text-anchor="middle">image arrives —</text>
+  <text x="470" y="268" fill="#9ca3af" font-size="12" text-anchor="middle">nothing moves</text>
+  <text x="340" y="316" fill="#71717a" font-size="11">&lt;img width="800" height="450" …&gt; or CSS aspect-ratio</text>
+</svg>

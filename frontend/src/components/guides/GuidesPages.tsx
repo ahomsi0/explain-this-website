@@ -108,12 +108,25 @@ export function GuideDetailPage({ slug }: { slug: string }) {
       <section className="mt-4 rounded-xl border border-violet-500/25 bg-violet-500/5 p-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-violet-300">How to fix it</h2>
         <ol className="mt-3 flex flex-col gap-2.5">
-          {guide.steps.map((step, i) => (
-            <li key={i} className="flex gap-3">
-              <span className="shrink-0 w-5 h-5 rounded-full bg-violet-500/20 text-violet-300 text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
-              <span className="text-sm text-zinc-300 leading-relaxed">{step}</span>
-            </li>
-          ))}
+          {guide.steps.map((step, i) => {
+            const image = guide.stepImages?.[i];
+            return (
+              <li key={i} className="flex flex-col gap-2">
+                <div className="flex gap-3">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-violet-500/20 text-violet-300 text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                  <span className="text-sm text-zinc-300 leading-relaxed">{step}</span>
+                </div>
+                {image && (
+                  <figure className="ml-8 rounded-lg border border-zinc-800 bg-zinc-950/60 overflow-hidden">
+                    <img src={image.src} alt={image.caption} loading="lazy" className="w-full" />
+                    {image.caption && (
+                      <figcaption className="px-3 py-2 text-[10px] text-zinc-500 leading-snug border-t border-zinc-800/70">{image.caption}</figcaption>
+                    )}
+                  </figure>
+                )}
+              </li>
+            );
+          })}
         </ol>
       </section>
 

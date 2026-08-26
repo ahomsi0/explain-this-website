@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" font-family="Inter, system-ui, sans-serif">
+  <rect width="640" height="300" fill="#141417"/>
+  <rect x="40" y="40" width="560" height="220" rx="12" fill="#0f0f12" stroke="#3f3f46"/>
+  <circle cx="66" cy="66" r="6" fill="#f87171"/><circle cx="86" cy="66" r="6" fill="#fbbf24"/><circle cx="106" cy="66" r="6" fill="#34d399"/>
+  <text x="70" y="110" fill="#71717a" font-size="13">&lt;!-- Below the fold: browser waits until the visitor scrolls near --&gt;</text>
+  <text x="70" y="150" font-size="14" fill="#d4d4d8">&lt;img</text>
+  <text x="110" y="150" font-size="14" fill="#a78bfa">src="gallery/photo-12.webp"</text>
+  <text x="70" y="176" font-size="14" fill="#34d399" font-weight="600">loading="lazy"  ← one attribute, big win</text>
+  <text x="70" y="202" font-size="14" fill="#d4d4d8">width="800" height="600"</text>
+  <text x="70" y="228" font-size="14" fill="#d4d4d8">alt="Customers at the workshop table"</text>
+  <text x="490" y="176" font-size="14" fill="#d4d4d8">/&gt;</text>
+  <text x="70" y="252" fill="#71717a" font-size="12">Exception: your hero/LCP image — keep it eager, add fetchpriority="high" instead.</text>
+</svg>

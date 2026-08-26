@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 280" font-family="Inter, system-ui, sans-serif">
+  <rect width="640" height="280" fill="#141417"/>
+  <text x="40" y="36" fill="#d4d4d8" font-size="14" font-weight="600">Same photo, three formats (800×600)</text>
+  <!-- bars: max width 480 = 480KB -->
+  <text x="40" y="80" fill="#f87171" font-size="13">JPEG</text>
+  <rect x="110" y="64" width="420" height="22" rx="6" fill="#7f1d1d"/>
+  <text x="540" y="80" fill="#f87171" font-size="13" font-weight="600">480 KB</text>
+  <text x="40" y="130" fill="#fbbf24" font-size="13">WebP</text>
+  <rect x="110" y="114" width="196" height="22" rx="6" fill="#78350f"/>
+  <text x="316" y="130" fill="#fbbf24" font-size="13" font-weight="600">210 KB</text>
+  <text x="40" y="180" fill="#34d399" font-size="13">AVIF</text>
+  <rect x="110" y="164" width="140" height="22" rx="6" fill="#14532d"/>
+  <text x="260" y="180" fill="#34d399" font-size="13" font-weight="600">150 KB</text>
+  <text x="40" y="232" fill="#71717a" font-size="12">Same visual quality — WebP cuts ~55%, AVIF ~70% of the download.</text>
+  <text x="40" y="252" fill="#71717a" font-size="12">Multiply by the number of images on the page to feel the difference.</text>
+</svg>

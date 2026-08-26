@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" font-family="Inter, system-ui, sans-serif">
+  <rect width="640" height="300" fill="#141417"/>
+  <rect x="40" y="40" width="560" height="220" rx="12" fill="#0f0f12" stroke="#3f3f46"/>
+  <text x="70" y="90" fill="#a78bfa" font-size="18" font-weight="500" text-decoration="underline">Page Title — this is your ad copy in search</text>
+  <text x="70" y="108" fill="#4ade80" font-size="12">yourdomain.com › page-path</text>
+  <text x="70" y="134" fill="#d4d4d8" font-size="13">Meta description — the 150-character pitch shown under the</text>
+  <text x="70" y="152" fill="#d4d4d8" font-size="13">title. Write it, or Google picks random page text for you.</text>
+  <!-- annotations -->
+  <path d="M600 84 L620 84" stroke="#a78bfa" stroke-width="0"/>
+  <rect x="62" y="72" width="480" height="26" rx="6" fill="none" stroke="#a78bfa" stroke-dasharray="4 3" opacity="0.7"/>
+  <rect x="62" y="120" width="500" height="40" rx="6" fill="none" stroke="#34d399" stroke-dasharray="4 3" opacity="0.7"/>
+  <text x="70" y="230" fill="#a78bfa" font-size="12" font-weight="600">← &lt;title&gt;: 50–60 chars, keyword first, every page unique</text>
+  <text x="70" y="250" fill="#34d399" font-size="12" font-weight="600">← meta description: 140–160 chars + a reason to click</text>
+</svg>

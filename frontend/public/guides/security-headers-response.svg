@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 340" font-family="Inter, system-ui, sans-serif">
+  <rect width="640" height="340" fill="#141417"/>
+  <rect x="40" y="36" width="560" height="270" rx="12" fill="#0f0f12" stroke="#3f3f46"/>
+  <circle cx="66" cy="62" r="6" fill="#f87171"/><circle cx="86" cy="62" r="6" fill="#fbbf24"/><circle cx="106" cy="62" r="6" fill="#34d399"/>
+  <text x="70" y="100" fill="#71717a" font-size="13">HTTP/1.1 200 OK — response headers to add</text>
+  <text x="70" y="132" font-size="13" fill="#34d399" font-weight="600">Strict-Transport-Security: max-age=31536000; includeSubDomains</text>
+  <text x="70" y="158" font-size="13" fill="#34d399" font-weight="600">X-Frame-Options: DENY</text>
+  <text x="70" y="184" font-size="13" fill="#34d399" font-weight="600">X-Content-Type-Options: nosniff</text>
+  <text x="70" y="210" font-size="13" fill="#34d399" font-weight="600">Referrer-Policy: strict-origin-when-cross-origin</text>
+  <text x="70" y="236" font-size="13" fill="#a78bfa">Content-Security-Policy: (start with report-only, then enforce)</text>
+  <text x="70" y="276" fill="#71717a" font-size="12">Set these once in your server, CDN, or hosting dashboard — every</text>
+  <text x="70" y="294" fill="#71717a" font-size="12">page is protected from then on. Verify at securityheaders.com.</text>
+</svg>
