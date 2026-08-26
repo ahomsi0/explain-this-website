@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CATEGORY_ORDER, GUIDES, guideForIssue, type Guide, type GuideCategory } from "../../guides/guides";
 
 // Shared shell bits — the pages render inside PageShell (header/footer come
@@ -53,8 +53,21 @@ function GuideCard({ guide }: { guide: Guide }) {
 
 /** /guides — the full catalog, grouped by category. */
 export function GuidesIndexPage() {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return Object.values(GUIDES);
+    return Object.values(GUIDES).filter((g) =>
+      g.title.toLowerCase().includes(q) ||
+      g.summary.toLowerCase().includes(q) ||
+      g.category.toLowerCase().includes(q) ||
+      g.steps.some((s) => s.toLowerCase().includes(q))
+    );
+  }, [query]);
+
   const grouped = CATEGORY_ORDER
-    .map((c) => ({ category: c, guides: Object.values(GUIDES).filter((g) => g.category === c) }))
+    .map((c) => ({ category: c, guides: filtered.filter((g) => g.category === c) }))
     .filter((g) => g.guides.length > 0);
 
   return (
@@ -66,7 +79,35 @@ export function GuidesIndexPage() {
           relevant guide — start here to browse.
         </p>
       </div>
-      <div className="mt-10 sm:mt-12 flex flex-col gap-10 sm:gap-12">
+
+      <div className="mt-8 relative max-w-lg">
+        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-500 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search guides..."
+          className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-colors"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {filtered.length === 0 && (
+        <p className="mt-8 text-sm text-zinc-500">No guides match "{query}". Try a different search.</p>
+      )}
+
+      <div className="mt-8 sm:mt-10 flex flex-col gap-10 sm:gap-12">
         {grouped.map(({ category, guides }) => (
           <section key={category}>
             <div className="flex items-center gap-2.5 mb-4">
