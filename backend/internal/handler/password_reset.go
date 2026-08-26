@@ -73,9 +73,9 @@ func ForgotPasswordHandler() http.HandlerFunc {
 		body.Email = strings.ToLower(strings.TrimSpace(addr.Address))
 
 		// Always respond success regardless of whether the email is registered.
-		// This prevents email enumeration attacks. We still perform the work
-		// before responding so email delivery is reliable in production.
-		issueResetCode(body.Email)
+		// This prevents email enumeration attacks. The reset work runs in a
+		// background goroutine so the response is written immediately.
+		go issueResetCode(body.Email)
 
 		writeJSON(w, http.StatusOK, map[string]any{
 			"ok":      true,

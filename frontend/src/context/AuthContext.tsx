@@ -40,8 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
   }
 
-  function logout() {
-    void apiLogout().catch(() => {});
+  async function logout() {
+    try {
+      await apiLogout();
+    } catch {
+      // best-effort; clear local state regardless
+    }
     setUser(null);
   }
 

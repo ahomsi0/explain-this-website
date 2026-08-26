@@ -19,6 +19,13 @@ type DayWindow = 0 | 7 | 30;
 
 const PAGE_SIZE = 20;
 
+// Stale-while-revalidate page cache: a visited page renders instantly on
+// return, and neighbor pages are prefetched so Next/Prev feel immediate.
+// Component-scoped (useRef) so signing out can't leak rows across sessions.
+function cacheKey(page: number, search: string, sort: SortKey, sharedOnly: boolean, days: DayWindow) {
+  return `${page}|${search}|${sort}|${sharedOnly}|${days}`;
+}
+
 function scoreTone(score?: number): string {
   if (score === undefined) return "text-zinc-600";
   if (score >= 75) return "text-emerald-400";
@@ -44,6 +51,7 @@ export function HistoryPage() {
   const [compareLoading, setCompareLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const fetchSeqRef = useRef(0);
+  const pageCacheRef = useRef(new Map<string, AuditListPage>());
 
   // Debounce search so typing doesn't fire a request per keystroke.
   useEffect(() => {
@@ -56,13 +64,39 @@ export function HistoryPage() {
 
   useEffect(() => {
     if (!user) return;
+    const key = cacheKey(page, search, sort, sharedOnly, days);
+
+    // Stale-while-revalidate: paint the cached page immediately, refresh anyway.
+    const cached = pageCacheRef.current.get(key);
+    if (cached) setData(cached);
+    else setFetching(true);
+
     const seq = ++fetchSeqRef.current;
-    setFetching(true);
     setError(null);
     fetchAuditsPage({ page, limit: PAGE_SIZE, q: search || undefined, sort, shared: sharedOnly, days })
-      .then((result) => { if (fetchSeqRef.current === seq) { setData(result); setFetching(false); } })
+      .then((result) => {
+        if (fetchSeqRef.current !== seq) return;
+        pageCacheRef.current.set(key, result);
+        setData(result);
+        setFetching(false);
+        // Prefetch neighbors so Next/Prev render instantly.
+        const prefetch = (p: number) => {
+          const k = cacheKey(p, search, sort, sharedOnly, days);
+          if (pageCacheRef.current.has(k)) return;
+          fetchAuditsPage({ page: p, limit: PAGE_SIZE, q: search || undefined, sort, shared: sharedOnly, days })
+            .then((r) => pageCacheRef.current.set(k, r))
+            .catch(() => {});
+        };
+        if (result.total > page * PAGE_SIZE) prefetch(page + 1);
+        if (page > 1) prefetch(page - 1);
+      })
       .catch((e) => { if (fetchSeqRef.current === seq) { setError(e instanceof Error ? e.message : "Failed to load history"); setFetching(false); } });
   }, [user, page, search, sort, sharedOnly, days]);
+
+  // Land at the top of the list when the page changes.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [page]);
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
 
@@ -87,6 +121,7 @@ export function HistoryPage() {
     if (!confirm("Delete this audit from your history?")) return;
     try {
       await deleteAudit(id);
+      pageCacheRef.current.clear();
       setData((prev) => prev ? {
         ...prev,
         items: prev.items.filter((a) => a.id !== id),
@@ -102,6 +137,7 @@ export function HistoryPage() {
     if (!confirm("Permanently delete all audits from your history? This cannot be undone.")) return;
     try {
       await clearAudits();
+      pageCacheRef.current.clear();
       setData({ items: [], total: 0, page: 1, limit: PAGE_SIZE });
       setSelectedIds([]);
       setPage(1);
@@ -134,6 +170,7 @@ export function HistoryPage() {
     if (!confirm("Revoke this public share link? The audit will remain in your history.")) return;
     try {
       await revokeAuditShare(id);
+      pageCacheRef.current.clear();
       setData((prev) => prev ? {
         ...prev,
         items: prev.items.map((item) => item.id === id ? { ...item, shareable: false } : item),

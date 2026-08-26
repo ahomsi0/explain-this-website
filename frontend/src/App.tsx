@@ -46,7 +46,9 @@ function PageShell({ children, header, footer = true }: { children: ReactNode; h
 function useReportRoute() {
   const [sharedResult, setSharedResult] = useState<AnalysisResult | null>(null);
   const [sharedError, setSharedError] = useState<string | null>(null);
-  const reportId = window.location.pathname.match(/^\/report\/([a-f0-9]{32})$/)?.[1] ?? null;
+  const [reportId] = useState(() =>
+    window.location.pathname.match(/^\/report\/([a-f0-9]{32})$/)?.[1] ?? null
+  );
 
   useEffect(() => {
     if (!reportId) return;
@@ -178,7 +180,7 @@ function AppInner() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950" aria-busy="true" aria-label="Restoring your session">
         <div className="animate-pulse">
-          <LogoMark size={28} />
+          <LogoMark size={72} />
         </div>
       </div>
     );

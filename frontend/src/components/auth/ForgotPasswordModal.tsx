@@ -78,8 +78,6 @@ export function ForgotPasswordModal({
         window.location.reload();
         return;
       }
-      setInfo("Password updated. You can now sign in.");
-      setTimeout(onBackToSignIn, 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not reset password");
     } finally {
