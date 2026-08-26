@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { PriorityIssue, IssueCategory } from "../../utils/priorityIssues";
 import { getFixFirst, getQuickWins } from "../../utils/priorityIssues";
+import { HowToFixLink } from "../guides/GuidesPages";
 import { CardShell } from "../ui/CardShell";
 
 interface FixPlanCardProps {
@@ -138,6 +139,7 @@ function IssueRow({
           <div className="p-3 bg-zinc-950/50">
             <p className="text-[9px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
             <p className="text-xs text-zinc-300 leading-relaxed">{issue.howToFix}</p>
+            <HowToFixLink issueId={issue.id} className="mt-2" />
           </div>
         </div>
       )}

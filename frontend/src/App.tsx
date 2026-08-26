@@ -22,6 +22,8 @@ import { LogoMark } from "./components/ui/Logo";
 import { ReportSkeleton } from "./components/ui/Skeletons";
 import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryPage } from "./components/auth/HistoryPage";
+import { GuidesIndexPage, GuideDetailPage } from "./components/guides/GuidesPages";
+import { StatusPage } from "./components/status/StatusPage";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
 import { rememberUrl } from "./lib/recentUrls";
@@ -195,7 +197,13 @@ function AppInner() {
   if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
   if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
   if (pathname === "/history") return <PageShell header={chrome}><HistoryPage /></PageShell>;
+  if (pathname === "/status") return <PageShell header={chrome}><StatusPage /></PageShell>;
   if (pathname === "/compare") return <PageShell header={chrome}><ComparePage /></PageShell>;
+  if (pathname === "/guides") return <PageShell header={chrome}><GuidesIndexPage /></PageShell>;
+  {
+    const guideSlug = pathname.match(/^\/guides\/([a-z0-9-]+)$/)?.[1];
+    if (guideSlug) return <PageShell header={chrome}><GuideDetailPage slug={guideSlug} /></PageShell>;
+  }
 
   // Shared report route takes over the whole page.
   if (loadingShared) {

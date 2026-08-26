@@ -19,6 +19,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/config"
 	"github.com/ahomsi/explain-website/internal/db"
+	"github.com/ahomsi/explain-website/internal/errorreporting"
 	"github.com/ahomsi/explain-website/internal/handler"
 	"github.com/ahomsi/explain-website/internal/llm"
 	"github.com/ahomsi/explain-website/internal/model"
@@ -100,7 +101,9 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux.HandleFunc("GET /api/usage/history", auth.RequireSessionAuth(handler.UsageHistoryHandler()))
 	mux.HandleFunc("GET /api/report/{id}", handler.ReportHandler())
 	mux.HandleFunc("GET /api/audits/compare", auth.RequireSessionAuth(handler.CompareAuditsHandler()))
+	mux.HandleFunc("GET /api/audits/trends", auth.RequireSessionAuth(handler.AuditTrendsHandler()))
 	mux.HandleFunc("POST /api/audits/{id}/revoke-share", auth.RequireSessionAuth(handler.AuditRevokeShareHandler()))
+	mux.HandleFunc("GET /api/status", handler.StatusHandler())
 	mux.HandleFunc("GET /api/api-keys", auth.RequireSessionAuth(handler.APIKeyListHandler()))
 	mux.HandleFunc("POST /api/api-keys", auth.RequireSessionAuth(handler.APIKeyCreateHandler()))
 	mux.HandleFunc("DELETE /api/api-keys/{id}", auth.RequireSessionAuth(handler.APIKeyRevokeHandler()))
@@ -414,12 +417,18 @@ func tokenFreshnessMiddleware(next http.Handler) http.Handler {
 // ── Recovery middleware ───────────────────────────────────────────────────────
 
 // recoveryMiddleware catches any panic inside a handler, logs the stack trace,
-// and returns a clean JSON error response so the frontend never gets a broken connection.
+// reports it to Sentry (when configured), and returns a clean JSON error
+// response so the frontend never gets a broken connection.
 func recoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
 				log.Printf("PANIC recovered: %v\n%s", rec, debug.Stack())
+				if err, ok := rec.(error); ok {
+					errorreporting.Capture(err, r.Header.Get("X-Request-ID"))
+				} else {
+					errorreporting.Capture(fmt.Errorf("panic: %v", rec), r.Header.Get("X-Request-ID"))
+				}
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 				json.NewEncoder(w).Encode(model.ErrorResponse{
