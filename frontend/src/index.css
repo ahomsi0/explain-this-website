@@ -50,10 +50,14 @@ html.light .hero-noise { opacity: 0.06; mix-blend-mode: multiply; }
 
   body {
     font-family: "Inter", system-ui, sans-serif;
-    background-color: hsl(0 0% 4%);
+    /* Slightly lifted, violet-tinted near-black — pure #09090b read as "too dark". */
+    background-color: #14141b;
     color: hsl(0 0% 94%);
     @apply antialiased;
   }
+
+  /* Lift every zinc-950 surface to match (cards/inputs stay zinc-900 for contrast). */
+  html:not(.light) .bg-zinc-950 { background-color: #14141b; }
 
   #root { @apply min-h-screen; }
 }

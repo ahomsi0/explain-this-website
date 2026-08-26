@@ -17,6 +17,7 @@ import { ConsentBanner } from "./components/privacy/ConsentBanner";
 import { LegalPage } from "./components/privacy/LegalPage";
 import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
 import { SiteFooter } from "./components/ui/SiteFooter";
+import { SiteSidebar } from "./components/ui/SiteSidebar";
 import { SiteHeader } from "./components/ui/SiteHeader";
 import { LogoMark } from "./components/ui/Logo";
 import { ReportSkeleton } from "./components/ui/Skeletons";
@@ -34,13 +35,18 @@ type AnalysisSource = "landing" | "example" | "report";
 // Single app shell: every route renders inside this so pre-analysis pages
 // share one header/footer. App-like views (loading, reports) can opt out of
 // the footer via `footer={false}`.
-function PageShell({ children, header, footer = true }: { children: ReactNode; header?: ReactNode; footer?: boolean }) {
+function PageShell({ children, header, footer = true, sidebar, active }: { children: ReactNode; header?: ReactNode; footer?: boolean; sidebar?: boolean; active?: string }) {
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
       {header}
-      {/* The header is position:fixed, so content needs a spacer to sit below it. */}
-      <div className={`flex-1 flex flex-col ${header ? "pt-14" : ""}`}>{children}</div>
-      {footer && <SiteFooter />}
+      {/* The header is position:fixed, so content needs a spacer to sit below
+          it; the optional site sidebar is fixed too, so content clears it on
+          desktop the same way. */}
+      <div className={`flex-1 flex flex-col ${header ? "pt-14" : ""} ${sidebar ? "md:pl-[200px]" : ""}`}>
+        {children}
+        {footer && <SiteFooter />}
+      </div>
+      {sidebar && <SiteSidebar active={active} />}
     </div>
   );
 }
@@ -195,14 +201,14 @@ function AppInner() {
   if (pathname === "/privacy") return <PageShell header={chrome}><LegalPage kind="privacy" /></PageShell>;
   if (pathname === "/terms") return <PageShell header={chrome}><LegalPage kind="terms" /></PageShell>;
   if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
-  if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
-  if (pathname === "/history") return <PageShell header={chrome}><HistoryPage /></PageShell>;
-  if (pathname === "/status") return <PageShell header={chrome}><StatusPage /></PageShell>;
-  if (pathname === "/compare") return <PageShell header={chrome}><ComparePage /></PageShell>;
-  if (pathname === "/guides") return <PageShell header={chrome}><GuidesIndexPage /></PageShell>;
+  if (pathname === "/whats-new") return <PageShell header={chrome} sidebar active="whats-new"><WhatsNewPage /></PageShell>;
+  if (pathname === "/history") return <PageShell header={chrome} sidebar active="history"><HistoryPage /></PageShell>;
+  if (pathname === "/status") return <PageShell header={chrome} sidebar active="status"><StatusPage /></PageShell>;
+  if (pathname === "/compare") return <PageShell header={chrome} sidebar active="compare"><ComparePage /></PageShell>;
+  if (pathname === "/guides") return <PageShell header={chrome} sidebar active="guides"><GuidesIndexPage /></PageShell>;
   {
     const guideSlug = pathname.match(/^\/guides\/([a-z0-9-]+)$/)?.[1];
-    if (guideSlug) return <PageShell header={chrome}><GuideDetailPage slug={guideSlug} /></PageShell>;
+    if (guideSlug) return <PageShell header={chrome} sidebar active="guides"><GuideDetailPage slug={guideSlug} /></PageShell>;
   }
 
   // Shared report route takes over the whole page.
