@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/auth"
@@ -61,6 +62,39 @@ func scoreSummaryFrom(raw []byte) *auditScores {
 		Conversion:  &s.ConversionScore,
 		Performance: s.PerformanceScore,
 	}
+}
+
+// Score summaries are memoized per audit ID: stored reports are immutable, so
+// entries never go stale, and page views skip re-unmarshalling ~50KB report
+// JSON per row. The FIFO cap just bounds memory (~2048 × ~100 bytes).
+var (
+	scoreCacheMu    sync.RWMutex
+	scoreCache      = map[string]*auditScores{}
+	scoreCacheOrder []string
+)
+
+const scoreCacheCap = 2048
+
+func cachedScoreSummary(id string, raw []byte) *auditScores {
+	scoreCacheMu.RLock()
+	s, ok := scoreCache[id]
+	scoreCacheMu.RUnlock()
+	if ok {
+		return s
+	}
+
+	s = scoreSummaryFrom(raw)
+	scoreCacheMu.Lock()
+	if _, exists := scoreCache[id]; !exists {
+		if len(scoreCacheOrder) >= scoreCacheCap {
+			delete(scoreCache, scoreCacheOrder[0])
+			scoreCacheOrder = scoreCacheOrder[1:]
+		}
+		scoreCache[id] = s
+		scoreCacheOrder = append(scoreCacheOrder, id)
+	}
+	scoreCacheMu.Unlock()
+	return s
 }
 
 // AuditsListHandler returns the authenticated user's audit history.
@@ -225,7 +259,7 @@ func attachScores(ctx context.Context, uid int64, items []auditListItem, ids []s
 	}
 	for i := range items {
 		if raw, ok := byID[items[i].ID]; ok {
-			items[i].Scores = scoreSummaryFrom(raw)
+			items[i].Scores = cachedScoreSummary(items[i].ID, raw)
 		}
 	}
 }
@@ -253,7 +287,7 @@ func pagedAuditListByScore(ctx context.Context, uid int64, where string, args []
 			continue
 		}
 		s := 0
-		if scores := scoreSummaryFrom(raw); scores != nil && scores.Overall != nil {
+		if scores := cachedScoreSummary(id, raw); scores != nil && scores.Overall != nil {
 			s = *scores.Overall
 		}
 		all = append(all, scored{id: id, score: s})

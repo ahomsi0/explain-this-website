@@ -180,7 +180,7 @@ function AppInner() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950" aria-busy="true" aria-label="Restoring your session">
         <div className="animate-pulse">
-          <LogoMark size={28} />
+          <LogoMark size={72} />
         </div>
       </div>
     );
