@@ -79,7 +79,7 @@ function AppInner() {
   const pathname = window.location.pathname.toLowerCase();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const analysisSource = useRef<AnalysisSource>("landing");
-  const { status, result, error, serverSignaled, analyze, cancel, reset } = useAnalysis(async (analysisResult) => {
+  const { status, result, currentUrl, error, serverSignaled, analyze, cancel, reset } = useAnalysis(async (analysisResult) => {
     if (analysisResult.usage) {
       setUsage(analysisResult.usage);
     }
@@ -93,9 +93,8 @@ function AppInner() {
     });
     rememberUrl(analysisResult.url);
   });
-  const [currentUrl, setCurrentUrl] = useState("");
-  const { sharedResult, sharedError, loadingShared } = useReportRoute();
   const [authOpen, setAuthOpen] = useState(false);
+  const { sharedResult, sharedError, loadingShared } = useReportRoute();
 
   useEffect(() => {
     fetchUsage().then(setUsage).catch(() => {});
@@ -108,7 +107,6 @@ function AppInner() {
   ) => {
     analysisSource.current = source;
     track("analysis_started", { source, repeat_user: isRepeatUser(), signed_in: Boolean(user) });
-    setCurrentUrl(url);
     void analyze(url, opts);
   };
 
