@@ -1,8 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Inter is loaded via <link> in index.html (preconnect + display=swap) so the
+   font download starts immediately — a CSS @import here delayed it and caused
+   a first-paint layout shift when the swap landed. */
 
 /* Grid backdrop for hero — replaces the violet glow blobs */
 .hero-grid {

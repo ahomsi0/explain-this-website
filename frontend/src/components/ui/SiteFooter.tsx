@@ -3,7 +3,9 @@ export function SiteFooter() {
     <footer className="px-4 sm:px-6 py-8 border-t border-zinc-900/80">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-zinc-600">
         <p>© {new Date().getFullYear()} Explain This Website</p>
-        <div className="flex items-center gap-4">
+        {/* flex-wrap: a non-wrapping link row overflows phones, which makes
+            mobile browsers zoom out to fit and breaks tap targeting. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 max-w-full">
           <a href="/compare" className="hover:text-zinc-400 transition-colors">Compare sites</a>
           <a href="/guides" className="hover:text-zinc-400 transition-colors">Fix guides</a>
           <a href="/status" className="hover:text-zinc-400 transition-colors">Status</a>
