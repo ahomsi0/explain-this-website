@@ -49,6 +49,24 @@ export interface AuditListPage {
   limit: number;
 }
 
+export interface AuditTrendPoint {
+  date: string;
+  score: number;
+}
+
+export interface AuditTrend {
+  url: string;
+  count: number;
+  first: AuditTrendPoint;
+  latest: AuditTrendPoint;
+}
+
+export interface SiteStatus {
+  status: "ok" | "degraded";
+  checks: Record<string, "ok" | "idle" | "down">;
+  time: string;
+}
+
 export interface AuditListQuery {
   page: number;
   limit?: number;
@@ -294,6 +312,15 @@ export async function fetchAuditsPage(query: AuditListQuery): Promise<AuditListP
   if (query.shared) p.set("shared", "1");
   if (query.days) p.set("days", String(query.days));
   return jsonFetch<AuditListPage>(`/api/audits?${p.toString()}`);
+}
+
+// fetchAuditsTrends returns per-URL score movement for URLs audited 2+ times.
+export async function fetchAuditsTrends(): Promise<AuditTrend[]> {
+  return jsonFetch<AuditTrend[]>("/api/audits/trends");
+}
+
+export async function fetchSiteStatus(): Promise<SiteStatus> {
+  return jsonFetch<SiteStatus>("/api/status");
 }
 
 export async function compareAudits(a: string, b: string): Promise<AuditComparison> {

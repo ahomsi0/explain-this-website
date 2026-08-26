@@ -4,10 +4,12 @@ import {
   compareAudits,
   deleteAudit,
   fetchAuditsPage,
+  fetchAuditsTrends,
   revokeShare as revokeAuditShare,
   type AuditComparison as AuditComparisonData,
   type AuditListItem,
   type AuditListPage,
+  type AuditTrend,
 } from "../../services/authApi";
 import { useAuth } from "../../context/useAuth";
 import { AuditComparison } from "./AuditComparison";
@@ -50,8 +52,15 @@ export function HistoryPage() {
   const [comparison, setComparison] = useState<AuditComparisonData | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [trends, setTrends] = useState<AuditTrend[] | null>(null);
   const fetchSeqRef = useRef(0);
   const pageCacheRef = useRef(new Map<string, AuditListPage>());
+
+  // Trends load once per visit; the backend computes them from the score cache.
+  useEffect(() => {
+    if (!user) return;
+    fetchAuditsTrends().then(setTrends).catch(() => setTrends([]));
+  }, [user]);
 
   // Debounce search so typing doesn't fire a request per keystroke.
   useEffect(() => {
@@ -228,6 +237,8 @@ export function HistoryPage() {
           )}
         </div>
 
+        {trends && trends.length > 0 && <TrendsPanel trends={trends} />}
+
         {(data || hasFilters) && (
           <div className="mt-5 flex items-center gap-2 flex-wrap">
             <div className="flex-1 min-w-[180px] flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors">
@@ -316,6 +327,12 @@ export function HistoryPage() {
               ))}
             </ul>
           )}
+
+          {data && data.items.length > 0 && (
+            <div className="mt-4 flex justify-end">
+              <ExportCsvButton />
+            </div>
+          )}
         </div>
 
         {data && data.total > PAGE_SIZE && (
@@ -363,8 +380,26 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
   onRevoke: () => void;
   onDelete: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
   const host = (() => { try { return new URL(audit.url).hostname; } catch { return audit.url; } })();
   const s = audit.scores;
+
+  async function copyShareLink() {
+    const link = `${window.location.origin}/report/${audit.id}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      // Clipboard API needs a secure context; fall back to a hidden textarea.
+      const el = document.createElement("textarea");
+      el.value = link;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
 
   return (
     <li className="group flex items-center gap-2 px-3 py-2.5 rounded-lg border border-zinc-800/70 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
@@ -397,6 +432,15 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
           <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
         </svg>
       </button>
+      {audit.shareable && (
+        <button
+          onClick={() => void copyShareLink()}
+          title="Copy public share link"
+          className={`shrink-0 text-[10px] font-medium px-2 py-1 transition-colors ${copied ? "text-emerald-400" : "text-violet-400 hover:text-violet-300"}`}
+        >
+          {copied ? "Copied!" : "Copy link"}
+        </button>
+      )}
       {audit.shareable && <button onClick={onRevoke} className="shrink-0 text-[10px] text-amber-400 hover:text-amber-300 px-2 py-1">Revoke share</button>}
       <button onClick={onDelete} className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-500 hover:text-red-400 text-xs px-2 py-1 transition-opacity" aria-label={`Delete audit for ${host}`}>Delete</button>
     </li>
@@ -409,5 +453,94 @@ function ScoreChip({ label, value }: { label: string; value?: number }) {
       <span className="text-[8px] font-semibold uppercase tracking-wide text-zinc-500">{label}</span>
       <span className={`text-[10px] font-semibold tabular-nums ${scoreTone(value)}`}>{value ?? "—"}</span>
     </span>
+  );
+}
+
+// ExportCsvButton downloads the full history (all pages) as CSV, client-side.
+function ExportCsvButton() {
+  const [busy, setBusy] = useState(false);
+
+  async function exportCsv() {
+    setBusy(true);
+    try {
+      const all: AuditListItem[] = [];
+      let page = 1;
+      for (;;) {
+        const res = await fetchAuditsPage({ page, limit: 50, sort: "oldest" });
+        all.push(...res.items);
+        if (all.length >= res.total || res.items.length === 0) break;
+        page++;
+      }
+      const esc = (v: string | number | undefined) => {
+        const s = String(v ?? "");
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const rows = [
+        "url,title,analyzed_at,overall_score,seo_score,ux_score,performance_score,conversion_score,share_link",
+        ...all.map((a) => [
+          esc(a.url),
+          esc(a.title || ""),
+          esc(a.createdAt),
+          esc(a.scores?.overall ?? ""),
+          esc(a.scores?.seo ?? ""),
+          esc(a.scores?.ux ?? ""),
+          esc(a.scores?.performance ?? ""),
+          esc(a.scores?.conversion ?? ""),
+          esc(`${window.location.origin}/report/${a.id}`),
+        ].join(",")),
+      ];
+      const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `audit-history-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Could not export history");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={() => void exportCsv()}
+      disabled={busy}
+      className="text-[11px] font-medium text-zinc-500 hover:text-zinc-300 disabled:opacity-50 transition-colors"
+    >
+      {busy ? "Preparing…" : "Export CSV"}
+    </button>
+  );
+}
+
+// TrendsPanel shows per-URL score movement across saved audits — the
+// "72 → 81 in 3 months" retention hook.
+function TrendsPanel({ trends }: { trends: AuditTrend[] }) {
+  return (
+    <section className="mt-5 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4" aria-label="Score trends">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Score trends</h2>
+      <ul className="mt-2 flex flex-col gap-1.5">
+        {trends.map((t) => {
+          const delta = t.latest.score - t.first.score;
+          const host = (() => { try { return new URL(t.url).hostname.replace(/^www\./, ""); } catch { return t.url; } })();
+          const tone = delta > 0 ? "text-emerald-400" : delta < 0 ? "text-red-400" : "text-zinc-500";
+          const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "→";
+          return (
+            <li key={t.url} className="flex items-center justify-between gap-3 text-xs">
+              <a href={`/?url=${encodeURIComponent(t.url)}`} className="min-w-0 truncate text-zinc-300 hover:text-violet-300 transition-colors" title={`Re-run ${host}`}>
+                {host}
+              </a>
+              <span className="shrink-0 flex items-center gap-2 tabular-nums text-zinc-500">
+                <span>{t.first.score}</span>
+                <span className={`font-semibold ${tone}`}>{arrow} {delta > 0 ? "+" : ""}{delta}</span>
+                <span className="text-zinc-300 font-semibold">{t.latest.score}</span>
+                <span className="text-[10px] text-zinc-600">({t.count} audits)</span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

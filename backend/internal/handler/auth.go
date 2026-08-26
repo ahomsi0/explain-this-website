@@ -12,6 +12,7 @@ import (
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
 	"github.com/ahomsi/explain-website/internal/model"
+	"github.com/ahomsi/explain-website/internal/requestip"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -142,6 +143,11 @@ func LoginHandler() http.HandlerFunc {
 			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		ip := requestip.ClientIP(r)
+		if !logins.Allow(ip, body.Email) {
+			writeJSONError(w, http.StatusTooManyRequests, "too many attempts — please wait a few minutes and try again")
+			return
+		}
 
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
@@ -159,6 +165,7 @@ func LoginHandler() http.HandlerFunc {
 				// Burn the same bcrypt time a real lookup would so latency
 				// doesn't reveal whether the email is registered.
 				_ = auth.CheckPassword(dummyPasswordHash, body.Password)
+				logins.RecordFailure(ip, body.Email)
 				writeJSONError(w, http.StatusUnauthorized, "incorrect email or password")
 				return
 			}
@@ -166,9 +173,11 @@ func LoginHandler() http.HandlerFunc {
 			return
 		}
 		if err := auth.CheckPassword(hash, body.Password); err != nil {
+			logins.RecordFailure(ip, body.Email)
 			writeJSONError(w, http.StatusUnauthorized, "incorrect email or password")
 			return
 		}
+		logins.RecordSuccess(ip, body.Email)
 		u, err := loadUserOut(ctx, userID)
 		if err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "login failed")
