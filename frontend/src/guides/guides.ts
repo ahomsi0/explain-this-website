@@ -22,6 +22,9 @@ export interface Guide {
   steps: string[];
   /** Free tools that help diagnose or verify the fix. */
   tools?: string[];
+  /** Optional illustration shown under a given step (0-based index).
+   *  Files live in /public/guides/ — SVG diagrams or real screenshots. */
+  stepImages?: Record<number, { src: string; caption: string }>;
 }
 
 export const GUIDES: Record<string, Guide> = {
@@ -62,6 +65,7 @@ export const GUIDES: Record<string, Guide> = {
       "Verify with PageSpeed Insights until CLS is below 0.1.",
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Performance panel"],
+    stepImages: { 0: { src: "/guides/cls-layout-shift.svg", caption: "Reserving space keeps the layout stable while images load." } },
   },
   "tbt": {
     slug: "tbt",
@@ -115,6 +119,7 @@ export const GUIDES: Record<string, Guide> = {
       "While you're at it, resize images to their display size — a 4000px-wide photo in a 400px slot wastes 90% of its bytes.",
     ],
     tools: ["Squoosh", "TinyPNG", "ShortPixel / Imagify (WordPress)"],
+    stepImages: { 0: { src: "/guides/image-formats-compare.svg", caption: "Typical savings for the same photo." } },
   },
   "lazy-loading": {
     slug: "lazy-loading",
@@ -132,6 +137,7 @@ export const GUIDES: Record<string, Guide> = {
       "Re-run your audit to confirm the image weight on initial load dropped.",
     ],
     tools: ["PageSpeed Insights"],
+    stepImages: { 1: { src: "/guides/lazy-loading-code.svg", caption: "The attribute in context — plus the one image you should NOT lazy-load." } },
   },
   "render-blocking-resources": {
     slug: "render-blocking-resources",
@@ -169,6 +175,7 @@ export const GUIDES: Record<string, Guide> = {
       "In most CMSs this is an 'SEO title' field (Yoast/Rank Math on WordPress) or an SEO settings panel.",
     ],
     tools: ["Google Search Console", "Ahrefs/Semrush site audit"],
+    stepImages: { 1: { src: "/guides/serp-snippet.svg", caption: "How your title and description appear in search results." } },
   },
   "meta-description": {
     slug: "meta-description",
@@ -186,6 +193,7 @@ export const GUIDES: Record<string, Guide> = {
       "Write unique descriptions for your top pages first — homepage, main services, best products.",
     ],
     tools: ["Google Search Console", "SERP snippet preview tools"],
+    stepImages: { 2: { src: "/guides/serp-snippet.svg", caption: "The description is your pitch under the blue link." } },
   },
   "h1-heading": {
     slug: "h1-heading",
@@ -514,6 +522,7 @@ export const GUIDES: Record<string, Guide> = {
       "Verify with securityheaders.com until you score A.",
     ],
     tools: ["securityheaders.com", "Mozilla Observatory"],
+    stepImages: { 0: { src: "/guides/security-headers-response.svg", caption: "The four headers to start with, exactly as your server should send them." } },
   },
   "stale-content": {
     slug: "stale-content",
