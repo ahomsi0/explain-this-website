@@ -5,6 +5,8 @@ export function SiteFooter() {
         <p>© {new Date().getFullYear()} Explain This Website</p>
         <div className="flex items-center gap-4">
           <a href="/compare" className="hover:text-zinc-400 transition-colors">Compare sites</a>
+          <a href="/guides" className="hover:text-zinc-400 transition-colors">Fix guides</a>
+          <a href="/status" className="hover:text-zinc-400 transition-colors">Status</a>
           <a href="mailto:support@explainthewebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
           <a href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</a>
           <a href="/terms" className="hover:text-zinc-400 transition-colors">Terms</a>
