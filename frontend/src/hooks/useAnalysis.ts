@@ -5,9 +5,37 @@ import { mockAnalysisResult } from "../mock/mockData";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 
+const STORAGE_KEY = "explain_current_analysis";
+
+interface PersistedAnalysis {
+  result: AnalysisResult;
+  url: string;
+}
+
+function loadPersisted(): PersistedAnalysis | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.result && parsed?.url) return parsed as PersistedAnalysis;
+  } catch { /* corrupted — ignore */ }
+  return null;
+}
+
+function savePersisted(result: AnalysisResult, url: string) {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ result, url })); }
+  catch { /* quota — ignore */ }
+}
+
+function clearPersisted() {
+  try { sessionStorage.removeItem(STORAGE_KEY); }
+  catch { /* ignore */ }
+}
+
 interface UseAnalysisReturn {
   status: AnalysisStatus;
   result: AnalysisResult | null;
+  currentUrl: string;
   error: string | null;
   serverSignaled: boolean;
   analyze: (url: string, opts?: AnalyzeOptions) => Promise<void>;
@@ -16,8 +44,10 @@ interface UseAnalysisReturn {
 }
 
 export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promise<void>): UseAnalysisReturn {
-  const [status, setStatus] = useState<AnalysisStatus>("idle");
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const persisted = useRef(loadPersisted());
+  const [status, setStatus] = useState<AnalysisStatus>(() => persisted.current ? "success" : "idle");
+  const [result, setResult] = useState<AnalysisResult | null>(() => persisted.current?.result ?? null);
+  const [currentUrl, setCurrentUrl] = useState<string>(() => persisted.current?.url ?? "");
   const [error, setError] = useState<string | null>(null);
   const [serverSignaled, setServerSignaled] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
@@ -58,6 +88,8 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
       // response instead of clobbering the newer request's state.
       if (controllerRef.current !== controller) return;
       setResult(data);
+      setCurrentUrl(url);
+      savePersisted(data, url);
       void onSuccess?.(data);
       setStatus("success");
     } catch (err) {
@@ -78,8 +110,10 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
   const cancel = useCallback(() => {
     controllerRef.current?.abort();
     controllerRef.current = null;
+    clearPersisted();
     setStatus("idle");
     setResult(null);
+    setCurrentUrl("");
     setError(null);
     setServerSignaled(false);
   }, []);
@@ -87,11 +121,13 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
   const reset = useCallback(() => {
     controllerRef.current?.abort();
     controllerRef.current = null;
+    clearPersisted();
     setStatus("idle");
     setResult(null);
+    setCurrentUrl("");
     setError(null);
     setServerSignaled(false);
   }, []);
 
-  return { status, result, error, serverSignaled, analyze, cancel, reset };
+  return { status, result, currentUrl, error, serverSignaled, analyze, cancel, reset };
 }
