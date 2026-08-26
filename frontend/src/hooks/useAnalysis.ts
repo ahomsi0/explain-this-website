@@ -36,9 +36,10 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
 
       if (USE_MOCK) {
         setServerSignaled(true);
-        // Simulate network latency so the loading state is visible.
+        // Simulate network latency so the loading state is visible. Long
+        // enough for e2e tests to click "Cancel analysis" comfortably.
         await new Promise<void>((resolve, reject) => {
-          const timer = setTimeout(resolve, 1400);
+          const timer = setTimeout(resolve, 4000);
           controller.signal.addEventListener("abort", () => {
             clearTimeout(timer);
             reject(new DOMException("Analysis cancelled", "AbortError"));

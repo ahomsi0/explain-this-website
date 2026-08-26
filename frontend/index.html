@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
 
+    <!-- Fonts: start loading immediately (parallel with CSS) instead of after
+         the CSS @import resolves — cuts the font-swap layout shift that
+         otherwise reflows the page on first visit. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+
     <!-- Optional analytics is loaded by the consent-aware frontend after opt-in. -->
 
     <!-- Core -->

@@ -157,6 +157,13 @@ export function LandingPage({
                 to save your audit history.
               </p>
             )}
+
+            <p className="mt-3 text-center text-xs text-zinc-600">
+              Every issue we flag comes with a repair guide —{" "}
+              <a href="/guides" className="text-zinc-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
+                browse the fix guides
+              </a>.
+            </p>
           </div>
         </section>
 

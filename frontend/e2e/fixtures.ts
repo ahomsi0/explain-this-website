@@ -33,6 +33,18 @@ export async function mockJson(page: Page, path: string, body: unknown, status =
 }
 
 export async function declineConsent(page: Page): Promise<void> {
+  // The banner can be clicked while the web font is still swapping, which
+  // reflows the page mid-click. fonts.ready alone can resolve before the font
+  // has started loading, so explicitly request the weights the UI uses.
+  await page.evaluate(() =>
+    Promise.all([
+      document.fonts.load("400 12px Inter"),
+      document.fonts.load("500 12px Inter"),
+      document.fonts.load("600 12px Inter"),
+      document.fonts.load("700 12px Inter"),
+      document.fonts.ready,
+    ]).then(() => {}),
+  );
   const banner = page.getByRole("dialog", { name: "Analytics consent" });
   if (await banner.count()) {
     await banner.getByRole("button", { name: "Decline" }).click();
