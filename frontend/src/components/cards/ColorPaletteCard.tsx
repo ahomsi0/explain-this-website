@@ -24,10 +24,11 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
   }, []);
 
   function copyHex(hex: string) {
-    navigator.clipboard.writeText(hex).catch(() => {});
-    setCopied(hex);
-    if (timerRef.current !== null) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setCopied(null), 1500);
+    navigator.clipboard.writeText(hex).then(() => {
+      setCopied(hex);
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopied(null), 1500);
+    }).catch(() => {});
   }
 
   if (colors.length === 0) {
@@ -45,14 +46,12 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
     <CardShell>
       <CardHeader title="Color Palette" badge={`${colors.length} colors`} badgeColor="violet" />
       <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          {colorPalette.themeColor && (
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full border border-zinc-700" style={{ background: colorPalette.themeColor }} />
-              <span className="text-[10px] text-zinc-500 font-mono">{colorPalette.themeColor}</span>
-            </div>
-          )}
-        </div>
+        {colorPalette.themeColor && (
+          <div className="flex items-center gap-1.5 mb-4">
+            <div className="w-3 h-3 rounded-full border border-zinc-700" style={{ background: colorPalette.themeColor }} />
+            <span className="text-[10px] text-zinc-500 font-mono">{colorPalette.themeColor}</span>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-3">
           {colors.map((entry) => (

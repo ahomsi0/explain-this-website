@@ -78,7 +78,7 @@ export function Sidebar({
               aria-current={isActive ? "page" : undefined}
               className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 isActive
-                  ? "text-violet-300 border border-transparent shadow-[inset_3px_0_0_#7c3aed]"
+                  ? "text-violet-300 bg-violet-500/10 border border-violet-500/30"
                   : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent"
               }`}
             >
@@ -161,12 +161,23 @@ export function Sidebar({
             href="/privacy"
             className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
           >
+            <span className="text-zinc-600 group-hover:text-zinc-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </span>
             <span>Privacy</span>
           </a>
           <a
             href="/terms"
             className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
           >
+            <span className="text-zinc-600 group-hover:text-zinc-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </span>
             <span>Terms</span>
           </a>
         </div>

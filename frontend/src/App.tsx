@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from "react";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBanner } from "./components/ui/ErrorBanner";
@@ -74,7 +74,7 @@ function AppInner() {
   const pathname = window.location.pathname.toLowerCase();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const analysisSource = useRef<AnalysisSource>("landing");
-  const { status, result, currentUrl, error, serverSignaled, analyze, cancel, reset } = useAnalysis(async (analysisResult) => {
+  const onSuccess = useCallback(async (analysisResult: AnalysisResult) => {
     if (analysisResult.usage) {
       setUsage(analysisResult.usage);
     }
@@ -87,7 +87,8 @@ function AppInner() {
       performanceAvailable: Boolean(analysisResult.performance?.available),
     });
     rememberUrl(analysisResult.url);
-  });
+  }, [user, refreshUser]);
+  const { status, result, currentUrl, error, serverSignaled, analyze, cancel, reset } = useAnalysis(onSuccess);
   const [authOpen, setAuthOpen] = useState(false);
   const { sharedResult, sharedError, loadingShared } = useReportRoute();
 
@@ -116,12 +117,12 @@ function AppInner() {
     handleAnalyze(target, "landing");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
-  const isBotProtectionError = !!error && (
+  const isBotProtectionError = useMemo(() => !!error && (
     error.toLowerCase().includes("bot protection") ||
     error.toLowerCase().includes("http 403") ||
     error.toLowerCase().includes("http 999") ||
     error.toLowerCase().includes("actively blocks")
-  );
+  ), [error]);
   const handleTryAgain = () => {
     if (!currentUrl) { reset(); return; }
     handleAnalyze(currentUrl, analysisSource.current);
@@ -150,6 +151,14 @@ function AppInner() {
       document.title = "What’s New · Explain This Website";
     } else if (pathname === "/compare") {
       document.title = "Compare Sites · Explain This Website";
+    } else if (pathname === "/history") {
+      document.title = "Audit History · Explain This Website";
+    } else if (pathname === "/guides") {
+      document.title = "Fix Guides · Explain This Website";
+    } else if (pathname === "/status") {
+      document.title = "Service Status · Explain This Website";
+    } else if (pathname.startsWith("/guides/")) {
+      document.title = "Fix Guide · Explain This Website";
     } else {
       document.title = "Explain This Website — Instant Website Analyzer";
     }
@@ -179,11 +188,11 @@ function AppInner() {
   // signed-in once /api/auth/me resolves.
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950" aria-busy="true" aria-label="Restoring your session">
+      <main className="min-h-screen flex items-center justify-center bg-zinc-950" role="status" aria-label="Restoring your session">
         <div className="animate-pulse">
           <LogoMark size={72} />
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -207,7 +216,7 @@ function AppInner() {
   // Shared report route takes over the whole page.
   if (loadingShared) {
     return (
-      <PageShell footer={false}>
+      <PageShell header={chrome} footer={false}>
         <ReportSkeleton />
       </PageShell>
     );
@@ -256,7 +265,7 @@ function AppInner() {
         <ErrorBanner
           message={error!}
           isBotProtectionError={isBotProtectionError}
-          onTryAgain={isBotProtectionError && currentUrl ? handleTryAgain : undefined}
+          onTryAgain={currentUrl ? handleTryAgain : undefined}
           onTryAnotherUrl={reset}
         />
       )}

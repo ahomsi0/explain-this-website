@@ -114,11 +114,13 @@ export function GuidesIndexPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search guides..."
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-colors"
+          aria-label="Search guides"
+          className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-colors"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
+            aria-label="Clear search"
             className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
