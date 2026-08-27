@@ -131,11 +131,12 @@ export function HistoryPage() {
     try {
       await deleteAudit(id);
       pageCacheRef.current.clear();
-      setData((prev) => prev ? {
-        ...prev,
-        items: prev.items.filter((a) => a.id !== id),
-        total: prev.total - 1,
-      } : prev);
+      setData((prev) => {
+        if (!prev) return prev;
+        const newItems = prev.items.filter((a) => a.id !== id);
+        if (newItems.length === 0 && page > 1) setPage((p) => p - 1);
+        return { ...prev, items: newItems, total: prev.total - 1 };
+      });
       setSelectedIds((prev) => prev.filter((selected) => selected !== id));
     } catch (e) {
       alert(e instanceof Error ? e.message : "Delete failed");
@@ -301,7 +302,6 @@ export function HistoryPage() {
 
         <div className="mt-4">
           {!data && !error && <RowSkeleton rows={5} />}
-          {fetching && data && <RowSkeleton rows={Math.min(data.items.length || 5, PAGE_SIZE)} />}
           {error && <div className="text-xs text-red-400 bg-red-950/50 border border-red-800/40 rounded px-3 py-2">{error}</div>}
           {!fetching && data && data.total === 0 && (
             <div className="text-center py-16">

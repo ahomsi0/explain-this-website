@@ -34,7 +34,7 @@ function computeScores(result: AnalysisResult) {
 const scoreColor = sharedScoreColor;
 
 function impressionColor(n: number) {
-  return n >= 8 ? "text-emerald-400" : n >= 6 ? "text-amber-400" : n >= 4 ? "text-orange-400" : "text-red-400";
+  return n >= 8 ? "text-emerald-400" : n >= 5 ? "text-amber-400" : "text-red-400";
 }
 
 function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
@@ -150,7 +150,7 @@ export function ResultDashboard({
                 )}
               </form>
             )}
-            {searchError && <span id="report-url-error" role="alert" className="hidden lg:block text-[10px] text-red-400">{searchError}</span>}
+            {searchError && <span id="report-url-error" role="alert" className="hidden md:block text-[10px] text-red-400">{searchError}</span>}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">

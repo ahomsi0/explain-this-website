@@ -107,7 +107,7 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
     }
   }, [onSuccess]);
 
-  const cancel = useCallback(() => {
+  const clearState = useCallback(() => {
     controllerRef.current?.abort();
     controllerRef.current = null;
     clearPersisted();
@@ -118,16 +118,8 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
     setServerSignaled(false);
   }, []);
 
-  const reset = useCallback(() => {
-    controllerRef.current?.abort();
-    controllerRef.current = null;
-    clearPersisted();
-    setStatus("idle");
-    setResult(null);
-    setCurrentUrl("");
-    setError(null);
-    setServerSignaled(false);
-  }, []);
+  const cancel = clearState;
+  const reset = clearState;
 
   return { status, result, currentUrl, error, serverSignaled, analyze, cancel, reset };
 }
