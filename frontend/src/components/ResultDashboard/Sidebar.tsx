@@ -106,13 +106,16 @@ export function Sidebar({
               </span>
               <span className="flex-1 text-left">{item.label}</span>
               {item.id === "fixplan" && scores?.issueCount !== undefined && scores.issueCount > 0 && (
-                <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold bg-red-500 text-white">
-                  {scores.issueCount}
+                <span
+                  className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold bg-red-500 text-white"
+                  aria-label={`${scores.issueCount} failing checks`}
+                >
+                  <span aria-hidden="true">{scores.issueCount}</span>
                 </span>
               )}
               {score !== undefined && (
                 <span className={`ml-auto text-[10px] font-bold ${scoreColorClass}`}>
-                  {score}
+                  {score}<span className="sr-only">/100</span>
                 </span>
               )}
             </button>

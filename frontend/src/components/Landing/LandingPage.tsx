@@ -329,7 +329,7 @@ export function LandingPage({
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-10">
               <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">How it works</p>
-              <h3 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">From URL to insights in three steps</h3>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">From URL to insights in three steps</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

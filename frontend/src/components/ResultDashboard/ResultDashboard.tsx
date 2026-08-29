@@ -210,7 +210,7 @@ export function ResultDashboard({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={toggle}
-              aria-label="Toggle theme"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               className="flex items-center justify-center w-7 h-7 rounded-md text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
             >
               {theme === "dark" ? (
