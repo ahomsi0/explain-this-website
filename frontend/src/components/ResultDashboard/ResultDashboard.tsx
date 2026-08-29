@@ -82,6 +82,29 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   );
 }
 
+function TechStackTile({ items }: { items: { name: string }[] }) {
+  if (!items.length) return null;
+  const top = items.slice(0, 3);
+  const extra = items.length - top.length;
+  return (
+    <div className="flex flex-col gap-1 px-3 py-3 min-w-[110px] shrink-0">
+      <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold whitespace-nowrap">Tech Stack</span>
+      <div className="flex items-center flex-wrap gap-1 mt-0.5">
+        {top.map((t) => (
+          <span key={t.name} className="px-1.5 py-px rounded text-[10px] font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20">
+            {t.name}
+          </span>
+        ))}
+        {extra > 0 && (
+          <span className="px-1.5 py-px rounded text-[10px] font-semibold text-zinc-500 bg-zinc-800 border border-zinc-700">
+            +{extra}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function lcpColor(rating: string) {
   return rating === "good" ? "text-emerald-400" : rating === "needs-improvement" ? "text-amber-400" : "text-red-400";
 }
@@ -281,6 +304,12 @@ export function ResultDashboard({
               <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
               <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
               <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
+              {result.techStack.length > 0 && (
+                <>
+                  <div className="border-r border-zinc-800" aria-hidden="true" />
+                  <TechStackTile items={result.techStack.filter(t => t.confidence === "high")} />
+                </>
+              )}
             </div>
           </div>
 
