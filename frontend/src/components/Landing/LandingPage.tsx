@@ -117,6 +117,26 @@ export function LandingPage({
               </button>
             </div>
 
+            {/* ✦ Feature chips — show what the report covers */}
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {[
+                { label: "SEO audit",           color: "bg-emerald-400" },
+                { label: "Performance score",   color: "bg-blue-400" },
+                { label: "Tech stack",          color: "bg-violet-400" },
+                { label: "Content analysis",    color: "bg-orange-400" },
+                { label: "Security headers",    color: "bg-pink-400" },
+                { label: "Conversion signals",  color: "bg-teal-400" },
+              ].map(({ label, color }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] text-zinc-500 bg-zinc-900/60 border border-zinc-800"
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${color} shrink-0`} aria-hidden="true" />
+                  {label}
+                </span>
+              ))}
+            </div>
+
             {/* Recently analyzed sites */}
             {recents.length > 0 && (
               <div className="mt-4 flex flex-wrap justify-center gap-1.5">
