@@ -72,20 +72,12 @@ export function SiteHeader({
             <UserMenu />
           </>
         ) : (
-          <>
-            <button
-              onClick={onSignIn}
-              className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
-            >
-              Sign in
-            </button>
-            <a
-              href="/go-pro"
-              className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
-            >
-              Get Pro
-            </a>
-          </>
+          <button
+            onClick={onSignIn}
+            className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
+          >
+            Sign in
+          </button>
         )}
       </div>
     </header>

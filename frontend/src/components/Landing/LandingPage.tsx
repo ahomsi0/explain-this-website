@@ -66,22 +66,33 @@ export function LandingPage({
         {/* Hero */}
         <section className="px-4 sm:px-6 pt-16 sm:pt-24 pb-12">
           <div className="max-w-3xl mx-auto fade-up">
-            <div className="mb-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[11px]">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 font-medium text-violet-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" aria-hidden="true" />
-                Free · No signup required
-              </span>
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-[11px] font-medium text-zinc-500">
+              <span>Free</span>
+              <span className="h-1 w-1 rounded-full bg-zinc-700" aria-hidden="true" />
+              <span>No signup required</span>
               {usage && (
-                <span className="inline-flex items-center gap-1.5 text-zinc-400">
-                  <span className={`h-1.5 w-1.5 rounded-full ${usage.plan === "owner" || usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} aria-hidden="true" />
-                  {usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} analyses left today
-                </span>
+                <>
+                  <span className="h-1 w-1 rounded-full bg-zinc-700" aria-hidden="true" />
+                  <span
+                    className="inline-flex items-center gap-1.5 text-zinc-400"
+                    aria-label={
+                      usage.plan === "owner"
+                        ? "Unlimited analyses left today"
+                        : `${usage.dailyRemaining} of ${usage.dailyLimit} analyses left today`
+                    }
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${usage.plan === "owner" || usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} aria-hidden="true" />
+                    <span aria-hidden="true">{usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} analyses left today</span>
+                  </span>
+                </>
               )}
             </div>
 
-            <h1 className="text-center text-4xl sm:text-6xl font-bold tracking-tight leading-[1.04]">
-              <span className="text-zinc-100">Instant clarity on </span>
-              <span className="text-violet-300">any website.</span>
+            <h1 className="text-center text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">
+              <span className="text-zinc-100">Understand any website </span>
+              <span className="text-violet-300">
+                in seconds.
+              </span>
             </h1>
 
             <p className="mt-6 text-center text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
