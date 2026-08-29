@@ -1,5 +1,6 @@
 import type { ConversionScores, UXResult } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 type BlockerSeverity = "critical" | "warning" | "info";
 
@@ -140,6 +141,16 @@ function SeverityIcon({ severity }: { severity: BlockerSeverity }) {
   );
 }
 
+const BLOCKER_ISSUE_IDS: Record<string, string> = {
+  clarity:       "low-clarity",
+  trust:         "low-trust-score",
+  cta:           "no-cta",
+  friction:      "high-friction",
+  "social-proof": "no-social-proof",
+  privacy:       "no-privacy",
+  "trust-signals": "no-trust",
+};
+
 function blockerRowStyles(severity: BlockerSeverity): string {
   if (severity === "critical") return "border-red-500/25 bg-red-950/20";
   if (severity === "warning")  return "border-amber-500/25 bg-amber-950/20";
@@ -189,9 +200,10 @@ export function ConversionBlockersCard({ scores, ux }: ConversionBlockersCardPro
                 className={`rounded-lg border p-3 flex items-start gap-3 ${blockerRowStyles(blocker.severity)}`}
               >
                 <SeverityIcon severity={blocker.severity} />
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-zinc-100">{blocker.title}</p>
                   <p className="text-[11px] text-zinc-400 leading-snug mt-0.5">{blocker.description}</p>
+                  <HowToFixLink issueId={BLOCKER_ISSUE_IDS[blocker.id] ?? blocker.id} className="mt-1.5" />
                 </div>
               </div>
             ))}
