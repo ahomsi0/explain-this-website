@@ -60,8 +60,8 @@ export function computeInsights(result: AnalysisResult): Insights {
   const seoScore        = computeSeoScore(result);
   const perfScore       = computePerfScore(result);
   const uxScore         = computeUxScore(result);
-  // Legacy saved audits may predate conversionScores — treat as neutral 0.
-  const conversionScore = result.conversionScores?.overall ?? 0;
+  // Legacy saved audits may predate conversionScores — treat as neutral 50.
+  const conversionScore = result.conversionScores?.overall ?? 50;
 
   // When perfScore is -1 (no data), exclude it from the weighted average
   const perfAvailable = perfScore >= 0;
@@ -74,7 +74,7 @@ export function computeInsights(result: AnalysisResult): Insights {
   const fixFirst  = getFixFirst(allIssues);
   const qwList    = getQuickWins(allIssues);
 
-  const topIssues: InsightItem[] = fixFirst.slice(0, 3).map(i => ({
+  const topIssues: InsightItem[] = fixFirst.slice(0, 5).map(i => ({
     id: i.id,
     title: i.title,
     impact: i.impact,

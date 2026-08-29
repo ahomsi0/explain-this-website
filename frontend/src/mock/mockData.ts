@@ -119,7 +119,7 @@ export const mockAnalysisResult: AnalysisResult = {
     label: "Good",
     explanation: "The page makes a solid first impression — it's clear, has a visible CTA, and feels reasonably trustworthy.",
   },
-  biggestOpportunity: "There are no visible trust signals or social proof. Adding testimonials, certifications, or a review count near the CTA could significantly lift conversion.",
+  biggestOpportunity: "The canonical URL tag is missing — Google may split your ranking across multiple versions of the same page. Fix that first, then address image alt text and og:image to improve search visibility and social sharing.",
   competitorInsight: "E-commerce is highly competitive — conversion rate optimisation, product photography, and social proof are the most common differentiators against similar stores.",
   prioritizedIssues: [
     { rank: 1, issue: "No canonical URL tag", impact: "SEO", why: "Risk of duplicate content penalties if the page is accessible via multiple URLs." },
@@ -219,7 +219,7 @@ export const mockAnalysisResult: AnalysisResult = {
   },
   domainInfo: {
     registeredAt: "2018-04-12",
-    expiresAt: "2026-04-12",
+    expiresAt: "2028-04-12",
     registrar: "Cloudflare, Inc.",
     ageYears: 7,
   },

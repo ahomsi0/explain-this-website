@@ -35,10 +35,12 @@ function overallLabel(n: number) {
 }
 
 function whatToImproveFirst(scores: ConversionScores): string {
+  const ease = 100 - scores.friction;
   const worst = [
     { label: "CTA strength", score: scores.ctaStrength },
     { label: "trust",        score: scores.trust        },
     { label: "clarity",      score: scores.clarity      },
+    { label: "ease",         score: ease                },
   ].sort((a, b) => a.score - b.score)[0];
   return `Focus on improving ${worst.label} first — at ${worst.score}/100 it's your biggest drag on conversions.`;
 }
@@ -87,7 +89,7 @@ export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
           <ScoreRow label="Clarity"      score={scores.clarity}     note={scores.clarityNote}  />
           <ScoreRow label="Trust"        score={scores.trust}       note={scores.trustNote}    />
           <ScoreRow label="CTA Strength" score={scores.ctaStrength} note={scores.ctaNote}      />
-          <ScoreRow label="Ease"         score={scores.friction}    note={scores.frictionNote} />
+          <ScoreRow label="Ease"         score={100 - scores.friction} note={scores.frictionNote} />
         </div>
 
         {/* What to improve first */}

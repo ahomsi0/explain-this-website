@@ -30,7 +30,7 @@ function deriveBlockers(scores: ConversionScores, ux: UXResult): Blocker[] {
       severity: "critical",
     });
 
-  if (!ux.hasCTA || scores.ctaStrength < 40)
+  if (!ux.hasCTA || scores.ctaStrength < 50)
     blockers.push({
       id: "cta",
       title: "No clear path to action",
@@ -69,7 +69,7 @@ function deriveBlockers(scores: ConversionScores, ux: UXResult): Blocker[] {
       id: "trust-signals",
       title: "No structural trust signals",
       description: "Add a security badge, testimonial, or press mention to reassure visitors.",
-      severity: "info",
+      severity: "warning",
     });
 
   const severityOrder: Record<BlockerSeverity, number> = { critical: 0, warning: 1, info: 2 };

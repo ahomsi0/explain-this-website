@@ -57,7 +57,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
         {specificityHints.length > 0 && (
           <div className="mt-4 pt-4 border-t border-zinc-800">
             <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-              Suggested Alternatives
+              What&apos;s already specific
             </p>
             <div className="flex flex-col gap-1.5">
               {specificityHints.map((hint, i) => (
