@@ -12,7 +12,7 @@ export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: Inte
           badge={`${intentAlignment.score}/100`}
           badgeColor={intentAlignment.score >= 80 ? "green" : intentAlignment.score >= 50 ? "amber" : "red"}
         />
-        <div className="p-4">
+        <div className="p-5">
           <p className="text-xs text-zinc-500">No intent keywords detected in title or meta description.</p>
         </div>
       </CardShell>
@@ -26,7 +26,7 @@ export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: Inte
         badge={`${intentAlignment.score}/100`}
         badgeColor={intentAlignment.score >= 80 ? "green" : intentAlignment.score >= 50 ? "amber" : "red"}
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <span className={`text-lg font-bold ${scoreColor(intentAlignment.score)}`}>
             {intentAlignment.score}<span className="text-xs text-zinc-600 font-medium">/100</span>

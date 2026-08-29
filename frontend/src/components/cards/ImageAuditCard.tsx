@@ -46,7 +46,7 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
   return (
     <CardShell>
       <CardHeader title="Image Formats" badge={`${audit.total} imgs`} badgeColor="violet" />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-zinc-500">{audit.total} images</span>

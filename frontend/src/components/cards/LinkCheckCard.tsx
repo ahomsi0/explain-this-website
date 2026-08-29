@@ -11,7 +11,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
           badge={linkCheck.checked === 0 ? undefined : linkCheck.broken === 0 ? "All OK" : linkCheck.broken + " broken"}
           badgeColor={linkCheck.broken === 0 ? "green" : linkCheck.broken <= 2 ? "amber" : "red"}
         />
-        <div className="p-4">
+        <div className="p-5">
           <p className="text-xs text-zinc-500">No external links found on this page.</p>
         </div>
       </CardShell>
@@ -28,7 +28,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
         badge={linkCheck.checked === 0 ? undefined : linkCheck.broken === 0 ? "All OK" : linkCheck.broken + " broken"}
         badgeColor={linkCheck.broken === 0 ? "green" : linkCheck.broken <= 2 ? "amber" : "red"}
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           {linkCheck.broken > 0 && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border text-red-400 bg-red-950 border-red-800">

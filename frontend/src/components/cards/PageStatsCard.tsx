@@ -36,7 +36,7 @@ export function PageStatsCard({ pageStats }: { pageStats: PageStats }) {
   return (
     <CardShell>
       <CardHeader title="Page Stats" />
-      <div className="p-4">
+      <div className="p-5">
         <div className="grid grid-cols-3 gap-x-4 gap-y-5">
           {metrics.map((m) => <Metric key={m.label} {...m} />)}
         </div>
@@ -104,7 +104,7 @@ export function PagePerfCard({ pageStats }: { pageStats: PageStats }) {
   return (
     <CardShell>
       <CardHeader title="Load Efficiency" />
-      <div className="p-4">
+      <div className="p-5">
         <div>
           {rows.map((r) => <EfficiencyRow key={r.label} {...r} />)}
         </div>

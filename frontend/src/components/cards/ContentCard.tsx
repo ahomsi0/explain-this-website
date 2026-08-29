@@ -20,7 +20,7 @@ export function ContentCard({ contentStats }: { contentStats: ContentStats }) {
           : "red"
         }
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex flex-col gap-1 flex-1">
             <span className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider">Reading Level</span>

@@ -136,8 +136,8 @@ function IssueRow({
       {/* Expanded panel */}
       {expanded && (
         <div className="border-t border-zinc-800/80">
-          <div className="p-3 bg-zinc-950/50">
-            <p className="text-[9px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
+          <div className="p-3 bg-zinc-950">
+            <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
             <p className="text-xs text-zinc-300 leading-relaxed">{issue.howToFix}</p>
             <HowToFixLink issueId={issue.id} className="mt-2" />
           </div>
@@ -174,7 +174,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
   }
 
   return (
-    <CardShell>
+    <CardShell variant="primary">
       {/* Header */}
       <div className="p-5 pb-0 flex items-start justify-between gap-4">
         <div>
@@ -189,7 +189,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
       </div>
 
       {/* Tab row */}
-      <div className="px-5 pt-3 pb-0 flex gap-2 border-b border-zinc-800">
+      <div className="px-5 pt-3 pb-3 flex gap-1.5">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
@@ -201,9 +201,9 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
                 // Reset category filter to 'all' whenever leaving the 'All Issues' tab.
                 if (tab.id !== "all") setCategoryFilter("all");
               }}
-              className={`flex items-center gap-1.5 pb-2.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 text-xs font-medium transition-colors rounded-md px-2.5 py-1.5 ${
                 active
-                  ? "text-violet-400 border-b-2 border-violet-500 -mb-px"
+                  ? "bg-violet-500/10 text-violet-300"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >

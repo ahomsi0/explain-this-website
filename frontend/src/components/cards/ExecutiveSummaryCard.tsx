@@ -169,7 +169,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
   }
 
   return (
-    <CardShell>
+    <CardShell variant="primary">
       <div className="p-5">
         {/* Header row */}
         <div className="flex items-start justify-between gap-4 mb-5">

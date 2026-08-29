@@ -18,7 +18,7 @@ function ScoreRow({ label, score, note }: { label: string; score: number; note: 
         <span className="text-xs font-medium text-zinc-300">{label}</span>
         <span className={`text-xs font-semibold ${c.text}`}>{score}<span className="text-zinc-600 font-normal">/100</span></span>
       </div>
-      <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+      <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-700 ${c.bar}`} style={{ width: `${score}%` }} />
       </div>
       {note && <p className="text-[11px] text-zinc-500 leading-snug">{note}</p>}
@@ -32,15 +32,6 @@ function overallLabel(n: number) {
   if (n >= 45) return "Fair";
   if (n >= 25) return "Weak";
   return "Poor";
-}
-
-function buildBlockers(scores: ConversionScores): string[] {
-  const blockers: string[] = [];
-  if (scores.ctaStrength < 50)  blockers.push("Weak or absent call-to-action — visitors don't know what to do next.");
-  if (scores.trust < 50)        blockers.push("Low trust signals — no reviews, badges, or social proof detected.");
-  if (scores.clarity < 50)      blockers.push("Unclear offer — the value proposition is not immediately obvious.");
-  if (scores.friction < 40)     blockers.push("Ease of action is low — the conversion path has unnecessary obstacles.");
-  return blockers;
 }
 
 function whatToImproveFirst(scores: ConversionScores): string {
@@ -69,7 +60,6 @@ function conversionInsightText(score: number): { meaning: string; nextStep: stri
 
 export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
   const overall  = conversionScoreColor(scores.overall);
-  const blockers = buildBlockers(scores);
   const priority = whatToImproveFirst(scores);
   const insight  = conversionInsightText(scores.overall);
 
@@ -80,7 +70,7 @@ export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
         badge={`${scores.overall}/100`}
         badgeColor={scores.overall >= 70 ? "green" : scores.overall >= 45 ? "amber" : "red"}
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-baseline gap-1">
             <span className={`text-xs font-medium ${overall.text}`}>{overallLabel(scores.overall)}</span>
@@ -99,21 +89,6 @@ export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
           <ScoreRow label="CTA Strength" score={scores.ctaStrength} note={scores.ctaNote}      />
           <ScoreRow label="Ease"         score={scores.friction}    note={scores.frictionNote} />
         </div>
-
-        {/* Conversion blockers */}
-        {blockers.length > 0 && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950/20 border border-red-900/30">
-            <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-2">Conversion Blockers</p>
-            <div className="flex flex-col gap-1.5">
-              {blockers.map((b, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 mt-1.5" />
-                  <span className="text-xs text-zinc-400">{b}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* What to improve first */}
         <div className="mb-1 p-3 rounded-lg bg-violet-950/20 border border-violet-900/30">

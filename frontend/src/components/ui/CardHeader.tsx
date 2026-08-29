@@ -2,10 +2,10 @@
 type BadgeColor = "violet" | "green" | "amber" | "red";
 
 const BADGE_CLASSES: Record<BadgeColor, string> = {
-  violet: "text-violet-300 bg-violet-500/10 border border-violet-500/25",
-  green:  "text-emerald-400 bg-emerald-500/10 border border-emerald-500/25",
-  amber:  "text-amber-400 bg-amber-500/10 border border-amber-500/25",
-  red:    "text-red-400 bg-red-500/10 border border-red-500/25",
+  violet: "text-violet-300 bg-violet-950 border border-violet-800",
+  green:  "text-emerald-400 bg-emerald-950 border border-emerald-800",
+  amber:  "text-amber-400 bg-amber-950 border border-amber-800",
+  red:    "text-red-400 bg-red-950 border border-red-800",
 };
 
 export function CardHeader({ title, badge, badgeColor = "violet" }: {
@@ -14,7 +14,7 @@ export function CardHeader({ title, badge, badgeColor = "violet" }: {
   badgeColor?: BadgeColor;
 }) {
   return (
-    <div className="flex items-center gap-2 px-4 pt-4 pb-0">
+    <div className="flex items-center gap-2 px-5 pt-5 pb-0">
       <h3 className="text-xs font-semibold text-violet-400 uppercase tracking-wider flex-1 leading-none">
         {title}
       </h3>

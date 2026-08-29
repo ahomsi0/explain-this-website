@@ -5,8 +5,8 @@ import { CardHeader } from "../ui/CardHeader";
 function Row({ label, present, detail }: { label: string; present: boolean; detail: string }) {
   return (
     <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 last:border-0">
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${present ? "bg-emerald-500" : "bg-zinc-700"}`} />
-      <span className="text-xs text-zinc-400 w-32 shrink-0">{label}</span>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${present ? "bg-emerald-500" : "bg-red-500"}`} />
+      <span className="text-xs text-zinc-400 min-w-[110px] shrink-0">{label}</span>
       <span className="text-xs text-zinc-500 truncate">{detail}</span>
     </div>
   );
@@ -19,10 +19,10 @@ export function ConversionCard({ ux }: { ux: UXResult }) {
   return (
     <CardShell>
       <CardHeader title="UX Signals" />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-3">
-          <span className={`font-semibold text-sm ${score >= 70 ? "text-emerald-400" : score >= 40 ? "text-amber-400" : "text-red-400"}`}>
-            {score}<span className="text-zinc-600 font-normal text-xs">/100</span>
+          <span className={`font-bold text-2xl ${score >= 70 ? "text-emerald-400" : score >= 40 ? "text-amber-400" : "text-red-400"}`}>
+            {score}<span className="text-zinc-600 font-normal text-sm">/100</span>
           </span>
         </div>
 
@@ -44,7 +44,7 @@ export function TrustEngagementCard({ ux }: { ux: UXResult }) {
   return (
     <CardShell>
       <CardHeader title="Trust & Engagement" />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[11px] text-zinc-600">
             <span className={count >= 4 ? "text-emerald-400" : count >= 2 ? "text-amber-400" : "text-red-400"}>
