@@ -1,18 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { CATEGORY_ORDER, GUIDES, guideForIssue, type Guide, type GuideCategory } from "../../guides/guides";
 
-// Load Lora once into the document head
-function useFontLora() {
-  useEffect(() => {
-    if (document.getElementById("lora-font")) return;
-    const link = document.createElement("link");
-    link.id = "lora-font";
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&display=swap";
-    document.head.appendChild(link);
-  }, []);
-}
-
 // Tool name → URL for clickable links
 const TOOL_URLS: Record<string, string> = {
   "PageSpeed Insights":       "https://pagespeed.web.dev/",
@@ -93,10 +81,7 @@ function GuideCard({ guide }: { guide: Guide }) {
       href={`/guides/${guide.slug}`}
       className="group block rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 hover:border-zinc-700 hover:bg-zinc-900 transition-all duration-150"
     >
-      <h3
-        className="text-[13.5px] font-medium text-zinc-100 group-hover:text-white leading-snug mb-2 transition-colors"
-        style={{ fontFamily: "'Lora', Georgia, serif" }}
-      >
+      <h3 className="text-[13.5px] font-medium text-zinc-100 group-hover:text-white leading-snug mb-2 transition-colors">
         {guide.title}
       </h3>
       <p className="text-[12px] text-zinc-500 leading-relaxed mb-3 line-clamp-2">{guide.summary}</p>
@@ -113,7 +98,6 @@ function GuideCard({ guide }: { guide: Guide }) {
 // ── Index page ─────────────────────────────────────────────────────────────────
 
 export function GuidesIndexPage() {
-  useFontLora();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -138,10 +122,7 @@ export function GuidesIndexPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-zinc-800">
           <div>
-            <h1
-              className="text-3xl sm:text-4xl text-zinc-100 leading-tight"
-              style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 600 }}
-            >
+            <h1 className="text-3xl sm:text-4xl font-semibold text-zinc-100 leading-tight">
               Fix guides
             </h1>
             <p className="mt-2 text-sm text-zinc-500">
@@ -189,10 +170,7 @@ export function GuidesIndexPage() {
                 {/* Section header */}
                 <div className="flex items-center gap-3 pb-3 mb-5" style={{ borderBottom: `1.5px solid ${color}22` }}>
                   <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
-                  <h2
-                    className="text-[13px] font-medium"
-                    style={{ fontFamily: "'Lora', Georgia, serif", fontStyle: "italic", color }}
-                  >
+                  <h2 className="text-[13px] font-semibold" style={{ color }}>
                     {category}
                   </h2>
                   <span className="text-[11px] text-zinc-600">{guides.length} guide{guides.length !== 1 ? "s" : ""}</span>
@@ -214,7 +192,6 @@ export function GuidesIndexPage() {
 // ── Detail page ────────────────────────────────────────────────────────────────
 
 export function GuideDetailPage({ slug }: { slug: string }) {
-  useFontLora();
   const guide = GUIDES[slug];
 
   useEffect(() => {
@@ -256,27 +233,14 @@ export function GuideDetailPage({ slug }: { slug: string }) {
                 <CategoryIcon category={guide.category} className="w-3 h-3" />
                 {guide.category}
               </span>
-              <h1
-                className="text-2xl sm:text-[28px] text-zinc-100 leading-snug mb-2"
-                style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 600 }}
-              >
+              <h1 className="text-2xl sm:text-[28px] font-semibold text-zinc-100 leading-snug mb-2">
                 {guide.title}
               </h1>
-              <p
-                className="text-[13.5px] text-zinc-500 leading-relaxed max-w-xl"
-                style={{ fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}
-              >
+              <p className="text-[13.5px] text-zinc-500 leading-relaxed max-w-xl">
                 {guide.summary}
               </p>
             </div>
 
-            {/* Step count pill */}
-            <div className="flex-shrink-0 flex items-center gap-3 sm:pt-1">
-              <div className="border border-zinc-800 rounded-lg bg-zinc-900/60 px-4 py-3 text-center min-w-[60px]">
-                <div className="text-[13px] font-semibold text-zinc-200">{guide.steps.length}</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">Steps</div>
-              </div>
-            </div>
           </div>
 
           {/* Spacer so border-b appears below the content */}
