@@ -1,5 +1,4 @@
 import type { SectionId } from "./sectionConfig";
-import { scoreColor } from "../../utils/scoreColors";
 
 const ICONS: Record<SectionId, React.ReactNode> = {
   overview: (
@@ -79,15 +78,6 @@ export function Sidebar({
       <nav className="flex flex-col gap-0.5">
         {items.map((item) => {
           const isActive = item.id === active;
-
-          const score =
-            item.id === "seo"         ? scores?.seo :
-            item.id === "performance" ? scores?.performance :
-            item.id === "ux"          ? scores?.ux :
-            item.id === "conversion"  ? scores?.conversion :
-            undefined;
-
-          const scoreColorClass = score !== undefined ? scoreColor(score) : "";
 
           return (
             <button
