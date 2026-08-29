@@ -3,6 +3,7 @@ import type { SEOCheck } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 import { ScoreInsight } from "../ui/ScoreInsight";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 interface FixGuide { why: string; fix: string }
 
@@ -82,6 +83,7 @@ function CheckRow({ check }: { check: SEOCheck }) {
                 <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wide shrink-0">How to fix</span>
                 <span className="text-[11px] text-zinc-400 leading-snug">{guide.fix}</span>
               </div>
+              <HowToFixLink issueId={`seo-fail-${check.id}`} className="mt-0.5" />
             </div>
           )}
         </div>
