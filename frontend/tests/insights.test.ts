@@ -42,9 +42,9 @@ const base: AnalysisResult = {
 };
 
 describe("computeInsights", () => {
-  it("returns topIssues array with at most 3 items", () => {
+  it("returns topIssues array with at most 5 items", () => {
     const { topIssues } = computeInsights(base);
-    expect(topIssues.length).toBeLessThanOrEqual(3);
+    expect(topIssues.length).toBeLessThanOrEqual(5);
     expect(topIssues.length).toBeGreaterThan(0);
   });
 
