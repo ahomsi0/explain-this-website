@@ -3,15 +3,13 @@ import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 
 const ratingConfig = {
-  fresh:   { label: "Fresh",   cls: "text-emerald-400 bg-emerald-950 border-emerald-800", bar: "bg-emerald-500", pct: 100 },
-  aging:   { label: "Aging",   cls: "text-amber-400  bg-amber-950  border-amber-800",  bar: "bg-amber-500",  pct: 55  },
-  stale:   { label: "Stale",   cls: "text-red-400    bg-red-950    border-red-800",    bar: "bg-red-500",    pct: 20  },
-  unknown: { label: "Unknown", cls: "text-zinc-400   bg-zinc-800   border-zinc-700",   bar: "bg-zinc-600",   pct: 0   },
+  fresh:   { label: "Fresh",   cls: "text-emerald-400 bg-emerald-950 border-emerald-800", bar: "bg-emerald-500" },
+  aging:   { label: "Aging",   cls: "text-amber-400  bg-amber-950  border-amber-800",  bar: "bg-amber-500"  },
+  stale:   { label: "Stale",   cls: "text-red-400    bg-red-950    border-red-800",    bar: "bg-red-500"    },
+  unknown: { label: "Unknown", cls: "text-zinc-400   bg-zinc-800   border-zinc-700",   bar: "bg-zinc-600"   },
 };
 
 export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
-  const cfg = ratingConfig[freshness.rating];
-
   const displayDate = freshness.latestDate
     ? new Date(freshness.latestDate + "T00:00:00Z").toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
     : freshness.copyrightYear
