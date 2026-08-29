@@ -307,41 +307,27 @@ export function GuideDetailPage({ slug }: { slug: string }) {
               How to fix it — {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
             </p>
 
-            {/* Timeline */}
-            <div className="relative pl-7">
-              {/* Vertical line */}
-              <div
-                className="absolute left-0 top-3 bottom-3 w-px"
-                style={{ background: `linear-gradient(to bottom, ${color}80, ${color}10)` }}
-              />
-
-              <div className="flex flex-col gap-4">
-                {guide.steps.map((step, i) => {
-                  const image = guide.stepImages?.[i];
-                  return (
-                    <div key={i} className="relative">
-                      {/* Dot */}
-                      <span
-                        className="absolute -left-7 top-2.5 w-[11px] h-[11px] rounded-full border-2 border-zinc-950"
-                        style={{ background: color, boxShadow: `0 0 0 3px ${color}20` }}
-                      />
-
-                      {/* Step card */}
-                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                        <p className="text-[14px] text-zinc-300 leading-relaxed">{step}</p>
-                        {image && (
-                          <figure className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 overflow-hidden">
-                            <img src={image.src} alt={image.caption} loading="lazy" className="w-full" />
-                            {image.caption && (
-                              <figcaption className="px-3 py-2 text-[11px] text-zinc-500 border-t border-zinc-800/70">{image.caption}</figcaption>
-                            )}
-                          </figure>
-                        )}
-                      </div>
+            {/* Steps */}
+            <div className="flex flex-col gap-3">
+              {guide.steps.map((step, i) => {
+                const image = guide.stepImages?.[i];
+                return (
+                  <div key={i} className="flex gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                    <span className="shrink-0 text-[11px] font-bold tabular-nums text-zinc-600 w-5 pt-0.5">{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] text-zinc-300 leading-relaxed">{step}</p>
+                      {image && (
+                        <figure className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 overflow-hidden">
+                          <img src={image.src} alt={image.caption} loading="lazy" className="w-full" />
+                          {image.caption && (
+                            <figcaption className="px-3 py-2 text-[11px] text-zinc-500 border-t border-zinc-800/70">{image.caption}</figcaption>
+                          )}
+                        </figure>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Related guides */}
