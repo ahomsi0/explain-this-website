@@ -1,83 +1,119 @@
 import { useEffect, useState, useMemo } from "react";
 import { CATEGORY_ORDER, GUIDES, guideForIssue, type Guide, type GuideCategory } from "../../guides/guides";
 
-// Shared shell bits — the pages render inside PageShell (header/footer come
-// from the app shell), so these only own their content column.
-
-function Container({ children }: { children: React.ReactNode }) {
-  return <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12"><div className="max-w-5xl mx-auto">{children}</div></div>;
+// Load Lora once into the document head
+function useFontLora() {
+  useEffect(() => {
+    if (document.getElementById("lora-font")) return;
+    const link = document.createElement("link");
+    link.id = "lora-font";
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&display=swap";
+    document.head.appendChild(link);
+  }, []);
 }
 
-function categoryTone(c: GuideCategory): string {
+// Tool name → URL for clickable links
+const TOOL_URLS: Record<string, string> = {
+  "PageSpeed Insights":       "https://pagespeed.web.dev/",
+  "Squoosh":                  "https://squoosh.app/",
+  "WebPageTest":              "https://www.webpagetest.org/",
+  "TinyPNG":                  "https://tinypng.com/",
+  "Lighthouse":               "https://developer.chrome.com/docs/lighthouse/overview/",
+  "Google Search Console":    "https://search.google.com/search-console/",
+  "Google Rich Results Test": "https://search.google.com/test/rich-results",
+  "Schema.org generator":     "https://schema.org/",
+  "Facebook Sharing Debugger":"https://developers.facebook.com/tools/debug/",
+  "LinkedIn Post Inspector":  "https://www.linkedin.com/post-inspector/",
+  "Let's Encrypt":            "https://letsencrypt.org/",
+  "SSL Labs Server Test":     "https://www.ssllabs.com/ssltest/",
+  "Cloudflare":               "https://www.cloudflare.com/",
+  "securityheaders.com":      "https://securityheaders.com/",
+  "Mozilla Observatory":      "https://observatory.mozilla.org/",
+  "Screaming Frog":           "https://www.screamingfrog.co.uk/seo-spider/",
+  "Ahrefs":                   "https://ahrefs.com/",
+  "Hemingway Editor":         "https://hemingwayapp.com/",
+  "Termly":                   "https://termly.io/",
+  "iubenda":                  "https://www.iubenda.com/",
+  "Hotjar":                   "https://www.hotjar.com/",
+  "Why No Padlock":           "https://www.whynopadlock.com/",
+  "WAVE accessibility extension": "https://wave.webaim.org/",
+};
+
+function toolUrl(name: string): string | null {
+  for (const [key, url] of Object.entries(TOOL_URLS)) {
+    if (name.startsWith(key)) return url;
+  }
+  return null;
+}
+
+// Per-category accent color (hex) used for dots and dividers
+function categoryColor(c: GuideCategory): string {
   switch (c) {
-    case "Performance":      return "text-amber-300 bg-amber-500/10 border-amber-500/25";
-    case "SEO":              return "text-emerald-300 bg-emerald-500/10 border-emerald-500/25";
-    case "UX & Conversion":  return "text-violet-300 bg-violet-500/10 border-violet-500/25";
-    case "Security":         return "text-red-300 bg-red-500/10 border-red-500/25";
-    case "Content":          return "text-blue-300 bg-blue-500/10 border-blue-500/25";
+    case "Performance":     return "#f59e0b";
+    case "SEO":             return "#22c55e";
+    case "UX & Conversion": return "#a855f7";
+    case "Security":        return "#ef4444";
+    case "Content":         return "#3b82f6";
   }
 }
 
-function CategoryIcon({ category, className = "w-4 h-4" }: { category: GuideCategory; className?: string }) {
+// Badge classes — solid dark pattern matching app convention
+function categoryBadge(c: GuideCategory): string {
+  switch (c) {
+    case "Performance":     return "text-amber-400 bg-amber-950 border-amber-800";
+    case "SEO":             return "text-emerald-400 bg-emerald-950 border-emerald-800";
+    case "UX & Conversion": return "text-violet-400 bg-violet-950 border-violet-800";
+    case "Security":        return "text-red-400 bg-red-950 border-red-800";
+    case "Content":         return "text-blue-400 bg-blue-950 border-blue-800";
+  }
+}
+
+function CategoryIcon({ category, className = "w-3.5 h-3.5" }: { category: GuideCategory; className?: string }) {
   switch (category) {
     case "Performance":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-      );
+      return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
     case "SEO":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      );
+      return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
     case "UX & Conversion":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-        </svg>
-      );
+      return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
     case "Security":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        </svg>
-      );
+      return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
     case "Content":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-        </svg>
-      );
+      return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
   }
 }
 
+// ── Index page card ───────────────────────────────────────────────────────────
+
 function GuideCard({ guide }: { guide: Guide }) {
+  const color = categoryColor(guide.category);
   return (
     <a
       href={`/guides/${guide.slug}`}
-      className="group block rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5 sm:p-6 hover:border-zinc-700/80 hover:bg-zinc-900/80 transition-all duration-200"
+      className="group block rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 hover:border-zinc-700 hover:bg-zinc-900 transition-all duration-150"
     >
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-base sm:text-lg font-semibold text-zinc-100 group-hover:text-white transition-colors leading-snug">{guide.title}</h3>
-        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider ${categoryTone(guide.category)}`}>
-          {guide.category}
-        </span>
-      </div>
-      <p className="mt-2.5 text-sm sm:text-[15px] text-zinc-400 leading-relaxed">{guide.summary}</p>
-      <div className="mt-4 flex items-center gap-1.5 text-violet-400 group-hover:text-violet-300 transition-colors">
-        <span className="text-xs sm:text-sm font-medium">Read guide</span>
-        <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <h3
+        className="text-[13.5px] font-medium text-zinc-100 group-hover:text-white leading-snug mb-2 transition-colors"
+        style={{ fontFamily: "'Lora', Georgia, serif" }}
+      >
+        {guide.title}
+      </h3>
+      <p className="text-[12px] text-zinc-500 leading-relaxed mb-3 line-clamp-2">{guide.summary}</p>
+      <span className="inline-flex items-center gap-1 text-[11.5px] font-medium transition-colors" style={{ color }}>
+        Read guide
+        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
         </svg>
-      </div>
+      </span>
     </a>
   );
 }
 
-/** /guides — the full catalog, grouped by category. */
+// ── Index page ─────────────────────────────────────────────────────────────────
+
 export function GuidesIndexPage() {
+  useFontLora();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -96,64 +132,89 @@ export function GuidesIndexPage() {
     .filter((g) => g.guides.length > 0);
 
   return (
-    <Container>
-      <div className="max-w-2xl">
-        <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 tracking-tight">Fix guides</h1>
-        <p className="mt-3 text-base sm:text-lg text-zinc-400 leading-relaxed">
-          Every issue our scanner can find, with plain-English steps to fix it. Reports link straight to the
-          relevant guide — start here to browse.
-        </p>
-      </div>
+    <div className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <div className="max-w-6xl mx-auto">
 
-      <div className="mt-8 relative max-w-lg">
-        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search guides..."
-          aria-label="Search guides"
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 transition-colors"
-        />
-        {query && (
-          <button
-            onClick={() => setQuery("")}
-            aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-zinc-800">
+          <div>
+            <h1
+              className="text-3xl sm:text-4xl text-zinc-100 leading-tight"
+              style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 600 }}
+            >
+              Fix guides
+            </h1>
+            <p className="mt-2 text-sm text-zinc-500">
+              {Object.keys(GUIDES).length} step-by-step repair guides, grouped by topic
+            </p>
+          </div>
+
+          {/* Search */}
+          <div className="relative shrink-0 w-full sm:w-56">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-          </button>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search guides…"
+              aria-label="Search guides"
+              className="w-full pl-9 pr-8 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/60 text-[12.5px] text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {filtered.length === 0 && (
+          <p className="mt-10 text-sm text-zinc-500">No guides match "{query}". Try a different search.</p>
         )}
-      </div>
 
-      {filtered.length === 0 && (
-        <p className="mt-8 text-sm text-zinc-500">No guides match "{query}". Try a different search.</p>
-      )}
+        {/* Category sections */}
+        <div className="mt-10 flex flex-col gap-12">
+          {grouped.map(({ category, guides }) => {
+            const color = categoryColor(category);
+            return (
+              <section key={category}>
+                {/* Section header */}
+                <div className="flex items-center gap-3 pb-3 mb-5" style={{ borderBottom: `1.5px solid ${color}22` }}>
+                  <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
+                  <h2
+                    className="text-[13px] font-medium"
+                    style={{ fontFamily: "'Lora', Georgia, serif", fontStyle: "italic", color }}
+                  >
+                    {category}
+                  </h2>
+                  <span className="text-[11px] text-zinc-600">{guides.length} guide{guides.length !== 1 ? "s" : ""}</span>
+                </div>
 
-      <div className="mt-8 sm:mt-10 flex flex-col gap-10 sm:gap-12">
-        {grouped.map(({ category, guides }) => (
-          <section key={category}>
-            <div className="flex items-center gap-2.5 mb-4">
-              <CategoryIcon category={category} className="w-4 h-4 text-zinc-400" />
-              <h2 className="text-sm sm:text-[15px] font-semibold uppercase tracking-wider text-zinc-300">{category}</h2>
-              <span className="text-xs text-zinc-500 font-medium">({guides.length})</span>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {guides.map((g) => <GuideCard key={g.slug} guide={g} />)}
-            </div>
-          </section>
-        ))}
+                {/* Cards */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {guides.map((g) => <GuideCard key={g.slug} guide={g} />)}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       </div>
-    </Container>
+    </div>
   );
 }
 
-/** /guides/:slug — one guide. Unknown slugs render a friendly miss. */
+// ── Detail page ────────────────────────────────────────────────────────────────
+
 export function GuideDetailPage({ slug }: { slug: string }) {
+  useFontLora();
   const guide = GUIDES[slug];
 
   useEffect(() => {
@@ -162,84 +223,174 @@ export function GuideDetailPage({ slug }: { slug: string }) {
 
   if (!guide) {
     return (
-      <Container>
-        <div className="text-center py-20">
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-10">
+        <div className="max-w-6xl mx-auto text-center py-20">
           <p className="text-lg text-zinc-300">Guide not found</p>
           <p className="mt-2 text-sm text-zinc-500">It may have been renamed.</p>
-          <a href="/guides" className="mt-6 inline-flex text-sm text-violet-400 hover:text-violet-300 underline underline-offset-2">
+          <a href="/guides" className="mt-6 inline-flex text-sm text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
             Browse all guides
           </a>
         </div>
-      </Container>
+      </div>
     );
   }
 
-  const related = Object.values(GUIDES).filter((g) => g.category === guide.category && g.slug !== guide.slug).slice(0, 3);
+  const color = categoryColor(guide.category);
+  const related = Object.values(GUIDES)
+    .filter((g) => g.category === guide.category && g.slug !== guide.slug)
+    .slice(0, 3);
 
   return (
-    <div className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="max-w-3xl mx-auto">
-        <a href="/guides" className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">← All guides</a>
+    <div className="flex-1">
+      {/* ── Hero header ── */}
+      <div className="border-b border-zinc-800 bg-zinc-950/60 px-4 sm:px-6 lg:px-8 pt-8 pb-0">
+        <div className="max-w-6xl mx-auto">
+          <a href="/guides" className="inline-flex items-center gap-1.5 text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors mb-5">
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            All guides
+          </a>
 
-        <div className="mt-4 flex items-center gap-2.5 flex-wrap">
-          <span className={`rounded-full border px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider ${categoryTone(guide.category)}`}>
-            {guide.category}
-          </span>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+            <div className="min-w-0">
+              <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border mb-3 ${categoryBadge(guide.category)}`}>
+                <CategoryIcon category={guide.category} className="w-3 h-3" />
+                {guide.category}
+              </span>
+              <h1
+                className="text-2xl sm:text-[28px] text-zinc-100 leading-snug mb-2"
+                style={{ fontFamily: "'Lora', Georgia, serif", fontWeight: 600 }}
+              >
+                {guide.title}
+              </h1>
+              <p
+                className="text-[13.5px] text-zinc-500 leading-relaxed max-w-xl"
+                style={{ fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}
+              >
+                {guide.summary}
+              </p>
+            </div>
+
+            {/* Step count pill */}
+            <div className="flex-shrink-0 flex items-center gap-3 sm:pt-1">
+              <div className="border border-zinc-800 rounded-lg bg-zinc-900/60 px-4 py-3 text-center min-w-[60px]">
+                <div className="text-[13px] font-semibold text-zinc-200">{guide.steps.length}</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-wider mt-0.5">Steps</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Spacer so border-b appears below the content */}
+          <div className="mt-7" />
         </div>
-        <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-zinc-100 tracking-tight">{guide.title}</h1>
-        <p className="mt-2.5 text-base sm:text-lg text-zinc-400 leading-relaxed">{guide.summary}</p>
+      </div>
 
-        <section className="mt-8 rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-6 sm:p-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-300">What this means</h2>
-          <p className="mt-3 text-[15px] text-zinc-300 leading-relaxed">{guide.whatItMeans}</p>
-          <h2 className="mt-6 text-sm font-semibold uppercase tracking-wider text-zinc-300">Why it matters</h2>
-          <p className="mt-3 text-[15px] text-zinc-300 leading-relaxed">{guide.whyItMatters}</p>
-        </section>
+      {/* ── Body: left info / right timeline ── */}
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-0">
 
-        <section className="mt-6 rounded-2xl border border-violet-500/25 bg-violet-500/5 p-6 sm:p-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-violet-300">How to fix it</h2>
-          <ol className="mt-4 flex flex-col gap-4">
-            {guide.steps.map((step, i) => {
-              const image = guide.stepImages?.[i];
-              return (
-                <li key={i} className="flex flex-col gap-3">
-                  <div className="flex gap-3.5">
-                    <span className="shrink-0 w-6 h-6 rounded-full bg-violet-500/20 text-violet-300 text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
-                    <span className="text-[15px] text-zinc-300 leading-relaxed">{step}</span>
-                  </div>
-                  {image && (
-                    <figure className="ml-9 rounded-xl border border-zinc-800 bg-zinc-950/60 overflow-hidden">
-                      <img src={image.src} alt={image.caption} loading="lazy" className="w-full" />
-                      {image.caption && (
-                        <figcaption className="px-4 py-2.5 text-xs text-zinc-500 leading-snug border-t border-zinc-800/70">{image.caption}</figcaption>
-                      )}
-                    </figure>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </section>
-
-        {guide.tools && guide.tools.length > 0 && (
-          <section className="mt-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-300">Helpful tools</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {guide.tools.map((t) => (
-                <span key={t} className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-sm text-zinc-400">{t}</span>
-              ))}
+          {/* Left column */}
+          <div className="w-full lg:w-72 flex-shrink-0 lg:border-r lg:border-zinc-800 lg:pr-8 lg:mr-8 flex flex-col gap-4 mb-8 lg:mb-0">
+            {/* What this means */}
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-2">What this means</p>
+              <p className="text-[13px] text-zinc-400 leading-relaxed">{guide.whatItMeans}</p>
             </div>
-          </section>
-        )}
 
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-300 mb-4">Related guides</h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {related.map((g) => <GuideCard key={g.slug} guide={g} />)}
+            {/* Why it matters */}
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-2">Why it matters</p>
+              <p className="text-[13px] text-zinc-400 leading-relaxed">{guide.whyItMatters}</p>
             </div>
-          </section>
-        )}
+
+            {/* Tools */}
+            {guide.tools && guide.tools.length > 0 && (
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Helpful tools</p>
+                <div className="flex flex-col gap-0 divide-y divide-zinc-800">
+                  {guide.tools.map((tool) => {
+                    const url = toolUrl(tool);
+                    return url ? (
+                      <a
+                        key={tool}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between py-2 group"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
+                          <span className="text-[12.5px] text-zinc-500 group-hover:text-zinc-300 transition-colors leading-snug">{tool}</span>
+                        </span>
+                        <svg className="w-3 h-3 text-zinc-700 group-hover:text-violet-400 transition-colors flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                      </a>
+                    ) : (
+                      <div key={tool} className="flex items-center gap-2 py-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
+                        <span className="text-[12.5px] text-zinc-500 leading-snug">{tool}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right column — timeline */}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-5">
+              How to fix it — {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
+            </p>
+
+            {/* Timeline */}
+            <div className="relative pl-7">
+              {/* Vertical line */}
+              <div
+                className="absolute left-0 top-3 bottom-3 w-px"
+                style={{ background: `linear-gradient(to bottom, ${color}80, ${color}10)` }}
+              />
+
+              <div className="flex flex-col gap-4">
+                {guide.steps.map((step, i) => {
+                  const image = guide.stepImages?.[i];
+                  return (
+                    <div key={i} className="relative">
+                      {/* Dot */}
+                      <span
+                        className="absolute -left-7 top-2.5 w-[11px] h-[11px] rounded-full border-2 border-zinc-950"
+                        style={{ background: color, boxShadow: `0 0 0 3px ${color}20` }}
+                      />
+
+                      {/* Step card */}
+                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                        <p className="text-[14px] text-zinc-300 leading-relaxed">{step}</p>
+                        {image && (
+                          <figure className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 overflow-hidden">
+                            <img src={image.src} alt={image.caption} loading="lazy" className="w-full" />
+                            {image.caption && (
+                              <figcaption className="px-3 py-2 text-[11px] text-zinc-500 border-t border-zinc-800/70">{image.caption}</figcaption>
+                            )}
+                          </figure>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Related guides */}
+            {related.length > 0 && (
+              <div className="mt-10 pt-8 border-t border-zinc-800">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">Related guides</p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {related.map((g) => <GuideCard key={g.slug} guide={g} />)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
