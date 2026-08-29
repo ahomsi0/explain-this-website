@@ -1,4 +1,5 @@
 import type { SectionId } from "./sectionConfig";
+import { scoreColor } from "../../utils/scoreColors";
 
 const ICONS: Record<SectionId, React.ReactNode> = {
   overview: (
@@ -86,11 +87,7 @@ export function Sidebar({
             item.id === "conversion"  ? scores?.conversion :
             undefined;
 
-          const scoreColorClass =
-            score === undefined ? "" :
-            score >= 75 ? "text-emerald-400" :
-            score >= 50 ? "text-amber-400" :
-            "text-red-400";
+          const scoreColorClass = score !== undefined ? scoreColor(score) : "";
 
           return (
             <button

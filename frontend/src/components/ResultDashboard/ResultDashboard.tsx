@@ -312,12 +312,15 @@ export function ResultDashboard({
               <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
               <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
               <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
-              {result.techStack.length > 0 && (
-                <>
-                  <div className="border-r border-zinc-800" aria-hidden="true" />
-                  <TechStackTile items={result.techStack.filter(t => t.confidence === "high")} />
-                </>
-              )}
+              {(() => {
+                const highConfidenceTech = result.techStack.filter(t => t.confidence === "high");
+                return highConfidenceTech.length > 0 ? (
+                  <>
+                    <div className="border-r border-zinc-800" aria-hidden="true" />
+                    <TechStackTile items={highConfidenceTech} />
+                  </>
+                ) : null;
+              })()}
             </div>
           </div>
 
