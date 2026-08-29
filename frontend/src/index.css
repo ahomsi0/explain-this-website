@@ -56,14 +56,13 @@ html.light .hero-noise { opacity: 0.06; mix-blend-mode: multiply; }
 
   body {
     font-family: "Inter", system-ui, sans-serif;
-    /* Slightly lifted, violet-tinted near-black — pure #09090b read as "too dark". */
-    background-color: #14141b;
+    background-color: #0d0d12;
     color: hsl(0 0% 94%);
     @apply antialiased;
   }
 
   /* Lift every zinc-950 surface to match (cards/inputs stay zinc-900 for contrast). */
-  html:not(.light) .bg-zinc-950 { background-color: #14141b; }
+  html:not(.light) .bg-zinc-950 { background-color: #0d0d12; }
 
   #root { @apply min-h-screen; }
 }
@@ -97,18 +96,18 @@ html.light .hero-noise { opacity: 0.06; mix-blend-mode: multiply; }
 
 /* ── Light mode — violet-tinted palette ─────────────────────────────── */
 html.light body {
-  background-color: #f5f3ff;
+  background-color: #ede9fe;
   color: #1e1b4b;
 }
 
 /* Page and card backgrounds */
-html.light .bg-zinc-950   { background-color: #f5f3ff !important; }
+html.light .bg-zinc-950   { background-color: #ede9fe !important; }
 html.light .bg-zinc-900   { background-color: #ffffff !important; }
 html.light .bg-zinc-800   { background-color: #ede9fe !important; }
 html.light .bg-zinc-950\/95 { background-color: rgba(245,243,255,0.97) !important; }
 html.light .bg-zinc-950\/40 { background-color: rgba(245,243,255,0.55) !important; }
 html.light .bg-zinc-900\/30 { background-color: rgba(250,245,255,0.6) !important; }
-html.light .bg-zinc-900\/35 { background-color: rgba(250,245,255,0.65) !important; }
+html.light .bg-zinc-900\/35 { background-color: rgba(237,233,254,0.55) !important; }
 html.light .bg-zinc-900\/40 { background-color: rgba(250,245,255,0.7) !important; }
 html.light .bg-zinc-900\/50 { background-color: rgba(250,245,255,0.8) !important; }
 html.light .bg-zinc-900\/60 { background-color: rgba(250,245,255,0.85) !important; }
