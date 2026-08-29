@@ -175,6 +175,117 @@ export function LandingPage({
           </div>
         </section>
 
+        {/* ✦ "What you get" — sample output cards */}
+        <section className="px-4 sm:px-6 pb-20" aria-labelledby="what-you-get-heading">
+          <div className="mx-auto max-w-4xl">
+            <div className="text-center mb-10">
+              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">What you get</p>
+              <h2 id="what-you-get-heading" className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">
+                A 20-section audit, ready in seconds
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* SEO preview card */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-emerald-500/[0.04] border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400" aria-hidden="true">
+                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <span className="text-xs font-semibold text-zinc-200">SEO Audit</span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">84/100</span>
+                </div>
+                <div className="p-4 flex flex-col gap-2.5">
+                  {[
+                    { label: "Title tag",        pct: 100, color: "bg-emerald-500", pass: true  },
+                    { label: "Meta description", pct:  90, color: "bg-emerald-500", pass: true  },
+                    { label: "H1 heading",       pct:  58, color: "bg-amber-500",   pass: false },
+                    { label: "Image alt tags",   pct:  30, color: "bg-red-500",     pass: false },
+                  ].map(({ label, pct, color, pass }) => (
+                    <div key={label}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-[10px] text-zinc-500">{label}</span>
+                        <span className={`text-[10px] font-semibold ${pass ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-red-400"}`}>
+                          {pass ? "Pass" : pct >= 50 ? "Warn" : "Fail"}
+                        </span>
+                      </div>
+                      <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+                        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Performance preview card */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 bg-amber-500/[0.04] border-b border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400" aria-hidden="true">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <span className="text-xs font-semibold text-zinc-200">Performance</span>
+                  </div>
+                  <span className="text-xs font-bold text-amber-400">71</span>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {[
+                      { val: "1.2s", lbl: "LCP", color: "text-emerald-400" },
+                      { val: "3.1s", lbl: "FCP", color: "text-amber-400"  },
+                      { val: "0.05", lbl: "CLS", color: "text-emerald-400" },
+                    ].map(({ val, lbl, color }) => (
+                      <div key={lbl} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-2 text-center">
+                        <div className={`text-sm font-bold ${color}`}>{val}</div>
+                        <div className="text-[9px] text-zinc-600 uppercase tracking-wider mt-0.5">{lbl}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-zinc-500 leading-relaxed">
+                    <span className="text-amber-400 font-semibold">Fix: </span>
+                    First Contentful Paint is slow. Defer non-critical scripts.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tech Stack preview card */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-3 bg-violet-500/[0.04] border-b border-zinc-800">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400" aria-hidden="true">
+                    <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                  </svg>
+                  <span className="text-xs font-semibold text-zinc-200">Tech Stack</span>
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {[
+                      { name: "React",      color: "text-blue-300    bg-blue-500/10    border-blue-500/20"    },
+                      { name: "Next.js",    color: "text-emerald-300 bg-emerald-500/10 border-emerald-500/20" },
+                      { name: "Stripe",     color: "text-amber-300   bg-amber-500/10   border-amber-500/20"   },
+                      { name: "Vercel",     color: "text-pink-300    bg-pink-500/10    border-pink-500/20"    },
+                      { name: "TypeScript", color: "text-violet-300  bg-violet-500/10  border-violet-500/20"  },
+                      { name: "+6 more",   color: "text-zinc-400    bg-zinc-800        border-zinc-700"       },
+                    ].map(({ name, color }) => (
+                      <span key={name} className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${color}`}>
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-zinc-500 leading-relaxed">
+                    Modern React/Next.js stack on Vercel. TypeScript detected — good for maintainability.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-center text-[11px] text-zinc-600">
+              + 17 more sections: AI Summary, Colors, Images, Fonts, Security, Conversion, and more.
+            </p>
+          </div>
+        </section>
+
         {/* Analysis boundary: sets expectations before a visitor spends a quota. */}
         <section className="px-4 sm:px-6 pb-20" aria-labelledby="analysis-boundaries-heading">
           <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-800/80 bg-zinc-900/35 p-6 sm:p-8">
