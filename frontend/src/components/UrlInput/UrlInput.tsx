@@ -1,7 +1,17 @@
 import { useState, type FormEvent } from "react";
 import { normalizeInputUrl } from "../../lib/urls";
 
-export function URLInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) => void; isLoading: boolean }) {
+export function URLInput({
+  onAnalyze,
+  isLoading,
+  deepScan,
+  onDeepScanToggle,
+}: {
+  onAnalyze: (url: string) => void;
+  isLoading: boolean;
+  deepScan?: boolean;
+  onDeepScanToggle?: () => void;
+}) {
   const [value, setValue]   = useState("");
   const [error, setError]   = useState("");
 
@@ -41,6 +51,28 @@ export function URLInput({ onAnalyze, isLoading }: { onAnalyze: (url: string) =>
           autoCapitalize="none"
           autoCorrect="off"
         />
+        {onDeepScanToggle && (
+          <>
+            <div className="w-px h-5 bg-zinc-800 shrink-0" aria-hidden="true" />
+            <button
+              type="button"
+              role="switch"
+              aria-checked={deepScan}
+              onClick={onDeepScanToggle}
+              title="Also audit up to 4 key subpages (pricing, about, contact…)"
+              className={`flex items-center gap-1.5 px-3 py-1 mr-1 rounded-md text-[11px] font-medium transition-all shrink-0 ${
+                deepScan
+                  ? "text-violet-300 bg-violet-500/15 shadow-[0_0_10px_-3px_rgba(124,58,237,0.5)]"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill={deepScan ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span className="hidden sm:inline">Deep scan</span>
+            </button>
+          </>
+        )}
         <button
           type="submit"
           disabled={isLoading}
