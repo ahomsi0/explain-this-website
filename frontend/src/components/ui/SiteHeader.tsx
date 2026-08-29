@@ -23,7 +23,7 @@ export function SiteHeader({
       </a>
       <div className="flex items-center gap-2">
         {/* Nav links */}
-        <nav className="hidden sm:flex items-center gap-1 mr-1">
+        <nav aria-label="Primary" className="hidden sm:flex items-center gap-1 mr-1">
           <a
             href="/guides"
             className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
@@ -72,20 +72,20 @@ export function SiteHeader({
             <UserMenu />
           </>
         ) : (
-          <button
-            onClick={onSignIn}
-            className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
-          >
-            Sign in
-          </button>
-        )}
-        {!user && (
-          <a
-            href="/go-pro"
-            className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
-          >
-            Get Pro
-          </a>
+          <>
+            <button
+              onClick={onSignIn}
+              className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
+            >
+              Sign in
+            </button>
+            <a
+              href="/go-pro"
+              className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
+            >
+              Get Pro
+            </a>
+          </>
         )}
       </div>
     </header>
