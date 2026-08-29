@@ -50,6 +50,21 @@ export function DomainInfoCard({ domainInfo }: { domainInfo: DomainInfo }) {
             ⚠ New domain — search engines may rank established domains higher
           </p>
         )}
+        {domainInfo.expiresAt && (() => {
+          const msUntil = new Date(domainInfo.expiresAt).getTime() - Date.now();
+          const daysUntil = Math.ceil(msUntil / 86_400_000);
+          if (daysUntil < 0) return (
+            <p className="text-[11px] text-red-400 bg-red-950/50 border border-red-800/40 rounded px-3 py-2">
+              ⚠ Domain has expired — renew immediately to prevent losing it
+            </p>
+          );
+          if (daysUntil <= 60) return (
+            <p className="text-[11px] text-amber-400 bg-amber-950/50 border border-amber-800/40 rounded px-3 py-2">
+              ⚠ Expires in {daysUntil} day{daysUntil !== 1 ? "s" : ""} — renew soon to avoid downtime
+            </p>
+          );
+          return null;
+        })()}
       </div>
     </CardShell>
   );

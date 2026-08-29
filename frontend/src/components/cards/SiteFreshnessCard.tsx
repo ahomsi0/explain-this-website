@@ -31,18 +31,29 @@ export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
         }
       />
       <div className="p-5">
-        {/* Bar */}
+        {/* Rating steps */}
         <div className="mb-4">
-          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all ${cfg.bar}`} style={{ width: `${cfg.pct}%` }} />
+          <div className="flex gap-1 mb-2">
+            {(["fresh","aging","stale","unknown"] as const).map((r) => (
+              <div
+                key={r}
+                className={`h-2 flex-1 rounded-full ${freshness.rating === r ? ratingConfig[r].bar : "bg-zinc-800"}`}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between text-[9px] text-zinc-600 px-0.5 mb-2">
+            <span>Fresh</span>
+            <span>Aging</span>
+            <span>Stale</span>
+            <span>Unknown</span>
           </div>
           {displayDate && (
-            <p className="text-[11px] text-zinc-500 mt-1.5">
+            <p className="text-[11px] text-zinc-500">
               Most recent content detected: <span className="text-zinc-300 font-medium">{displayDate}</span>
             </p>
           )}
           {freshness.rating === "unknown" && (
-            <p className="text-[11px] text-zinc-600 mt-1.5">No date signals found on this page.</p>
+            <p className="text-[11px] text-zinc-600">No date signals found on this page.</p>
           )}
         </div>
 

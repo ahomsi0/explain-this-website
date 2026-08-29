@@ -110,8 +110,8 @@ function seoInsightText(score: number): { meaning: string; nextStep: string } {
 export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
   const requiredChecks = seoChecks.filter((c) => !c.optional);
   const pass    = requiredChecks.filter((c) => c.status === "pass").length;
-  const warning = seoChecks.filter((c) => c.status === "warning").length;
-  const fail    = seoChecks.filter((c) => c.status === "fail").length;
+  const warning = requiredChecks.filter((c) => c.status === "warning").length;
+  const fail    = requiredChecks.filter((c) => c.status === "fail").length;
   const score   = requiredChecks.length ? Math.round((pass / requiredChecks.length) * 100) : 0;
   const requiredPassRatio = requiredChecks.length ? pass / requiredChecks.length : 0;
   const insight = seoInsightText(score);
