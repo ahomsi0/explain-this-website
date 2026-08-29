@@ -31,7 +31,7 @@ export function OverviewCard({ overview, rendering, url, fetchedAt, aiDetection 
           : "red"
         }
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-start gap-3">
           {overview.favicon ? (
             <img src={overview.favicon} alt="" className="w-8 h-8 rounded object-contain shrink-0"

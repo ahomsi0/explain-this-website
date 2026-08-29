@@ -29,7 +29,7 @@ export function PrioritizedIssuesCard({ issues }: { issues: PrioritizedIssue[] }
   return (
     <CardShell>
       <CardHeader title="Prioritized Issues" badge={issues.length} badgeColor="amber" />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex flex-col gap-3">
           {issues.map((item) => {
             const colorClass = impactColor[item.impact] ?? fallbackColor(item.impact);

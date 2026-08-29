@@ -6,7 +6,7 @@ export function ELI5Card({ items }: { items: ELI5Item[] }) {
 
   return (
     <CardShell collapsible defaultOpen={false} title="Plain-Language Explanations">
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex flex-col gap-3">
           {items.map((item, i) => (
             <div key={i} className="flex flex-col gap-1 pl-3 border-l-2 border-zinc-800">

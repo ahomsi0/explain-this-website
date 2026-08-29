@@ -24,7 +24,7 @@ export function SitePagesCard({ sitePages }: { sitePages: SitePagesAudit }) {
         badge={`${sitePages.avgSeoScore}/100 avg SEO`}
         badgeColor={sitePages.avgSeoScore >= 75 ? "green" : sitePages.avgSeoScore >= 50 ? "amber" : "red"}
       />
-      <div className="p-4">
+      <div className="p-5">
         <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
           Deep scan of {sitePages.pages.length} key page{sitePages.pages.length > 1 ? "s" : ""} beyond the homepage.
           The average includes the analyzed page itself.

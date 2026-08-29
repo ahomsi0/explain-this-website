@@ -26,7 +26,7 @@ export function DomainInfoCard({ domainInfo }: { domainInfo: DomainInfo }) {
   return (
     <CardShell>
       <CardHeader title="Domain Info" badge={ageBadge} badgeColor={badgeColor} />
-      <div className="p-4 flex flex-col gap-3">
+      <div className="p-5 flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
             <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Registered</p>

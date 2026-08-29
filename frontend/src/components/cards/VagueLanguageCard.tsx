@@ -21,7 +21,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
           : "red"
         }
       />
-      <div className="p-4">
+      <div className="p-5">
         {/* Score bar */}
         <div className="flex items-center gap-3 mb-4">
           <span className={`text-3xl font-bold leading-none ${scoreColor(copyAnalysis.score)}`}>

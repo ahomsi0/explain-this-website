@@ -157,9 +157,9 @@ export function ConversionBlockersCard({ scores, ux }: ConversionBlockersCardPro
   const topBlocker    = blockers[0];
 
   return (
-    <CardShell>
+    <CardShell variant="primary">
       {/* Header */}
-      <div className="p-5 pb-0">
+      <div className="px-5 pt-5 pb-4 border-b border-zinc-800/80">
         <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.2em]">
           Conversion Blockers
         </p>

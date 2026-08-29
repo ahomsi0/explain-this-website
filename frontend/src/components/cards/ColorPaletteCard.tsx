@@ -35,7 +35,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
     return (
       <CardShell>
         <CardHeader title="Color Palette" badge={`${colors.length} colors`} badgeColor="violet" />
-        <div className="p-4">
+        <div className="p-5">
           <p className="text-xs text-zinc-500">No brand colors detected in CSS or inline styles.</p>
         </div>
       </CardShell>
@@ -45,7 +45,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
   return (
     <CardShell>
       <CardHeader title="Color Palette" badge={`${colors.length} colors`} badgeColor="violet" />
-      <div className="p-4">
+      <div className="p-5">
         {colorPalette.themeColor && (
           <div className="flex items-center gap-1.5 mb-4">
             <div className="w-3 h-3 rounded-full border border-zinc-700" style={{ background: colorPalette.themeColor }} />
@@ -62,14 +62,14 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
               className="flex flex-col items-center gap-1 group"
             >
               <div
-                className="w-10 h-10 rounded-lg border border-white/10 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center"
+                className="w-14 h-14 rounded-lg border border-white/10 shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center"
                 style={{ background: entry.hex }}
               >
                 {copied === entry.hex && (
                   <span style={{ color: contrastColor(entry.hex), fontSize: 10 }}>✓</span>
                 )}
               </div>
-              <span className="text-[9px] text-zinc-500 font-mono">{entry.hex}</span>
+              <span className="text-[11px] text-zinc-500 font-mono">{entry.hex}</span>
             </button>
           ))}
         </div>

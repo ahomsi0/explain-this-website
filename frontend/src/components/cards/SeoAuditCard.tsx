@@ -44,7 +44,7 @@ function CheckRow({ check }: { check: SEOCheck }) {
   return (
     <div className="border-b border-zinc-800/60 last:border-0">
       <div
-        className={`flex items-start gap-2.5 py-2.5 ${isExpandable ? "cursor-pointer select-none" : ""}`}
+        className={`flex items-start gap-2.5 py-2.5 transition-colors ${isExpandable ? "cursor-pointer select-none hover:bg-zinc-800/40 rounded" : ""}`}
         onClick={() => isExpandable && setOpen((o) => !o)}
       >
         <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${s.dot}`} />
@@ -121,7 +121,7 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
         badge={`${pass}/${requiredChecks.length}`}
         badgeColor={requiredPassRatio >= 0.8 ? "green" : requiredPassRatio >= 0.5 ? "amber" : "red"}
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3 text-[11px]">
             <span className="text-zinc-600"><span className="text-emerald-400 font-semibold">{pass}</span> pass</span>
@@ -135,7 +135,7 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
           We check core SEO signals and show optional enhancements separately — click any fail/warn row for guidance.
         </p>
 
-        <div className="h-0.5 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">
+        <div className="h-2 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-700 ${
               score >= 80 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500"

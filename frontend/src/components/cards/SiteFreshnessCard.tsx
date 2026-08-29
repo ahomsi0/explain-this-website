@@ -30,7 +30,7 @@ export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
           : "violet"
         }
       />
-      <div className="p-4">
+      <div className="p-5">
         {/* Bar */}
         <div className="mb-4">
           <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">

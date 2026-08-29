@@ -58,7 +58,7 @@ export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
     return (
       <CardShell>
         <CardHeader title="Tech Stack" badge="0 found" badgeColor="violet" />
-        <div className="p-4">
+        <div className="p-5">
           <p className="text-xs text-zinc-500">No technologies detected on this page.</p>
         </div>
       </CardShell>

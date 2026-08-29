@@ -28,7 +28,7 @@ export function SecurityHeadersCard({ checks }: { checks: SecurityHeaderCheck[] 
           : "red"
         }
       />
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex flex-col gap-0">
           {checks.map((c) => (
             <div key={c.id} className="flex items-center justify-between py-2 border-b border-zinc-800 last:border-b-0 gap-3">

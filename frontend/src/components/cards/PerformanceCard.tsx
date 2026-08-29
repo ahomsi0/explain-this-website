@@ -36,8 +36,8 @@ function ScoreGauge({ label, score }: { label: string; score: number }) {
 
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="relative w-12 h-12">
-        <svg viewBox="0 0 40 40" className="w-12 h-12 -rotate-90">
+      <div className="relative w-14 h-14">
+        <svg viewBox="0 0 40 40" className="w-14 h-14 -rotate-90">
           <circle cx="20" cy="20" r={r} fill="none" stroke="#27272a" strokeWidth="4" />
           <circle
             cx="20" cy="20" r={r} fill="none" strokeWidth="4"
@@ -46,7 +46,7 @@ function ScoreGauge({ label, score }: { label: string; score: number }) {
             className={lighthouseRingColor(score)}
           />
         </svg>
-        <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-bold ${lighthouseColor(score)}`}>
+        <span className={`absolute inset-0 flex items-center justify-center text-xs font-bold ${lighthouseColor(score)}`}>
           {score}
         </span>
       </div>
@@ -85,13 +85,13 @@ function StrategyView({ data }: { data: StrategyData }) {
     <>
       {/* Lighthouse scores */}
       {lighthouseScores.length > 0 && (
-        <div className="grid grid-cols-4 gap-2 mb-4 pb-4 border-b border-zinc-800">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 pb-4 border-b border-zinc-800">
           {lighthouseScores.map((entry) => <ScoreGauge key={entry.label} label={entry.label} score={entry.score} />)}
         </div>
       )}
 
       {/* Lab metrics */}
-      <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1">Lab Data (Lighthouse)</p>
+      <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider mb-1 border-l-2 border-violet-500/30 pl-2">Lab Data (Lighthouse)</p>
       <div className="mb-3">
         {lcp && <VitalRow label="Largest Contentful Paint" vital={lcp} />}
         {fcp && <VitalRow label="First Contentful Paint"   vital={fcp} />}
@@ -103,7 +103,7 @@ function StrategyView({ data }: { data: StrategyData }) {
       {/* Field data (CrUX real-user metrics) */}
       {hasFieldData && (
         <>
-          <p className="text-[10px] font-medium text-zinc-600 uppercase tracking-wider mb-1 mt-3">
+          <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider mb-1 mt-3 border-l-2 border-violet-500/30 pl-2">
             Real User Data (CrUX)
           </p>
           <div>
@@ -208,9 +208,9 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
   const insight     = perfInsightText(lhScore);
 
   return (
-    <CardShell>
+    <CardShell variant="primary">
       <CardHeader title="Core Web Vitals" badge={badge} badgeColor={badgeColor} />
-      <div className="p-4">
+      <div className="p-5">
         {/* Tab + performance label row */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${label.cls}`}>

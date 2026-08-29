@@ -21,7 +21,7 @@ export function FontAuditCard({ fontAudit }: { fontAudit: FontAudit }) {
     return (
       <CardShell>
         <CardHeader title="Font Audit" badge="System fonts" badgeColor="green" />
-        <div className="p-4">
+        <div className="p-5">
           <p className="text-xs text-zinc-500">No external web fonts detected — system fonts in use. Good for performance.</p>
         </div>
       </CardShell>
