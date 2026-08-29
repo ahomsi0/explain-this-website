@@ -22,6 +22,22 @@ export function SiteHeader({
         <LogoWordmark size={20} />
       </a>
       <div className="flex items-center gap-2">
+        {/* Nav links */}
+        <nav className="hidden sm:flex items-center gap-1 mr-1">
+          <a
+            href="/guides"
+            className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+          >
+            Guides
+          </a>
+          <a
+            href="/compare"
+            className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+          >
+            Compare
+          </a>
+        </nav>
+        <div className="hidden sm:block w-px h-4 bg-zinc-800" aria-hidden="true" />
         <button
           onClick={toggle}
           aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
@@ -62,6 +78,14 @@ export function SiteHeader({
           >
             Sign in
           </button>
+        )}
+        {!user && (
+          <a
+            href="/go-pro"
+            className="hidden sm:inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
+          >
+            Get Pro
+          </a>
         )}
       </div>
     </header>
