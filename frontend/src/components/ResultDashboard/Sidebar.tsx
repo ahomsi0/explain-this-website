@@ -113,11 +113,6 @@ export function Sidebar({
                   <span aria-hidden="true">{scores.issueCount}</span>
                 </span>
               )}
-              {score !== undefined && (
-                <span className={`ml-auto text-[10px] font-bold ${scoreColorClass}`}>
-                  {score}<span className="sr-only">/100</span>
-                </span>
-              )}
             </button>
           );
         })}
