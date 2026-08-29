@@ -19,6 +19,37 @@ import { UserMenu } from "../auth/UserMenu";
 import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 
+function FaviconOrInitial({ src, hostname }: { src: string; hostname: string }) {
+  const [failed, setFailed] = useState(false);
+  const initial = hostname.replace(/^www\./, "").charAt(0).toUpperCase();
+  if (!src || failed) {
+    return (
+      <span className="flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white bg-violet-700 shrink-0">
+        {initial}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      onError={() => setFailed(true)}
+      className="w-5 h-5 rounded object-contain shrink-0"
+    />
+  );
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1)  return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)  return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 function computeScores(result: AnalysisResult) {
   const requiredChecks = result.seoChecks.filter((c) => !c.optional);
   const pass     = requiredChecks.filter((c) => c.status === "pass").length;
@@ -34,7 +65,7 @@ function computeScores(result: AnalysisResult) {
 const scoreColor = sharedScoreColor;
 
 function impressionColor(n: number) {
-  return n >= 8 ? "text-emerald-400" : n >= 6 ? "text-amber-400" : n >= 4 ? "text-orange-400" : "text-red-400";
+  return n >= 8 ? "text-emerald-400" : n >= 5 ? "text-amber-400" : "text-red-400";
 }
 
 function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
@@ -46,6 +77,29 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
       <div className="flex items-baseline gap-0.5">
         <span className={`text-2xl font-bold leading-none ${valueClass}`}>{value}</span>
         {suffix && <span className="text-xs text-zinc-600 font-medium">{suffix}</span>}
+      </div>
+    </div>
+  );
+}
+
+function TechStackTile({ items }: { items: { name: string }[] }) {
+  if (!items.length) return null;
+  const top = items.slice(0, 3);
+  const extra = items.length - top.length;
+  return (
+    <div className="flex flex-col gap-1 px-3 py-3 min-w-[110px] shrink-0">
+      <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold whitespace-nowrap">Tech Stack</span>
+      <div className="flex items-center flex-wrap gap-1 mt-0.5">
+        {top.map((t) => (
+          <span key={t.name} className="px-1.5 py-px rounded text-[10px] font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20">
+            {t.name}
+          </span>
+        ))}
+        {extra > 0 && (
+          <span className="px-1.5 py-px rounded text-[10px] font-semibold text-zinc-500 bg-zinc-800 border border-zinc-700">
+            +{extra}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -106,12 +160,12 @@ export function ResultDashboard({
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />
 
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[200px]">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span className="text-xs font-medium text-zinc-300 truncate">{hostname}</span>
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[220px]">
+              <FaviconOrInitial src={result.overview.favicon} hostname={hostname} />
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-semibold text-zinc-200 truncate leading-tight">{hostname}</span>
+                <span className="text-[10px] text-zinc-600 leading-tight">{relativeTime(result.fetchedAt)}</span>
+              </div>
             </div>
             <span className="sm:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
@@ -150,13 +204,13 @@ export function ResultDashboard({
                 )}
               </form>
             )}
-            {searchError && <span id="report-url-error" role="alert" className="hidden lg:block text-[10px] text-red-400">{searchError}</span>}
+            {searchError && <span id="report-url-error" role="alert" className="hidden md:block text-[10px] text-red-400">{searchError}</span>}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={toggle}
-              aria-label="Toggle theme"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               className="flex items-center justify-center w-7 h-7 rounded-md text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
             >
               {theme === "dark" ? (
@@ -220,6 +274,14 @@ export function ResultDashboard({
           onNewAudit={onReset}
           isSignedIn={!!user}
           onShowHistory={() => { window.location.href = "/history"; }}
+          scores={{
+            seo: seoScore,
+            performance: result.performance?.mobile?.lighthouse?.performance
+              ?? result.performance?.desktop?.lighthouse?.performance,
+            ux: uxScore,
+            conversion: result.conversionScores?.overall,
+            issueCount: result.seoChecks.filter(c => c.status === "fail").length,
+          }}
         />
 
         <main className="flex-1 min-w-0">
@@ -250,6 +312,15 @@ export function ResultDashboard({
               <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
               <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
               <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
+              {(() => {
+                const highConfidenceTech = result.techStack.filter(t => t.confidence === "high");
+                return highConfidenceTech.length > 0 ? (
+                  <>
+                    <div className="border-r border-zinc-800" aria-hidden="true" />
+                    <TechStackTile items={highConfidenceTech} />
+                  </>
+                ) : null;
+              })()}
             </div>
           </div>
 

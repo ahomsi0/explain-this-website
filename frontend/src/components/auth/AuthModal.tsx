@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import { track } from "../../lib/analytics";
@@ -32,14 +32,34 @@ export function AuthModal({
     }
   }, [open, initialMode]);
 
-  // ESC closes — but only this modal. When the forgot-password sub-modal is
-  // open on top, let it handle Escape first so one press doesn't dismiss both.
+  // ESC closes — but only when not busy and no sub-modal is open.
   useEffect(() => {
     if (!open || forgotOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && !busy) onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [open, forgotOpen, onClose]);
+  }, [open, forgotOpen, busy, onClose]);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap: cycle Tab/Shift+Tab within the dialog.
+  useEffect(() => {
+    if (!open || forgotOpen) return;
+    const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const nodes = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    window.addEventListener("keydown", trap);
+    return () => window.removeEventListener("keydown", trap);
+  }, [open, forgotOpen]);
 
   if (!open) return null;
 
@@ -64,10 +84,11 @@ export function AuthModal({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150"
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150 auth-backdrop"
+      onClick={() => { if (!busy) onClose(); }}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"

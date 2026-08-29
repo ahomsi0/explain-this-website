@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { useAuth } from "../../context/useAuth";
 import { compareLive, type AuditComparison } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
@@ -50,6 +50,7 @@ export function ComparePage() {
   const [error, setError] = useState<string | null>(null);
   const [comparison, setComparison] = useState<AuditComparison | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const mountedRef = useRef(true);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -70,12 +71,19 @@ export function ComparePage() {
 
     setBusy(true);
     try {
-      setComparison(await compareLive(yoursUrl, compUrl));
+      const result = await compareLive(yoursUrl, compUrl);
+      if (mountedRef.current) setComparison(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Comparison failed — please try again");
+      if (mountedRef.current) setError(err instanceof Error ? err.message : "Comparison failed — please try again");
     } finally {
-      setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
+  };
+
+  const handleCancel = () => {
+    mountedRef.current = false;
+    setBusy(false);
+    mountedRef.current = true;
   };
 
   return (
@@ -107,7 +115,7 @@ export function ComparePage() {
         <form onSubmit={handleSubmit} noValidate className="mt-8">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
             <SiteField id="compare-yours" label="Your site" value={yours} onChange={(v) => { setYours(v); setError(null); }} disabled={busy} />
-            <div className="hidden sm:flex h-10 items-center text-zinc-600 font-semibold">vs</div>
+            <div className="flex h-10 items-center justify-center text-zinc-600 font-semibold sm:px-1">vs</div>
             <SiteField id="compare-competitor" label="Competitor" value={competitor} onChange={(v) => { setCompetitor(v); setError(null); }} disabled={busy} />
           </div>
           {error && (
@@ -116,7 +124,7 @@ export function ComparePage() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-5 w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-md bg-violet-600 hover:bg-violet-500 active:bg-violet-700 px-5 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="mt-5 w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-md bg-violet-500 hover:bg-violet-400 active:bg-violet-600 px-5 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy ? (
               <>
@@ -128,9 +136,18 @@ export function ComparePage() {
             )}
           </button>
           {busy && (
-            <p className="mt-3 text-xs text-zinc-600">
-              Two full analyses run in parallel — this usually takes 20–60 seconds per site.
-            </p>
+            <div className="mt-3 flex items-center gap-3">
+              <p className="text-xs text-zinc-600">
+                Two full analyses run in parallel — this usually takes 20–60 seconds per site.
+              </p>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="shrink-0 text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-2 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           )}
         </form>
 

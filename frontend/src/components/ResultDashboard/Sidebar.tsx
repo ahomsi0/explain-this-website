@@ -1,4 +1,5 @@
 import type { SectionId } from "./sectionConfig";
+import { scoreColor } from "../../utils/scoreColors";
 
 const ICONS: Record<SectionId, React.ReactNode> = {
   overview: (
@@ -52,6 +53,7 @@ export function Sidebar({
   onNewAudit,
   isSignedIn = false,
   onShowHistory,
+  scores,
 }: {
   items: Item[];
   active: SectionId;
@@ -59,6 +61,13 @@ export function Sidebar({
   onNewAudit?: () => void;
   isSignedIn?: boolean;
   onShowHistory?: () => void;
+  scores?: {
+    seo?: number;
+    performance?: number;
+    ux?: number;
+    conversion?: number;
+    issueCount?: number;
+  };
 }) {
   return (
     <aside className="hidden md:flex flex-col w-[220px] shrink-0 border-r border-zinc-800 bg-zinc-950 px-3 py-5 fixed left-0 top-12 bottom-0 overflow-y-auto scrollbar-none">
@@ -70,6 +79,16 @@ export function Sidebar({
       <nav className="flex flex-col gap-0.5">
         {items.map((item) => {
           const isActive = item.id === active;
+
+          const score =
+            item.id === "seo"         ? scores?.seo :
+            item.id === "performance" ? scores?.performance :
+            item.id === "ux"          ? scores?.ux :
+            item.id === "conversion"  ? scores?.conversion :
+            undefined;
+
+          const scoreColorClass = score !== undefined ? scoreColor(score) : "";
+
           return (
             <button
               key={item.id}
@@ -78,14 +97,27 @@ export function Sidebar({
               aria-current={isActive ? "page" : undefined}
               className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider transition-colors ${
                 isActive
-                  ? "text-violet-300 border border-transparent shadow-[inset_3px_0_0_#7c3aed]"
+                  ? "text-violet-300 bg-violet-500/10 border border-violet-500/30"
                   : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent"
               }`}
             >
               <span className={isActive ? "text-violet-300" : "text-zinc-600 group-hover:text-zinc-400"}>
                 {ICONS[item.id]}
               </span>
-              <span>{item.label}</span>
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.id === "fixplan" && scores?.issueCount !== undefined && scores.issueCount > 0 && (
+                <span
+                  className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold bg-red-500 text-white"
+                  aria-label={`${scores.issueCount} failing checks`}
+                >
+                  <span aria-hidden="true">{scores.issueCount}</span>
+                </span>
+              )}
+              {score !== undefined && (
+                <span className={`ml-auto text-[10px] font-bold ${scoreColorClass}`}>
+                  {score}<span className="sr-only">/100</span>
+                </span>
+              )}
             </button>
           );
         })}
@@ -161,12 +193,23 @@ export function Sidebar({
             href="/privacy"
             className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
           >
+            <span className="text-zinc-600 group-hover:text-zinc-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </span>
             <span>Privacy</span>
           </a>
           <a
             href="/terms"
             className="group flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
           >
+            <span className="text-zinc-600 group-hover:text-zinc-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </span>
             <span>Terms</span>
           </a>
         </div>
