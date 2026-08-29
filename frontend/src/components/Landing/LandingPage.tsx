@@ -109,6 +109,24 @@ export function LandingPage({
               />
             </div>
 
+            {/* Recently analyzed sites */}
+            {recents.length > 0 && (
+              <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+                <span className="text-[11px] text-zinc-500 self-center mr-1">Recent:</span>
+                {recents.map((u) => (
+                  <button
+                    key={u}
+                    type="button"
+                    onClick={() => analyze(u, "example")}
+                    title={u}
+                    className="max-w-[220px] truncate text-[11px] px-2.5 py-1 rounded-full text-zinc-400 hover:text-violet-300 bg-zinc-900/60 hover:bg-violet-500/10 border border-zinc-800 hover:border-violet-500/30 transition-colors"
+                  >
+                    {chipLabel(u)}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* ✦ Feature chips — show what the report covers */}
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {[
@@ -128,24 +146,6 @@ export function LandingPage({
                 </span>
               ))}
             </div>
-
-            {/* Recently analyzed sites */}
-            {recents.length > 0 && (
-              <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-                <span className="text-[11px] text-zinc-500 self-center mr-1">Recent:</span>
-                {recents.map((u) => (
-                  <button
-                    key={u}
-                    type="button"
-                    onClick={() => analyze(u, "example")}
-                    title={u}
-                    className="max-w-[220px] truncate text-[11px] px-2.5 py-1 rounded-full text-zinc-400 hover:text-violet-300 bg-zinc-900/60 hover:bg-violet-500/10 border border-zinc-800 hover:border-violet-500/30 transition-colors"
-                  >
-                    {chipLabel(u)}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {user ? (
               <p className="mt-8 text-center text-xs text-zinc-500">

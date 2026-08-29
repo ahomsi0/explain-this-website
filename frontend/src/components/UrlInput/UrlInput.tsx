@@ -60,9 +60,9 @@ export function URLInput({
               aria-checked={deepScan}
               onClick={onDeepScanToggle}
               title="Also audit up to 4 key subpages (pricing, about, contact…)"
-              className={`flex items-center gap-1.5 px-3 py-1 mr-1 rounded-md text-[11px] font-medium transition-all shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-1 mr-1 text-[11px] font-medium transition-colors shrink-0 ${
                 deepScan
-                  ? "text-violet-300 bg-violet-500/15 shadow-[0_0_10px_-3px_rgba(124,58,237,0.5)]"
+                  ? "text-violet-400"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
