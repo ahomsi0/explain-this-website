@@ -27,7 +27,7 @@ export function UserMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-center w-7 h-7 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[11px] font-bold hover:bg-violet-500/25 transition-colors"
+        className="flex items-center justify-center w-7 h-7 rounded-md bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[11px] font-bold hover:bg-violet-500/25 transition-colors"
         aria-label="Account menu"
       >
         {initial}
