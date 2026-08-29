@@ -19,6 +19,37 @@ import { UserMenu } from "../auth/UserMenu";
 import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 
+function FaviconOrInitial({ src, hostname }: { src: string; hostname: string }) {
+  const [failed, setFailed] = useState(false);
+  const initial = hostname.replace(/^www\./, "").charAt(0).toUpperCase();
+  if (!src || failed) {
+    return (
+      <span className="flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white bg-violet-700 shrink-0">
+        {initial}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      onError={() => setFailed(true)}
+      className="w-5 h-5 rounded object-contain shrink-0"
+    />
+  );
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1)  return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)  return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 function computeScores(result: AnalysisResult) {
   const requiredChecks = result.seoChecks.filter((c) => !c.optional);
   const pass     = requiredChecks.filter((c) => c.status === "pass").length;
@@ -106,12 +137,12 @@ export function ResultDashboard({
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />
 
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[200px]">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
-              <span className="text-xs font-medium text-zinc-300 truncate">{hostname}</span>
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[220px]">
+              <FaviconOrInitial src={result.overview.favicon} hostname={hostname} />
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-semibold text-zinc-200 truncate leading-tight">{hostname}</span>
+                <span className="text-[10px] text-zinc-600 leading-tight">{relativeTime(result.fetchedAt)}</span>
+              </div>
             </div>
             <span className="sm:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
