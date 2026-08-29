@@ -274,6 +274,14 @@ export function ResultDashboard({
           onNewAudit={onReset}
           isSignedIn={!!user}
           onShowHistory={() => { window.location.href = "/history"; }}
+          scores={{
+            seo: seoScore,
+            performance: result.performance?.mobile?.lighthouse?.performance
+              ?? result.performance?.desktop?.lighthouse?.performance,
+            ux: uxScore,
+            conversion: result.conversionScores?.overall,
+            issueCount: result.seoChecks.filter(c => c.status === "fail").length,
+          }}
         />
 
         <main className="flex-1 min-w-0">

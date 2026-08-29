@@ -52,6 +52,7 @@ export function Sidebar({
   onNewAudit,
   isSignedIn = false,
   onShowHistory,
+  scores,
 }: {
   items: Item[];
   active: SectionId;
@@ -59,6 +60,13 @@ export function Sidebar({
   onNewAudit?: () => void;
   isSignedIn?: boolean;
   onShowHistory?: () => void;
+  scores?: {
+    seo?: number;
+    performance?: number;
+    ux?: number;
+    conversion?: number;
+    issueCount?: number;
+  };
 }) {
   return (
     <aside className="hidden md:flex flex-col w-[220px] shrink-0 border-r border-zinc-800 bg-zinc-950 px-3 py-5 fixed left-0 top-12 bottom-0 overflow-y-auto scrollbar-none">
@@ -70,6 +78,20 @@ export function Sidebar({
       <nav className="flex flex-col gap-0.5">
         {items.map((item) => {
           const isActive = item.id === active;
+
+          const score =
+            item.id === "seo"         ? scores?.seo :
+            item.id === "performance" ? scores?.performance :
+            item.id === "ux"          ? scores?.ux :
+            item.id === "conversion"  ? scores?.conversion :
+            undefined;
+
+          const scoreColorClass =
+            score === undefined ? "" :
+            score >= 75 ? "text-emerald-400" :
+            score >= 50 ? "text-amber-400" :
+            "text-red-400";
+
           return (
             <button
               key={item.id}
@@ -85,7 +107,17 @@ export function Sidebar({
               <span className={isActive ? "text-violet-300" : "text-zinc-600 group-hover:text-zinc-400"}>
                 {ICONS[item.id]}
               </span>
-              <span>{item.label}</span>
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.id === "fixplan" && scores?.issueCount !== undefined && scores.issueCount > 0 && (
+                <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold bg-red-500 text-white">
+                  {scores.issueCount}
+                </span>
+              )}
+              {score !== undefined && (
+                <span className={`ml-auto text-[10px] font-bold ${scoreColorClass}`}>
+                  {score}
+                </span>
+              )}
             </button>
           );
         })}
