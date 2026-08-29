@@ -212,7 +212,6 @@ export function GuideDetailPage({ slug }: { slug: string }) {
     );
   }
 
-  const color = categoryColor(guide.category);
   const related = Object.values(GUIDES)
     .filter((g) => g.category === guide.category && g.slug !== guide.slug)
     .slice(0, 3);
