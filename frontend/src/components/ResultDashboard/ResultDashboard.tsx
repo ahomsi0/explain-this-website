@@ -160,12 +160,10 @@ export function ResultDashboard({
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />
 
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[220px]">
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[280px]">
               <FaviconOrInitial src={result.overview.favicon} hostname={hostname} />
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-zinc-200 truncate leading-tight">{hostname}</span>
-                <span className="text-[10px] text-zinc-600 leading-tight">{relativeTime(result.fetchedAt)}</span>
-              </div>
+              <span className="text-xs font-semibold text-zinc-200 truncate">{hostname}</span>
+              <span className="text-[10px] text-zinc-600 shrink-0">· {relativeTime(result.fetchedAt)}</span>
             </div>
             <span className="sm:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
