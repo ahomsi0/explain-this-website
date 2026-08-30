@@ -382,6 +382,579 @@ var techPatterns = []techPattern{
 		patterns: []string{"sibautomation.com", "sendinblue.com", "brevo.com"}},
 	{name: "Mailerlite", category: "analytics", confidence: "high",
 		patterns: []string{"assets.mailerlite.com", "mailerlite.com/js"}},
+
+	// Backend Frameworks
+	{name: "Django", category: "framework", confidence: "high",
+		patterns: []string{"csrfmiddlewaretoken", "django.contrib", "__django_debug"}},
+	{name: "Ruby on Rails", category: "framework", confidence: "high",
+		patterns: []string{"rails-ujs", "data-turbo-frame", "action_cable", "ActionCable.createConsumer"}},
+	{name: "Inertia.js", category: "framework", confidence: "high",
+		patterns: []string{"__inertia", "inertiajs.com", "@inertiajs/"}},
+
+	// JS Libraries
+	{name: "Three.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"three.min.js", "three.module.js", "three@", "unpkg.com/three"}},
+	{name: "D3.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"d3.min.js", "d3.v3.", "d3.v4.", "d3.v5.", "d3.v6.", "d3.v7.", "cdn.jsdelivr.net/npm/d3"}},
+	{name: "Chart.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"chart.min.js", "chart.umd.js", "chart@", "cdn.jsdelivr.net/npm/chart.js"}},
+	{name: "Swiper", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"swiper-bundle.min", "swiper.min.js", "swiper@"}},
+	{name: "GSAP", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"gsap.min.js", "cdn.gsap.com", "greensock.com/js", "TweenMax.min.js", "TweenLite.min.js"}},
+	{name: "Leaflet", category: "media", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"leaflet.js", "leaflet@", "leaflet-src.js", "unpkg.com/leaflet"}},
+
+	// Video Platforms
+	{name: "Wistia", category: "media", confidence: "high",
+		patterns: []string{"fast.wistia.com", "wistia.net/", "wistia_async"}},
+	{name: "JW Player", category: "media", confidence: "high",
+		patterns: []string{"jwpcdn.com", "jwplatform.com", "jwplayer.js", "jwplayer("}},
+	{name: "Vidyard", category: "media", confidence: "high",
+		patterns: []string{"play.vidyard.com", "vidyard.com/players", "embed.vidyard.com"}},
+	{name: "Brightcove", category: "media", confidence: "high",
+		patterns: []string{"players.brightcove.net", "brightcove.net/", "brightcove-player"}},
+	{name: "Dailymotion Embed", category: "media", confidence: "high",
+		patterns: []string{"dailymotion.com/embed", "geo.dailymotion.com"}},
+
+	// Additional CDN / Hosting
+	{name: "BunnyCDN", category: "cdn", confidence: "high",
+		patterns: []string{"b-cdn.net", "bunnycdn.com", "iframe.mediadelivery.net"}},
+	{name: "KeyCDN", category: "cdn", confidence: "high",
+		patterns: []string{"kxcdn.com"}},
+
+	// Analytics / Optimisation
+	{name: "Pendo", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.pendo.io", "pendo.io/agent", "pendo.initialize"}},
+	{name: "VWO", category: "analytics", confidence: "high",
+		patterns: []string{"dev.visualwebsiteoptimizer.com", "app.vwo.com", "vwoCode.init"}},
+	{name: "Optimizely", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.optimizely.com", "optimizely.com/js/", "window.optimizely"}},
+	{name: "New Relic", category: "analytics", confidence: "high",
+		patterns: []string{"js-agent.newrelic.com", "bam.nr-data.net", "newrelic.com/agent"}},
+	{name: "Datadog RUM", category: "analytics", confidence: "high",
+		patterns: []string{"browser-intake-datadoghq.com", "datadoghq-browser-agent.com", "DD_RUM.init"}},
+	{name: "Braze", category: "analytics", confidence: "high",
+		patterns: []string{"js.appboycdn.com", "braze.com/web-sdk", "appboy.initialize"}},
+	{name: "Customer.io", category: "analytics", confidence: "high",
+		patterns: []string{"assets.customer.io", "track.customer.io", "_cio.identify"}},
+
+	// Consent / Privacy additions
+	{name: "TrustArc", category: "analytics", confidence: "high",
+		patterns: []string{"consent.trustarc.com", "choices.trustarc.com", "trustarc.com/notice"}},
+	{name: "Didomi", category: "analytics", confidence: "high",
+		patterns: []string{"sdk.privacy-center.org", "didomi.io", "window.didomiOnReady"}},
+
+	// Buy-now-pay-later / Payments
+	{name: "Klarna", category: "ecommerce", confidence: "high",
+		patterns: []string{"x.klarnacdn.net", "klarna.com/js/", "Klarna.init"}},
+	{name: "Affirm", category: "ecommerce", confidence: "high",
+		patterns: []string{"cdn1.affirm.com", "affirm.com/js/", "affirm.ui.ready"}},
+	{name: "Afterpay", category: "ecommerce", confidence: "high",
+		patterns: []string{"js.afterpay.com", "portal.afterpay.com", "afterpay.initialize"}},
+
+	// Reviews / Social proof
+	{name: "Trustpilot", category: "analytics", confidence: "high",
+		patterns: []string{"widget.trustpilot.com", "tp.widget.bootstrap", "trustpilot-widget"}},
+	{name: "Yotpo", category: "analytics", confidence: "high",
+		patterns: []string{"staticw2.yotpo.com", "yotpo.com/js/", "yotpoWidgetsContainer"}},
+
+	// Push Notifications
+	{name: "OneSignal", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.onesignal.com", "onesignal.com/sdks", "OneSignal.init"}},
+
+	// Search
+	{name: "Algolia", category: "analytics", confidence: "high",
+		patterns: []string{"algolianet.com", "algolia.net/", "instantsearch.js", "algoliasearch"}},
+
+	// Customer Support additions
+	{name: "Help Scout", category: "analytics", confidence: "high",
+		patterns: []string{"beacon-v2.helpscout.net", "helpscout.net/beacon", "Beacon('init'"}},
+
+	// More CMS
+	{name: "Kirby", category: "cms", confidence: "high",
+		patterns: []string{`generator" content="kirby`, "getkirby.com", "kirby/panel"}},
+	{name: "Statamic", category: "cms", confidence: "high",
+		patterns: []string{`generator" content="statamic`, "statamic.com", "statamic-api"}},
+	{name: "Directus", category: "cms", confidence: "high",
+		patterns: []string{"directus.io", "_directus_", "directus/assets"}},
+	{name: "Payload CMS", category: "cms", confidence: "high",
+		patterns: []string{"payload-cms", "@payloadcms/", "payload.richText"}},
+	{name: "Tilda", category: "cms", confidence: "high",
+		patterns: []string{"tildacdn.com", "tilda.ws", "t-records"}},
+
+	// More Builders / No-code
+	{name: "Bubble.io", category: "builder", confidence: "high",
+		patterns: []string{"bubble.io/shared_components", "cdn.bubble.io", "bubble-element"}},
+	{name: "Softr", category: "builder", confidence: "high",
+		patterns: []string{"softr.app", "softr.io/js", "softr-studio"}},
+	{name: "Readymag", category: "builder", confidence: "high",
+		patterns: []string{"readymag.com"}},
+
+	// Hotwire / Turbo
+	{name: "Turbo", category: "framework", confidence: "high",
+		patterns: []string{"turbo-frame", "turbo-stream", "@hotwired/turbo", "turbo.es2017-umd"}},
+
+	// More JS Libraries
+	{name: "Anime.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"animejs", "anime.min.js", "anime@"}},
+	{name: "Video.js", category: "media", confidence: "high",
+		patterns: []string{"vjs-tech", "video-js", "video.min.js", "videojs.com"}},
+	{name: "Mux", category: "media", confidence: "high",
+		patterns: []string{"cdn.mux.com", "mux-player", "stream.mux.com"}},
+	{name: "Plyr", category: "media", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"plyr.js", "plyr.css", "cdn.plyr.io"}},
+	{name: "AOS", category: "framework", confidence: "high",
+		patterns: []string{"aos.js", "aos.css", "data-aos="}},
+	{name: "PhotoSwipe", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"photoswipe.css", "photoswipe.js", "photoswipe@"}},
+	{name: "Prism.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"prism.min.js", "prism.css", "prismjs.com"}},
+
+	// Image / Media CDN
+	{name: "Cloudinary", category: "media", confidence: "high",
+		patterns: []string{"res.cloudinary.com", "cloudinary.com/image/upload"}},
+	{name: "Imgix", category: "media", confidence: "high",
+		patterns: []string{"imgix.net"}},
+
+	// More E-commerce / Payments
+	{name: "Lemon Squeezy", category: "ecommerce", confidence: "high",
+		patterns: []string{"lemonsqueezy.com/js", "lmsqueezy.com", "LemonSqueezy.Setup"}},
+	{name: "Recharge", category: "ecommerce", confidence: "high",
+		patterns: []string{"rechargepayments.com", "rechargeapps.com", "recharge.js"}},
+	{name: "Adyen", category: "ecommerce", confidence: "high",
+		patterns: []string{"checkoutshopper-live.adyen.com", "adyen.com/v1/", "AdyenCheckout"}},
+	{name: "Braintree", category: "ecommerce", confidence: "high",
+		patterns: []string{"js.braintreegateway.com", "braintree-web", "braintree.client.create"}},
+	{name: "Mollie", category: "ecommerce", confidence: "high",
+		patterns: []string{"js.mollie.com", "mollie.com/v2/", "mollie.createToken"}},
+	{name: "Recurly", category: "ecommerce", confidence: "high",
+		patterns: []string{"js.recurly.com", "recurly.configure", "recurlyjs.com"}},
+
+	// More Analytics
+	{name: "Crazy Egg", category: "analytics", confidence: "high",
+		patterns: []string{"script.crazyegg.com", "cetrk.com", "crazyegg.com/pages/scripts"}},
+	{name: "Mouseflow", category: "analytics", confidence: "high",
+		patterns: []string{"mouseflow.com", "cdn.mouseflow.com", "mf.init("}},
+	{name: "Contentsquare", category: "analytics", confidence: "high",
+		patterns: []string{"contentsquare.net", "tag.contentsquare.net", "uxa.io"}},
+	{name: "AB Tasty", category: "analytics", confidence: "high",
+		patterns: []string{"abtasty.com", "cdn.abtasty.com"}},
+	{name: "Woopra", category: "analytics", confidence: "high",
+		patterns: []string{"static.woopra.com", "woopra.track(", "woopra.com/track"}},
+	{name: "Koala", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.getkoala.com", "getkoala.com/v1/pk"}},
+	{name: "ZoomInfo", category: "analytics", confidence: "high",
+		patterns: []string{"ws.zoominfo.com", "zoominfo.com/js/", "zi.track"}},
+	{name: "Clearbit", category: "analytics", confidence: "high",
+		patterns: []string{"x.clearbitjs.com", "tag.clearbit.com", "clearbit.identify"}},
+	{name: "Survicate", category: "analytics", confidence: "high",
+		patterns: []string{"survicate.com/survey", "survey.survicate.com", "Survicate.initialize"}},
+
+	// More Support / Chat
+	{name: "Gorgias", category: "analytics", confidence: "high",
+		patterns: []string{"config.gorgias.chat", "gorgias.com/loader", "GorgiasChat.init"}},
+	{name: "Chaport", category: "analytics", confidence: "high",
+		patterns: []string{"app.chaport.com/widget", "chaport.com/js/widget"}},
+	{name: "Freshdesk Widget", category: "analytics", confidence: "high",
+		patterns: []string{"euc-widget.freshworks.com", "widget.freshdesk.com", "FreshworksWidget("}},
+
+	// More Email Marketing
+	{name: "Omnisend", category: "analytics", confidence: "high",
+		patterns: []string{"omnisend.com/sdk", "omnisnippet1.com"}},
+	{name: "Drip", category: "analytics", confidence: "high",
+		patterns: []string{"js.getdrip.com", "getdrip.com/", "dc.getdrip.com"}},
+	{name: "Campaign Monitor", category: "analytics", confidence: "high",
+		patterns: []string{"createsend.com", "campaign-archive.com", "cmail1.com"}},
+	{name: "Beehiiv", category: "analytics", confidence: "high",
+		patterns: []string{"beehiiv.com", "embeds.beehiiv.com"}},
+
+	// More Consent / Privacy
+	{name: "Osano", category: "analytics", confidence: "high",
+		patterns: []string{"cmp.osano.com", "osano.com/consent"}},
+	{name: "Termly", category: "analytics", confidence: "high",
+		patterns: []string{"app.termly.io", "termly.io/resource-blocker"}},
+	{name: "Usercentrics", category: "analytics", confidence: "high",
+		patterns: []string{"app.usercentrics.eu", "usercentrics.eu/browser-ui"}},
+	{name: "Axeptio", category: "analytics", confidence: "high",
+		patterns: []string{"cookies.axeptio.eu", "axeptio.eu/js/"}},
+	{name: "Borlabs Cookie", category: "analytics", confidence: "high",
+		patterns: []string{"borlabs-cookie", "borlabs-cookie.js"}},
+
+	// Reviews / Ratings
+	{name: "Reviews.io", category: "analytics", confidence: "high",
+		patterns: []string{"widget.reviews.io", "reviews.io/widget"}},
+	{name: "Judge.me", category: "analytics", confidence: "high",
+		patterns: []string{"judge.me/reviews", "judgeme_widget", "cdn.judge.me"}},
+	{name: "Okendo", category: "analytics", confidence: "high",
+		patterns: []string{"marketing.okendo.com", "api.okendo.com", "okendo-reviews"}},
+	{name: "Stamped.io", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.stamped.io", "stamped.io/api/widget"}},
+
+	// Accessibility
+	{name: "UserWay", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.userway.org", "userway.org/widget"}},
+	{name: "accessiBe", category: "analytics", confidence: "high",
+		patterns: []string{"acsbapp.com", "accessibe.com", "acsbJS.init"}},
+	{name: "AudioEye", category: "analytics", confidence: "high",
+		patterns: []string{"audioeye.com", "cdn.audioeye.com"}},
+
+	// More Auth / Identity
+	{name: "Okta", category: "framework", confidence: "high",
+		patterns: []string{"oktacdn.com", "okta.com/oauth2", "OktaSignIn("}},
+	{name: "WorkOS", category: "framework", confidence: "high",
+		patterns: []string{"workos.com/", "api.workos.com"}},
+
+	// More Error Tracking / Monitoring
+	{name: "Dynatrace", category: "analytics", confidence: "high",
+		patterns: []string{"dtrum.js", "dynatrace.com/api", "dtrum.init"}},
+	{name: "Rollbar", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.rollbar.com", "rollbar.js", "Rollbar.init"}},
+	{name: "Bugsnag", category: "analytics", confidence: "high",
+		patterns: []string{"bugsnag.com/js/", "app.bugsnag.com", "Bugsnag.start"}},
+
+	// AI Chatbots / Automation
+	{name: "ManyChat", category: "analytics", confidence: "high",
+		patterns: []string{"widget.manychat.com", "manychat.com/widget"}},
+	{name: "Landbot", category: "analytics", confidence: "high",
+		patterns: []string{"landbot.io/universal/", "static.landbot.io"}},
+	{name: "Voiceflow", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.voiceflow.com", "voiceflow.com/api/interact"}},
+
+	// More Maps
+	{name: "HERE Maps", category: "media", confidence: "high",
+		patterns: []string{"js.api.here.com", "here.com/js/mapsjs"}},
+	{name: "OpenLayers", category: "media", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"openlayers.org", "cdn.jsdelivr.net/npm/ol@", "ol.js"}},
+
+	// Push Notifications
+	{name: "PushOwl", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.pushowl.com", "pushowl.com/service-worker"}},
+
+	// More CMS / Enterprise
+	{name: "Adobe Experience Manager", category: "cms", confidence: "high",
+		patterns: []string{"/etc.clientlibs/", "/content/dam/", "aem.js", "cq:page"}},
+	{name: "Sitecore", category: "cms", confidence: "high",
+		patterns: []string{"/sitecore/shell/", "sitecore-jss", "Sitecore.JavaScriptServices"}},
+	{name: "Kontent.ai", category: "cms", confidence: "high",
+		patterns: []string{"deliver.kontent.ai", "preview-deliver.kontent.ai"}},
+	{name: "Webiny", category: "cms", confidence: "high",
+		patterns: []string{"webiny.com", "webiny-cms", "webiny-serverless"}},
+
+	// More WordPress Page Builders
+	{name: "WPBakery", category: "builder", confidence: "high",
+		patterns: []string{"vc_row", "wpb_wrapper", "vc_column", "js_composer"}},
+	{name: "Oxygen Builder", category: "builder", confidence: "high",
+		patterns: []string{"ct-section", "oxygen-vsb", "ct-div-block"}},
+	{name: "Avada", category: "builder", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"avada-", "fusion-core", "avadabuilder", "fusion-builder"}},
+	{name: "Kadence Blocks", category: "builder", confidence: "high",
+		patterns: []string{"kadence-blocks", "kadence-theme", "wp-block-kadence-"}},
+	{name: "GeneratePress", category: "builder", confidence: "high",
+		patterns: []string{"generatepress", "gp-style.css", "generate-style.min.css"}},
+	{name: "Astra", category: "builder", confidence: "high",
+		patterns: []string{"astra-theme", "astra-child", "astra.css"}},
+	{name: "Brizy", category: "builder", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"brizy-", "brizy.cloud", "brizy-rich-text"}},
+
+	// More JS Charts / Visualization
+	{name: "ApexCharts", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"apexcharts.min.js", "apexcharts.com", "apexcharts@"}},
+	{name: "ECharts", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"echarts.min.js", "echarts.apache.org", "echarts@"}},
+	{name: "Highcharts", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"highcharts.js", "code.highcharts.com", "highcharts@"}},
+	{name: "Plotly", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"plotly.min.js", "plotly-latest.min.js", "cdn.plot.ly"}},
+
+	// More JS UI / Utility Libraries
+	{name: "Socket.io", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"socket.io.js", "socket.io.min.js", "cdn.socket.io"}},
+	{name: "Pusher", category: "framework", confidence: "high",
+		patterns: []string{"js.pusher.com", "pusher.subscribe(", "pusher-js"}},
+	{name: "Ably", category: "framework", confidence: "high",
+		patterns: []string{"cdn.ably.io", "ably.com/lib/", "ably.realtime.connect"}},
+	{name: "Redux", category: "framework", confidence: "high",
+		patterns: []string{"__REDUX_DEVTOOLS_EXTENSION__", "redux.min.js", "redux-devtools"}},
+	{name: "Tippy.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"tippy.js", "unpkg.com/tippy.js", "tippy@"}},
+	{name: "FullPage.js", category: "framework", confidence: "high",
+		patterns: []string{"fullpage.js", "alvarotrigo.com/fullPage", "fullpage_wrapper"}},
+	{name: "Select2", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"select2.min.js", "select2.css", "select2@"}},
+	{name: "Flatpickr", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"flatpickr.min.js", "flatpickr.css", "flatpickr@"}},
+	{name: "Moment.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"moment.min.js", "moment@", "cdn.jsdelivr.net/npm/moment"}},
+	{name: "Highlight.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"highlight.min.js", "cdnjs.cloudflare.com/ajax/libs/highlight.js", "hljs.highlightAll"}},
+	{name: "MathJax", category: "framework", confidence: "high",
+		patterns: []string{"cdn.mathjax.org", "cdnjs.cloudflare.com/ajax/libs/mathjax", "MathJax.Hub.Config"}},
+	{name: "KaTeX", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"katex.min.js", "katex.min.css", "cdn.jsdelivr.net/npm/katex"}},
+
+	// Rich Text / Code Editors
+	{name: "CKEditor", category: "framework", confidence: "high",
+		patterns: []string{"ckeditor.com", "cke_editable", "CKEDITOR.replace", "cdn.ckeditor.com"}},
+	{name: "Quill", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"quill.min.js", "cdn.quilljs.com", "quill.snow.css"}},
+	{name: "Monaco Editor", category: "framework", confidence: "high",
+		patterns: []string{"monaco-editor", "vs/loader.js", "vs/editor/editor.main"}},
+
+	// More Hosting / PaaS
+	{name: "Fly.io", category: "cdn", confidence: "medium",
+		patterns: []string{".fly.dev"}},
+	{name: "Railway", category: "cdn", confidence: "medium",
+		patterns: []string{".railway.app", ".up.railway.app"}},
+	{name: "Heroku", category: "cdn", confidence: "medium",
+		patterns: []string{".herokuapp.com"}},
+	{name: "DigitalOcean Apps", category: "cdn", confidence: "medium",
+		patterns: []string{".ondigitalocean.app"}},
+
+	// More E-commerce / Payments
+	{name: "Paystack", category: "ecommerce", confidence: "high",
+		patterns: []string{"js.paystack.co", "paystack.com/js/", "PaystackPop.setup"}},
+	{name: "Flutterwave", category: "ecommerce", confidence: "high",
+		patterns: []string{"api.flutterwave.com", "checkout.flutterwave.com", "FlutterwaveCheckout"}},
+	{name: "Authorize.net", category: "ecommerce", confidence: "high",
+		patterns: []string{"accept.authorize.net", "acceptjs.js", "AuthorizeNetIFrame"}},
+	{name: "Checkout.com", category: "ecommerce", confidence: "high",
+		patterns: []string{"cdn.checkout.com", "api2.checkout.com", "Frames.init"}},
+	{name: "Volusion", category: "ecommerce", confidence: "high",
+		patterns: []string{"a.volusion.com", "volusion.com/"}},
+	{name: "Ko-fi", category: "ecommerce", confidence: "high",
+		patterns: []string{"ko-fi.com/kofiwidget", "storage.ko-fi.com"}},
+	{name: "Buy Me a Coffee", category: "ecommerce", confidence: "high",
+		patterns: []string{"buymeacoffee.com", "cdn.buymeacoffee.com", "bmc-btn"}},
+
+	// Tag Management additions
+	{name: "Tealium", category: "analytics", confidence: "high",
+		patterns: []string{"tags.tiqcdn.com", "tealium.com/utag", "utag.js"}},
+	{name: "Adobe Launch", category: "analytics", confidence: "high",
+		patterns: []string{"assets.adobedtm.com", "satelliteLib-"}},
+
+	// More A/B Testing
+	{name: "LaunchDarkly", category: "analytics", confidence: "high",
+		patterns: []string{"launchdarkly.com", "app.launchdarkly.com", "LDClient.initialize"}},
+	{name: "Split.io", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.split.io", "sdk.split.io", "SplitFactory("}},
+	{name: "Convert.com", category: "analytics", confidence: "high",
+		patterns: []string{"d.convert.com", "convert.com/js/"}},
+	{name: "Kameleoon", category: "analytics", confidence: "high",
+		patterns: []string{"kameleoon.eu/kameleoon.js", "kameleoon.com/"}},
+
+	// Customer Data Platforms
+	{name: "mParticle", category: "analytics", confidence: "high",
+		patterns: []string{"jssdkcdns.mparticle.com", "mparticle.com/sdk", "mParticle.init"}},
+	{name: "BlueConic", category: "analytics", confidence: "high",
+		patterns: []string{"blueconic.net", "bc.js", "bc.blueconic.net"}},
+
+	// Font Services
+	{name: "Google Fonts", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"fonts.googleapis.com", "fonts.gstatic.com"}},
+	{name: "Adobe Fonts", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"use.typekit.net", "p.typekit.net", "typekit.com/fonts"}},
+	{name: "Font Awesome", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"use.fontawesome.com", "kit.fontawesome.com", "fontawesome.com/js/"}},
+	{name: "Bunny Fonts", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"fonts.bunny.net"}},
+	{name: "Weglot", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.weglot.com", "weglot.initialize(", "weglot-switcher"}},
+
+	// Scheduling / Booking
+	{name: "Calendly", category: "analytics", confidence: "high",
+		patterns: []string{"assets.calendly.com", "calendly.com/assets/external/widget.js", "Calendly.initPopupWidget"}},
+	{name: "Cal.com", category: "analytics", confidence: "high",
+		patterns: []string{"cal.com/embed", "app.cal.com/embed"}},
+	{name: "Acuity Scheduling", category: "analytics", confidence: "high",
+		patterns: []string{"acuityscheduling.com", "embed.acuityscheduling.com"}},
+
+	// Pop-up / Lead Capture
+	{name: "Privy", category: "analytics", confidence: "high",
+		patterns: []string{"widget.privy.com", "static.privy.com", "privy.js"}},
+	{name: "OptiMonk", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.optimonk.com", "optimonk.js", "optimonk.com/js"}},
+	{name: "Wisepops", category: "analytics", confidence: "high",
+		patterns: []string{"wisepops.com/js/", "wisepops.net"}},
+	{name: "ConvertFlow", category: "analytics", confidence: "high",
+		patterns: []string{"js.convertflow.com", "convertflow.co"}},
+	{name: "Sumo", category: "analytics", confidence: "high",
+		patterns: []string{"sumo.com/scripts/", "load.sumo.com", "sumo.li"}},
+	{name: "Hello Bar", category: "analytics", confidence: "high",
+		patterns: []string{"hellobar.com/hellobar.js", "hello-bar.js"}},
+
+	// Social / Messaging Widgets
+	{name: "WhatsApp Chat", category: "analytics", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"wa.me/", "api.whatsapp.com/send", "whatsapp-chat"}},
+	{name: "Facebook Messenger", category: "analytics", confidence: "high",
+		patterns: []string{"connect.facebook.net/en_US/sdk.js", "fb-messenger-checkbox", "customerchat.js"}},
+
+	// More Video
+	{name: "Cloudflare Stream", category: "media", confidence: "high",
+		patterns: []string{"cloudflarestream.com", "iframe.cloudflarestream.com", "stream.cloudflare.com"}},
+	{name: "Kaltura", category: "media", confidence: "high",
+		patterns: []string{"cdnapi.kaltura.com", "www.kaltura.com/index.php/kwidget", "kaltura.com/p/"}},
+	{name: "Loom Embed", category: "media", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"loom.com/embed", "www.loom.com/share"}},
+	{name: "Podia", category: "media", confidence: "high",
+		patterns: []string{"podia.com/embed", "embed.podia.com"}},
+
+	// More Search
+	{name: "Typesense", category: "analytics", confidence: "high",
+		patterns: []string{"typesense.org", "typesense-instantsearch-adapter", "typesense.Client"}},
+	{name: "Doofinder", category: "analytics", confidence: "high",
+		patterns: []string{"doofindercdn.com", "doofinder.com/js/"}},
+
+	// More Support / Chat
+	{name: "Userlike", category: "analytics", confidence: "high",
+		patterns: []string{"userlike.com/widget", "cdn.userlike.com"}},
+	{name: "Re:amaze", category: "analytics", confidence: "high",
+		patterns: []string{"reamaze.com", "reamaze.io/embed"}},
+	{name: "Comm100", category: "analytics", confidence: "high",
+		patterns: []string{"chatserver.comm100.com", "hosted.comm100.com"}},
+
+	// SEO Plugins
+	{name: "Yoast SEO", category: "analytics", confidence: "high",
+		patterns: []string{"yoast.com/", "yoast-schema-graph", "wpseo-schema"}},
+	{name: "RankMath", category: "analytics", confidence: "high",
+		patterns: []string{"rank-math", "rankmath.com", "wp-rankmath-schema"}},
+
+	// More Social Proof
+	{name: "Proof", category: "analytics", confidence: "high",
+		patterns: []string{"useproof.com", "proof.com/widget"}},
+	{name: "Fomo", category: "analytics", confidence: "high",
+		patterns: []string{"fomo.com/js/", "load.fomo.com"}},
+	{name: "TrustIndex", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.trustindex.io", "trustindex.io/loader.js"}},
+
+	// More CMS
+	{name: "ConcreteCMS", category: "cms", confidence: "high",
+		patterns: []string{"concrete/js/", "ccm_basedir", "concrete5.org", "/concrete/blocks/"}},
+	{name: "ExpressionEngine", category: "cms", confidence: "high",
+		patterns: []string{"exp:channel", "ee_session", "expressionengine.com"}},
+	{name: "DotCMS", category: "cms", confidence: "high",
+		patterns: []string{"dotcms.com", "/dA/", "dotcms-edit"}},
+
+	// More Builders
+	{name: "SeedProd", category: "builder", confidence: "high",
+		patterns: []string{"seedprod.com", "seedprod-", "seedprodbuildertmp"}},
+	{name: "Landen", category: "builder", confidence: "high",
+		patterns: []string{"landen.co", "cdn.landen.co"}},
+
+	// More Forms
+	{name: "WPForms", category: "analytics", confidence: "high",
+		patterns: []string{"wpforms-form", "wpforms.com/", "wpforms-field"}},
+	{name: "Ninja Forms", category: "analytics", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"ninja-forms", "nf-form", "ninjaforms.com"}},
+	{name: "Formidable Forms", category: "analytics", confidence: "high",
+		patterns: []string{"formidable-form", "frm_forms", "formidableforms.com"}},
+	{name: "Formstack", category: "analytics", confidence: "high",
+		patterns: []string{"formstack.com/forms", "fsForm", "cdn.formstack.com"}},
+	{name: "Cognito Forms", category: "analytics", confidence: "high",
+		patterns: []string{"cognitoforms.com", "d3q7b97an5b4mc.cloudfront.net"}},
+	{name: "Paperform", category: "analytics", confidence: "high",
+		patterns: []string{"paperform.co", "paperform-embed"}},
+
+	// More Email Marketing
+	{name: "Substack", category: "analytics", confidence: "high",
+		patterns: []string{"substackcdn.com", "substack.com/embed"}},
+	{name: "Flodesk", category: "analytics", confidence: "high",
+		patterns: []string{"flodesk.com/js/", "assets.flodesk.com"}},
+	{name: "GetResponse", category: "analytics", confidence: "high",
+		patterns: []string{"gr-cdn.com", "grwebform", "getresponse.com/view"}},
+	{name: "AWeber", category: "analytics", confidence: "high",
+		patterns: []string{"aweber.com/form/", "forms.aweber.com"}},
+	{name: "Constant Contact", category: "analytics", confidence: "high",
+		patterns: []string{"constantcontact.com", "r20.rs6.net", "constantcontactpages.com"}},
+
+	// Accessibility additions
+	{name: "EqualWeb", category: "analytics", confidence: "high",
+		patterns: []string{"equalweb.com", "cdn.equalweb.com", "EqualWebAccessibility"}},
+
+	// Push Notifications additions
+	{name: "Pushwoosh", category: "analytics", confidence: "high",
+		patterns: []string{"cdn.pushwoosh.com", "pushwoosh.init(", "pushwoosh.com/js/"}},
+
+	// More Reviews / Social
+	{name: "Bazaarvoice", category: "analytics", confidence: "high",
+		patterns: []string{"bazaarvoice.com", "display.ugc.bazaarvoice.com", "bvdisplay"}},
+	{name: "PowerReviews", category: "analytics", confidence: "high",
+		patterns: []string{"powerreviews.com", "assets.powerreviews.com"}},
+
+	// More Payments
+	{name: "GoCardless", category: "ecommerce", confidence: "high",
+		patterns: []string{"pay.gocardless.com", "api.gocardless.com", "GoCardless.setup"}},
+	{name: "Cashfree", category: "ecommerce", confidence: "high",
+		patterns: []string{"sdk.cashfree.com", "cashfree.com/checkout"}},
+
+	// More Maps
+	{name: "Cesium", category: "media", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"cesium.com/downloads/cesiumjs", "cesium.js", "Cesium.Viewer"}},
+
+	// More Video
+	{name: "Flowplayer", category: "media", confidence: "high",
+		patterns: []string{"flowplayer.org", "flowplayer.js", "flowplayer.min.js"}},
+
+	// More JS Frameworks
+	{name: "Backbone.js", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"backbone.min.js", "backbone@", "backbone-min.js"}},
+	{name: "Webpack", category: "framework", confidence: "high",
+		patterns: []string{"__webpack_require__", "webpackChunk", "webpack/runtime"}},
+	{name: "Stimulus", category: "framework", confidence: "high",
+		patterns: []string{"@hotwired/stimulus", "stimulus.js", "stimulus-controller"}},
+	{name: "Lodash", category: "framework", confidence: "high",
+		tagOnly: true,
+		patterns: []string{"lodash.min.js", "lodash@", "cdn.jsdelivr.net/npm/lodash"}},
+
+	// More CDN
+	{name: "Supabase CDN", category: "cdn", confidence: "high",
+		patterns: []string{"supabase.co/functions/"}},
+	{name: "StackPath", category: "cdn", confidence: "high",
+		patterns: []string{"stackpathcdn.com", "stackpath.com/"}},
+
+	// Monitoring / Observability
+	{name: "OpenTelemetry", category: "analytics", confidence: "high",
+		patterns: []string{"opentelemetry-js", "@opentelemetry/", "opentelemetry.io"}},
+
+	// More Developer Tools visible in HTML
+	{name: "Nx", category: "framework", confidence: "high",
+		patterns: []string{"nx.dev", "__NX_", "nrwl/nx"}},
+	{name: "Storybook", category: "framework", confidence: "high",
+		patterns: []string{"storybook.js.org", "sb-show-main", "storybook-root"}},
 }
 
 type aiBuilderPattern struct {
@@ -510,6 +1083,8 @@ var headerTechSignals = []headerTechSignal{
 	{match: "drupal", name: "Drupal", category: "cms"},
 	{match: "wix", name: "Wix", category: "builder"},
 	{match: "squarespace", name: "Squarespace", category: "builder"},
+	{match: "nginx", name: "Nginx", category: "framework"},
+	{match: "apache", name: "Apache", category: "framework"},
 }
 
 // detectHeaderTech derives high-confidence items from HTTP response headers.
