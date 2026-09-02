@@ -263,7 +263,7 @@ export function HistoryPage() {
               value={sort}
               onChange={(e) => { setSort(e.target.value as SortKey); setPage(1); }}
               aria-label="Sort audits"
-              className="px-2.5 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
+              className="pl-2.5 pr-7 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
             >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
@@ -275,7 +275,7 @@ export function HistoryPage() {
               value={days}
               onChange={(e) => { setDays(Number(e.target.value) as DayWindow); setPage(1); }}
               aria-label="Filter by date range"
-              className="px-2.5 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
+              className="pl-2.5 pr-7 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
             >
               <option value={0}>All time</option>
               <option value={7}>Last 7 days</option>
