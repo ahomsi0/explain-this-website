@@ -1,6 +1,7 @@
 import type { LinkCheckResult } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
   if (linkCheck.checked === 0) {
@@ -80,6 +81,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
         )}
 
         <p className="text-[10px] text-zinc-600 mt-3">Checked {linkCheck.checked} external links</p>
+        {linkCheck.broken > 0 && <HowToFixLink issueId="broken-links" className="mt-2" />}
       </div>
     </CardShell>
   );

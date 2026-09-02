@@ -1,6 +1,7 @@
 import type { ImageFormatAudit } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 function ratingFromPct(pct: number, total: number) {
   if (total === 0) return { label: "N/A", cls: "text-zinc-500 bg-zinc-800 border-zinc-700" };
@@ -89,6 +90,8 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
             <Flag label="Missing loading=lazy"                                  count={audit.missingLazy}  severity="info" />
           </div>
         )}
+        {(audit.missingLazy > 0) && <HowToFixLink issueId="lazy-loading" className="mt-3" />}
+        {(audit.jpg + audit.png + audit.gif > 0) && <HowToFixLink issueId="image-format" className="mt-1" />}
       </div>
     </CardShell>
   );

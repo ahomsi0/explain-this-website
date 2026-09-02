@@ -600,6 +600,127 @@ export const GUIDES: Record<string, Guide> = {
     ],
     tools: ["Our SEO tab", "Screaming Frog", "Ahrefs broken link report"],
   },
+
+  // ── New: Technical SEO & Performance ─────────────────────────────────────
+  "sitemap": {
+    slug: "sitemap",
+    title: "Create and submit an XML sitemap",
+    category: "SEO",
+    summary: "Tell search engines exactly which pages to index with a machine-readable sitemap.",
+    whatItMeans:
+      "An XML sitemap is a file at /sitemap.xml that lists all your important pages, their last-modified dates, and how often they change. Search engines read it to discover content they might otherwise miss — especially on large sites or sites with few internal links.",
+    whyItMatters:
+      "Without a sitemap, search engines rely on crawling links to find pages. New or orphaned pages can go unindexed for weeks. A sitemap also lets you signal priority and freshness, giving you control over how Googlebot spends its crawl budget.",
+    steps: [
+      "Generate the sitemap: most CMS platforms (WordPress, Shopify, Webflow) do this automatically — check Settings or install a plugin like Yoast SEO or Rank Math.",
+      "For custom sites, use a sitemap generator tool (xml-sitemaps.com or a build-step library) or write the XML manually — each <url> entry needs a <loc> and ideally a <lastmod>.",
+      "Place the file at https://yourdomain.com/sitemap.xml and verify it's publicly accessible.",
+      "Reference the sitemap in your robots.txt file: add the line Sitemap: https://yourdomain.com/sitemap.xml at the bottom.",
+      "Submit the sitemap in Google Search Console (Indexing → Sitemaps → Add). This triggers Googlebot to process it immediately.",
+      "Exclude low-value pages: no-index pages, pagination, filtered URLs, and admin paths should not appear in the sitemap.",
+    ],
+    tools: ["Google Search Console", "Yoast SEO (WordPress)", "xml-sitemaps.com"],
+  },
+
+  "hreflang": {
+    slug: "hreflang",
+    title: "Implement hreflang for international pages",
+    category: "SEO",
+    summary: "Tell search engines which language/region version of a page to show each visitor.",
+    whatItMeans:
+      "Hreflang is an HTML attribute that tells Google which version of a page targets which language and country. Without it, Google may show the wrong language version in search results — showing your English page to French users, for example.",
+    whyItMatters:
+      "Incorrect or missing hreflang causes duplicate content penalties and sends the wrong language version to the wrong users, increasing bounce rate. It is the single most impactful technical fix for internationally-targeted sites.",
+    steps: [
+      "Decide your URL structure: separate domains (fr.example.com), subdirectories (/fr/), or subdomains are all valid — subdirectories are easiest to manage.",
+      "Add hreflang link tags in the <head> of every page variant, including a self-referencing tag: <link rel=\"alternate\" hreflang=\"en\" href=\"https://example.com/page\" />",
+      "Always include an x-default tag for the fallback language: <link rel=\"alternate\" hreflang=\"x-default\" href=\"https://example.com/page\" />",
+      "Every page in the cluster must link to every other page — hreflang is bidirectional and breaks silently if any side is missing.",
+      "Validate using Google Search Console (International Targeting report) or the hreflang validator at ahrefs.com/hreflang.",
+      "If you have many pages, implement hreflang via the XML sitemap instead of the HTML head — it scales better and is equally supported by Google.",
+    ],
+    tools: ["Google Search Console → International Targeting", "Ahrefs Hreflang Checker", "hreflangvalidator.com"],
+  },
+
+  "font-loading": {
+    slug: "font-loading",
+    title: "Optimise web font loading",
+    category: "Performance",
+    summary: "Prevent invisible or mismatched text while fonts load by preloading and using font-display.",
+    whatItMeans:
+      "When a browser encounters a custom font, it can either show invisible text (FOIT — Flash of Invisible Text) or show the fallback font first and swap when the custom font arrives (FOUT — Flash of Unstyled Text). By default, most browsers choose FOIT, which makes text disappear for up to 3 seconds on slow connections.",
+    whyItMatters:
+      "Font loading directly impacts LCP and CLS. Invisible text delays LCP. A font swap that shifts layout increments CLS. Both are Core Web Vitals that Google measures in ranking. Optimised font loading can improve your Lighthouse performance score by 5–15 points.",
+    steps: [
+      "Add font-display: swap to every @font-face rule so the browser shows fallback text immediately instead of hiding it.",
+      "Preload your most important font files: <link rel=\"preload\" href=\"/fonts/your-font.woff2\" as=\"font\" type=\"font/woff2\" crossorigin>",
+      "Self-host fonts instead of loading from Google Fonts — this removes one external DNS lookup and connection. Use google-webfonts-helper.herokuapp.com to download the files.",
+      "Only load the font weights and styles you actually use — every unused variant is a wasted download.",
+      "Use a system font stack as your fallback and tweak its metrics (size-adjust, ascent-override, descent-override) to minimise layout shift when your custom font swaps in.",
+      "Subset your fonts to only the characters used on the page using pyftsubset or a build tool — this can cut font file size by 50–80%.",
+    ],
+    tools: ["Google Fonts (font-display parameter)", "google-webfonts-helper", "Fontaine (automatic fallback metrics)"],
+  },
+
+  "caching": {
+    slug: "caching",
+    title: "Set up browser caching for faster repeat visits",
+    category: "Performance",
+    summary: "Configure Cache-Control headers so returning visitors load your site from memory instead of the network.",
+    whatItMeans:
+      "Browser caching tells a visitor's browser to store a copy of your assets (images, CSS, JS) locally for a set period. On repeat visits, the browser loads those assets instantly from disk instead of downloading them again. For most sites, 60–80% of assets can be cached.",
+    whyItMatters:
+      "Repeat visitors are your warmest audience — subscribers, returning customers, people who bookmarked you. A slow repeat-visit experience loses real conversions. Caching also reduces your server and CDN bandwidth costs significantly.",
+    steps: [
+      "Set long cache durations (1 year) for versioned assets — files whose name or URL includes a hash or version number: Cache-Control: public, max-age=31536000, immutable",
+      "Set shorter durations (1 hour to 1 day) for unversioned assets like your HTML, sitemap, and robots.txt: Cache-Control: public, max-age=3600",
+      "Use a CDN (Cloudflare, Fastly, or your host's built-in CDN) — they cache at the network edge and serve assets from a location close to the visitor.",
+      "If on Apache, add caching rules in .htaccess. On nginx, add expires directives. On Cloudflare, Rules → Cache Rules handles it without touching your server.",
+      "Test your headers with Chrome DevTools → Network → select any asset → Headers tab → look for Cache-Control and Age.",
+      "Verify with Google PageSpeed Insights — the 'Serve static assets with an efficient cache policy' audit lists every under-cached resource.",
+    ],
+    tools: ["Chrome DevTools → Network tab", "PageSpeed Insights", "Cloudflare Cache Rules"],
+  },
+
+  "redirect-chains": {
+    slug: "redirect-chains",
+    title: "Fix redirect chains and loops",
+    category: "SEO",
+    summary: "Replace multi-hop redirects with direct ones to preserve link equity and speed up page loads.",
+    whatItMeans:
+      "A redirect chain is when URL A redirects to URL B, which redirects to URL C. Each hop adds latency and dilutes the PageRank passed through the redirect. A redirect loop is when the chain eventually points back to itself — causing an infinite loop error in browsers and bots.",
+    whyItMatters:
+      "Each redirect hop adds 100–300ms of latency before the page loads. Googlebot follows redirect chains but passes less link equity with each hop. A chain of 3+ redirects can cause Googlebot to abandon the chain entirely, leaving your canonical page unindexed.",
+    steps: [
+      "Audit your redirects using Screaming Frog (Spider → Response Codes → Redirection) or Ahrefs Site Audit — both flag chains and loops automatically.",
+      "Update every redirect in the chain to point directly to the final destination. If A→B→C, change A to redirect to C and remove the intermediate hop.",
+      "Update any internal links or hardcoded URLs that point to the old intermediate URLs — eliminating the need for the redirect entirely is always better than fixing the chain.",
+      "For WordPress: use the Redirection plugin to manage all your redirects in one place. For custom sites: centralise redirects in nginx.conf, .htaccess, or a middleware file.",
+      "Check your XML sitemap — it should only contain final, canonical URLs, not redirecting ones.",
+      "After fixing, verify the chain is gone: curl -IL https://yourdomain.com/old-url should resolve in one or two hops maximum.",
+    ],
+    tools: ["Screaming Frog SEO Spider", "Ahrefs Site Audit", "httpstatus.io (single URL checker)"],
+  },
+
+  "internal-linking": {
+    slug: "internal-linking",
+    title: "Improve internal linking structure",
+    category: "SEO",
+    summary: "Connect your pages with meaningful anchor text so search engines understand your site's hierarchy.",
+    whatItMeans:
+      "Internal links are links between pages on your own site. They pass PageRank from high-authority pages to deeper pages, signal to search engines which pages are most important, and help visitors navigate to related content. A flat site with no internal linking is harder for both users and bots to explore.",
+    whyItMatters:
+      "Pages with no internal links pointing to them (orphan pages) are rarely indexed. Pages that receive many internal links with relevant anchor text rank higher for those terms. Internal linking is one of the highest-ROI, zero-cost SEO improvements available to any site.",
+    steps: [
+      "Identify your most important pages (money pages, cornerstone content) — these should receive the most internal links from other pages.",
+      "Link from high-traffic or high-authority pages to your important pages using descriptive anchor text that includes the target keyword — not 'click here'.",
+      "Find orphan pages using Screaming Frog (Bulk Export → All Inlinks — filter for pages with 0 inlinks) and add at least one internal link to each.",
+      "Add contextual links from blog posts or guide pages to relevant product or service pages where the context is genuinely helpful.",
+      "Build a hub structure: create one comprehensive page per topic (pillar page) and link all related articles back to it. This concentrates authority on the topic page.",
+      "Audit your navigation — every page in your main nav gets a free internal link from every other page. Make sure the nav links to your most important pages, not just the most recent ones.",
+    ],
+    tools: ["Screaming Frog SEO Spider", "Ahrefs Internal Link Opportunities", "Google Search Console → Links"],
+  },
 };
 
 export const CATEGORY_ORDER: GuideCategory[] = ["Performance", "SEO", "UX & Conversion", "Security", "Content"];
@@ -621,6 +742,8 @@ const SEO_CHECK_GUIDES: Record<string, string> = {
   schema: "structured-data",
   viewport: "viewport-meta",
   robots: "robots-directive",
+  hreflang: "hreflang",
+  sitemap: "sitemap",
 };
 
 const ISSUE_GUIDES: Record<string, string> = {
@@ -650,6 +773,11 @@ const ISSUE_GUIDES: Record<string, string> = {
   "stale-content": "stale-content",
   "complex-content": "reading-level",
   "low-intent": "search-intent",
+  "font-loading": "font-loading",
+  "slow-fonts": "font-loading",
+  "no-caching": "caching",
+  "redirect-chain": "redirect-chains",
+  "no-internal-links": "internal-linking",
 };
 
 export function guideForIssue(issueId: string): Guide | null {

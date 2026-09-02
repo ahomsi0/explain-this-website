@@ -1,6 +1,7 @@
 import type { SecurityHeaderCheck } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 function statusBadge(status: string) {
   if (status === "pass")    return "text-emerald-400 bg-emerald-950 border-emerald-800";
@@ -42,6 +43,9 @@ export function SecurityHeadersCard({ checks }: { checks: SecurityHeaderCheck[] 
             </div>
           ))}
         </div>
+        {checks.some(c => c.status !== "pass") && (
+          <HowToFixLink issueId="security-headers" className="mt-3" />
+        )}
       </div>
     </CardShell>
   );

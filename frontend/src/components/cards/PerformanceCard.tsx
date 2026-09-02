@@ -3,6 +3,7 @@ import type { PerformanceResult, StrategyData, CoreWebVital, CWVRating } from ".
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 import { ScoreInsight } from "../ui/ScoreInsight";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 function ratingColor(r: CWVRating) {
   return r === "good" ? "text-emerald-400" : r === "needs-improvement" ? "text-amber-400" : "text-red-400";
@@ -277,6 +278,18 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
         <p className="text-[10px] text-zinc-700 mt-3">
           {strategy === "mobile" ? "Mobile" : "Desktop"} · via Google PageSpeed Insights
         </p>
+
+        {lhScore !== undefined && lhScore < 90 && (
+          <HowToFixLink
+            issueId={
+              data.lcp?.rating === "poor" ? "lcp-poor"
+              : data.tbt?.rating === "poor" ? "tbt-poor"
+              : data.cls?.rating === "poor" ? "cls-poor"
+              : "perf-poor"
+            }
+            className="mt-2"
+          />
+        )}
 
         <ScoreInsight meaning={insight.meaning} nextStep={insight.nextStep} />
       </div>

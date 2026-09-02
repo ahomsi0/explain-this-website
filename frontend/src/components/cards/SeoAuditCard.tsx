@@ -21,6 +21,7 @@ const FIX_GUIDES: Record<string, FixGuide> = {
   "lang-attr":       { why: "The lang attribute helps search engines serve the right language version.", fix: "Add lang=\"en\" (or appropriate code) to your <html> tag." },
   "broken-links":    { why: "Broken links signal poor site quality to Google and frustrate users.", fix: "Audit links regularly and fix or remove 404s." },
   viewport:          { why: "A viewport meta tag is required for proper mobile rendering.", fix: "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">." },
+  hreflang:          { why: "Hreflang tags tell Google which language/region version to show each visitor.", fix: "Add hreflang link tags in the <head> of every page variant, including a self-referencing tag and an x-default fallback." },
 };
 
 function getFixGuide(checkId: string): FixGuide | null {

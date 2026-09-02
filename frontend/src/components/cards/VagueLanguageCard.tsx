@@ -2,6 +2,7 @@ import type { CopyAnalysis } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 import { scoreColor } from "../../utils/scoreColors";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 function barColorClass(score: number) {
   return score >= 75 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500";
@@ -73,6 +74,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
         {vaguePhrases.length === 0 && (
           <p className="text-[11px] text-emerald-400/80 mt-1">No vague marketing language detected — copy is specific and clear.</p>
         )}
+        {vaguePhrases.length > 0 && <HowToFixLink issueId="vague-copy" className="mt-3" />}
       </div>
     </CardShell>
   );

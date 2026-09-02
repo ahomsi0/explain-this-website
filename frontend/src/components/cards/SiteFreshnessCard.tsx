@@ -1,6 +1,7 @@
 import type { SiteFreshness } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 const ratingConfig = {
   fresh:   { label: "Fresh",   cls: "text-emerald-400 bg-emerald-950 border-emerald-800", bar: "bg-emerald-500" },
@@ -72,6 +73,9 @@ export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
           <p className="mt-3 text-[11px] text-amber-500/80 border-t border-zinc-800 pt-3">
             Outdated content can hurt SEO rankings and reduce visitor trust.
           </p>
+        )}
+        {(freshness.rating === "stale" || freshness.rating === "aging") && (
+          <HowToFixLink issueId="stale-content" className="mt-2" />
         )}
       </div>
     </CardShell>

@@ -2,6 +2,7 @@ import type { IntentAlignment } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 import { scoreColor } from "../../utils/scoreColors";
+import { HowToFixLink } from "../guides/GuidesPages";
 
 export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: IntentAlignment }) {
   if (intentAlignment.checks.length === 0) {
@@ -52,6 +53,7 @@ export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: Inte
             Your title/meta promises content that isn't clearly present on the page. This can hurt rankings and increase bounce rate.
           </p>
         )}
+        {intentAlignment.score < 80 && <HowToFixLink issueId="low-intent" className="mt-2" />}
       </div>
     </CardShell>
   );
