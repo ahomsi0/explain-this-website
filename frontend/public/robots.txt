@@ -4,4 +4,4 @@ Disallow: /dashboard
 Disallow: /go-pro
 Disallow: /report/
 
-Sitemap: https://explainthewebsite.vercel.app/sitemap.xml
+Sitemap: https://www.explainthiswebsite.com/sitemap.xml
