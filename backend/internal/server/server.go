@@ -118,7 +118,9 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux.HandleFunc("POST /api/auth/logout", handler.LogoutHandler())
 	mux.HandleFunc("POST /api/auth/forgot-password", handler.ForgotPasswordHandler())
 	mux.HandleFunc("POST /api/auth/reset-password", handler.ResetPasswordHandler())
+	mux.HandleFunc("GET /api/auth/verify-email", handler.VerifyEmailHandler())
 	mux.HandleFunc("GET /api/auth/me", auth.RequireSessionAuth(handler.MeHandler()))
+	mux.HandleFunc("DELETE /api/auth/me", auth.RequireSessionAuth(handler.DeleteAccountHandler()))
 	mux.HandleFunc("POST /api/billing/checkout-session", auth.RequireSessionAuth(handler.BillingCheckoutSessionHandler()))
 	mux.HandleFunc("POST /api/billing/cancel", auth.RequireSessionAuth(handler.BillingCancelHandler()))
 	mux.HandleFunc("POST /api/tap/webhook", handler.BillingWebhookHandler())
@@ -129,6 +131,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux.HandleFunc("POST /api/admin/flag", auth.RequireSessionAuth(handler.AdminToggleFlagHandler()))
 	mux.HandleFunc("POST /api/admin/broadcast", auth.RequireSessionAuth(handler.AdminBroadcastHandler()))
 	mux.HandleFunc("PATCH /api/admin/users/{id}", auth.RequireSessionAuth(handler.AdminPatchUserHandler()))
+	mux.HandleFunc("GET /api/admin/users", auth.RequireSessionAuth(handler.AdminUsersHandler()))
 
 	// User audit history (account-only)
 	mux.HandleFunc("GET /api/audits", auth.RequireSessionAuth(handler.AuditsListHandler()))

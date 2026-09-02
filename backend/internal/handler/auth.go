@@ -2,15 +2,20 @@ package handler
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/mail"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/ahomsi/explain-website/internal/auth"
 	"github.com/ahomsi/explain-website/internal/db"
+	"github.com/ahomsi/explain-website/internal/email"
 	"github.com/ahomsi/explain-website/internal/model"
 	"github.com/ahomsi/explain-website/internal/requestip"
 	"github.com/jackc/pgx/v5"
@@ -29,6 +34,7 @@ type userOut struct {
 	ID                 int64              `json:"id"`
 	Email              string             `json:"email"`
 	CreatedAt          time.Time          `json:"createdAt"`
+	EmailVerifiedAt    *time.Time         `json:"emailVerifiedAt,omitempty"`
 	Plan               string             `json:"plan"`
 	SubscriptionStatus string             `json:"subscriptionStatus"`
 	Usage              model.UsageSummary `json:"usage"`
@@ -73,6 +79,24 @@ func parseAuthReq(r *http.Request) (authReq, error) {
 // emails perform the same bcrypt work as real lookups, keeping response times
 // uniform and preventing account enumeration via request latency.
 var dummyPasswordHash, _ = auth.HashPassword("explain-website-timing-equalizer")
+
+// issueVerificationToken generates a secure token, stores its SHA-256 hash in
+// the DB, and returns the raw token to embed in the verification URL.
+func issueVerificationToken(ctx context.Context, userID int64) (string, error) {
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		return "", err
+	}
+	token := hex.EncodeToString(raw)
+	sum := sha256.Sum256([]byte(token))
+	hashHex := hex.EncodeToString(sum[:])
+	_, err := db.Pool.Exec(ctx,
+		`INSERT INTO email_verifications (user_id, token_hash, expires_at)
+		 VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
+		userID, hashHex,
+	)
+	return token, err
+}
 
 // SignupHandler creates a new user account.
 func SignupHandler() http.HandlerFunc {
@@ -121,6 +145,21 @@ func SignupHandler() http.HandlerFunc {
 		}
 		u.Email = emailAddr
 		u.CreatedAt = createdAt
+
+		// Send verification email best-effort — signup succeeds even if email is down.
+		go func() {
+			bgCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			token, err := issueVerificationToken(bgCtx, userID)
+			if err != nil {
+				return
+			}
+			appURL := os.Getenv("APP_URL")
+			if appURL == "" {
+				appURL = "https://www.explainthiswebsite.com"
+			}
+			_ = email.SendVerifyEmail(bgCtx, emailAddr, appURL+"/verify-email?token="+token)
+		}()
 
 		if err := issueSession(w, r, u.ID); err != nil {
 			writeJSONError(w, http.StatusInternalServerError, "could not issue session")
@@ -237,11 +276,11 @@ func loadUserOut(ctx context.Context, userID int64) (userOut, error) {
 	}
 	var u userOut
 	err := db.Pool.QueryRow(ctx,
-		`SELECT id, email, created_at, plan, subscription_status
+		`SELECT id, email, created_at, plan, subscription_status, email_verified_at
 		   FROM users
 		  WHERE id = $1`,
 		userID,
-	).Scan(&u.ID, &u.Email, &u.CreatedAt, &u.Plan, &u.SubscriptionStatus)
+	).Scan(&u.ID, &u.Email, &u.CreatedAt, &u.Plan, &u.SubscriptionStatus, &u.EmailVerifiedAt)
 	if err != nil {
 		return userOut{}, err
 	}

@@ -261,6 +261,20 @@ CREATE TABLE IF NOT EXISTS system_health (
     last_error_at   TIMESTAMPTZ,
     last_error_msg  TEXT NOT NULL DEFAULT ''
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS email_verifications (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash  TEXT NOT NULL UNIQUE,
+    expires_at  TIMESTAMPTZ NOT NULL,
+    used_at     TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS email_verifications_user_id_idx
+    ON email_verifications (user_id);
 `
 
 // retentionStatements prune rows that only serve time-boxed views (30-day
@@ -268,6 +282,9 @@ CREATE TABLE IF NOT EXISTS system_health (
 // per-request inserts don't grow without bound.
 var retentionStatements = []string{
 	`DELETE FROM password_resets
+	   WHERE expires_at < NOW() - INTERVAL '7 days'
+	      OR used_at < NOW() - INTERVAL '7 days'`,
+	`DELETE FROM email_verifications
 	   WHERE expires_at < NOW() - INTERVAL '7 days'
 	      OR used_at < NOW() - INTERVAL '7 days'`,
 	`DELETE FROM user_daily_usage       WHERE usage_date < CURRENT_DATE - 90`,

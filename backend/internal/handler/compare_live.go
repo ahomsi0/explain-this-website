@@ -59,8 +59,10 @@ func CompareLiveHandler(cfg Config) http.HandlerFunc {
 			}()
 			return ch
 		}
-		yoursOut := <-run(yoursURL)
-		compOut := <-run(compURL)
+		yoursCh := run(yoursURL)
+		compCh := run(compURL)
+		yoursOut := <-yoursCh
+		compOut := <-compCh
 
 		if yoursOut.err != nil || compOut.err != nil {
 			side, o := "your site", yoursOut

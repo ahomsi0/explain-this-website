@@ -736,3 +736,90 @@ type forbiddenError string
 func (e forbiddenError) Error() string { return string(e) }
 
 func errForbidden(msg string) error { return forbiddenError(msg) }
+
+// AdminUsersHandler returns a cursor-paginated list of all users.
+// Query params: limit (default 50, max 200), before (user ID — returns rows with id < before).
+func AdminUsersHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := requireAdmin(r.Context()); err != nil {
+			writeJSONError(w, http.StatusForbidden, err.Error())
+			return
+		}
+
+		limit := 50
+		if v := r.URL.Query().Get("limit"); v != "" {
+			if n, err := strconv.Atoi(v); err == nil && n > 0 {
+				if n > 200 {
+					n = 200
+				}
+				limit = n
+			}
+		}
+
+		var before int64
+		if v := r.URL.Query().Get("before"); v != "" {
+			if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+				before = n
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+		defer cancel()
+
+		var rows *struct{ Rows interface{} }
+		_ = rows
+
+		type userRow struct {
+			ID                 int64      `json:"id"`
+			Email              string     `json:"email"`
+			Plan               string     `json:"plan"`
+			SubscriptionStatus string     `json:"subscriptionStatus"`
+			EmailVerifiedAt    *time.Time `json:"emailVerifiedAt,omitempty"`
+			SuspendedAt        *time.Time `json:"suspendedAt,omitempty"`
+			AdminNote          string     `json:"adminNote,omitempty"`
+			CreatedAt          time.Time  `json:"createdAt"`
+		}
+
+		query := `SELECT id, email, plan, subscription_status, email_verified_at,
+		                 suspended_at, COALESCE(admin_note,''), created_at
+		            FROM users
+		           WHERE ($1 = 0 OR id < $1)
+		        ORDER BY id DESC
+		           LIMIT $2`
+
+		pgRows, err := db.Pool.Query(ctx, query, before, limit+1)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not list users")
+			return
+		}
+		defer pgRows.Close()
+
+		users := make([]userRow, 0, limit)
+		for pgRows.Next() {
+			var u userRow
+			if err := pgRows.Scan(&u.ID, &u.Email, &u.Plan, &u.SubscriptionStatus,
+				&u.EmailVerifiedAt, &u.SuspendedAt, &u.AdminNote, &u.CreatedAt); err != nil {
+				writeJSONError(w, http.StatusInternalServerError, "could not read users")
+				return
+			}
+			users = append(users, u)
+		}
+		if err := pgRows.Err(); err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "could not list users")
+			return
+		}
+
+		var nextCursor int64
+		hasMore := len(users) > limit
+		if hasMore {
+			users = users[:limit]
+			nextCursor = users[len(users)-1].ID
+		}
+
+		writeJSON(w, http.StatusOK, map[string]any{
+			"users":      users,
+			"hasMore":    hasMore,
+			"nextCursor": nextCursor,
+		})
+	}
+}
