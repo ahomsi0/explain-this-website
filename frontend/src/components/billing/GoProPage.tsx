@@ -63,8 +63,8 @@ export function GoProPage() {
   }
 
   return (
-    <div className="bg-zinc-950">
-      <main className="px-4 sm:px-6 py-8">
+    <div className="flex-1 flex flex-col bg-zinc-950">
+      <main className="flex-1 px-4 sm:px-6 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-6">
             <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Plans</p>
