@@ -4,17 +4,19 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
 type State = "loading" | "success" | "already" | "error";
 
+function getToken() {
+  return new URLSearchParams(window.location.search).get("token") ?? "";
+}
+
 export function VerifyEmailPage() {
-  const [state, setState] = useState<State>("loading");
-  const [message, setMessage] = useState("");
+  const token = getToken();
+  const [state, setState] = useState<State>(token ? "loading" : "error");
+  const [message, setMessage] = useState(
+    token ? "" : "No verification token found. Please use the link from your email.",
+  );
 
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get("token") ?? "";
-    if (!token) {
-      setState("error");
-      setMessage("No verification token found. Please use the link from your email.");
-      return;
-    }
+    if (!token) return;
 
     fetch(`${API_URL}/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
       credentials: "include",
@@ -23,21 +25,17 @@ export function VerifyEmailPage() {
         const data = await res.json().catch(() => ({}));
         if (res.ok) {
           const msg: string = data.message ?? "";
-          if (msg.includes("already")) {
-            setState("already");
-          } else {
-            setState("success");
-          }
+          setState(msg.includes("already") ? "already" : "success");
         } else {
-          setState("error");
           setMessage(data.error ?? "Verification failed. The link may have expired.");
+          setState("error");
         }
       })
       .catch(() => {
-        setState("error");
         setMessage("Could not reach the server. Please try again.");
+        setState("error");
       });
-  }, []);
+  }, [token]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
