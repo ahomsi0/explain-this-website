@@ -22,6 +22,7 @@ import { ReportSkeleton } from "./components/ui/Skeletons";
 import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryPage } from "./components/auth/HistoryPage";
 import { GuidesIndexPage, GuideDetailPage } from "./components/guides/GuidesPages";
+import { VerifyEmailPage } from "./components/auth/VerifyEmailPage";
 import { StatusPage } from "./components/status/StatusPage";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
@@ -186,7 +187,10 @@ function AppInner() {
   // usable while /api/auth/me waits for a cold-starting or unavailable API;
   // the header updates once the session check completes.
 
+  if (pathname === "/verify-email") return <VerifyEmailPage />;
+
   if (isDashboardRoute) {
+    if (!user) return <PageShell header={chrome}><div className="flex-1 flex items-center justify-center text-zinc-500">Access denied.</div></PageShell>;
     return <PageShell><AdminDashboard /></PageShell>;
   }
 

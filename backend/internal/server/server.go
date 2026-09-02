@@ -95,7 +95,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
 	mux.HandleFunc("GET /api/badge", handler.BadgeHandler())
-	mux.HandleFunc("POST /api/compare-live", auth.RequireAuth(handler.CompareLiveHandler(handlerCfg)))
+	mux.HandleFunc("POST /api/compare-live", auth.RequireSessionAuth(handler.CompareLiveHandler(handlerCfg)))
 	mux.HandleFunc("POST /api/events", handler.ConversionEventHandler())
 	mux.HandleFunc("GET /api/usage", handler.UsageHandler())
 	mux.HandleFunc("GET /api/usage/history", auth.RequireSessionAuth(handler.UsageHistoryHandler()))

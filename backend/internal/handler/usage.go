@@ -389,7 +389,10 @@ func UsageHistoryHandler() http.HandlerFunc {
 			return
 		}
 
-		rows, err := db.Pool.Query(r.Context(), `
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		rows, err := db.Pool.Query(ctx, `
 			SELECT usage_date::text, count
 			  FROM user_daily_usage
 			 WHERE user_id = $1 AND usage_date >= CURRENT_DATE - 29
@@ -415,7 +418,7 @@ func UsageHistoryHandler() http.HandlerFunc {
 		}
 
 		var apiRequests int
-		if err := db.Pool.QueryRow(r.Context(), `
+		if err := db.Pool.QueryRow(ctx, `
 			SELECT COALESCE(SUM(d.request_count), 0)
 			  FROM api_key_daily_usage d
 			  JOIN api_keys k ON k.id = d.api_key_id

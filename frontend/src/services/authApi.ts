@@ -14,6 +14,7 @@ export interface AuthUser {
   id: number;
   email: string;
   createdAt: string;
+  emailVerifiedAt?: string;
   plan: "free" | "pro" | "owner";
   subscriptionStatus: string;
   usage: UsageSummary;

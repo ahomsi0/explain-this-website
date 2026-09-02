@@ -73,9 +73,9 @@ func ForgotPasswordHandler() http.HandlerFunc {
 		body.Email = strings.ToLower(strings.TrimSpace(addr.Address))
 
 		// Always respond success regardless of whether the email is registered.
-		// This prevents email enumeration attacks. The reset work runs in a
-		// background goroutine so the response is written immediately.
-		go issueResetCode(body.Email)
+		// Run inline (not a goroutine) — Render can drop post-response goroutines,
+		// causing reset emails to silently never arrive.
+		issueResetCode(body.Email)
 
 		writeJSON(w, http.StatusOK, map[string]any{
 			"ok":      true,

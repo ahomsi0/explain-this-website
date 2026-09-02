@@ -49,7 +49,7 @@ func verifyTapWebhookSignature(payload []byte, signature, secret string) error {
 func appURL() string {
 	u := strings.TrimSpace(os.Getenv("APP_URL"))
 	if u == "" {
-		return "http://localhost:5173"
+		return "https://www.explainthiswebsite.com"
 	}
 	return strings.TrimRight(u, "/")
 }

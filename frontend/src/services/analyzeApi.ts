@@ -76,9 +76,7 @@ export async function analyzeWebsite(
   while (true) {
     const remaining = deadline - Date.now();
     if (remaining <= 0) {
-      throw new Error(
-        `Analysis server did not respond in time. Make sure backend is running at ${API_URL}.`,
-      );
+      throw new Error("Analysis timed out. Please try again.");
     }
 
     const controller = new AbortController();
@@ -129,9 +127,7 @@ export async function analyzeWebsite(
       // Network error or timeout — wait a bit then retry if deadline allows.
       const retryRemaining = deadline - Date.now();
       if (retryRemaining <= 0) {
-        throw new Error(
-          `Analysis server did not respond in time. Make sure backend is running at ${API_URL}.`,
-        );
+        throw new Error("Analysis timed out. Please try again.");
       }
 
       await new Promise((resolve) =>
