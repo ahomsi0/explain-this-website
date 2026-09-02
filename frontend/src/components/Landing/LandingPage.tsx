@@ -266,54 +266,84 @@ export function LandingPage({
           </div>
         </section>
 
-        {/* Analysis boundary: sets expectations before a visitor spends a quota. */}
-        <section className="px-4 sm:px-6 pb-20" aria-labelledby="analysis-boundaries-heading">
-          <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-800/80 bg-zinc-900/35 p-6 sm:p-8">
-            <div className="max-w-2xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Set expectations</p>
-              <h2 id="analysis-boundaries-heading" className="mt-2 text-2xl font-bold text-zinc-100">What we can analyze</h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">We analyze the public, reachable page you submit and turn its HTML, headers, metadata, and optional performance data into a practical audit.</p>
+        {/* Scope & limits — comparison table */}
+        <section className="px-4 sm:px-6 pb-20" aria-labelledby="scope-heading">
+          <div className="mx-auto max-w-4xl">
+            <div className="text-center mb-8">
+              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Scope &amp; limits</p>
+              <h2 id="scope-heading" className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">What this tool is built for</h2>
             </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-4">
-                <h3 className="text-sm font-semibold text-emerald-300">Works best for</h3>
-                <ul className="mt-3 space-y-2 text-xs leading-relaxed text-zinc-400">
-                  <li>• Public landing pages, blogs, docs, stores, and marketing sites</li>
-                  <li>• HTML, titles, metadata, links, headings, images, scripts, and visible content</li>
-                  <li>• Lighthouse/PageSpeed scores when Google can reach the page</li>
-                </ul>
+
+            <div className="rounded-2xl border border-zinc-800 overflow-hidden">
+              {/* Table header */}
+              <div className="grid grid-cols-2 bg-zinc-900/60 border-b border-zinc-800">
+                <div className="px-5 py-3 text-[10px] font-bold tracking-[0.14em] uppercase text-emerald-400 border-r border-zinc-800">Works well for</div>
+                <div className="px-5 py-3 text-[10px] font-bold tracking-[0.14em] uppercase text-amber-400">Known limits</div>
               </div>
-              <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.04] p-4">
-                <h3 className="text-sm font-semibold text-amber-300">Known limitations</h3>
-                <ul className="mt-3 space-y-2 text-xs leading-relaxed text-zinc-400">
-                  <li>• Private, login-only, paywalled, bot-protected, or blocked pages may fail</li>
-                  <li>• Client-rendered, infinite-scroll, and interactive states can be incomplete</li>
-                  <li>• Performance and third-party signals may be unavailable or vary by run</li>
-                </ul>
-              </div>
+
+              {[
+                {
+                  ok: "Public landing pages, blogs, docs & stores",
+                  limit: "Login-only, paywalled, or bot-protected pages",
+                },
+                {
+                  ok: "HTML, metadata, headings, images, links & scripts",
+                  limit: "Client-rendered or infinite-scroll content (may be partial)",
+                },
+                {
+                  ok: "Lighthouse / PageSpeed scores for reachable pages",
+                  limit: "Performance scores can vary run-to-run or be unavailable",
+                },
+                {
+                  ok: "Tech stack, security headers, open graph & structured data",
+                  limit: "We never submit forms or use credentials on your behalf",
+                },
+              ].map((row, i) => (
+                <div key={i} className="grid grid-cols-2 border-b border-zinc-800/50 last:border-0">
+                  <div className="px-5 py-3 text-[11.5px] text-zinc-400 leading-relaxed flex items-start gap-2.5 border-r border-zinc-800/50 bg-zinc-900/30">
+                    <svg className="shrink-0 mt-0.5 text-emerald-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {row.ok}
+                  </div>
+                  <div className="px-5 py-3 text-[11.5px] text-zinc-400 leading-relaxed flex items-start gap-2.5 bg-zinc-900/20">
+                    <svg className="shrink-0 mt-0.5 text-amber-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    {row.limit}
+                  </div>
+                </div>
+              ))}
             </div>
-            <p className="mt-5 text-[11px] leading-relaxed text-zinc-600">We never ask for credentials or submit forms on your behalf. See the <a className="text-zinc-400 underline underline-offset-2 hover:text-zinc-200" href="/terms">Terms</a> for the full scope and the <a className="text-zinc-400 underline underline-offset-2 hover:text-zinc-200" href="/privacy">Privacy Policy</a> for data handling.</p>
+
+            <p className="mt-4 text-center text-[11px] text-zinc-600">
+              See the <a className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300 transition-colors" href="/terms">Terms</a> for full scope and the <a className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300 transition-colors" href="/privacy">Privacy Policy</a> for data handling.
+            </p>
           </div>
         </section>
 
-        {/* How it works */}
+        {/* How it works — verb pill steps */}
         <section className="px-4 sm:px-6 pb-20">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
               <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">How it works</p>
-              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">From URL to insights in three steps</h2>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">URL in. Report out.</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
               {[
-                { n: "01", title: "Paste any URL", desc: "Public site, landing page, blog, ecommerce — anything reachable on the open web." },
-                { n: "02", title: "Wait a few seconds", desc: "We fetch the page, run Google PageSpeed, and analyze 50+ signals in parallel." },
-                { n: "03", title: "Get a full report", desc: "Read the breakdown by section, copy any insight, save it to history, and share public links on Pro." },
-              ].map((s) => (
-                <div key={s.n} className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-5">
-                  <span className="text-[10px] font-mono font-semibold text-violet-400">{s.n}</span>
-                  <h4 className="mt-2 text-sm font-semibold text-zinc-100">{s.title}</h4>
-                  <p className="mt-1 text-xs text-zinc-500 leading-relaxed">{s.desc}</p>
+                { verb: "Paste", title: "Any public URL", desc: "Landing page, blog, store, docs — anything the open web can reach. No account needed." },
+                { verb: "Analyze", title: "50+ signals in parallel", desc: "Page fetch, PageSpeed, and 20 scored sections — all running simultaneously in seconds." },
+                { verb: "Act", title: "Every issue, fix included", desc: "Each flagged item links to a step-by-step repair guide. Save history or share links on Pro." },
+              ].map((s, i) => (
+                <div
+                  key={s.verb}
+                  className={`bg-zinc-900/50 border border-zinc-800 p-5 ${
+                    i === 0 ? "rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none" :
+                    i === 2 ? "rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" : ""
+                  }`}
+                >
+                  <span className="inline-block mb-3 px-2 py-0.5 rounded text-[9px] font-bold tracking-[0.12em] uppercase text-violet-300 bg-violet-500/10 border border-violet-500/20">
+                    {s.verb}
+                  </span>
+                  <h4 className="text-sm font-bold text-zinc-100 mb-1.5">{s.title}</h4>
+                  <p className="text-xs text-zinc-500 leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>

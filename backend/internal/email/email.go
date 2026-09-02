@@ -44,15 +44,60 @@ func SendBroadcast(ctx context.Context, to, subject, body string) error {
 // SendResetCode emails a password reset code to the recipient. If no email backend
 // is configured, delivery is allowed only when APP_ENV is explicitly development.
 func SendResetCode(ctx context.Context, to, code string) error {
-	subject := "Your password reset code"
-	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.", code)
-	html := fmt.Sprintf(`<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1f2937">
-  <h2 style="color:#111827;margin:0 0 16px">Reset your password</h2>
-  <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#4b5563">Use this code to set a new password:</p>
-  <div style="font-size:32px;font-weight:700;letter-spacing:6px;color:#7c3aed;background:#f5f3ff;padding:16px;border-radius:8px;text-align:center;margin:0 0 16px;font-family:ui-monospace,monospace">%s</div>
-  <p style="margin:0;font-size:12px;color:#6b7280">This code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.</p>
-</div>`, code)
-	return send(ctx, to, subject, text, html)
+	subject := "Your password reset code — Explain This Website"
+	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.\n\n— Explain This Website", code)
+	htmlBody := fmt.Sprintf(`<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset your password</title></head>
+<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <table width="100%%" cellpadding="0" cellspacing="0" style="background:#09090b;padding:40px 16px">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%%%%">
+
+        <!-- Logo bar -->
+        <tr>
+          <td style="padding-bottom:28px;text-align:center">
+            <span style="font-size:13px;font-weight:700;color:#a78bfa;letter-spacing:0.05em">Explain This Website</span>
+          </td>
+        </tr>
+
+        <!-- Card -->
+        <tr>
+          <td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:36px 32px">
+
+            <!-- Heading -->
+            <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#8b5cf6">Password reset</p>
+            <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#f4f4f5;line-height:1.2">Reset your password</h1>
+            <p style="margin:0 0 28px;font-size:14px;line-height:1.6;color:#a1a1aa">Use the code below to set a new password. It expires in <strong style="color:#e4e4e7">35 minutes</strong>.</p>
+
+            <!-- Code block -->
+            <table width="100%%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+              <tr>
+                <td style="background:#0f0f11;border:1px solid #3f3f46;border-radius:10px;padding:20px;text-align:center">
+                  <span style="font-family:'Courier New',Courier,monospace;font-size:36px;font-weight:700;letter-spacing:10px;color:#a78bfa">%s</span>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Fine print -->
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#52525b">If you didn't request a password reset, you can safely ignore this email — your account remains unchanged.</p>
+
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding-top:24px;text-align:center">
+            <p style="margin:0;font-size:11px;color:#3f3f46">Explain This Website &nbsp;·&nbsp; <a href="https://www.explainthiswebsite.com" style="color:#3f3f46;text-decoration:underline">explainthiswebsite.com</a></p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`, code)
+	return send(ctx, to, subject, text, htmlBody)
 }
 
 func send(ctx context.Context, to, subject, text, html string) error {
