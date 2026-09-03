@@ -200,18 +200,15 @@ function AiPromptCard({ prompt }: { prompt: string }) {
     });
   }
   return (
-    <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4">
-      <div className="flex items-center justify-between mb-2.5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400">AI Prompt</p>
-        <button
-          type="button"
-          onClick={copy}
-          className="text-[10px] font-semibold px-2 py-0.5 rounded border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors"
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
-      </div>
-      <p className="text-[12px] text-zinc-400 leading-relaxed">{prompt}</p>
+    <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3 flex items-center justify-between">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400">AI Prompt</p>
+      <button
+        type="button"
+        onClick={copy}
+        className="text-[10px] font-semibold px-2 py-0.5 rounded border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors"
+      >
+        {copied ? "Copied!" : "Copy"}
+      </button>
     </div>
   );
 }
