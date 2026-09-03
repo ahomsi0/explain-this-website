@@ -200,14 +200,22 @@ function AiPromptCard({ prompt }: { prompt: string }) {
     });
   }
   return (
-    <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3 flex items-center justify-between">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400">AI Prompt</p>
+    <div className="rounded-xl border border-violet-500/30 bg-violet-500/8 px-5 py-4 flex items-center justify-between gap-4 mb-6">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <svg className="w-4 h-4 text-violet-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+        </svg>
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-violet-400 leading-none mb-0.5">Fix this with AI</p>
+          <p className="text-[12px] text-zinc-500 truncate">Copy a ready-made prompt and paste it into ChatGPT or Claude</p>
+        </div>
+      </div>
       <button
         type="button"
         onClick={copy}
-        className="text-[10px] font-semibold px-2 py-0.5 rounded border border-violet-500/20 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors"
+        className="shrink-0 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/15 text-violet-300 hover:bg-violet-500/25 transition-colors"
       >
-        {copied ? "Copied!" : "Copy"}
+        {copied ? "Copied!" : "Copy prompt"}
       </button>
     </div>
   );
@@ -323,11 +331,11 @@ export function GuideDetailPage({ slug }: { slug: string }) {
               </div>
             )}
 
-            {guide.aiPrompt && <AiPromptCard prompt={guide.aiPrompt} />}
           </div>
 
           {/* Right column — timeline */}
           <div className="flex-1 min-w-0">
+            {guide.aiPrompt && <AiPromptCard prompt={guide.aiPrompt} />}
             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-5">
               How to fix it — {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
             </p>
