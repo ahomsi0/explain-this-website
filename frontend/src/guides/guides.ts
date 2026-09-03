@@ -25,6 +25,8 @@ export interface Guide {
   /** Optional illustration shown under a given step (0-based index).
    *  Files live in /public/guides/ — SVG diagrams or real screenshots. */
   stepImages?: Record<number, { src: string; caption: string }>;
+  /** Ready-to-copy prompt users can paste into an AI assistant to get tailored fix advice. */
+  aiPrompt?: string;
 }
 
 export const GUIDES: Record<string, Guide> = {
@@ -47,6 +49,7 @@ export const GUIDES: Record<string, Guide> = {
       "Re-run your audit after each change — LCP improvements are cumulative and easy to verify.",
     ],
     tools: ["PageSpeed Insights", "Squoosh (image compression)", "WebPageTest (waterfall view)"],
+    aiPrompt: "My website's Largest Contentful Paint (LCP) is too slow — the main content takes over 2.5 seconds to appear. Can you identify the likely causes (hero image size, render-blocking resources, or slow server response) and give me specific, prioritised steps to bring LCP under 2.5 seconds?",
   },
   "cls": {
     slug: "cls",
@@ -66,6 +69,7 @@ export const GUIDES: Record<string, Guide> = {
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Performance panel"],
     stepImages: { 0: { src: "/guides/cls-layout-shift.svg", caption: "Reserving space keeps the layout stable while images load." } },
+    aiPrompt: "My website has a high Cumulative Layout Shift (CLS) score — elements are jumping around as the page loads, which frustrates visitors and hurts my Google ranking. Can you show me how to add explicit dimensions to images, reserve space for late-loading embeds, and verify the fix with PageSpeed Insights?",
   },
   "tbt": {
     slug: "tbt",
@@ -84,6 +88,7 @@ export const GUIDES: Record<string, Guide> = {
       "Break up long tasks in your own code with setTimeout scheduling or a web worker for heavy computation.",
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Performance", "Lighthouse"],
+    aiPrompt: "My website's Total Blocking Time (TBT) is too high — JavaScript is blocking the main thread after the page appears, making it unresponsive to taps and clicks. Can you identify the types of scripts most likely causing this and walk me through deferring, removing, or splitting them to bring TBT under 200ms?",
   },
   "mobile-performance": {
     slug: "mobile-performance",
@@ -103,6 +108,7 @@ export const GUIDES: Record<string, Guide> = {
     ],
     tools: ["PageSpeed Insights", "WebPageTest", "Chrome DevTools → Lighthouse"],
     stepImages: { 4: { src: "/guides/pagespeed-insights.png", caption: "Re-test after each change — scores move fast once the big items are fixed." } },
+    aiPrompt: "My website has a poor mobile performance score — pages feel slow on phones and my Lighthouse mobile score is below 50. Can you walk me through the highest-impact mobile optimisations in order: image compression first, then JavaScript, then server response time?",
   },
   "image-formats": {
     slug: "image-formats",
@@ -120,6 +126,7 @@ export const GUIDES: Record<string, Guide> = {
       "While you're at it, resize images to their display size — a 4000px-wide photo in a 400px slot wastes 90% of its bytes.",
     ],
     tools: ["Squoosh", "TinyPNG", "ShortPixel / Imagify (WordPress)"],
+    aiPrompt: "My website is serving images in JPEG, PNG, or GIF format instead of modern formats. Can you show me how to convert them to WebP or AVIF, which tools to use, and how to serve the modern format with a JPEG/PNG fallback for browsers that don't support it yet?",
     stepImages: {
       0: { src: "/guides/image-formats-compare.svg", caption: "Typical savings for the same photo." },
       1: { src: "/guides/squoosh-editor.png", caption: "Squoosh.app converts and compresses right in your browser — free, no signup." },
@@ -142,6 +149,7 @@ export const GUIDES: Record<string, Guide> = {
     ],
     tools: ["PageSpeed Insights"],
     stepImages: { 1: { src: "/guides/lazy-loading-code.svg", caption: "The attribute in context — plus the one image you should NOT lazy-load." } },
+    aiPrompt: "Several images on my website load immediately even when they're far below the visible screen, wasting bandwidth and slowing the initial load. Can you explain how to add loading='lazy' correctly, which images must NOT be lazy-loaded (above-the-fold / hero images), and how to verify it's working?",
   },
   "render-blocking-resources": {
     slug: "render-blocking-resources",
@@ -159,6 +167,7 @@ export const GUIDES: Record<string, Guide> = {
       "Remove plugins/tag-manager entries you no longer use — dead tags are the most common offender.",
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Coverage"],
+    aiPrompt: "My website has render-blocking JavaScript and CSS in the <head> that are delaying the first paint — visitors see a blank page until they finish loading. Can you walk me through adding defer to scripts, inlining critical CSS, and loading the rest asynchronously with concrete examples?",
   },
 
   // ── SEO ──────────────────────────────────────────────────────────────────
@@ -180,6 +189,7 @@ export const GUIDES: Record<string, Guide> = {
     ],
     tools: ["Google Search Console", "Ahrefs/Semrush site audit"],
     stepImages: { 1: { src: "/guides/serp-snippet.svg", caption: "How your title and description appear in search results." } },
+    aiPrompt: "My web page is missing a proper title tag — it's either absent, too long, or too generic to earn clicks from search results. Can you write a compelling title tag for a page about [describe your page] that is under 60 characters, includes the primary keyword near the start, and will improve click-through rate?",
   },
   "meta-description": {
     slug: "meta-description",
@@ -198,6 +208,7 @@ export const GUIDES: Record<string, Guide> = {
     ],
     tools: ["Google Search Console", "SERP snippet preview tools"],
     stepImages: { 2: { src: "/guides/serp-snippet.svg", caption: "The description is your pitch under the blue link." } },
+    aiPrompt: "My web page's meta description is missing or not compelling enough to earn clicks from search results. Can you write a meta description for a page about [describe your page] that is 140–160 characters, includes the target keyword naturally, and reads like a genuine pitch to click?",
   },
   "h1-heading": {
     slug: "h1-heading",
@@ -215,6 +226,7 @@ export const GUIDES: Record<string, Guide> = {
       "Remove empty or decorative heading tags left behind by templates.",
     ],
     tools: ["Chrome DevTools → Elements", "HeadingsMap extension"],
+    aiPrompt: "My web page either has no H1 heading or has multiple H1s, which confuses search engines about the page's topic. Can you explain the correct heading structure (one H1, then H2/H3 for sections) and help me write a single H1 that matches my primary keyword and intent?",
   },
   "image-alt-text": {
     slug: "image-alt-text",
@@ -232,6 +244,7 @@ export const GUIDES: Record<string, Guide> = {
       "Prioritise pages that get traffic first; our SEO tab lists exactly which images are missing alt text.",
     ],
     tools: ["Our SEO audit tab", "WAVE accessibility extension"],
+    aiPrompt: "Many images on my website are missing alt text, which hurts both accessibility and image SEO. Can you explain the rules for writing good alt text — when to describe the image versus leaving it empty for decorative images — and give me concrete examples for different image types?",
   },
   "open-graph-tags": {
     slug: "open-graph-tags",
@@ -249,6 +262,7 @@ export const GUIDES: Record<string, Guide> = {
       "Verify with the debuggers below after publishing (they also clear the platforms' caches).",
     ],
     tools: ["Facebook Sharing Debugger", "LinkedIn Post Inspector"],
+    aiPrompt: "My website is missing Open Graph meta tags, so links shared on social media show no preview image, title, or description — just a bare URL. Can you show me the exact og: tags I need to add to the HTML <head> and explain the correct image dimensions for social previews?",
   },
   "canonical-url": {
     slug: "canonical-url",
@@ -266,6 +280,7 @@ export const GUIDES: Record<string, Guide> = {
       "Verify the page renders on one canonical domain — redirect http→https and non-www→www (or vice versa) at the server.",
     ],
     tools: ["Google Search Console → URL Inspection"],
+    aiPrompt: "My website has duplicate content issues because pages are reachable at multiple URLs — with and without www, with and without trailing slash, and over both HTTP and HTTPS. Can you show me how to add a canonical link tag and configure server-level redirects to consolidate everything to one authoritative URL?",
   },
   "https": {
     slug: "https",
@@ -283,6 +298,7 @@ export const GUIDES: Record<string, Guide> = {
       "Re-run the audit to confirm the padlock and check for mixed-content warnings (see our mixed content guide).",
     ],
     tools: ["Let's Encrypt", "SSL Labs Server Test", "Cloudflare"],
+    aiPrompt: "My website is not fully on HTTPS or has mixed-content warnings where HTTP resources are loaded on HTTPS pages. Can you walk me through getting a free SSL certificate, setting up HTTP-to-HTTPS redirects, and finding and fixing any remaining mixed content?",
   },
   "viewport-meta": {
     slug: "viewport-meta",
@@ -299,6 +315,7 @@ export const GUIDES: Record<string, Guide> = {
       "Then test on a real phone: text should be readable without zooming and no horizontal scrolling should occur.",
     ],
     tools: ["Chrome DevTools device toolbar"],
+    aiPrompt: "My website is missing the viewport meta tag and renders at full desktop width on mobile devices, making text tiny and impossible to read without zooming. Can you explain the correct viewport meta tag, what width=device-width and initial-scale=1 actually do, and how to test it's working?",
   },
   "robots-directive": {
     slug: "robots-directive",
@@ -316,6 +333,7 @@ export const GUIDES: Record<string, Guide> = {
       "After fixing, request re-indexing in Google Search Console.",
     ],
     tools: ["Google Search Console → URL Inspection", "Robots.txt tester"],
+    aiPrompt: "My website's robots.txt file is missing or misconfigured — I'm not sure if it's blocking important pages or allowing access to admin areas. Can you show me how to write a correct robots.txt that lets search engines crawl public pages, blocks private paths, and references my sitemap?",
   },
   "structured-data": {
     slug: "structured-data",
@@ -333,6 +351,7 @@ export const GUIDES: Record<string, Guide> = {
       "Validate with the Rich Results Test and fix any errors it reports.",
     ],
     tools: ["Google Rich Results Test", "Schema.org generator"],
+    aiPrompt: "My website has no structured data, so I'm missing out on rich results like star ratings and FAQs in Google search. Based on my page type [blog post / local business / product / FAQ], can you write the exact JSON-LD schema to add to my page <head> to be eligible for rich snippets?",
   },
   "mixed-content": {
     slug: "mixed-content",
@@ -350,6 +369,7 @@ export const GUIDES: Record<string, Guide> = {
       "Add a Content-Security-Policy upgrade-insecure-requests directive as a safety net (see our security headers guide).",
     ],
     tools: ["Chrome DevTools Console", "Why No Padlock"],
+    aiPrompt: "My website loads over HTTPS but some images, scripts, or stylesheets are still referenced over HTTP, causing mixed content warnings in browsers. Can you help me find all HTTP resource references and update them to HTTPS or protocol-relative URLs?",
   },
 
   // ── UX & Conversion ─────────────────────────────────────────────────────
@@ -370,6 +390,7 @@ export const GUIDES: Record<string, Guide> = {
       "On mobile, keep it thumb-reachable and at least ~44px tall.",
     ],
     tools: ["Our conversion score tab", "A/B testing tool (later)"],
+    aiPrompt: "My website's landing page has no clear call-to-action or uses weak generic text like 'Submit' or 'Learn more'. Can you help me write specific, action-oriented CTA copy and explain the best placement and visual treatment to maximise click-through?",
   },
   "trust-signals": {
     slug: "trust-signals",
@@ -387,6 +408,7 @@ export const GUIDES: Record<string, Guide> = {
       "Add a guarantee or refund policy near the buy button — it removes the perceived risk of acting.",
     ],
     tools: ["Our conversion score tab", "Review platforms (Trustpilot, Google Reviews)"],
+    aiPrompt: "My website lacks visible trust signals — no reviews, testimonials, security badges, or guarantees — which is likely causing visitors to leave without converting. Can you list the most effective trust elements to add, where to place them on the page, and what they should say to reduce buying anxiety?",
   },
   "social-proof": {
     slug: "social-proof",
@@ -404,6 +426,7 @@ export const GUIDES: Record<string, Guide> = {
       "Refresh it — a 'as featured in' strip from 2017 reads as neglect.",
     ],
     tools: ["Our conversion score tab"],
+    aiPrompt: "My website has no social proof — no customer reviews, user counts, or testimonials to reassure first-time visitors. Can you explain the most effective types of social proof for my site type [SaaS / e-commerce / service business], how to collect it, and where it should appear on the page?",
   },
   "mobile-friendliness": {
     slug: "mobile-friendliness",
@@ -422,6 +445,7 @@ export const GUIDES: Record<string, Guide> = {
       "Fix the worst offender first, re-test, repeat — mobile issues are usually a handful of repeating patterns.",
     ],
     tools: ["Chrome DevTools device toolbar", "PageSpeed Insights"],
+    aiPrompt: "My website fails Google's mobile-friendliness test — buttons are too small to tap, text requires zooming, or the layout breaks on small screens. Can you walk me through the specific CSS and HTML changes needed to pass the test, and show me how to verify with Chrome DevTools?",
   },
   "contact-info": {
     slug: "contact-info",
@@ -439,6 +463,7 @@ export const GUIDES: Record<string, Guide> = {
       "Add a Contact page and link it in the main navigation or footer.",
     ],
     tools: ["Our UX tab"],
+    aiPrompt: "My website makes it hard for visitors to contact me — there's no visible phone, email, or contact form in an obvious location. Can you tell me exactly where contact information should appear, what options to offer, and how to make phone and email links clickable on mobile?",
   },
   "privacy-policy": {
     slug: "privacy-policy",
@@ -456,6 +481,7 @@ export const GUIDES: Record<string, Guide> = {
       "If you use cookies for analytics or ads, add a consent banner (we do — see the banner on this site).",
     ],
     tools: ["Termly", "iubenda", "Google Privacy & Terms generator"],
+    aiPrompt: "My website collects email addresses, uses cookies, and has Google Analytics, but has no privacy policy page. Can you explain what a privacy policy must cover for a small website under GDPR/CCPA and help me draft the key sections (data collection, cookies, user rights, contact)?",
   },
   "message-clarity": {
     slug: "message-clarity",
@@ -474,6 +500,7 @@ export const GUIDES: Record<string, Guide> = {
       "Test on someone outside your industry: can they repeat what you offer after five seconds?",
     ],
     tools: ["Our conversion score tab"],
+    aiPrompt: "My website's main message is unclear — visitors can't tell what I offer, who it's for, or what to do next within the first five seconds. Can you help me write a hero headline and sub-headline that passes the '5-second test' and makes the value proposition immediately obvious?",
   },
   "conversion-friction": {
     slug: "conversion-friction",
@@ -492,6 +519,7 @@ export const GUIDES: Record<string, Guide> = {
       "Test the flow on a phone: if it's painful there, it's losing most of your conversions.",
     ],
     tools: ["Our conversion score tab", "Hotjar/Clarity session recordings"],
+    aiPrompt: "My website's conversion flow has too many steps, form fields, or hidden costs that make visitors give up before completing the action. Can you identify the most common friction points in signup and checkout flows and show me how to simplify each one?",
   },
   "generic-copy": {
     slug: "generic-copy",
@@ -509,6 +537,7 @@ export const GUIDES: Record<string, Guide> = {
       "Read the page aloud — if you'd skip the sentence in a real conversation, cut or sharpen it.",
     ],
     tools: ["Our vague language tab", "Hemingway Editor"],
+    aiPrompt: "My website uses vague marketing language like 'world-class', 'cutting-edge', and 'innovative solutions' that visitors skip over because it carries no real information. Can you help me rewrite the following copy to be concrete, specific, and benefit-focused? [paste your text here]",
   },
   "security-headers": {
     slug: "security-headers",
@@ -530,6 +559,7 @@ export const GUIDES: Record<string, Guide> = {
       0: { src: "/guides/security-headers-response.svg", caption: "The four headers to start with, exactly as your server should send them." },
       3: { src: "/guides/securityheaders-scan.png", caption: "Paste your URL at securityheaders.com for an instant grade." },
     },
+    aiPrompt: "My website is missing important HTTP security headers like Content-Security-Policy, X-Frame-Options, and Strict-Transport-Security that protect visitors from attacks. Can you show me the exact header values to add and how to configure them for [nginx / Apache / Cloudflare / Vercel / Netlify]?",
   },
   "stale-content": {
     slug: "stale-content",
@@ -547,6 +577,7 @@ export const GUIDES: Record<string, Guide> = {
       "Remove or redirect pages for products you no longer offer.",
     ],
     tools: ["Our freshness tab", "Google Search Console (pages losing traffic)"],
+    aiPrompt: "My website's content looks outdated — old copyright years, dated screenshots, and references to past events make it appear abandoned. Can you give me a content audit process and a prioritised list of what to update first to signal freshness to visitors and search engines?",
   },
   "reading-level": {
     slug: "reading-level",
@@ -565,6 +596,7 @@ export const GUIDES: Record<string, Guide> = {
       "Run the page through Hemingway and fix the red/yellow highlights.",
     ],
     tools: ["Hemingway Editor", "Our content tab"],
+    aiPrompt: "My website's copy is too complex — long sentences, industry jargon, and dense paragraphs that most visitors won't read. Can you help me simplify the following text to a clear reading level suitable for a general audience while keeping the meaning intact? [paste your text here]",
   },
   "search-intent": {
     slug: "search-intent",
@@ -582,6 +614,7 @@ export const GUIDES: Record<string, Guide> = {
       "Cover the sub-questions searchers obviously have next (the 'People also ask' boxes are a cheat sheet).",
     ],
     tools: ["Google Search Console", "'People also ask' boxes"],
+    aiPrompt: "My page targets a keyword but the content doesn't match what people searching that term actually want — visitors bounce immediately. Can you help me diagnose the intent mismatch and restructure the page to match what searchers are really looking for when they type that query?",
   },
   "broken-links": {
     slug: "broken-links",
@@ -599,6 +632,7 @@ export const GUIDES: Record<string, Guide> = {
       "Set up a recurring check (our re-run, or a crawler like Screaming Frog) — link rot returns.",
     ],
     tools: ["Our SEO tab", "Screaming Frog", "Ahrefs broken link report"],
+    aiPrompt: "My website has broken links returning 404 errors that damage user experience and waste crawl budget. Can you give me a step-by-step process to audit all my links, decide what to do with each broken one (redirect, remove, or replace), and prevent the same issue recurring?",
   },
 
   // ── New: Technical SEO & Performance ─────────────────────────────────────
@@ -620,6 +654,7 @@ export const GUIDES: Record<string, Guide> = {
       "Exclude low-value pages: no-index pages, pagination, filtered URLs, and admin paths should not appear in the sitemap.",
     ],
     tools: ["Google Search Console", "Yoast SEO (WordPress)", "xml-sitemaps.com"],
+    aiPrompt: "My website doesn't have an XML sitemap or hasn't submitted one to Google Search Console, which may be limiting how many pages get indexed. Can you walk me through generating a sitemap for [WordPress / static site / Next.js], adding it to robots.txt, and submitting it in Search Console?",
   },
 
   "hreflang": {
@@ -640,6 +675,7 @@ export const GUIDES: Record<string, Guide> = {
       "If you have many pages, implement hreflang via the XML sitemap instead of the HTML head — it scales better and is equally supported by Google.",
     ],
     tools: ["Google Search Console → International Targeting", "Ahrefs Hreflang Checker", "hreflangvalidator.com"],
+    aiPrompt: "My website serves content in multiple languages but has no hreflang tags, so Google may show the wrong language version to users from different regions. Can you show me the exact hreflang link elements to add to each variant, the self-referencing format, and the x-default fallback?",
   },
 
   "font-loading": {
@@ -660,6 +696,7 @@ export const GUIDES: Record<string, Guide> = {
       "Subset your fonts to only the characters used on the page using pyftsubset or a build tool — this can cut font file size by 50–80%.",
     ],
     tools: ["Google Fonts (font-display parameter)", "google-webfonts-helper", "Fontaine (automatic fallback metrics)"],
+    aiPrompt: "My website uses custom web fonts that are causing a flash of invisible text (FOIT) or layout shifts when the font loads. Can you show me how to add font-display: swap, preload the key font files, and configure a close fallback font to minimise the visual disruption?",
   },
 
   "caching": {
@@ -680,6 +717,7 @@ export const GUIDES: Record<string, Guide> = {
       "Verify with Google PageSpeed Insights — the 'Serve static assets with an efficient cache policy' audit lists every under-cached resource.",
     ],
     tools: ["Chrome DevTools → Network tab", "PageSpeed Insights", "Cloudflare Cache Rules"],
+    aiPrompt: "My website isn't setting proper Cache-Control headers on static assets, so returning visitors have to re-download everything on each visit. Can you give me the exact header values for different asset types and show me how to configure them on [nginx / Apache / Cloudflare / Vercel]?",
   },
 
   "redirect-chains": {
@@ -700,6 +738,7 @@ export const GUIDES: Record<string, Guide> = {
       "After fixing, verify the chain is gone: curl -IL https://yourdomain.com/old-url should resolve in one or two hops maximum.",
     ],
     tools: ["Screaming Frog SEO Spider", "Ahrefs Site Audit", "httpstatus.io (single URL checker)"],
+    aiPrompt: "My website has redirect chains where URL A redirects to B which then redirects to C, wasting load time and diluting SEO link equity. Can you help me audit my redirects, update each one to point directly to the final destination, and verify no chains remain?",
   },
 
   "internal-linking": {
@@ -720,6 +759,7 @@ export const GUIDES: Record<string, Guide> = {
       "Audit your navigation — every page in your main nav gets a free internal link from every other page. Make sure the nav links to your most important pages, not just the most recent ones.",
     ],
     tools: ["Screaming Frog SEO Spider", "Ahrefs Internal Link Opportunities", "Google Search Console → Links"],
+    aiPrompt: "Several pages on my website have few or no internal links pointing to them, making them hard for search engines and visitors to discover. Can you show me how to build an effective internal linking strategy, find orphaned pages, and add contextual links using descriptive anchor text?",
   },
 };
 
