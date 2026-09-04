@@ -85,17 +85,91 @@ const TONE: Record<UpdateTone, { dot: string; tag: string; tagBg: string; tagBor
   },
 };
 
+function SpotlightCard({ update }: { update: Update }) {
+  const t = TONE[update.tone];
+  return (
+    <article className="relative overflow-hidden rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-violet-900/[0.04] p-6 sm:p-7">
+      <div
+        className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-violet-500/[0.07] blur-2xl"
+        aria-hidden="true"
+      />
+      <div className="relative">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span
+            className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
+          >
+            {update.label}
+          </span>
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+            Latest
+          </span>
+          <time className="ml-auto text-[11px] text-zinc-600">{update.date}</time>
+        </div>
+
+        <h2 className="mb-3 text-2xl font-bold tracking-tight text-zinc-100 sm:text-[1.6rem]">
+          {update.title}
+        </h2>
+        <p className="mb-5 text-sm leading-7 text-zinc-400">{update.description}</p>
+
+        <ul className="grid grid-cols-2 gap-1.5">
+          {update.details.map((detail, i) => {
+            const isOddLast =
+              update.details.length % 2 !== 0 && i === update.details.length - 1;
+            return (
+              <li
+                key={detail}
+                className={`flex items-start gap-2 rounded-lg border border-violet-500/[0.12] bg-violet-500/[0.06] px-3 py-2 text-[11.5px] leading-snug text-violet-400 ${isOddLast ? "col-span-2" : ""}`}
+              >
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mt-0.5 shrink-0"
+                  aria-hidden="true"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {detail}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </article>
+  );
+}
+
+function FeedRow({ update }: { update: Update }) {
+  const t = TONE[update.tone];
+  return (
+    <li className="flex items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5">
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${t.dot}`} aria-hidden="true" />
+      <span className="flex-1 truncate text-sm font-medium text-zinc-400">{update.title}</span>
+      <span
+        className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
+      >
+        {update.label}
+      </span>
+      <time className="shrink-0 text-[11px] text-zinc-600">{update.date}</time>
+    </li>
+  );
+}
+
 export function WhatsNewPage() {
+  const [latest, ...rest] = UPDATES;
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-100">
-      {/* Hero backdrop — matches landing page */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] hero-grid" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] hero-noise" aria-hidden="true" />
 
       <div className="relative z-10">
-        <main className="mx-auto max-w-3xl px-4 sm:px-6">
-          {/* Page header */}
-          <section className="pt-14 pb-10 sm:pt-20 sm:pb-14 fade-up">
+        <main className="mx-auto max-w-2xl px-4 sm:px-6">
+          <section className="pb-10 pt-14 fade-up sm:pb-12 sm:pt-20">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
               Product updates
             </p>
@@ -107,60 +181,27 @@ export function WhatsNewPage() {
             </p>
           </section>
 
-          {/* Changelog cards */}
-          <section aria-labelledby="updates-heading" className="pb-12">
-            <h2 id="updates-heading" className="sr-only">Recent updates</h2>
-
-            <div className="flex flex-col gap-4">
-              {UPDATES.map((update, i) => {
-                const t = TONE[update.tone];
-                const isLatest = i === 0;
-                return (
-                  <article
-                    key={update.title}
-                    className={`fade-up rounded-xl border p-5 transition-colors sm:p-6 ${
-                      isLatest
-                        ? "border-violet-500/30 bg-violet-500/[0.04]"
-                        : "border-zinc-800/80 bg-zinc-900/30 hover:border-zinc-700"
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
-                      >
-                        {update.label}
-                      </span>
-                      {isLatest && (
-                        <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
-                          New
-                        </span>
-                      )}
-                      <time className="ml-auto text-[11px] text-zinc-600">{update.date}</time>
-                    </div>
-
-                    <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-100 sm:text-xl">
-                      {update.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-zinc-400">{update.description}</p>
-
-                    <ul className="mt-4 grid gap-2 sm:grid-cols-1">
-                      {update.details.map((detail) => (
-                        <li key={detail} className="flex items-start gap-2.5 text-xs leading-relaxed text-zinc-500">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`mt-0.5 shrink-0 ${t.tag}`} aria-hidden="true">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                          {detail}
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
-                );
-              })}
-            </div>
+          <section className="fade-up" aria-label="Latest update">
+            <SpotlightCard update={latest} />
           </section>
 
-          {/* Footer cta */}
-          <section className="border-t border-zinc-900 py-10 text-center">
+          {rest.length > 0 && (
+            <section className="mt-5 fade-up" aria-labelledby="prev-updates-label">
+              <p
+                id="prev-updates-label"
+                className="mb-2.5 text-[9.5px] font-bold uppercase tracking-[0.14em] text-zinc-600"
+              >
+                Previous updates
+              </p>
+              <ul className="flex flex-col gap-1" role="list" aria-labelledby="prev-updates-label">
+                {rest.map((update) => (
+                  <FeedRow key={update.title} update={update} />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className="mt-8 border-t border-zinc-900 py-10 text-center">
             <p className="text-sm text-zinc-500">Have an idea or found something that needs fixing?</p>
             <a
               href="mailto:support@explainthewebsite.com"
@@ -169,7 +210,10 @@ export function WhatsNewPage() {
               Send us a note
             </a>
             <div className="mt-5">
-              <a href="/" className="text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors">
+              <a
+                href="/"
+                className="text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-200"
+              >
                 ← Back to the analyzer
               </a>
             </div>
