@@ -1,4 +1,4 @@
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useAuth } from "../../context/useAuth";
 import { compareLive, type AuditComparison } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
@@ -50,7 +50,12 @@ export function ComparePage() {
   const [error, setError] = useState<string | null>(null);
   const [comparison, setComparison] = useState<AuditComparison | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
-  const mountedRef = useRef(true);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => () => {
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -69,21 +74,27 @@ export function ComparePage() {
       return;
     }
 
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
     setBusy(true);
     try {
-      const result = await compareLive(yoursUrl, compUrl);
-      if (mountedRef.current) setComparison(result);
+      const result = await compareLive(yoursUrl, compUrl, controller.signal);
+      if (controllerRef.current === controller) setComparison(result);
     } catch (err) {
-      if (mountedRef.current) setError(err instanceof Error ? err.message : "Comparison failed — please try again");
+      if (controllerRef.current === controller) setError(err instanceof Error ? err.message : "Comparison failed — please try again");
     } finally {
-      if (mountedRef.current) setBusy(false);
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+        setBusy(false);
+      }
     }
   };
 
   const handleCancel = () => {
-    mountedRef.current = false;
+    controllerRef.current?.abort();
+    controllerRef.current = null;
     setBusy(false);
-    mountedRef.current = true;
   };
 
   return (

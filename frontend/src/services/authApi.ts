@@ -330,10 +330,11 @@ export async function compareAudits(a: string, b: string): Promise<AuditComparis
 
 // compareLive runs fresh analyses of two sites and returns the same
 // before/after shape as saved-audit comparison (before = "yours").
-export async function compareLive(yours: string, competitor: string): Promise<AuditComparison> {
+export async function compareLive(yours: string, competitor: string, signal?: AbortSignal): Promise<AuditComparison> {
   return jsonFetch<AuditComparison>("/api/compare-live", {
     method: "POST",
     body: JSON.stringify({ yours, competitor }),
+    signal,
   });
 }
 

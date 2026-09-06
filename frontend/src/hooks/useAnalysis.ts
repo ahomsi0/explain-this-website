@@ -56,6 +56,7 @@ export function useAnalysis(onSuccess?: (result: AnalysisResult) => void | Promi
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
+    setCurrentUrl(url);
     setStatus("loading");
     setResult(null);
     setError(null);

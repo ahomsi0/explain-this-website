@@ -110,7 +110,7 @@ function AppInner() {
   // history page's re-run button). The param is stripped so a refresh during
   // loading doesn't restart the run.
   useEffect(() => {
-    if (status !== "idle") return;
+    if (window.location.pathname !== "/") return;
     const target = new URLSearchParams(window.location.search).get("url");
     if (!target) return;
     window.history.replaceState({}, "", window.location.pathname);

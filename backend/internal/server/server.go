@@ -149,13 +149,17 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	})
 
 	rl := newRateLimiter()
-	wrapped := recoveryMiddleware(
-		securityHeadersMiddleware(
-			auth.Middleware(
-				apiKeyMiddleware(
-					tokenFreshnessMiddleware(
-						rateLimitMiddleware(rl,
-							corsMiddleware(cfg.AllowedOrigin, mux),
+	// CORS headers go on first so every response below — including rate limits
+	// and recovered panics — carries them.
+	wrapped := corsHeadersMiddleware(cfg.AllowedOrigin,
+		recoveryMiddleware(
+			securityHeadersMiddleware(
+				auth.Middleware(
+					apiKeyMiddleware(
+						tokenFreshnessMiddleware(
+							rateLimitMiddleware(rl,
+								originGuardMiddleware(cfg.AllowedOrigin, mux),
+							),
 						),
 					),
 				),
@@ -445,12 +449,20 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 
 // ── CORS middleware ───────────────────────────────────────────────────────────
 
-// corsMiddleware adds the necessary headers to allow the frontend to call the API.
+// corsHeadersMiddleware adds the headers that allow the frontend to call the
+// API, and answers preflight requests.
+//
+// It must wrap every other middleware. Anything that writes a response before
+// it — a rate limit, an expired token, a panic — would otherwise reply without
+// CORS headers, and the browser reports that as a CORS failure while hiding the
+// real status. Preflight is answered here for the same reason: an OPTIONS must
+// not be able to fail on a rate limit or a missing session.
+//
 // ALLOWED_ORIGIN can be:
 //   - "*"                    → allow all origins (open API)
 //   - "https://foo.com"      → single origin
 //   - "https://a.com,https://b.com" → comma-separated list of allowed origins
-func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
+func corsHeadersMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 	allowed := parseAllowedOrigins(allowedOrigin)
 	allowAll := false
 	for _, o := range allowed {
@@ -478,12 +490,23 @@ func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+		next.ServeHTTP(w, r)
+	})
+}
 
-		// Browser sessions use cookies, so reject cross-site state changes even
-		// when a deployment intentionally uses SameSite=None for split origins.
-		// API-key requests are header-authenticated and do not need this check.
+// originGuardMiddleware rejects cross-site state changes. Browser sessions use
+// cookies, so an unexpected origin is refused even when a deployment
+// intentionally uses SameSite=None for split origins. API-key requests are
+// header-authenticated and do not need this check.
+//
+// Unlike corsHeadersMiddleware this runs *after* auth.Middleware, because it
+// only applies to requests that carry an authenticated user.
+func originGuardMiddleware(allowedOrigin string, next http.Handler) http.Handler {
+	allowed := parseAllowedOrigins(allowedOrigin)
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if isUnsafeMethod(r.Method) && auth.UserIDFromContext(r.Context()) != 0 &&
-			!auth.IsAPIKeyRequest(r.Context()) && !isOriginAllowed(allowed, origin) {
+			!auth.IsAPIKeyRequest(r.Context()) && !isOriginAllowed(allowed, r.Header.Get("Origin")) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode(model.ErrorResponse{Error: "request origin is not allowed"})
