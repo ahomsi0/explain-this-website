@@ -72,11 +72,11 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   label: string; value: string | number; suffix?: string; valueClass?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 px-3 py-3 border-r border-zinc-800 last:border-r-0 min-w-[110px] shrink-0">
-      <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold whitespace-nowrap">{label}</span>
-      <div className="flex items-baseline gap-0.5">
-        <span className={`text-2xl font-bold leading-none ${valueClass}`}>{value}</span>
-        {suffix && <span className="text-xs text-zinc-600 font-medium">{suffix}</span>}
+    <div className="flex flex-col gap-1 min-w-0 px-2.5 sm:px-3 py-2.5 sm:py-3 border-r border-b border-zinc-800">
+      <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-wider font-semibold truncate">{label}</span>
+      <div className="flex items-baseline gap-0.5 min-w-0">
+        <span className={`text-xl sm:text-2xl font-bold leading-none truncate ${valueClass}`}>{value}</span>
+        {suffix && <span className="text-[11px] sm:text-xs text-zinc-600 font-medium shrink-0">{suffix}</span>}
       </div>
     </div>
   );
@@ -87,8 +87,8 @@ function TechStackTile({ items }: { items: { name: string }[] }) {
   const top = items.slice(0, 3);
   const extra = items.length - top.length;
   return (
-    <div className="flex flex-col gap-1 px-3 py-3 min-w-[110px] shrink-0">
-      <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold whitespace-nowrap">Tech Stack</span>
+    <div className="flex flex-col gap-1 min-w-0 px-2.5 sm:px-3 py-2.5 sm:py-3 border-r border-b border-zinc-800">
+      <span className="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-wider font-semibold truncate">Tech Stack</span>
       <div className="flex items-center flex-wrap gap-1 mt-0.5">
         {top.map((t) => (
           <span key={t.name} className="px-1.5 py-px rounded text-[10px] font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20">
@@ -284,8 +284,8 @@ export function ResultDashboard({
 
         <main className="flex-1 min-w-0">
           {/* Metrics strip */}
-          <div className="border-b border-zinc-800 bg-zinc-900/30 overflow-x-auto scrollbar-none">
-            <div className="flex items-stretch justify-start md:justify-center min-w-max md:min-w-0">
+          <div className="bg-zinc-900/30">
+            <div className="grid items-stretch [grid-template-columns:repeat(auto-fit,minmax(96px,1fr))] sm:[grid-template-columns:repeat(auto-fit,minmax(120px,1fr))] -mr-px">
               <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
               {(() => {
                 // Prefer mobile; fall back to desktop when PageSpeed only
@@ -313,10 +313,7 @@ export function ResultDashboard({
               {(() => {
                 const highConfidenceTech = result.techStack.filter(t => t.confidence === "high");
                 return highConfidenceTech.length > 0 ? (
-                  <>
-                    <div className="border-r border-zinc-800" aria-hidden="true" />
-                    <TechStackTile items={highConfidenceTech} />
-                  </>
+                  <TechStackTile items={highConfidenceTech} />
                 ) : null;
               })()}
             </div>
