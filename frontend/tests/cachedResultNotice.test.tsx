@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CachedResultNotice, formatCacheAge } from "../src/components/ResultDashboard/CachedResultNotice";
+import { CachedResultNotice } from "../src/components/ResultDashboard/CachedResultNotice";
+import { formatCacheAge } from "../src/lib/cacheAge";
 
 describe("formatCacheAge", () => {
   it("reads naturally at every scale", () => {

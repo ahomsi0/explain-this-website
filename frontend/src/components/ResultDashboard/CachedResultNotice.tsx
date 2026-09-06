@@ -2,13 +2,7 @@
 // fixing something can hand back the pre-fix analysis. A silent cache hit looks
 // exactly like "my fix did nothing", so say it out loud and offer the way out.
 
-// formatCacheAge renders an age in whole minutes. Anything under a minute is
-// "moments" — a precise second count reads as noise at that scale.
-export function formatCacheAge(seconds: number): string {
-  if (seconds < 60) return "moments";
-  const minutes = Math.floor(seconds / 60);
-  return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
-}
+import { formatCacheAge } from "../../lib/cacheAge";
 
 export function CachedResultNotice({ ageSeconds, onRerun }: {
   ageSeconds?: number;
