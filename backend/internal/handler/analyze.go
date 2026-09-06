@@ -94,12 +94,14 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			respHeaders     http.Header
 			parseDurationMs int
 			cacheHit        bool
+			cacheAge        time.Duration
 		)
 		if !req.Refresh {
-			if cached, cachedHeaders, ok := cache.Default.Get(rawURL); ok {
+			if cached, cachedHeaders, age, ok := cache.Default.Get(rawURL); ok {
 				result = *cached
 				respHeaders = cachedHeaders
 				cacheHit = true
+				cacheAge = age
 			}
 		}
 		if !cacheHit {
@@ -131,6 +133,8 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		// are per-caller.
 		result.SecurityHeaders = parser.AuditSecurityHeaders(respHeaders)
 		if cacheHit {
+			// Surfaced in the UI as "cached result from Xm ago".
+			result.CachedAgeSeconds = int(cacheAge.Seconds())
 			w.Header().Set("X-Cache", "HIT")
 		} else {
 			w.Header().Set("X-Cache", "MISS")
@@ -175,8 +179,11 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 
 		// Persist a copy without the caller's usage snapshot: shared reports
 		// are public and must not expose the owner's plan or daily quota.
+		// The cache age is per-response too — saved history and shared links
+		// must not keep showing "cached N minutes ago" forever.
 		persisted := result
 		persisted.Usage = nil
+		persisted.CachedAgeSeconds = 0
 
 		// Persist result so it can be retrieved via history and, for Pro users,
 		// via public shared links.

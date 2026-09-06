@@ -359,6 +359,7 @@ type AnalysisResult struct {
 	AIDetection        AIDetection           `json:"aiDetection"`
 	Performance        *PerformanceResult    `json:"performance,omitempty"`
 	ReportID           string                `json:"reportId,omitempty"`
+	CachedAgeSeconds   int                   `json:"cachedAgeSeconds,omitempty"` // >0 only when served from the short-TTL cache
 	ImageAudit         ImageFormatAudit      `json:"imageAudit"`
 	SiteFreshness      SiteFreshness         `json:"siteFreshness"`
 	SecurityHeaders    []SecurityHeaderCheck `json:"securityHeaders"`

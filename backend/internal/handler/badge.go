@@ -45,7 +45,7 @@ func BadgeHandler() http.HandlerFunc {
 // latestScoreForURL returns the overall score for a normalized URL, if any
 // analysis of it is available server-side.
 func latestScoreForURL(ctx context.Context, normalizedURL string) (int, bool) {
-	if cached, _, ok := cache.Default.Get(normalizedURL); ok && cached != nil {
+	if cached, _, _, ok := cache.Default.Get(normalizedURL); ok && cached != nil {
 		return parser.OverallScore(*cached), true
 	}
 	if db.IsAvailable() {

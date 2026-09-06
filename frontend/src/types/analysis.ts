@@ -304,6 +304,8 @@ export interface AnalysisResult {
   aiDetection: AIDetection;
   performance?: PerformanceResult;
   reportId?: string;
+  // Present only when the API served this from its short-TTL cache.
+  cachedAgeSeconds?: number;
   imageAudit: ImageFormatAudit;
   siteFreshness: SiteFreshness;
   securityHeaders: SecurityHeaderCheck[];

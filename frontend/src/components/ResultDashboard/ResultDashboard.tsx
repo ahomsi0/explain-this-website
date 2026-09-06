@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CachedResultNotice } from "./CachedResultNotice";
 import { useTheme } from "../../context/useTheme";
 import { Separator } from "@/components/ui/separator";
 import { LogoMark } from "../ui/Logo";
@@ -72,11 +73,11 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   label: string; value: string | number; suffix?: string; valueClass?: string;
 }) {
   return (
-    <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(4px,0.9cqw,12px)]">
+    <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(3px,0.9cqw,12px)]">
       <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(7px,0.95cqw,10px)]">{label}</span>
       <div className="flex items-baseline gap-0.5 min-w-0">
-        <span className={`font-bold leading-none truncate text-[clamp(13px,2.2cqw,24px)] ${valueClass}`}>{value}</span>
-        {suffix && <span className="text-zinc-600 font-medium shrink-0 text-[clamp(7px,0.9cqw,12px)]">{suffix}</span>}
+        <span className={`font-bold leading-none whitespace-nowrap text-[clamp(11px,2.2cqw,24px)] ${valueClass}`}>{value}</span>
+        {suffix && <span className="hidden sm:inline text-zinc-600 font-medium shrink-0 text-[clamp(7px,0.9cqw,12px)]">{suffix}</span>}
       </div>
     </div>
   );
@@ -87,7 +88,7 @@ function TechStackTile({ items }: { items: { name: string }[] }) {
   const top = items.slice(0, 3);
   const extra = items.length - top.length;
   return (
-    <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(4px,0.9cqw,12px)]">
+    <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(3px,0.9cqw,12px)]">
       <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(7px,0.95cqw,10px)]">Tech Stack</span>
       <div className="flex items-center flex-wrap gap-1 mt-0.5 min-w-0">
         {top.map((t) => (
@@ -233,7 +234,8 @@ export function ResultDashboard({
               <button
                 onClick={() => onAnalyze(result.url, "report", { refresh: true })}
                 title="Re-fetch and re-analyze this page, bypassing the recent-results cache"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
+                aria-label="Re-run fresh"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -283,6 +285,11 @@ export function ResultDashboard({
         />
 
         <main className="flex-1 min-w-0">
+          <CachedResultNotice
+            ageSeconds={result.cachedAgeSeconds}
+            onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined}
+          />
+
           {/* Metrics strip */}
           <div className="border-b border-zinc-800 bg-zinc-900/30 [container-type:inline-size]">
             <div className="flex items-stretch">

@@ -76,9 +76,10 @@ func New(ttl time.Duration) *Cache {
 	}
 }
 
-// Get returns a deep copy of the cached result + the original response headers
-// for the given URL, or (nil, nil, false) on miss / expiry.
-func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
+// Get returns a deep copy of the cached result, the original response headers,
+// and how long ago the entry was stored, or (nil, nil, 0, false) on miss /
+// expiry. The age lets callers tell the user how stale a served result is.
+func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, time.Duration, bool) {
 	url = NormalizeURL(url)
 	c.mu.RLock()
 	e, ok := c.entries[url]
@@ -87,7 +88,7 @@ func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
 		c.mu.Lock()
 		c.misses++
 		c.mu.Unlock()
-		return nil, nil, false
+		return nil, nil, 0, false
 	}
 	if time.Now().After(e.expiresAt) {
 		// Expired — drop the entry so it stops occupying capacity.
@@ -103,7 +104,7 @@ func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
 		}
 		c.misses++
 		c.mu.Unlock()
-		return nil, nil, false
+		return nil, nil, 0, false
 	}
 
 	// Deep-copy via gob round-trip so the caller can freely mutate the
@@ -114,7 +115,7 @@ func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
 		c.mu.Lock()
 		c.misses++
 		c.mu.Unlock()
-		return nil, nil, false
+		return nil, nil, 0, false
 	}
 
 	// Copy the headers so mutations on the returned http.Header don't leak.
@@ -128,7 +129,7 @@ func (c *Cache) Get(url string) (*model.AnalysisResult, http.Header, bool) {
 	c.mu.Lock()
 	c.hits++
 	c.mu.Unlock()
-	return &out, h, true
+	return &out, h, time.Since(e.insertedAt), true
 }
 
 // Set stores a result keyed by URL. Existing entries with the same key are
