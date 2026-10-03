@@ -22,6 +22,7 @@ import { ReportSkeleton } from "./components/ui/Skeletons";
 import { AuthModal } from "./components/auth/AuthModal";
 import { HistoryPage } from "./components/auth/HistoryPage";
 import { GuidesIndexPage, GuideDetailPage } from "./components/guides/GuidesPages";
+import { usePageMeta } from "./seo/usePageMeta";
 import { VerifyEmailPage } from "./components/auth/VerifyEmailPage";
 import { StatusPage } from "./components/status/StatusPage";
 import { track } from "./lib/analytics";
@@ -137,32 +138,12 @@ function AppInner() {
     }
   }, [status, error]);
 
-  useEffect(() => {
-    if (status === "success" && result) {
-      try { document.title = `${new URL(result.url).hostname} audit · Explain This Website`; }
-      catch { document.title = "Website audit · Explain This Website"; }
-    } else if (pathname === "/privacy") {
-      document.title = "Privacy Policy · Explain This Website";
-    } else if (pathname === "/terms") {
-      document.title = "Terms of Service · Explain This Website";
-    } else if (pathname === "/go-pro") {
-      document.title = "Go Pro · Explain This Website";
-    } else if (pathname === "/whats-new") {
-      document.title = "What’s New · Explain This Website";
-    } else if (pathname === "/compare") {
-      document.title = "Compare Sites · Explain This Website";
-    } else if (pathname === "/history") {
-      document.title = "Audit History · Explain This Website";
-    } else if (pathname === "/guides") {
-      document.title = "Fix Guides · Explain This Website";
-    } else if (pathname === "/status") {
-      document.title = "Service Status · Explain This Website";
-    } else if (pathname.startsWith("/guides/")) {
-      document.title = "Fix Guide · Explain This Website";
-    } else {
-      document.title = "Explain This Website — Instant Website Analyzer";
-    }
-  }, [pathname, status, result]);
+  const auditTitle = useMemo(() => {
+    if (status !== "success" || !result) return null;
+    try { return `${new URL(result.url).hostname} audit · Explain This Website`; }
+    catch { return "Website audit · Explain This Website"; }
+  }, [status, result]);
+  usePageMeta(pathname, auditTitle);
 
   // Lock background scrolling while an analysis is running — the loading
   // screen is a single fixed view.
