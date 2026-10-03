@@ -31,8 +31,11 @@ export function seoHeadHtml(meta: PageMeta): string {
     `<meta name="description" content="${d}" />`,
     `<meta name="robots" content="${meta.robots}" />`,
     `<link rel="canonical" href="${c}" />`,
+    `<link rel="alternate" hreflang="en" href="${c}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${c}" />`,
     `<meta property="og:type" content="${meta.ogType}" />`,
     `<meta property="og:url" content="${c}" />`,
+    `<meta property="og:locale" content="en_US" />`,
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
     `<meta property="og:title" content="${t}" />`,
     `<meta property="og:description" content="${d}" />`,
@@ -112,10 +115,14 @@ export function buildSitemap(lastmodFor: (path: string) => string | null): strin
   const urls = publicPaths()
     .map((p) => {
       const lastmod = lastmodFor(p);
-      return `  <url>\n    <loc>${canonicalFor(p)}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}\n  </url>`;
+      const loc = canonicalFor(p);
+      const alternates =
+        `\n    <xhtml:link rel="alternate" hreflang="en" href="${loc}" />` +
+        `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}" />`;
+      return `  <url>\n    <loc>${loc}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}${alternates}\n  </url>`;
     })
     .join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`;
 }
 
 export function outFileFor(path: string): string {

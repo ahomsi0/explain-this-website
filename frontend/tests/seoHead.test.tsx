@@ -25,6 +25,9 @@ describe("usePageMeta", () => {
     expect(meta('meta[property="og:type"]')).toBe("article");
     expect(meta('meta[name="twitter:title"]')).toBe(document.title);
     expect(ldTypes()).toEqual(["Article", "HowTo", "BreadcrumbList"]);
+    expect(meta('meta[property="og:locale"]')).toBe("en_US");
+    expect(document.head.querySelector('link[hreflang="en"]')?.getAttribute("href")).toBe(canonical());
+    expect(document.head.querySelector('link[hreflang="x-default"]')?.getAttribute("href")).toBe(canonical());
   });
 
   it("replaces (never duplicates) tags and JSON-LD when the path changes", () => {
@@ -33,6 +36,8 @@ describe("usePageMeta", () => {
     expect(meta('meta[name="robots"]')).toBe("noindex, nofollow");
     expect(ldTypes()).toEqual([]);
     expect(document.head.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
+    expect(document.head.querySelectorAll('link[hreflang="en"]')).toHaveLength(1);
+    expect(document.head.querySelectorAll('link[hreflang="x-default"]')).toHaveLength(1);
     expect(document.head.querySelectorAll('meta[name="description"]')).toHaveLength(1);
   });
 

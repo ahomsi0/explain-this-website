@@ -21,15 +21,29 @@ function setCanonical(doc: Document, href: string) {
   el.setAttribute("href", href);
 }
 
+function setAlternate(doc: Document, hreflang: string, href: string) {
+  let el = doc.head.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${hreflang}"]`);
+  if (!el) {
+    el = doc.createElement("link");
+    el.setAttribute("rel", "alternate");
+    el.setAttribute("hreflang", hreflang);
+    doc.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
+}
+
 /** Writes a page's SEO meta into the document head, replacing whatever was there. */
 export function applyMeta(doc: Document, meta: PageMeta): void {
   doc.title = meta.title;
   setMeta(doc, "name", "description", meta.description);
   setMeta(doc, "name", "robots", meta.robots);
   setCanonical(doc, meta.canonical);
+  setAlternate(doc, "en", meta.canonical);
+  setAlternate(doc, "x-default", meta.canonical);
 
   setMeta(doc, "property", "og:type", meta.ogType);
   setMeta(doc, "property", "og:url", meta.canonical);
+  setMeta(doc, "property", "og:locale", "en_US");
   setMeta(doc, "property", "og:site_name", SITE_NAME);
   setMeta(doc, "property", "og:title", meta.title);
   setMeta(doc, "property", "og:description", meta.description);

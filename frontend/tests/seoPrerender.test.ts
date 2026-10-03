@@ -27,6 +27,13 @@ describe("renderPage", () => {
     expect(html).toContain('<meta property="og:type" content="article" />');
   });
 
+  it("declares its language: self hreflang, x-default and og:locale", () => {
+    const url = "https://www.explainthiswebsite.com/guides/lcp";
+    expect(html).toContain(`<link rel="alternate" hreflang="en" href="${url}" />`);
+    expect(html).toContain(`<link rel="alternate" hreflang="x-default" href="${url}" />`);
+    expect(html).toContain('<meta property="og:locale" content="en_US" />');
+  });
+
   it("embeds the three JSON-LD blocks", () => {
     expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(3);
   });
@@ -78,6 +85,17 @@ describe("buildSitemap", () => {
     expect(locs).toContain("https://www.explainthiswebsite.com/");
     expect(locs).toContain("https://www.explainthiswebsite.com/guides/sitemap");
     expect(xml.match(/<lastmod>2026-10-03<\/lastmod>/g)).toHaveLength(Object.keys(GUIDES).length);
+  });
+
+  it("gives every URL en and x-default alternates pointing at itself", () => {
+    const entries = xml.split("<url>").slice(1);
+    expect(entries).toHaveLength(publicPaths().length);
+    for (const entry of entries) {
+      const loc = entry.match(/<loc>(.*?)<\/loc>/)![1];
+      expect(entry).toContain(`<xhtml:link rel="alternate" hreflang="en" href="${loc}" />`);
+      expect(entry).toContain(`<xhtml:link rel="alternate" hreflang="x-default" href="${loc}" />`);
+    }
+    expect(xml).toContain('xmlns:xhtml="http://www.w3.org/1999/xhtml"');
   });
 
   it("omits the ignored changefreq/priority hints and private pages", () => {
