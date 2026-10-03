@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { GUIDES } from "../src/guides/guides";
 import {
@@ -7,6 +9,7 @@ import {
   publicPaths,
   serializeJsonLd,
 } from "../src/seo/routes";
+import { seoHeadHtml } from "../src/seo/prerender";
 
 describe("publicPaths", () => {
   it("lists static pages and every guide exactly once", () => {
@@ -99,5 +102,17 @@ describe("JSON-LD", () => {
 
   it("serializes without a literal </script> sequence", () => {
     expect(serializeJsonLd({ a: "</script><b>" })).not.toContain("</script>");
+  });
+});
+
+describe("index.html template", () => {
+  const html = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
+  const norm = (s: string) => s.split("\n").map((l) => l.trim()).filter(Boolean).join("\n");
+
+  it("has an empty root and a marked SEO block equal to the home page head", () => {
+    expect(html).toContain('<div id="root"></div>');
+    const block = html.match(/<!--seo:start-->([\s\S]*?)<!--seo:end-->/)?.[1];
+    expect(block, "seo markers missing in index.html").toBeDefined();
+    expect(norm(block!)).toBe(norm(seoHeadHtml(metaForPath("/"))));
   });
 });
