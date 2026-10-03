@@ -1,9 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /dashboard
-Disallow: /go-pro
-Disallow: /history
-Disallow: /verify-email
-Disallow: /report/
 
 Sitemap: https://www.explainthiswebsite.com/sitemap.xml

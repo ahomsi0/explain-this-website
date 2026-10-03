@@ -13,17 +13,17 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
 const template = readFileSync(resolve(dist, "index.html"), "utf8");
 
-const today = new Date().toISOString().slice(0, 10);
+// lastmod is only emitted when git can give a real date (guide content lives
+// in one file). A made-up "today" on every build would teach Google to ignore it.
 function lastCommitDate(pathspec) {
   try {
     const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", pathspec], { cwd: root, encoding: "utf8" }).trim();
-    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : today;
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : null;
   } catch {
-    return today;
+    return null;
   }
 }
-const siteDate = lastCommitDate("src");
-const guideDate = lastCommitDate("src/guides");
+const guideDate = lastCommitDate("src/guides/guides.ts");
 
 const paths = publicPaths();
 for (const path of paths) {
@@ -32,5 +32,10 @@ for (const path of paths) {
   writeFileSync(file, renderPage(template, metaForPath(path), bodyHtmlForPath(path)));
 }
 
-writeFileSync(resolve(dist, "sitemap.xml"), buildSitemap((p) => (p.startsWith("/guides/") ? guideDate : siteDate)));
+// Rewrite target for every non-prerendered URL (/history, /report/:id, junk):
+// the same shell with a noindex head, so crawlers that skip JS never see a
+// duplicate-of-home page. React's usePageMeta sets the real tags at runtime.
+writeFileSync(resolve(dist, "_spa.html"), renderPage(template, metaForPath("/__spa__"), ""));
+
+writeFileSync(resolve(dist, "sitemap.xml"), buildSitemap((p) => (p.startsWith("/guides/") ? guideDate : null)));
 console.log(`prerender: wrote ${paths.length} pages + sitemap.xml`);

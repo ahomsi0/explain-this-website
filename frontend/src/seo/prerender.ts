@@ -108,9 +108,12 @@ export function bodyHtmlForPath(path: string): string {
   return main(`${intro}<p><a href="/">Analyze a website</a> · <a href="/guides">Fix guides</a></p>`);
 }
 
-export function buildSitemap(lastmodFor: (path: string) => string): string {
+export function buildSitemap(lastmodFor: (path: string) => string | null): string {
   const urls = publicPaths()
-    .map((p) => `  <url>\n    <loc>${canonicalFor(p)}</loc>\n    <lastmod>${lastmodFor(p)}</lastmod>\n  </url>`)
+    .map((p) => {
+      const lastmod = lastmodFor(p);
+      return `  <url>\n    <loc>${canonicalFor(p)}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}\n  </url>`;
+    })
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }

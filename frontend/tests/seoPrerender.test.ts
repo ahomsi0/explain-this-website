@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { GUIDES } from "../src/guides/guides";
 import { metaForPath, publicPaths, serializeJsonLd } from "../src/seo/routes";
@@ -67,15 +69,15 @@ describe("bodyHtmlForPath", () => {
 });
 
 describe("buildSitemap", () => {
-  const xml = buildSitemap(() => "2026-10-03");
+  const xml = buildSitemap((p) => (p.startsWith("/guides/") ? "2026-10-03" : null));
 
-  it("lists every public URL exactly once with a lastmod", () => {
+  it("lists every public URL exactly once, with lastmod only where one is given", () => {
     const locs = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
     expect(locs).toHaveLength(publicPaths().length);
     expect(new Set(locs).size).toBe(locs.length);
     expect(locs).toContain("https://www.explainthiswebsite.com/");
     expect(locs).toContain("https://www.explainthiswebsite.com/guides/sitemap");
-    expect(xml.match(/<lastmod>2026-10-03<\/lastmod>/g)).toHaveLength(locs.length);
+    expect(xml.match(/<lastmod>2026-10-03<\/lastmod>/g)).toHaveLength(Object.keys(GUIDES).length);
   });
 
   it("omits the ignored changefreq/priority hints and private pages", () => {
@@ -91,5 +93,25 @@ describe("outFileFor", () => {
     expect(outFileFor("/")).toBe("index.html");
     expect(outFileFor("/guides")).toBe("guides/index.html");
     expect(outFileFor("/guides/lcp")).toBe("guides/lcp/index.html");
+  });
+});
+
+describe("hosting config", () => {
+  const read = (f: string) => readFileSync(resolve(process.cwd(), f), "utf8");
+
+  it("rewrites unknown URLs to the noindex SPA shell, not the home page", () => {
+    const vercel = JSON.parse(read("vercel.json"));
+    expect(vercel.rewrites).toEqual([{ source: "/(.*)", destination: "/_spa.html" }]);
+    expect(metaForPath("/__spa__").robots).toBe("noindex, nofollow");
+  });
+
+  it("sends X-Robots-Tag noindex for private routes instead of blocking them in robots.txt", () => {
+    const vercel = JSON.parse(read("vercel.json"));
+    const sources = vercel.headers
+      .filter((h: { headers: { key: string }[] }) => h.headers.some((x) => x.key === "X-Robots-Tag"))
+      .map((h: { source: string }) => h.source);
+    for (const s of ["/report/:path*", "/history", "/dashboard", "/go-pro", "/verify-email"]) expect(sources).toContain(s);
+    // A Disallow would stop crawlers from ever seeing the noindex.
+    expect(read("public/robots.txt")).not.toMatch(/^Disallow:\s*\S/m);
   });
 });
