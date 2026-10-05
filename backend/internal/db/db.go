@@ -316,8 +316,27 @@ func applyRetention(ctx context.Context) {
 	}
 }
 
+// migrationLockKey serialises migrations across processes. Concurrent
+// CREATE TABLE IF NOT EXISTS statements race inside Postgres ("duplicate key
+// ... pg_type_typname_nsp_index"), which happens when several processes
+// initialise the same database at once: parallel test packages, or multiple
+// instances starting together on deploy.
+const migrationLockKey int64 = 7312840051
+
 func migrate(ctx context.Context) error {
-	if _, err := Pool.Exec(ctx, schema); err != nil {
+	conn, err := Pool.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	if _, err := conn.Exec(ctx, `SELECT pg_advisory_lock($1)`, migrationLockKey); err != nil {
+		return err
+	}
+	defer func() {
+		_, _ = conn.Exec(context.Background(), `SELECT pg_advisory_unlock($1)`, migrationLockKey)
+	}()
+
+	if _, err := conn.Exec(ctx, schema); err != nil {
 		return err
 	}
 
@@ -327,7 +346,7 @@ func migrate(ctx context.Context) error {
 	if ownerEmail == "" {
 		return nil
 	}
-	_, err := Pool.Exec(ctx,
+	_, err = Pool.Exec(ctx,
 		`UPDATE users SET plan = 'owner', subscription_status = 'active' WHERE lower(email) = $1`,
 		ownerEmail,
 	)
