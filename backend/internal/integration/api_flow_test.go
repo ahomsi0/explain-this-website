@@ -163,3 +163,65 @@ func readBody(resp *http.Response) string {
 	b, _ := io.ReadAll(resp.Body)
 	return string(b)
 }
+
+// An analysis made without an account must be logged (so the admin dashboard's
+// "Recent Audits" reflects all traffic) — without the query string, which can carry tokens.
+func TestAnonymousAnalysisIsLogged(t *testing.T) {
+	dsn := strings.TrimSpace(os.Getenv("INTEGRATION_DATABASE_URL"))
+	if dsn == "" {
+		t.Skip("set INTEGRATION_DATABASE_URL to run API/database integration tests")
+	}
+	t.Setenv("DATABASE_URL", dsn)
+	t.Setenv("JWT_SECRET", "integration-test-secret")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := db.Init(ctx); err != nil {
+		t.Fatalf("initialize database: %v", err)
+	}
+	t.Cleanup(db.Close)
+
+	path := fmt.Sprintf("/anon-log-%d", time.Now().UnixNano())
+	t.Cleanup(func() {
+		if db.IsAvailable() {
+			_, _ = db.Pool.Exec(context.Background(), `DELETE FROM anonymous_analyses WHERE url LIKE $1`, "%"+path)
+		}
+	})
+
+	cfg := config.Config{AllowedOrigin: "http://frontend.test", FetchTimeoutSec: 5, MaxBodyBytes: 1 << 20}
+	api := server.NewHandlerWithAnalyzeConfig(cfg, handler.Config{
+		FetchTimeoutSec: cfg.FetchTimeoutSec,
+		MaxBodyBytes:    cfg.MaxBodyBytes,
+		FetchHTML: func(context.Context, string, int64) (string, http.Header, error) {
+			return `<!doctype html><html><head><title>Anon page</title></head><body><h1>Hi</h1></body></html>`, http.Header{"Content-Type": []string{"text/html"}}, nil
+		},
+		Parse: func(_ context.Context, _ string, sourceURL string, _ string) (model.AnalysisResult, error) {
+			return model.AnalysisResult{
+				URL:       sourceURL,
+				FetchedAt: time.Now().UTC(),
+				Overview:  model.Overview{Title: "Anon page"},
+			}, nil
+		},
+	})
+	ts := httptest.NewServer(api)
+	defer ts.Close()
+
+	// No cookie jar: this visitor is anonymous.
+	resp := doJSON(t, &http.Client{}, http.MethodPost, ts.URL+"/api/analyze", `{"url":"https://example.com`+path+`?token=secret"}`)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("analyze status = %d, body = %s", resp.StatusCode, readBody(resp))
+	}
+	_ = readBody(resp)
+
+	var loggedURL, title string
+	err := db.Pool.QueryRow(ctx, `SELECT url, COALESCE(title, '') FROM anonymous_analyses WHERE url LIKE $1`, "%"+path).Scan(&loggedURL, &title)
+	if err != nil {
+		t.Fatalf("anonymous analysis was not logged: %v", err)
+	}
+	if loggedURL != "https://example.com"+path {
+		t.Fatalf("logged url = %q, want it without the query string", loggedURL)
+	}
+	if title != "Anon page" {
+		t.Fatalf("logged title = %q", title)
+	}
+}

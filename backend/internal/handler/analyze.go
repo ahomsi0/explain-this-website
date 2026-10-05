@@ -196,6 +196,8 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		if uid != 0 {
 			saveAuditForUser(r.Context(), uid, reportID, persisted, shareable, parseDurationMs, perfAvailable)
 			dispatchAnalysisCompleted(uid, reportID, persisted)
+		} else {
+			recordAnonymousAnalysis(r.Context(), persisted.URL, persisted.Overview.Title, cacheHit)
 		}
 
 		w.WriteHeader(http.StatusOK)
