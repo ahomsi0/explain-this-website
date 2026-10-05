@@ -337,9 +337,9 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   if (!r.ux.hasContactInfo) {
     issues.push(makeIssue(
       "no-contact",
-      "Add contact information",
-      "No contact information found. Visitors can't reach you, which erodes trust.",
-      "Add an email address, phone number, or contact form in the header or footer.",
+      "Add a way to get in touch",
+      "No contact route found. Visitors can't tell how to reach you, which erodes trust.",
+      "Add any contact route in the header or footer: a contact page, a support link, or a community/discussions link. An email or phone number is not required.",
       "medium",
       "easy",
       62,
@@ -353,7 +353,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
       "no-privacy",
       "Add a privacy policy",
       "No privacy policy found. Required by GDPR/CCPA and builds user trust.",
-      "Create a privacy policy page and link to it in your footer.",
+      "Create a privacy policy page and link to it in your footer. For example, a footer link labelled “Privacy Policy” pointing to a /privacy page.",
       "medium",
       "easy",
       62,

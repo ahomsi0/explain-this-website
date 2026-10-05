@@ -449,21 +449,21 @@ export const GUIDES: Record<string, Guide> = {
   },
   "contact-info": {
     slug: "contact-info",
-    title: "Make contact information easy to find",
+    title: "Make it easy to get in touch",
     category: "UX & Conversion",
-    summary: "A visible email, phone, or form — the minimum a stranger needs to reach you.",
+    summary: "Any visible contact route — a contact page, support link or community link.",
     whatItMeans:
-      "Contact info in the header, footer, or a dedicated page tells visitors a real person is reachable. Its absence reads as a signal the site may not be a real business.",
+      "A visible contact route (contact page, support link or community link) in the header, footer, or a dedicated page tells visitors a real person is reachable. Its absence reads as a signal the site may not be a real business.",
     whyItMatters:
       "Visitors who can't instantly see how to reach you assume there's a reason you're hiding it. It also costs you the high-intent visitors who were ready to talk.",
     steps: [
-      "Put an email address or phone number in the site footer on every page (and in the header if sales-driven).",
-      "Use a contact form with as few fields as possible — name, email, message is enough.",
-      "Make phone numbers and emails clickable (tel: and mailto: links) — half of mobile visitors will tap them.",
+      "Add a Contact, Support or Community link to the site footer on every page. A link to your GitHub Discussions or issue tracker is fine for open-source and side projects.",
+      "You do not need to publish an email address or phone number. A contact form or a hosted support page gives visitors a route without exposing either.",
+      "If you do publish a phone number or email, make them clickable (tel: and mailto: links) — half of mobile visitors will tap them.",
       "Add a Contact page and link it in the main navigation or footer.",
     ],
     tools: ["Our UX tab"],
-    aiPrompt: "My website makes it hard for visitors to contact me — there's no visible phone, email, or contact form in an obvious location. Can you tell me exactly where contact information should appear, what options to offer, and how to make phone and email links clickable on mobile?",
+    aiPrompt: "My website makes it hard for visitors to contact me — there's no obvious contact route. Can you suggest a way for visitors to reach me without publishing my email or phone number, tell me exactly where it should appear, and how to make any phone or email links clickable on mobile?",
   },
   "privacy-policy": {
     slug: "privacy-policy",

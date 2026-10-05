@@ -78,3 +78,31 @@ describe("LinkCheckCard", () => {
     expect(screen.getByText("1 broken")).toBeInTheDocument();
   });
 });
+
+import { TrustEngagementCard } from "../src/components/cards/ConversionCard";
+import type { UXResult } from "../src/types/analysis";
+
+describe("evidence in UX cards", () => {
+  it("shows the matched privacy link", () => {
+    const ux = { hasPrivacyPolicy: true, privacyEvidence: { href: "/privacy", text: "Privacy" } } as UXResult;
+    render(<TrustEngagementCard ux={ux} />);
+    expect(screen.getByText(/Privacy → \/privacy/)).toBeInTheDocument();
+  });
+
+  it("gives an example when no privacy policy is found", () => {
+    render(<TrustEngagementCard ux={{ hasPrivacyPolicy: false } as UXResult} />);
+    expect(screen.getByText(/e\.g\. a footer link “Privacy Policy”/)).toBeInTheDocument();
+  });
+});
+
+describe("no-contact issue wording", () => {
+  it("does not demand an email or phone number", () => {
+    const issues = computePriorityIssues({
+      ...resultWithLinks([]),
+      ux: { hasContactInfo: false } as UXResult,
+    } as AnalysisResult);
+    const issue = issues.find((i) => i.id === "no-contact");
+    expect(issue).toBeDefined();
+    expect(issue!.howToFix).toContain("not required");
+  });
+});

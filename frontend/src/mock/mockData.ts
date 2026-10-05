@@ -78,7 +78,7 @@ export const mockAnalysisResult: AnalysisResult = {
     "No canonical URL tag — risk of duplicate content penalties",
     "4 of 12 images lack alt text — hurts image SEO and accessibility",
     "og:image missing — social media shares will show no image preview",
-    "No contact information found — reduces credibility and trust",
+    "No way to get in touch found — visitors can't tell how to reach you",
   ],
   recommendations: [
     'Add <link rel="canonical"> on all pages to prevent duplicate content issues',
@@ -125,7 +125,7 @@ export const mockAnalysisResult: AnalysisResult = {
     { rank: 1, issue: "No canonical URL tag", impact: "SEO", why: "Risk of duplicate content penalties if the page is accessible via multiple URLs." },
     { rank: 2, issue: "Some images lack alt text", impact: "Accessibility + SEO", why: "Partial alt coverage still hurts image SEO and accessibility for affected images." },
     { rank: 3, issue: "No Open Graph tags", impact: "Reach", why: "Social shares show a blank preview — no image, no description — which drastically reduces click-throughs." },
-    { rank: 4, issue: "No contact information visible", impact: "Trust + Conversion", why: "Hard to reach = hard to trust. Contact info is a basic credibility signal for most businesses." },
+    { rank: 4, issue: "No way to get in touch visible", impact: "Trust + Conversion", why: "Hard to reach = hard to trust. A visible contact route (contact page, support or community link) is a basic credibility signal." },
   ],
   eli5: [
     { technical: "No canonical tag", simple: "If your page can be reached at multiple web addresses, Google might treat them as duplicate pages and split your ranking between them. A canonical tag tells Google which address is the real one." },

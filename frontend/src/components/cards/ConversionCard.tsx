@@ -12,6 +12,12 @@ function Row({ label, present, detail }: { label: string; present: boolean; deta
   );
 }
 
+function evidenceDetail(e: { href: string; text: string } | undefined, fallback: string): string {
+  if (!e) return fallback;
+  if (e.href && e.text) return `${e.text} → ${e.href}`;
+  return e.href || e.text || fallback;
+}
+
 export function ConversionCard({ ux }: { ux: UXResult }) {
   const coreSigs = [ux.hasCTA, ux.hasForms, ux.hasSocialProof, ux.hasTrustSignals, ux.hasContactInfo, ux.mobileReady];
   const score    = Math.round((coreSigs.filter(Boolean).length / coreSigs.length) * 100);
@@ -30,7 +36,7 @@ export function ConversionCard({ ux }: { ux: UXResult }) {
         <Row label="Lead Form"      present={ux.hasForms}        detail={ux.hasForms        ? `${ux.formCount} form(s)`   : "None found"} />
         <Row label="Social Proof"   present={ux.hasSocialProof}  detail={ux.hasSocialProof  ? "Detected"                 : "None found"} />
         <Row label="Trust Signals"  present={ux.hasTrustSignals} detail={ux.hasTrustSignals ? "Detected"                 : "None found"} />
-        <Row label="Contact Info"   present={ux.hasContactInfo}  detail={ux.hasContactInfo  ? "Present"                  : "None found"} />
+        <Row label="Contact Info"   present={ux.hasContactInfo}  detail={ux.hasContactInfo  ? evidenceDetail(ux.contactEvidence, "Present") : "None found — any contact page or link works"} />
         <Row label="Mobile Ready"   present={ux.mobileReady}     detail={ux.mobileReady     ? "Viewport tag present"     : "Missing"}    />
       </div>
     </CardShell>
@@ -57,7 +63,7 @@ export function TrustEngagementCard({ ux }: { ux: UXResult }) {
         <Row label="Live Chat"      present={ux.hasLiveChat}         detail={ux.hasLiveChat         ? "Widget detected"      : "None found"} />
         <Row label="Video Content"  present={ux.hasVideoContent}     detail={ux.hasVideoContent     ? "Video detected"       : "None found"} />
         <Row label="Newsletter"     present={ux.hasNewsletterSignup} detail={ux.hasNewsletterSignup ? "Signup form detected"  : "None found"} />
-        <Row label="Privacy Policy" present={ux.hasPrivacyPolicy}    detail={ux.hasPrivacyPolicy    ? "Policy link found"    : "None found"} />
+        <Row label="Privacy Policy" present={ux.hasPrivacyPolicy}    detail={ux.hasPrivacyPolicy    ? evidenceDetail(ux.privacyEvidence, "Policy link found") : "None found — e.g. a footer link “Privacy Policy” to /privacy"} />
       </div>
     </CardShell>
   );
