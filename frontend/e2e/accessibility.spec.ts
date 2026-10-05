@@ -43,13 +43,13 @@ for (const theme of THEMES) test.describe(`accessibility (${theme} theme)`, () =
     }
   });
 
-  test("report sections have no violations", async ({ page, isMobile }) => {
+  test("report sections have no violations", async ({ page }) => {
     test.slow(); // walks every report section
-    test.skip(isMobile, "The section sidebar is desktop-only; the phone report header is tracked separately.");
     await declineConsent(page);
     await page.getByLabel("Website URL to analyze").fill("example.com");
     await page.getByRole("button", { name: "Analyze", exact: true }).click();
-    await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: "Audit Overview", exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expectNoViolations(page, "report: Overview");
 
     for (const name of ["Fix Plan", "Tech Stack", "SEO Audit", "UX Review", "Performance", "Conversion"]) {
