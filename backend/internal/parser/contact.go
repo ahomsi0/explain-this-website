@@ -9,7 +9,7 @@ import (
 
 // contactWord matches contact-ish words as whole words, so "/helpful-articles"
 // does not match "help" but "/contact-us" and "/support/" do.
-var contactWord = regexp.MustCompile(`(^|[^a-z])(contact|support|help|feedback)([^a-z]|$)`)
+var contactWord = regexp.MustCompile(`(^|[^a-z])(contact|contactus|support|help|helpdesk|helpcenter|feedback)([^a-z]|$)`)
 
 // maxContactTextLen keeps long article headlines that happen to mention
 // "support" from counting as a contact link.
@@ -42,6 +42,12 @@ func isContactRoute(href, text string) bool {
 	if h == "" || strings.HasPrefix(h, "#") || strings.HasPrefix(h, "javascript:") {
 		return false
 	}
+	return isContactText(text)
+}
+
+// isContactText reports whether short visible text (a link or button label)
+// reads like a contact prompt, e.g. "Contact us" or "Get support".
+func isContactText(text string) bool {
 	t := strings.ToLower(strings.TrimSpace(text))
 	return t != "" && utf8.RuneCountInString(t) <= maxContactTextLen && contactWord.MatchString(t)
 }

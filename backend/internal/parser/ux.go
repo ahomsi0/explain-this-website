@@ -275,6 +275,15 @@ func walkUX(n *html.Node, result *model.UXResult) {
 					break
 				}
 			}
+			if tag == "button" {
+				display := evidenceText(extractText(n))
+				if isContactText(display) {
+					result.HasContactInfo = true
+					if result.ContactEvidence == nil {
+						result.ContactEvidence = &model.Evidence{Href: "", Text: display}
+					}
+				}
+			}
 			if tag == "a" {
 				rawHref := getAttr(n, "href")
 				href := strings.ToLower(rawHref)

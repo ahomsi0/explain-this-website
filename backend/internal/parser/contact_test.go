@@ -41,6 +41,15 @@ func TestContactRoutes(t *testing.T) {
 		{"unrelated word containing help", `<a href="/helpful-articles-about-cats">Cats</a>`, false, ""},
 		{"long headline mentioning support", `<a href="/blog/1">How we built support tooling for our five hundred person team</a>`, false, ""},
 		{"no links", `<p>Hello</p>`, false, ""},
+		{"contactus slug", `<a href="/contactus">Reach</a>`, true, "/contactus"},
+		{"helpdesk slug", `<a href="/helpdesk">Reach</a>`, true, "/helpdesk"},
+		{"helpcenter slug", `<a href="/helpcenter/">Reach</a>`, true, "/helpcenter/"},
+		{"contact button", `<button>Contact us</button>`, true, ""},
+		{"support button", `<button>Get support</button>`, true, ""},
+		{"unrelated button", `<button>Subscribe</button>`, false, ""},
+		{"long button", `<button>How we built support tooling for our five hundred person team</button>`, false, ""},
+		{"hidden button", `<button hidden>Contact us</button>`, false, ""},
+		{"display none button", `<div style="display:none"><button>Contact us</button></div>`, false, ""},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
