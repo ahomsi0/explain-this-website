@@ -82,7 +82,7 @@ export function GoProPage() {
                   onClick={() => setInterval(iv)}
                   className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors capitalize ${
                     interval === iv
-                      ? "bg-violet-500 text-white"
+                      ? "bg-violet-600 text-white"
                       : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
@@ -176,7 +176,7 @@ export function GoProPage() {
                 <button
                   onClick={() => void handleUpgrade()}
                   disabled={busy !== null}
-                  className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-md text-sm font-semibold text-white bg-violet-500 hover:bg-violet-400 disabled:opacity-60 transition-colors"
+                  className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-md text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-60 transition-colors"
                 >
                   {busy === "upgrade"
                     ? "Please wait…"

@@ -154,8 +154,12 @@ export function ResultDashboard({
         <div className="px-4 sm:px-6 h-12 flex items-center gap-3">
           <a href="/" aria-label="Explain This Website home" className="flex items-center gap-2 shrink-0">
             <LogoMark size={22} />
-            <h1 className="text-xs font-semibold text-zinc-300 hidden sm:block">Explain This Website</h1>
-            <span className="sr-only">Explain This Website — Website Analysis Report</span>
+            {/* One h1 at every width: the visible wordmark only shows on larger screens, so the
+                full title is always available to screen readers (and to phones, which have no other h1). */}
+            <h1 className="text-xs font-semibold text-zinc-300">
+              <span aria-hidden="true" className="hidden sm:inline">Explain This Website</span>
+              <span className="sr-only">Explain This Website — Website Analysis Report</span>
+            </h1>
           </a>
 
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />

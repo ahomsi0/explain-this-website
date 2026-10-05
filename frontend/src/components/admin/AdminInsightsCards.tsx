@@ -364,7 +364,7 @@ export function BroadcastEmailCard({ totalUsers }: { totalUsers: number }) {
           <button
             onClick={() => void send()}
             disabled={busy || !subject.trim() || !body.trim()}
-            className="px-4 py-1.5 rounded-md text-xs font-semibold bg-violet-500 hover:bg-violet-400 text-violet-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-1.5 rounded-md text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-violet-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? "Sending…" : "Send broadcast"}
           </button>

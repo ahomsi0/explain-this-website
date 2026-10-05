@@ -168,7 +168,7 @@ export function ForgotPasswordModal({
               <button
                 type="submit"
                 disabled={busy}
-                className="mt-2 w-full px-4 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider bg-violet-500 hover:bg-violet-400 text-white disabled:opacity-60 transition-colors shadow-[0_4px_14px_rgba(124,58,237,0.35)]"
+                className="mt-2 w-full px-4 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-60 transition-colors shadow-[0_4px_14px_rgba(124,58,237,0.35)]"
               >
                 {busy ? "Sending…" : "Send code"}
               </button>
@@ -214,7 +214,7 @@ export function ForgotPasswordModal({
               <button
                 type="submit"
                 disabled={busy}
-                className="mt-2 w-full px-4 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider bg-violet-500 hover:bg-violet-400 text-white disabled:opacity-60 transition-colors shadow-[0_4px_14px_rgba(124,58,237,0.35)]"
+                className="mt-2 w-full px-4 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-60 transition-colors shadow-[0_4px_14px_rgba(124,58,237,0.35)]"
               >
                 {busy ? "Resetting…" : "Reset password"}
               </button>

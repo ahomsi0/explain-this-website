@@ -46,6 +46,22 @@ function categoryColor(c: GuideCategory): string {
   }
 }
 
+// Accent as *text* needs a darker shade on the light theme (hex above is for
+// dots/dividers and the dark theme). Applied through the .guide-accent class.
+function categoryTextColorLight(c: GuideCategory): string {
+  switch (c) {
+    case "Performance":     return "#92400e";
+    case "SEO":             return "#166534";
+    case "UX & Conversion": return "#6d28d9";
+    case "Security":        return "#b91c1c";
+    case "Content":         return "#1d4ed8";
+  }
+}
+
+function accentStyle(c: GuideCategory): React.CSSProperties {
+  return { "--accent": categoryColor(c), "--accent-light": categoryTextColorLight(c) } as React.CSSProperties;
+}
+
 // Badge classes — solid dark pattern matching app convention
 function categoryBadge(c: GuideCategory): string {
   switch (c) {
@@ -75,7 +91,6 @@ function CategoryIcon({ category, className = "w-3.5 h-3.5" }: { category: Guide
 // ── Index page card ───────────────────────────────────────────────────────────
 
 function GuideCard({ guide }: { guide: Guide }) {
-  const color = categoryColor(guide.category);
   return (
     <a
       href={`/guides/${guide.slug}`}
@@ -85,7 +100,7 @@ function GuideCard({ guide }: { guide: Guide }) {
         {guide.title}
       </h3>
       <p className="text-[12px] text-zinc-500 leading-relaxed mb-3 line-clamp-2">{guide.summary}</p>
-      <span className="inline-flex items-center gap-1 text-[11.5px] font-medium transition-colors" style={{ color }}>
+      <span className="guide-accent inline-flex items-center gap-1 text-[11.5px] font-medium transition-colors" style={accentStyle(guide.category)}>
         Read guide
         <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
@@ -116,7 +131,7 @@ export function GuidesIndexPage() {
     .filter((g) => g.guides.length > 0);
 
   return (
-    <div className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+    <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -170,7 +185,7 @@ export function GuidesIndexPage() {
                 {/* Section header */}
                 <div className="flex items-center gap-3 pb-3 mb-5" style={{ borderBottom: `1.5px solid ${color}22` }}>
                   <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
-                  <h2 className="text-[13px] font-semibold" style={{ color }}>
+                  <h2 className="guide-accent text-[13px] font-semibold" style={accentStyle(category)}>
                     {category}
                   </h2>
                   <span className="text-[11px] text-zinc-600">{guides.length} guide{guides.length !== 1 ? "s" : ""}</span>
@@ -185,7 +200,7 @@ export function GuidesIndexPage() {
           })}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -232,7 +247,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
 
   if (!guide) {
     return (
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-10">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-6xl mx-auto text-center py-20">
           <p className="text-lg text-zinc-300">Guide not found</p>
           <p className="mt-2 text-sm text-zinc-500">It may have been renamed.</p>
@@ -240,7 +255,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
             Browse all guides
           </a>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -249,7 +264,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
     .slice(0, 3);
 
   return (
-    <div className="flex-1">
+    <main className="flex-1">
       {/* ── Hero header ── */}
       <div className="border-b border-zinc-800 bg-zinc-950/60 px-4 sm:px-6 lg:px-8 pt-8 pb-0">
         <div className="max-w-6xl mx-auto">
@@ -366,7 +381,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
             {/* Related guides */}
             {related.length > 0 && (
               <div className="mt-10 pt-8 border-t border-zinc-800">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">Related guides</p>
+                <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">Related guides</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {related.map((g) => <GuideCard key={g.slug} guide={g} />)}
                 </div>
@@ -375,7 +390,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

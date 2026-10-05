@@ -60,7 +60,7 @@ export function LandingPage({
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[820px] hero-grid" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[820px] hero-noise" aria-hidden="true" />
 
-      <div className="relative z-10">
+      <main className="relative z-10">
         {/* Universal header (logo, theme toggle, auth) comes from the app shell. */}
 
         {/* Hero */}
@@ -73,15 +73,14 @@ export function LandingPage({
               {usage && (
                 <>
                   <span className="h-1 w-1 rounded-full bg-zinc-700" aria-hidden="true" />
-                  <span
-                    className="inline-flex items-center gap-1.5 text-zinc-400"
-                    aria-label={
-                      usage.plan === "owner"
-                        ? "Unlimited analyses left today"
-                        : `${usage.dailyRemaining} of ${usage.dailyLimit} analyses left today`
-                    }
-                  >
+                  <span className="inline-flex items-center gap-1.5 text-zinc-400">
                     <span className={`h-1.5 w-1.5 rounded-full ${usage.plan === "owner" || usage.dailyRemaining > 0 ? "bg-emerald-400" : "bg-amber-400"}`} aria-hidden="true" />
+                    {/* aria-label is not allowed on a plain span, so the spoken text is sr-only. */}
+                    <span className="sr-only">
+                      {usage.plan === "owner"
+                        ? "Unlimited analyses left today"
+                        : `${usage.dailyRemaining} of ${usage.dailyLimit} analyses left today`}
+                    </span>
                     <span aria-hidden="true">{usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} analyses left today</span>
                   </span>
                 </>
@@ -342,14 +341,14 @@ export function LandingPage({
                   <span className="inline-block mb-3 px-2 py-0.5 rounded text-[9px] font-bold tracking-[0.12em] uppercase text-violet-300 bg-violet-500/10 border border-violet-500/20">
                     {s.verb}
                   </span>
-                  <h4 className="text-sm font-bold text-zinc-100 mb-1.5">{s.title}</h4>
+                  <h3 className="text-sm font-bold text-zinc-100 mb-1.5">{s.title}</h3>
                   <p className="text-xs text-zinc-500 leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
-      </div>
+      </main>
     </div>
   );
 }
