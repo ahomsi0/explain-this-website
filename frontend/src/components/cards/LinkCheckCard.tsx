@@ -1,7 +1,32 @@
-import type { LinkCheckResult } from "../../types/analysis";
+import type { LinkCheckItem, LinkCheckResult } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
 import { HowToFixLink } from "../guides/GuidesPages";
+
+function LinkRow({ item, dotClass, statusClass, status }: {
+  item: LinkCheckItem;
+  dotClass: string;
+  statusClass: string;
+  status: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 py-1.5 border-b border-zinc-800 last:border-b-0">
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotClass}`} />
+      <div className="flex-1 min-w-0">
+        {item.text && <p className="text-[11px] text-zinc-300 truncate">{item.text}</p>}
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-[11px] text-zinc-400 hover:text-zinc-200 underline truncate"
+        >
+          {item.url}
+        </a>
+      </div>
+      <span className={`text-[10px] font-bold ${statusClass}`}>{status}</span>
+    </div>
+  );
+}
 
 export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
   if (linkCheck.checked === 0) {
@@ -21,6 +46,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
 
   const brokenItems   = linkCheck.items.filter(i => i.isBroken);
   const redirectItems = linkCheck.items.filter(i => i.isRedirect && !i.isBroken);
+  const unverifiedItems = linkCheck.items.filter(i => !i.isBroken && (i.reason === "blocked" || i.reason === "unreachable"));
 
   return (
     <CardShell>
@@ -44,6 +70,9 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
             { n: linkCheck.ok,        label: "OK",       cls: "text-emerald-400" },
             { n: linkCheck.broken,    label: "Broken",   cls: "text-red-400"     },
             { n: linkCheck.redirects, label: "Redirect", cls: "text-amber-400"   },
+            ...((linkCheck.unverified ?? 0) > 0
+              ? [{ n: linkCheck.unverified ?? 0, label: "Unverified", cls: "text-zinc-400" }]
+              : []),
           ].map(({ n, label, cls }) => (
             <div key={label} className="flex-1 text-center bg-zinc-950 rounded-md py-2">
               <p className={`text-xl font-bold leading-none ${cls}`}>{n}</p>
@@ -57,11 +86,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
           <div className="border-t border-zinc-800 pt-3">
             <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Broken</p>
             {brokenItems.map((item, i) => (
-              <div key={i} className="flex items-center gap-2 py-1.5 border-b border-zinc-800 last:border-b-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                <span className="text-[11px] text-zinc-400 flex-1 truncate">{item.url}</span>
-                <span className="text-[10px] font-bold text-red-400">{item.status || "ERR"}</span>
-              </div>
+              <LinkRow key={i} item={item} dotClass="bg-red-500" statusClass="text-red-400" status={String(item.status || "ERR")} />
             ))}
           </div>
         )}
@@ -71,11 +96,17 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
           <div className="border-t border-zinc-800 pt-3 mt-1">
             <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Redirects</p>
             {redirectItems.slice(0, 5).map((item, i) => (
-              <div key={i} className="flex items-center gap-2 py-1.5 border-b border-zinc-800 last:border-b-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                <span className="text-[11px] text-zinc-400 flex-1 truncate">{item.url}</span>
-                <span className="text-[10px] font-semibold text-amber-400">{item.status}</span>
-              </div>
+              <LinkRow key={i} item={item} dotClass="bg-amber-500" statusClass="text-amber-400 font-semibold" status={String(item.status)} />
+            ))}
+          </div>
+        )}
+
+        {unverifiedItems.length > 0 && (
+          <div className="border-t border-zinc-800 pt-3 mt-1">
+            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Could not verify</p>
+            <p className="text-[10px] text-zinc-600 mb-2">These sites didn&apos;t respond or blocked our check. They may still work in a browser.</p>
+            {unverifiedItems.map((item, i) => (
+              <LinkRow key={i} item={item} dotClass="bg-zinc-500" statusClass="text-zinc-400" status={item.status ? String(item.status) : "No reply"} />
             ))}
           </div>
         )}
