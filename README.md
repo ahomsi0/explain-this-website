@@ -17,7 +17,7 @@ Usage model:
 | **Executive Summary** | Overall score (0–100), sub-scores for SEO / Performance / UX / Conversion, top issues, quick wins, and a one-sentence summary |
 | **Overview** | Page title, meta description, favicon, language, estimated page weight |
 | **Tech Stack** | CMS, frameworks, analytics, CDNs, e-commerce platforms, media embeds (30+ technologies) + confidence labels (high / medium / low) |
-| **SEO Audit** | 13 checks — HTTPS, mixed content, title/description length, canonical, H1, image alt text, Open Graph, structured data, viewport, robots directive, hreflang, sitemap |
+| **SEO Audit** | 14 checks — HTTPS, mixed content, title/description length, canonical, H1, image alt text, Open Graph, structured data, viewport, robots directive, hreflang, international readiness (lang, hreflang validity, og:locale), sitemap |
 | **Performance** | Google PageSpeed Insights (mobile + desktop): Lighthouse scores, Core Web Vitals (LCP, FCP, TBT, CLS, Speed Index), field data (CrUX) where available, and third-party impact |
 | **UX & Conversion** | CTAs, forms, social proof, trust signals, contact info, mobile-readiness, cookie banner, live chat, video, newsletter signup, privacy policy |
 | **Page Stats** | Word count, images, internal/external links, scripts, headings (H1–H3), stylesheets, fonts, inline styles, render-blocking scripts, lazy images, content-to-code ratio |
@@ -126,7 +126,7 @@ Vitest covers utilities, API behavior, and component rendering/interactions. Pla
 │       ├── model/         # Shared data types (AnalysisResult, PerformanceResult…)
 │       ├── parser/
 │       │   ├── parser.go        # Orchestrator + page stats
-│       │   ├── seo.go           # 13-point SEO audit
+│       │   ├── seo.go           # 14-point SEO audit
 │       │   ├── tech.go          # Tech stack fingerprinting
 │       │   ├── ux.go            # UX + conversion signals
 │       │   ├── content.go       # Keywords + reading level

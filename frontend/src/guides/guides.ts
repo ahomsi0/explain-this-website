@@ -673,6 +673,8 @@ export const GUIDES: Record<string, Guide> = {
       "Every page in the cluster must link to every other page — hreflang is bidirectional and breaks silently if any side is missing.",
       "Validate using Google Search Console (International Targeting report) or the hreflang validator at ahrefs.com/hreflang.",
       "If you have many pages, implement hreflang via the XML sitemap instead of the HTML head — it scales better and is equally supported by Google.",
+      "Set the page's own language on the <html> element (<html lang=\"en-GB\">). Use hyphens in lang and hreflang values (en-GB, not en_GB), and keep og:locale in step with it (og:locale uses an underscore: en_GB).",
+      "Make every hreflang URL absolute (https://example.com/fr/), and make sure each page lists itself plus an x-default entry.",
     ],
     tools: ["Google Search Console → International Targeting", "Ahrefs Hreflang Checker", "hreflangvalidator.com"],
     aiPrompt: "My website serves content in multiple languages but has no hreflang tags, so Google may show the wrong language version to users from different regions. Can you show me the exact hreflang link elements to add to each variant, the self-referencing format, and the x-default fallback?",
@@ -783,6 +785,7 @@ const SEO_CHECK_GUIDES: Record<string, string> = {
   viewport: "viewport-meta",
   robots: "robots-directive",
   hreflang: "hreflang",
+  international: "hreflang",
   sitemap: "sitemap",
 };
 

@@ -32,6 +32,9 @@ type seoState struct {
 	schemaTypes       []string
 	hasHreflang       bool
 	hreflangLangs     []string
+	hreflangEntries   []hreflangEntry
+	htmlLang          string
+	ogLocale          string
 	hasSitemapLink    bool
 	sitemapLinkHref   string
 }
@@ -48,6 +51,9 @@ func walkSEO(n *html.Node, s *seoState) {
 		tag := strings.ToLower(n.Data)
 
 		switch tag {
+		case "html":
+			s.htmlLang = getAttr(n, "lang")
+
 		case "title":
 			if n.FirstChild != nil && n.FirstChild.Type == html.TextNode {
 				s.titleText = strings.TrimSpace(n.FirstChild.Data)
@@ -80,6 +86,8 @@ func walkSEO(n *html.Node, s *seoState) {
 				s.ogDesc = content
 			case "og:image":
 				s.ogImage = content
+			case "og:locale":
+				s.ogLocale = content
 			}
 
 		case "link":
@@ -103,6 +111,7 @@ func walkSEO(n *html.Node, s *seoState) {
 				if lang != "" {
 					s.hasHreflang = true
 					s.hreflangLangs = append(s.hreflangLangs, lang)
+					s.hreflangEntries = append(s.hreflangEntries, hreflangEntry{lang: lang, href: getAttr(n, "href")})
 				}
 			}
 
@@ -385,6 +394,9 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "warning", Optional: true,
 			Detail: "No hreflang tags — add if you target multiple languages or regions"})
 	}
+
+	// ── International readiness (lang, hreflang validity, og:locale) ───────────
+	checks = append(checks, buildInternationalCheck(s, sourceURL))
 
 	// ── Sitemap ────────────────────────────────────────────────────────────────
 	// Accept: explicit <link rel="sitemap">, sitemap URLs referenced in HTML,
