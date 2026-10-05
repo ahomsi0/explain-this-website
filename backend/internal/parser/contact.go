@@ -1,0 +1,49 @@
+package parser
+
+import (
+	"net/url"
+	"regexp"
+	"strings"
+)
+
+// contactWord matches contact-ish words as whole words, so "/helpful-articles"
+// does not match "help" but "/contact-us" and "/support/" do.
+var contactWord = regexp.MustCompile(`(^|[^a-z])(contact|support|help|feedback)([^a-z]|$)`)
+
+// maxContactTextLen keeps long article headlines that happen to mention
+// "support" from counting as a contact link.
+const maxContactTextLen = 40
+
+// isContactRoute reports whether an anchor gives visitors a way to get in
+// touch: mailto/tel, a contact/support/help/feedback page, or a GitHub/GitLab
+// discussions or issues page. An email or phone number is not required.
+func isContactRoute(href, text string) bool {
+	h := strings.ToLower(strings.TrimSpace(href))
+	if strings.HasPrefix(h, "mailto:") || strings.HasPrefix(h, "tel:") {
+		return true
+	}
+
+	if u, err := url.Parse(h); err == nil {
+		host := strings.TrimPrefix(u.Hostname(), "www.")
+		if host == "github.com" || host == "gitlab.com" {
+			if strings.Contains(u.Path, "/discussions") || strings.Contains(u.Path, "/issues") {
+				return true
+			}
+		}
+		if contactWord.MatchString(u.Path) {
+			return true
+		}
+	}
+
+	t := strings.ToLower(strings.TrimSpace(text))
+	return t != "" && len(t) <= maxContactTextLen && contactWord.MatchString(t)
+}
+
+// evidenceText trims and collapses whitespace in link text and caps its length.
+func evidenceText(s string) string {
+	s = strings.Join(strings.Fields(s), " ")
+	if r := []rune(s); len(r) > 80 {
+		return string(r[:80])
+	}
+	return s
+}

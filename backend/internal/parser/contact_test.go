@@ -1,0 +1,91 @@
+package parser
+
+import (
+	"strings"
+	"testing"
+
+	"golang.org/x/net/html"
+)
+
+func uxFor(t *testing.T, body string) (hasContact bool, contactHref, contactText string) {
+	t.Helper()
+	raw := "<html><body>" + body + "</body></html>"
+	doc, err := html.Parse(strings.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ux := analyzeUX(doc, raw)
+	if ux.ContactEvidence != nil {
+		contactHref, contactText = ux.ContactEvidence.Href, ux.ContactEvidence.Text
+	}
+	return ux.HasContactInfo, contactHref, contactText
+}
+
+func TestContactRoutes(t *testing.T) {
+	cases := []struct {
+		name     string
+		body     string
+		want     bool
+		wantHref string
+	}{
+		{"mailto", `<a href="mailto:hi@example.com">Email</a>`, true, "mailto:hi@example.com"},
+		{"tel", `<a href="tel:+15551234567">Call</a>`, true, "tel:+15551234567"},
+		{"contact page by path", `<a href="/contact">Get in touch</a>`, true, "/contact"},
+		{"contact page by text", `<a href="/x">Contact us</a>`, true, "/x"},
+		{"support path", `<a href="/support/">Help center</a>`, true, "/support/"},
+		{"feedback text", `<a href="/f">Feedback</a>`, true, "/f"},
+		{"github discussions only", `<a title="Contact" href="https://github.com/user/proj/discussions">Community</a>`, true, "https://github.com/user/proj/discussions"},
+		{"gitlab issues", `<a href="https://gitlab.com/user/proj/-/issues">Issues</a>`, true, "https://gitlab.com/user/proj/-/issues"},
+		{"unrelated github link", `<a href="https://github.com/user/proj">Source</a>`, false, ""},
+		{"unrelated word containing help", `<a href="/helpful-articles-about-cats">Cats</a>`, false, ""},
+		{"long headline mentioning support", `<a href="/blog/1">How we built support tooling for our five hundred person team</a>`, false, ""},
+		{"no links", `<p>Hello</p>`, false, ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, href, _ := uxFor(t, tc.body)
+			if got != tc.want {
+				t.Fatalf("HasContactInfo = %v, want %v", got, tc.want)
+			}
+			if href != tc.wantHref {
+				t.Fatalf("evidence href = %q, want %q", href, tc.wantHref)
+			}
+		})
+	}
+}
+
+func TestContactPhoneTextIsEvidence(t *testing.T) {
+	got, href, text := uxFor(t, `<p>Call us on 020 7946 0958 today</p>`)
+	if !got {
+		t.Fatal("expected phone number to count as contact")
+	}
+	if href != "" || !strings.Contains(text, "7946") {
+		t.Fatalf("unexpected evidence href=%q text=%q", href, text)
+	}
+}
+
+func TestPrivacyEvidence(t *testing.T) {
+	raw := `<html><body><a href="/legal/privacy">Privacy</a></body></html>`
+	doc, _ := html.Parse(strings.NewReader(raw))
+	ux := analyzeUX(doc, raw)
+	if !ux.HasPrivacyPolicy || ux.PrivacyEvidence == nil {
+		t.Fatalf("expected privacy evidence, got %+v", ux)
+	}
+	if ux.PrivacyEvidence.Href != "/legal/privacy" || ux.PrivacyEvidence.Text != "Privacy" {
+		t.Fatalf("unexpected evidence %+v", ux.PrivacyEvidence)
+	}
+
+	raw = `<html><body><a href="/legal">Read our Privacy Policy</a></body></html>`
+	doc, _ = html.Parse(strings.NewReader(raw))
+	ux = analyzeUX(doc, raw)
+	if !ux.HasPrivacyPolicy || ux.PrivacyEvidence == nil || ux.PrivacyEvidence.Text != "Read our Privacy Policy" {
+		t.Fatalf("expected text match with original casing, got %+v", ux.PrivacyEvidence)
+	}
+
+	raw = `<html><body><a href="/about">About</a></body></html>`
+	doc, _ = html.Parse(strings.NewReader(raw))
+	ux = analyzeUX(doc, raw)
+	if ux.HasPrivacyPolicy || ux.PrivacyEvidence != nil {
+		t.Fatalf("expected no privacy match, got %+v", ux)
+	}
+}
