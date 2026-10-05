@@ -15,6 +15,8 @@ export interface PriorityIssue {
   priority:     PriorityLabel;
   category:     IssueCategory;
   urgencyScore: number;
+  /** Optional evidence rendered as clickable links under "How to Fix". */
+  links?: Array<{ url: string; label: string }>;
 }
 
 function assignPriority(urgencyScore: number, effort: EffortLevel): PriorityLabel {
@@ -33,6 +35,7 @@ function makeIssue(
   effort: EffortLevel,
   urgencyScore: number,
   category: IssueCategory,
+  links?: PriorityIssue["links"],
 ): PriorityIssue {
   return {
     id,
@@ -44,6 +47,7 @@ function makeIssue(
     priority: assignPriority(urgencyScore, effort),
     category,
     urgencyScore,
+    ...(links && links.length > 0 ? { links } : {}),
   };
 }
 
@@ -57,7 +61,7 @@ function withLegacyDefaults(result: AnalysisResult): AnalysisResult {
     pageStats: result.pageStats ?? ({} as AnalysisResult["pageStats"]),
     contentStats: result.contentStats ?? ({} as AnalysisResult["contentStats"]),
     seoChecks: result.seoChecks ?? [],
-    linkCheck: result.linkCheck ?? { checked: 0, ok: 0, broken: 0, redirects: 0, items: [] },
+    linkCheck: result.linkCheck ?? { checked: 0, ok: 0, broken: 0, unverified: 0, redirects: 0, items: [] },
     securityHeaders: result.securityHeaders ?? [],
     imageAudit: result.imageAudit ?? ({} as AnalysisResult["imageAudit"]),
     siteFreshness: result.siteFreshness ?? ({} as AnalysisResult["siteFreshness"]),
@@ -103,15 +107,21 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
   // Broken links
   if (r.linkCheck.broken > 0) {
     const n = r.linkCheck.broken;
+    const brokenItems = (r.linkCheck.items ?? []).filter((i) => i.isBroken);
+    const shown = brokenItems.slice(0, 5);
+    const more = brokenItems.length - shown.length;
     issues.push(makeIssue(
       "broken-links",
       `Fix ${n} broken link${n > 1 ? "s" : ""}`,
       "Broken links hurt search rankings and damage user trust.",
-      "Use the SEO tab to find broken URLs, then update or remove them.",
+      more > 0
+        ? `Open each link below and update or remove it on your page. ${more} more ${more === 1 ? "is" : "are"} listed in the Link Health card.`
+        : "Open each link below and update or remove it on your page.",
       "high",
       "easy",
       88,
       "seo",
+      shown.map((i) => ({ url: i.url, label: `${i.text || i.url} (${i.status || "no response"})` })),
     ));
   }
 

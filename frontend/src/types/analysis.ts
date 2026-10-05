@@ -44,6 +44,11 @@ export interface RenderingInfo {
   notice?: string;
 }
 
+export interface Evidence {
+  href: string;
+  text: string;
+}
+
 export interface UXResult {
   // Conversion signals
   hasCTA: boolean;
@@ -60,6 +65,8 @@ export interface UXResult {
   hasVideoContent: boolean;
   hasNewsletterSignup: boolean;
   hasPrivacyPolicy: boolean;
+  contactEvidence?: Evidence;
+  privacyEvidence?: Evidence;
 }
 
 export interface PageStats {
@@ -219,18 +226,25 @@ export interface SecurityHeaderCheck {
   detail: string;
 }
 
+export type LinkReason = "not_found" | "server_error" | "unreachable" | "blocked";
+
 export interface LinkCheckItem {
   url: string;
   status: number;
   finalUrl: string;
   isRedirect: boolean;
   isBroken: boolean;
+  /** Absent on results saved before link reasons existed. */
+  reason?: LinkReason;
+  text?: string;
 }
 
 export interface LinkCheckResult {
   checked: number;
   ok: number;
   broken: number;
+  /** Unreachable or blocked links we could not confirm either way. */
+  unverified?: number;
   redirects: number;
   items: LinkCheckItem[];
 }
