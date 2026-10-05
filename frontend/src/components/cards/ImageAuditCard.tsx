@@ -51,7 +51,7 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-[11px] text-zinc-500">{audit.total} images</span>
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cls}`}>{label}</span>
+            <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border ${cls}`}>{label}</span>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
         {/* Flags */}
         {(audit.missingDims > 0 || audit.missingLazy > 0 || legacy > 0) && (
           <div className="border-t border-zinc-800 pt-3">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Issues</p>
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Issues</p>
             <Flag label="Legacy formats (JPG/PNG/GIF) — convert to WebP/AVIF" count={legacy}             severity="warn" />
             <Flag label="Missing width + height (causes layout shift)"         count={audit.missingDims}  severity="warn" />
             <Flag label="Missing loading=lazy"                                  count={audit.missingLazy}  severity="info" />

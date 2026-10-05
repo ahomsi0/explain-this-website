@@ -21,7 +21,7 @@ export function ReportSkeleton() {
       <div className="flex min-h-[55vh]">
         {/* Sidebar */}
         <div className="hidden md:flex w-56 shrink-0 border-r border-zinc-800 p-4 flex-col gap-2.5">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-700 px-1 mb-1">Sections</p>
+          <p className="text-[11px] uppercase tracking-wider text-zinc-700 px-1 mb-1">Sections</p>
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-7 rounded-md" style={{ width: `${88 - i * 4}%` }} />
           ))}

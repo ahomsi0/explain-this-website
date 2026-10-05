@@ -33,18 +33,18 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
               <div className={`h-full rounded-full ${barColorClass(copyAnalysis.score)}`}
                    style={{ width: `${copyAnalysis.score}%` }} />
             </div>
-            <p className="text-[10px] text-zinc-500 mt-1">Specificity score /100</p>
+            <p className="text-[11px] text-zinc-500 mt-1">Specificity score /100</p>
           </div>
         </div>
 
         {/* Vague phrases */}
         {vaguePhrases.length > 0 && (
           <div className="border-t border-zinc-800 pt-3">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Flagged phrases</p>
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Flagged phrases</p>
             <div className="flex flex-col gap-2">
               {vaguePhrases.slice(0, 5).map((v, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <span className="text-[10px] font-mono font-semibold text-amber-400 bg-amber-950/40 px-1.5 py-0.5 rounded shrink-0">
+                  <span className="text-[11px] font-mono font-semibold text-amber-400 bg-amber-950/40 px-1.5 py-0.5 rounded shrink-0">
                     &quot;{v.phrase}&quot;
                   </span>
                   <span className="text-[11px] text-zinc-500 leading-relaxed">{v.reason}</span>
@@ -57,7 +57,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
         {/* Specificity hints */}
         {specificityHints.length > 0 && (
           <div className="mt-4 pt-4 border-t border-zinc-800">
-            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
               What&apos;s already specific
             </p>
             <div className="flex flex-col gap-1.5">

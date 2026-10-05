@@ -32,7 +32,7 @@ test.describe("WAVE rules on the landing page", () => {
         if (!el || !node.textContent?.trim() || seen.has(el)) continue;
         seen.add(el);
         const cs = getComputedStyle(el);
-        if (cs.display === "none" || cs.visibility === "hidden") continue;
+        if (cs.visibility === "hidden" || el.getClientRects().length === 0) continue;
         if (parseFloat(cs.fontSize) < 11) found.push(`${cs.fontSize} "${node.textContent.trim().slice(0, 30)}"`);
       }
       return found;

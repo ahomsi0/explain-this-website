@@ -20,7 +20,7 @@ function SiteField({
 }) {
   return (
     <div className="flex-1 min-w-0">
-      <label htmlFor={id} className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">
+      <label htmlFor={id} className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">
         {label}
       </label>
       <input

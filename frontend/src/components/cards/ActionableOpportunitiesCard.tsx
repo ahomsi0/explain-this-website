@@ -41,7 +41,7 @@ export function ActionableOpportunitiesCard({ issues }: { issues: PrioritizedIss
                 <p className="text-xs font-medium text-zinc-200 leading-snug">{item.issue}</p>
                 <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed line-clamp-2">{item.why}</p>
               </div>
-              <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded border ${impactBadge(item.impact)}`}>
+              <span className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded border ${impactBadge(item.impact)}`}>
                 {shortImpact(item.impact)}
               </span>
             </div>

@@ -33,19 +33,19 @@ export function DomainInfoCard({ domainInfo }: { domainInfo: DomainInfo }) {
       <div className="p-5 flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Registered</p>
+            <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Registered</p>
             <p className="text-sm font-semibold text-zinc-200">{formatDate(domainInfo.registeredAt)}</p>
           </div>
           {domainInfo.expiresAt && (
             <div>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Expires</p>
+              <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Expires</p>
               <p className="text-sm font-semibold text-zinc-200">{formatDate(domainInfo.expiresAt)}</p>
             </div>
           )}
         </div>
         {domainInfo.registrar && (
           <div className="border-t border-zinc-800/60 pt-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-0.5">Registrar</p>
+            <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Registrar</p>
             <p className="text-xs text-zinc-300">{domainInfo.registrar}</p>
           </div>
         )}

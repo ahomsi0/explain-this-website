@@ -36,17 +36,17 @@ export function UserMenu() {
       {open && (
         <div className="absolute right-0 top-9 w-56 rounded-md border border-zinc-800 bg-zinc-900 shadow-xl py-1 z-50">
           <div className="px-3 py-2 border-b border-zinc-800/60">
-            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Signed in as</p>
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Signed in as</p>
             <p className="text-xs text-zinc-200 truncate" title={user.email}>{user.email}</p>
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
                 isPro
                   ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
                   : "text-zinc-300 bg-zinc-800/80 border-zinc-700"
               }`}>
                 {isPro ? "Pro" : "Free"}
               </span>
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-[11px] text-zinc-500">
                 {user.plan === "owner" ? "∞" : `${user.usage.dailyRemaining}/${user.usage.dailyLimit}`} left today
               </span>
             </div>

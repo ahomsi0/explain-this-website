@@ -23,7 +23,7 @@ function LinkRow({ item, dotClass, statusClass, status }: {
           {item.url}
         </a>
       </div>
-      <span className={`text-[10px] font-bold ${statusClass}`}>{status}</span>
+      <span className={`text-[11px] font-bold ${statusClass}`}>{status}</span>
     </div>
   );
 }
@@ -58,7 +58,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           {linkCheck.broken > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border text-red-400 bg-red-950 border-red-800">
+            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded border text-red-400 bg-red-950 border-red-800">
               {linkCheck.broken} BROKEN
             </span>
           )}
@@ -76,7 +76,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
           ].map(({ n, label, cls }) => (
             <div key={label} className="flex-1 text-center bg-zinc-950 rounded-md py-2">
               <p className={`text-xl font-bold leading-none ${cls}`}>{n}</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">{label}</p>
+              <p className="text-[11px] text-zinc-500 mt-0.5">{label}</p>
             </div>
           ))}
         </div>
@@ -84,7 +84,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
         {/* Broken links list */}
         {brokenItems.length > 0 && (
           <div className="border-t border-zinc-800 pt-3">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Broken</p>
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Broken</p>
             {brokenItems.map((item, i) => (
               <LinkRow key={i} item={item} dotClass="bg-red-500" statusClass="text-red-400" status={String(item.status || "ERR")} />
             ))}
@@ -94,7 +94,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
         {/* Redirects */}
         {redirectItems.length > 0 && (
           <div className="border-t border-zinc-800 pt-3 mt-1">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Redirects</p>
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-2">Redirects</p>
             {redirectItems.slice(0, 5).map((item, i) => (
               <LinkRow key={i} item={item} dotClass="bg-amber-500" statusClass="text-amber-400 font-semibold" status={String(item.status)} />
             ))}
@@ -103,15 +103,15 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
 
         {unverifiedItems.length > 0 && (
           <div className="border-t border-zinc-800 pt-3 mt-1">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Could not verify</p>
-            <p className="text-[10px] text-zinc-600 mb-2">These sites didn&apos;t respond or blocked our check. They may still work in a browser.</p>
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Could not verify</p>
+            <p className="text-[11px] text-zinc-600 mb-2">These sites didn&apos;t respond or blocked our check. They may still work in a browser.</p>
             {unverifiedItems.map((item, i) => (
               <LinkRow key={i} item={item} dotClass="bg-zinc-500" statusClass="text-zinc-400" status={item.status ? String(item.status) : "No reply"} />
             ))}
           </div>
         )}
 
-        <p className="text-[10px] text-zinc-600 mt-3">Checked {linkCheck.checked} external links</p>
+        <p className="text-[11px] text-zinc-600 mt-3">Checked {linkCheck.checked} external links</p>
         {linkCheck.broken > 0 && <HowToFixLink issueId="broken-links" className="mt-2" />}
       </div>
     </CardShell>

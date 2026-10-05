@@ -20,7 +20,7 @@ export function InsightCard({
         {/* Intent */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md border border-violet-800 text-violet-300 bg-violet-950">
+            <span className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-md border border-violet-800 text-violet-300 bg-violet-950">
               {categoryLabel}
             </span>
             <span className="text-sm font-semibold text-zinc-100">{intent.label}</span>

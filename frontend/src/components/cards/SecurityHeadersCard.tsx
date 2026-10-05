@@ -37,7 +37,7 @@ export function SecurityHeadersCard({ checks }: { checks: SecurityHeaderCheck[] 
                 <p className="text-xs font-semibold text-zinc-300 font-mono">{c.label}</p>
                 <p className="text-[11px] text-zinc-500 mt-0.5 truncate">{c.detail}</p>
               </div>
-              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${statusBadge(c.status)}`}>
+              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${statusBadge(c.status)}`}>
                 {statusLabel(c.status)}
               </span>
             </div>

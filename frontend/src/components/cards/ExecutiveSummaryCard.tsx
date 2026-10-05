@@ -132,11 +132,11 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, unavailable, isO
       {isOpen && exp && (
         <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
                         rounded-xl bg-zinc-900 border border-zinc-700 shadow-2xl p-3.5 text-left">
-          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
             What this means
           </p>
           <p className="text-[11px] text-zinc-300 leading-snug mb-2.5">{exp.means}</p>
-          <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
             What to do next
           </p>
           <p className="text-[11px] text-zinc-300 leading-snug">{exp.next}</p>
@@ -166,7 +166,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
         {/* Header row */}
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
-            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.2em] mb-1">Executive Summary</p>
+            <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em] mb-1">Executive Summary</p>
             <p className="text-sm text-zinc-300 leading-relaxed max-w-xl">{summarySentence}</p>
           </div>
           {/* Overall score ring */}
@@ -177,7 +177,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
               : "border-red-500/40 bg-red-500/5"
             }`}>
               <span className={`text-xl font-bold leading-none tabular-nums ${scoreColor(overallScore)}`}>{overallScore}</span>
-              <span className="text-[9px] text-zinc-600 mt-0.5">/100</span>
+              <span className="text-[11px] text-zinc-600 mt-0.5">/100</span>
             </div>
             <span className={`max-w-24 text-center text-xs font-semibold ${scoreColor(overallScore)}`}>{scoreLabel(overallScore)}</span>
           </div>
@@ -209,7 +209,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 shrink-0">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
-              <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider">Top Issues</span>
+              <span className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">Top Issues</span>
             </div>
             {topIssues.length === 0 ? (
               <p className="text-xs text-zinc-500">No critical issues found.</p>
@@ -234,7 +234,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 shrink-0">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Quick Wins</span>
+              <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Quick Wins</span>
             </div>
             {quickWins.length === 0 ? (
               <p className="text-xs text-zinc-500">No quick wins detected.</p>

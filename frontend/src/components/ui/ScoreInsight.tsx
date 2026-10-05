@@ -9,7 +9,7 @@ export function ScoreInsight({ meaning, nextStep }: { meaning: string; nextStep:
           </svg>
         </div>
         <div>
-          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">What this means</p>
+          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">What this means</p>
           <p className="text-xs text-zinc-400 leading-relaxed">{meaning}</p>
         </div>
       </div>
@@ -20,7 +20,7 @@ export function ScoreInsight({ meaning, nextStep }: { meaning: string; nextStep:
           </svg>
         </div>
         <div>
-          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">What to do next</p>
+          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">What to do next</p>
           <p className="text-xs text-zinc-400 leading-relaxed">{nextStep}</p>
         </div>
       </div>

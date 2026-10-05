@@ -22,7 +22,7 @@ function FaviconOrInitial({ src, hostname }: { src: string; hostname: string }) 
   const initial = hostname.replace(/^www\./, "").charAt(0).toUpperCase();
   if (!src || failed) {
     return (
-      <span className="flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold text-white bg-violet-700 shrink-0">
+      <span className="flex items-center justify-center w-5 h-5 rounded text-[11px] font-bold text-white bg-violet-700 shrink-0">
         {initial}
       </span>
     );
@@ -71,10 +71,10 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
 }) {
   return (
     <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(3px,0.9cqw,12px)]">
-      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(7px,0.95cqw,10px)]">{label}</span>
+      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(11px,0.95cqw,12px)]">{label}</span>
       <div className="flex items-baseline gap-0.5 min-w-0">
         <span className={`font-bold leading-none whitespace-nowrap text-[clamp(11px,2.2cqw,24px)] ${valueClass}`}>{value}</span>
-        {suffix && <span className="hidden sm:inline text-zinc-600 font-medium shrink-0 text-[clamp(7px,0.9cqw,12px)]">{suffix}</span>}
+        {suffix && <span className="hidden sm:inline text-zinc-600 font-medium shrink-0 text-[clamp(11px,0.9cqw,12px)]">{suffix}</span>}
       </div>
     </div>
   );
@@ -86,15 +86,15 @@ function TechStackTile({ items }: { items: { name: string }[] }) {
   const extra = items.length - top.length;
   return (
     <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(3px,0.9cqw,12px)]">
-      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(7px,0.95cqw,10px)]">Tech Stack</span>
+      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(11px,0.95cqw,12px)]">Tech Stack</span>
       <div className="flex items-center flex-wrap gap-1 mt-0.5 min-w-0">
         {top.map((t) => (
-          <span key={t.name} className="max-w-full truncate rounded font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 px-[clamp(2px,0.35cqw,6px)] py-px text-[clamp(7px,0.85cqw,10px)]">
+          <span key={t.name} className="max-w-full truncate rounded font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 px-[clamp(2px,0.35cqw,6px)] py-px text-[11px]">
             {t.name}
           </span>
         ))}
         {extra > 0 && (
-          <span className="rounded font-semibold text-zinc-500 bg-zinc-800 border border-zinc-700 px-[clamp(2px,0.35cqw,6px)] py-px text-[clamp(7px,0.85cqw,10px)]">
+          <span className="rounded font-semibold text-zinc-500 bg-zinc-800 border border-zinc-700 px-[clamp(2px,0.35cqw,6px)] py-px text-[11px]">
             +{extra}
           </span>
         )}
@@ -165,12 +165,12 @@ export function ResultDashboard({
             <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[280px]">
               <FaviconOrInitial src={result.overview.favicon} hostname={hostname} />
               <span className="text-xs font-semibold text-zinc-200 truncate">{hostname}</span>
-              <span className="text-[10px] text-zinc-600 shrink-0">· {relativeTime(result.fetchedAt)}</span>
+              <span className="text-[11px] text-zinc-600 shrink-0">· {relativeTime(result.fetchedAt)}</span>
             </div>
             <span className="hidden sm:inline lg:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
               <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
                   usage.plan === "pro" || usage.plan === "owner"
                     ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
                     : "text-zinc-300 bg-zinc-800 border-zinc-700"
@@ -200,11 +200,11 @@ export function ResultDashboard({
                   className="flex-1 bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none min-w-0"
                 />
                 {searchValue && (
-                  <kbd className="hidden lg:inline text-[9px] font-mono text-zinc-500 bg-zinc-800 border border-zinc-700 rounded px-1 py-px">↵</kbd>
+                  <kbd className="hidden lg:inline text-[11px] font-mono text-zinc-500 bg-zinc-800 border border-zinc-700 rounded px-1 py-px">↵</kbd>
                 )}
               </form>
             )}
-            {searchError && <span id="report-url-error" role="alert" className="hidden md:block text-[10px] text-red-400">{searchError}</span>}
+            {searchError && <span id="report-url-error" role="alert" className="hidden md:block text-[11px] text-red-400">{searchError}</span>}
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">

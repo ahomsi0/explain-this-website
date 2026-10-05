@@ -19,7 +19,7 @@ export function CardHeader({ title, badge, badgeColor = "violet" }: {
         {title}
       </h3>
       {badge !== undefined && (
-        <span className={`text-[10px] font-bold rounded px-1.5 py-px leading-none ${BADGE_CLASSES[badgeColor]}`}>
+        <span className={`text-[11px] font-bold rounded px-1.5 py-px leading-none ${BADGE_CLASSES[badgeColor]}`}>
           {badge}
         </span>
       )}

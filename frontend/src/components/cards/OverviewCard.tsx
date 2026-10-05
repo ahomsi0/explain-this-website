@@ -86,7 +86,7 @@ export function OverviewCard({ overview, rendering, url, fetchedAt, aiDetection 
           )}
           {aiDetection?.isAIBuilt && (
             <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-violet-800 text-violet-400 bg-violet-950 flex items-center gap-1">
-              <span className="text-[10px] font-semibold uppercase">AI</span>
+              <span className="text-[11px] font-semibold uppercase">AI</span>
               <span>{aiDetection.builder ? `Built with ${aiDetection.builder}` : "AI-assisted"}</span>
               {aiDetection.confidence === "medium" && <span className="text-violet-600">?</span>}
             </span>
@@ -102,7 +102,7 @@ export function OverviewCard({ overview, rendering, url, fetchedAt, aiDetection 
         <p className="mt-3 text-[11px] text-zinc-500">
           {new Date(fetchedAt).toLocaleString()}
         </p>
-        <p className="mt-2 text-[10px] text-zinc-600">Page preview provided by Microlink. It may be unavailable for blocked or private pages.</p>
+        <p className="mt-2 text-[11px] text-zinc-600">Page preview provided by Microlink. It may be unavailable for blocked or private pages.</p>
 
         {rendering?.likelyClientRendered && (
           <div className="mt-3 rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-300">

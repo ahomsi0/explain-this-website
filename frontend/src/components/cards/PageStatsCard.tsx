@@ -10,7 +10,7 @@ function Metric({ label, value, sub, valueClass = "text-zinc-100" }: {
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">{label}</span>
       <span className={`text-xl font-semibold leading-none ${valueClass}`}>{value}</span>
       {sub && <span className="text-[11px] text-zinc-500">{sub}</span>}
     </div>

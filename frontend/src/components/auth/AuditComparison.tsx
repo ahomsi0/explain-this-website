@@ -55,7 +55,7 @@ function scoreTone(score: number) {
 function SiteCard({ snapshot, label }: { snapshot: AuditComparisonSnapshot; label: string }) {
   return (
     <div className="flex-1 min-w-0 rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">{label}</p>
       <div className="mt-1.5 flex items-baseline justify-between gap-2">
         <p className="truncate text-sm font-medium text-zinc-200">{snapshot.title || hostOf(snapshot)}</p>
         <span className={`shrink-0 text-xl font-bold tabular-nums ${scoreTone(snapshot.overallScore)}`}>
@@ -63,7 +63,7 @@ function SiteCard({ snapshot, label }: { snapshot: AuditComparisonSnapshot; labe
         </span>
       </div>
       <p className="mt-0.5 truncate text-[11px] text-zinc-500">{hostOf(snapshot)}</p>
-      <p className="text-[10px] text-zinc-600">{new Date(snapshot.createdAt).toLocaleString()}</p>
+      <p className="text-[11px] text-zinc-600">{new Date(snapshot.createdAt).toLocaleString()}</p>
     </div>
   );
 }
@@ -87,7 +87,7 @@ function Bar({ caption, value, isWinner, max, kind }: {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-[68px] shrink-0 truncate text-right text-[10px] text-zinc-500">{caption}</span>
+      <span className="w-[68px] shrink-0 truncate text-right text-[11px] text-zinc-500">{caption}</span>
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
         <div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} />
       </div>
@@ -112,7 +112,7 @@ function MetricRow({ def, before, after, leftLabel, rightLabel }: {
       <div className="py-2 border-b border-zinc-800/60 last:border-0">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-medium text-zinc-300">{def.label}</span>
-          <span className="text-[10px] text-zinc-600">no data</span>
+          <span className="text-[11px] text-zinc-600">no data</span>
         </div>
       </div>
     );
@@ -123,13 +123,13 @@ function MetricRow({ def, before, after, leftLabel, rightLabel }: {
   const diff = Math.abs(rv - lv);
   const deltaChip =
     winner === null ? (
-      <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide bg-zinc-800 text-zinc-500">tie</span>
+      <span className="rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide bg-zinc-800 text-zinc-500">tie</span>
     ) : winner === "right" ? (
-      <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-emerald-400 bg-emerald-500/10">
+      <span className="rounded px-1.5 py-0.5 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10">
         +{diff} {rightLabel.toLowerCase()}
       </span>
     ) : (
-      <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold text-violet-300 bg-violet-500/10">
+      <span className="rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 bg-violet-500/10">
         +{diff} {leftLabel.toLowerCase()}
       </span>
     );
@@ -217,7 +217,7 @@ export function AuditComparison({
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-zinc-800 px-5 py-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-400">Audit comparison</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-violet-400">Audit comparison</p>
             <h2 className="mt-1 text-base font-semibold text-zinc-100">{title}</h2>
             <p className="mt-1 text-xs text-zinc-500">{subtitle}</p>
           </div>
@@ -240,12 +240,12 @@ export function AuditComparison({
 
         {/* Metrics */}
         <div className="px-5 pb-5 pt-2">
-          <p className="mt-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Scores</p>
+          <p className="mt-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Scores</p>
           {SCORE_METRICS.map((def) => (
             <MetricRow key={def.label} def={def} before={before} after={after} leftLabel={leftLabel} rightLabel={rightLabel} />
           ))}
 
-          <p className="mt-4 mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Issue counts — lower is better</p>
+          <p className="mt-4 mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Issue counts — lower is better</p>
           {ISSUE_METRICS.map((def) => (
             <MetricRow key={def.label} def={def} before={before} after={after} leftLabel={leftLabel} rightLabel={rightLabel} />
           ))}

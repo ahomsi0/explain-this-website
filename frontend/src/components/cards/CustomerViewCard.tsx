@@ -53,7 +53,7 @@ export function CustomerViewCard({ customerView }: { customerView: CustomerView 
       />
       <div className="p-5">
         <div className="flex items-center justify-between mb-3">
-          <span className={`text-[10px] font-semibold uppercase ${trustColor[customerView.trustLevel]}`}>
+          <span className={`text-[11px] font-semibold uppercase ${trustColor[customerView.trustLevel]}`}>
             Trust: {trustLabel[customerView.trustLevel]}
           </span>
         </div>
@@ -68,13 +68,13 @@ export function CustomerViewCard({ customerView }: { customerView: CustomerView 
         <div className="flex flex-col gap-2.5">
           {statements.map((stmt, i) => (
             <div key={i} className="flex items-start gap-2">
-              <span className="text-zinc-500 mt-0.5 shrink-0 text-[10px]">›</span>
+              <span className="text-zinc-500 mt-0.5 shrink-0 text-[11px]">›</span>
               <p className="text-xs text-zinc-400 leading-relaxed">{stmt}</p>
             </div>
           ))}
         </div>
         <div className="mt-4 flex items-center gap-2">
-          <span className="text-[10px] text-zinc-500 font-medium">UX Verdict</span>
+          <span className="text-[11px] text-zinc-500 font-medium">UX Verdict</span>
           <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${verdict.cls}`}>
             {verdict.label}
           </span>
@@ -87,7 +87,7 @@ export function CustomerViewCard({ customerView }: { customerView: CustomerView 
 
 function Pill({ label, active }: { label: string; active: boolean }) {
   return (
-    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
       active
         ? "bg-emerald-950 text-emerald-400 border-emerald-800"
         : "bg-red-950 text-red-400 border-red-800"

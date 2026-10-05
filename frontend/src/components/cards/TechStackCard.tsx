@@ -33,7 +33,7 @@ function TechCard({ tech }: { tech: TechItem }) {
         <div className="w-9 h-9 rounded-md bg-zinc-800 border border-zinc-700 flex items-center justify-center text-violet-400">
           {icon}
         </div>
-        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${confidenceBadgeClass(tech.confidence)}`}>
+        <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border ${confidenceBadgeClass(tech.confidence)}`}>
           {confidenceBadgeText(tech.confidence)}
         </span>
       </div>
@@ -46,7 +46,7 @@ function TechCard({ tech }: { tech: TechItem }) {
 
       {/* Divider + role */}
       <div className="pt-2.5 border-t border-zinc-800/60 flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Primary Role:</span>
+        <span className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider">Primary Role:</span>
         <span className="text-[11px] font-medium text-zinc-300">{role}</span>
       </div>
     </div>

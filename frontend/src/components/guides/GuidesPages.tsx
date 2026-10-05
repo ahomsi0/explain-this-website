@@ -275,7 +275,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
 
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
             <div className="min-w-0">
-              <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border mb-3 ${categoryBadge(guide.category)}`}>
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border mb-3 ${categoryBadge(guide.category)}`}>
                 <CategoryIcon category={guide.category} className="w-3 h-3" />
                 {guide.category}
               </span>
@@ -302,20 +302,20 @@ export function GuideDetailPage({ slug }: { slug: string }) {
           <div className="w-full lg:w-72 flex-shrink-0 lg:border-r lg:border-zinc-800 lg:pr-8 lg:mr-8 flex flex-col gap-4 mb-8 lg:mb-0">
             {/* What this means */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-2">What this means</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">What this means</p>
               <p className="text-[13px] text-zinc-400 leading-relaxed">{guide.whatItMeans}</p>
             </div>
 
             {/* Why it matters */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-2">Why it matters</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">Why it matters</p>
               <p className="text-[13px] text-zinc-400 leading-relaxed">{guide.whyItMatters}</p>
             </div>
 
             {/* Tools */}
             {guide.tools && guide.tools.length > 0 && (
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Helpful tools</p>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Helpful tools</p>
                 <div className="flex flex-col gap-0 divide-y divide-zinc-800">
                   {guide.tools.map((tool) => {
                     const url = toolUrl(tool);
@@ -351,7 +351,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
           {/* Right column — timeline */}
           <div className="flex-1 min-w-0">
             {guide.aiPrompt && <AiPromptCard prompt={guide.aiPrompt} />}
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-5">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-5">
               How to fix it — {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
             </p>
 
@@ -381,7 +381,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
             {/* Related guides */}
             {related.length > 0 && (
               <div className="mt-10 pt-8 border-t border-zinc-800">
-                <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">Related guides</h2>
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-4">Related guides</h2>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {related.map((g) => <GuideCard key={g.slug} guide={g} />)}
                 </div>

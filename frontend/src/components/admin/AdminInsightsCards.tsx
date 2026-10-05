@@ -35,7 +35,7 @@ export function BusinessMetricsRow({ overview }: { overview: AdminOverview }) {
         { label: "Total Audits (14d)",  value: totalAudits14d       },
       ].map(({ label, value }) => (
         <div key={label} className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3.5">
-          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
+          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
           <p className="text-2xl font-bold text-zinc-100 tabular-nums leading-none">{value}</p>
         </div>
       ))}
@@ -83,12 +83,12 @@ export function RecentAuditsCard({ rows }: { rows: RecentAuditRow[] }) {
             <li key={r.id} className="flex items-center justify-between gap-3 py-1.5 border-b border-zinc-800/50 last:border-b-0">
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-zinc-200 font-medium truncate">{r.title || host(r.url)}</p>
-                <p className="text-[10px] text-zinc-500 truncate">
+                <p className="text-[11px] text-zinc-500 truncate">
                   {host(r.url)}
                   <span className="text-zinc-600"> · {r.email || "anonymous"}</span>
                 </p>
               </div>
-              <span className="text-[10px] text-zinc-500 tabular-nums shrink-0">{timeAgo(r.createdAt)}</span>
+              <span className="text-[11px] text-zinc-500 tabular-nums shrink-0">{timeAgo(r.createdAt)}</span>
             </li>
           ))}
         </ul>
@@ -115,7 +115,7 @@ export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
   return (
     <Card
       title="Failure Log"
-      action={<span className="text-[10px] text-zinc-500">{errorsLastDay} failures · last 24h</span>}
+      action={<span className="text-[11px] text-zinc-500">{errorsLastDay} failures · last 24h</span>}
     >
       {rows.length === 0 ? (
         <p className="text-xs text-emerald-400/80">No failures recorded — everything's running clean.</p>
@@ -123,10 +123,10 @@ export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
         <ul className="flex flex-col gap-2 max-h-72 overflow-y-auto">
           {rows.map((r, i) => (
             <li key={i} className="flex items-start gap-3 px-3 py-2 rounded bg-red-950/20 border border-red-900/30">
-              <span className="text-[10px] text-zinc-500 font-mono tabular-nums shrink-0 mt-0.5">{timeAgo(r.at)}</span>
+              <span className="text-[11px] text-zinc-500 font-mono tabular-nums shrink-0 mt-0.5">{timeAgo(r.at)}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] text-zinc-300 truncate">{host(r.url)}</p>
-                <p className="text-[10px] text-red-400 break-words">{r.message}</p>
+                <p className="text-[11px] text-red-400 break-words">{r.message}</p>
               </div>
             </li>
           ))}
@@ -134,7 +134,7 @@ export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
       )}
       {topFails.length > 0 && (
         <div className="mt-4 pt-3 border-t border-zinc-800/60">
-          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+          <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
             Most Failed Domains
           </p>
           <ul className="flex flex-col gap-1">
@@ -156,7 +156,7 @@ export function AuditsChartCard({ days }: { days: DayCount[] }) {
   const max = Math.max(1, ...days.map(d => d.count));
   const total = days.reduce((s, d) => s + d.count, 0);
   return (
-    <Card title="Audits — Last 14 Days" action={<span className="text-[10px] text-zinc-500">{total} total</span>}>
+    <Card title="Audits — Last 14 Days" action={<span className="text-[11px] text-zinc-500">{total} total</span>}>
       <div className="flex items-end gap-1 h-24">
         {days.map((d) => {
           const pct = (d.count / max) * 100;
@@ -168,7 +168,7 @@ export function AuditsChartCard({ days }: { days: DayCount[] }) {
                   style={{ height: `${pct}%`, minHeight: d.count > 0 ? "2px" : "0px" }}
                 />
               </div>
-              <span className="text-[9px] text-zinc-600 tabular-nums">{d.date.slice(8)}</span>
+              <span className="text-[11px] text-zinc-600 tabular-nums">{d.date.slice(8)}</span>
             </div>
           );
         })}
@@ -181,7 +181,7 @@ export function AuditsChartCard({ days }: { days: DayCount[] }) {
 export function TopUrlsCard({ rows }: { rows: UrlCount[] }) {
   const max = rows[0]?.count ?? 1;
   return (
-    <Card title="Top URLs Analyzed" action={<span className="text-[10px] text-zinc-500">last 30 days</span>}>
+    <Card title="Top URLs Analyzed" action={<span className="text-[11px] text-zinc-500">last 30 days</span>}>
       {rows.length === 0 ? (
         <p className="text-xs text-zinc-500">No analyses in the last 30 days.</p>
       ) : (
@@ -220,7 +220,7 @@ function HealthRow({ label, state, detail }: { label: string; state: "ok" | "idl
     <div className="flex items-center justify-between gap-3 py-1.5 border-b border-zinc-800/50 last:border-b-0">
       <span className="text-xs text-zinc-300">{label}</span>
       <div className="flex items-center gap-2 shrink-0">
-        {detail && <span className="text-[10px] text-zinc-500 tabular-nums">{detail}</span>}
+        {detail && <span className="text-[11px] text-zinc-500 tabular-nums">{detail}</span>}
         <span className={`w-2 h-2 rounded-full ${state === "ok" ? "bg-emerald-500" : state === "idle" ? "bg-zinc-600" : "bg-red-500"}`} />
       </div>
     </div>
@@ -248,9 +248,9 @@ export function SystemHealthCard({ h }: { h: SystemHealth }) {
       </div>
       {(h.pagespeed.lastErrorMsg || h.groq.lastErrorMsg || h.resend.lastErrorMsg) && (
         <div className="mt-3 flex flex-col gap-1">
-          {h.pagespeed.lastErrorMsg && <p className="text-[10px] text-red-400 break-words">PageSpeed last error: {h.pagespeed.lastErrorMsg}</p>}
-          {h.groq.lastErrorMsg && <p className="text-[10px] text-red-400 break-words">Groq last error: {h.groq.lastErrorMsg}</p>}
-          {h.resend.lastErrorMsg && <p className="text-[10px] text-red-400 break-words">Resend last error: {h.resend.lastErrorMsg}</p>}
+          {h.pagespeed.lastErrorMsg && <p className="text-[11px] text-red-400 break-words">PageSpeed last error: {h.pagespeed.lastErrorMsg}</p>}
+          {h.groq.lastErrorMsg && <p className="text-[11px] text-red-400 break-words">Groq last error: {h.groq.lastErrorMsg}</p>}
+          {h.resend.lastErrorMsg && <p className="text-[11px] text-red-400 break-words">Resend last error: {h.resend.lastErrorMsg}</p>}
         </div>
       )}
     </Card>
@@ -309,7 +309,7 @@ export function FeatureFlagsCard({ flags, onChange }: { flags: Record<string, bo
           })}
         </ul>
       )}
-      <p className="mt-4 text-[10px] text-zinc-600">Flags are in-memory; restarting the backend resets them to enabled.</p>
+      <p className="mt-4 text-[11px] text-zinc-600">Flags are in-memory; restarting the backend resets them to enabled.</p>
     </Card>
   );
 }
@@ -341,7 +341,7 @@ export function BroadcastEmailCard({ totalUsers }: { totalUsers: number }) {
   }
 
   return (
-    <Card title="Broadcast Email" action={<span className="text-[10px] text-zinc-500">{totalUsers} recipients</span>}>
+    <Card title="Broadcast Email" action={<span className="text-[11px] text-zinc-500">{totalUsers} recipients</span>}>
       <div className="flex flex-col gap-2.5">
         <input
           type="text"
@@ -360,7 +360,7 @@ export function BroadcastEmailCard({ totalUsers }: { totalUsers: number }) {
           className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 focus:border-violet-500/50 outline-none text-sm text-zinc-100 placeholder:text-zinc-600 resize-y"
         />
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[10px] text-zinc-600">{body.length} / 4000 chars</p>
+          <p className="text-[11px] text-zinc-600">{body.length} / 4000 chars</p>
           <button
             onClick={() => void send()}
             disabled={busy || !subject.trim() || !body.trim()}
@@ -386,7 +386,7 @@ export function SlowAnalysesCard({ rows }: { rows: SlowAuditRow[] }) {
     return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
   }
   return (
-    <Card title="Slowest Analyses" action={<span className="text-[10px] text-zinc-500">last 30 days</span>}>
+    <Card title="Slowest Analyses" action={<span className="text-[11px] text-zinc-500">last 30 days</span>}>
       {rows.length === 0 ? (
         <p className="text-xs text-zinc-500 py-2">No slow analysis data yet.</p>
       ) : (
@@ -412,7 +412,7 @@ export function AuditOutcomesCard({ rows }: { rows: AuditOutcomeRow[] }) {
     <Card
       title="PageSpeed Hit Rate"
       action={rate !== null
-        ? <span className={`text-[10px] font-semibold ${rate >= 80 ? "text-emerald-400" : rate >= 50 ? "text-amber-400" : "text-red-400"}`}>{rate}% overall</span>
+        ? <span className={`text-[11px] font-semibold ${rate >= 80 ? "text-emerald-400" : rate >= 50 ? "text-amber-400" : "text-red-400"}`}>{rate}% overall</span>
         : undefined}
     >
       {rows.length === 0 ? (
@@ -421,7 +421,7 @@ export function AuditOutcomesCard({ rows }: { rows: AuditOutcomeRow[] }) {
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="text-zinc-600 uppercase tracking-wider text-[9px] border-b border-zinc-800">
+              <tr className="text-zinc-600 uppercase tracking-wider text-[11px] border-b border-zinc-800">
                 <th className="text-left py-1.5">Date</th>
                 <th className="text-right py-1.5">Total</th>
                 <th className="text-right py-1.5 text-emerald-600">✓ Perf</th>
@@ -461,7 +461,7 @@ export function ConversionFunnelCard({ funnel }: { funnel: ConversionFunnel }) {
   ];
   const max = Math.max(1, ...rows.map((row) => row.value));
   return (
-    <Card title="Conversion Funnel" action={<span className="text-[10px] text-zinc-500">last 30 days</span>}>
+    <Card title="Conversion Funnel" action={<span className="text-[11px] text-zinc-500">last 30 days</span>}>
       <div className="flex flex-col gap-2.5">
         {rows.map((row) => (
           <div key={row.label} className="flex items-center gap-3">
@@ -473,7 +473,7 @@ export function ConversionFunnelCard({ funnel }: { funnel: ConversionFunnel }) {
           </div>
         ))}
       </div>
-      <p className="mt-3 text-[10px] text-zinc-600">Counts include only events recorded after analytics consent.</p>
+      <p className="mt-3 text-[11px] text-zinc-600">Counts include only events recorded after analytics consent.</p>
     </Card>
   );
 }

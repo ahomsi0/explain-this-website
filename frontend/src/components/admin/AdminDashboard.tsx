@@ -439,7 +439,7 @@ function UserRow({
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-sm font-medium text-zinc-100">{row.email}</p>
           {row.suspendedAt && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/10 border border-red-500/25 text-red-400">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-red-500/10 border border-red-500/25 text-red-400">
               Suspended
             </span>
           )}
@@ -448,11 +448,11 @@ function UserRow({
           )}
         </div>
         <p className="text-xs text-zinc-500 mt-1">Joined {new Date(row.createdAt).toLocaleDateString()}</p>
-        {rowError && <p className="text-[10px] text-red-400 mt-1">{rowError}</p>}
+        {rowError && <p className="text-[11px] text-red-400 mt-1">{rowError}</p>}
       </td>
       <td className="px-5 py-4">
         <div className="flex items-center gap-2">
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
             row.plan === "pro"
               ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
               : "text-zinc-300 bg-zinc-800 border-zinc-700"
@@ -484,7 +484,7 @@ function UserRow({
             type="button"
             onClick={() => void onResetUsage(row.id)}
             disabled={isBusy}
-            className="text-[10px] text-zinc-600 hover:text-amber-400 border border-zinc-800 hover:border-amber-500/30 px-2 py-0.5 rounded transition-colors disabled:opacity-60"
+            className="text-[11px] text-zinc-600 hover:text-amber-400 border border-zinc-800 hover:border-amber-500/30 px-2 py-0.5 rounded transition-colors disabled:opacity-60"
           >
             Reset
           </button>

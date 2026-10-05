@@ -14,7 +14,7 @@ function ratingDot(r: CWVRating) {
 }
 
 function ratingBadge(r: CWVRating) {
-  const base = "text-[10px] font-medium px-1.5 py-0.5 rounded";
+  const base = "text-[11px] font-medium px-1.5 py-0.5 rounded";
   return r === "good"
     ? `${base} bg-emerald-950 text-emerald-400 border border-emerald-800`
     : r === "needs-improvement"
@@ -51,7 +51,7 @@ function ScoreGauge({ label, score }: { label: string; score: number }) {
           {score}
         </span>
       </div>
-      <span className="text-[10px] text-zinc-500 text-center leading-tight">{label}</span>
+      <span className="text-[11px] text-zinc-500 text-center leading-tight">{label}</span>
     </div>
   );
 }
@@ -92,7 +92,7 @@ function StrategyView({ data }: { data: StrategyData }) {
       )}
 
       {/* Lab metrics */}
-      <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider mb-1 border-l-2 border-violet-500/30 pl-2">Lab Data (Lighthouse)</p>
+      <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1 border-l-2 border-violet-500/30 pl-2">Lab Data (Lighthouse)</p>
       <div className="mb-3">
         {lcp && <VitalRow label="Largest Contentful Paint" vital={lcp} />}
         {fcp && <VitalRow label="First Contentful Paint"   vital={fcp} />}
@@ -104,7 +104,7 @@ function StrategyView({ data }: { data: StrategyData }) {
       {/* Field data (CrUX real-user metrics) */}
       {hasFieldData && (
         <>
-          <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider mb-1 mt-3 border-l-2 border-violet-500/30 pl-2">
+          <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1 mt-3 border-l-2 border-violet-500/30 pl-2">
             Real User Data (CrUX)
           </p>
           <div>
@@ -231,7 +231,7 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
             times out for one device class on large pages. Surface it instead of
             silently hiding the missing tab. */}
         {(!performance.mobile || !performance.desktop) && (
-          <div className="mt-1 mb-3 flex items-center gap-2 text-[10px] text-zinc-500">
+          <div className="mt-1 mb-3 flex items-center gap-2 text-[11px] text-zinc-500">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-600 shrink-0">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
@@ -254,7 +254,7 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <div>
-              <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider mb-0.5">Biggest Bottleneck</p>
+              <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider mb-0.5">Biggest Bottleneck</p>
               <p className="text-xs text-zinc-400 leading-snug">{bottleneck}</p>
             </div>
           </div>
@@ -263,7 +263,7 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
         {/* Suggestions */}
         {suggestions.length > 0 && (
           <div className="mt-3">
-            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">Suggestions</p>
+            <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">Suggestions</p>
             <div className="flex flex-col gap-1.5">
               {suggestions.map((s, i) => (
                 <div key={i} className="flex items-start gap-2">
@@ -275,7 +275,7 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
           </div>
         )}
 
-        <p className="text-[10px] text-zinc-700 mt-3">
+        <p className="text-[11px] text-zinc-700 mt-3">
           {strategy === "mobile" ? "Mobile" : "Desktop"} · via Google PageSpeed Insights
         </p>
 

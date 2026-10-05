@@ -53,8 +53,8 @@ function CheckRow({ check }: { check: SEOCheck }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-zinc-200">{check.label}</span>
-            <span className={`text-[10px] font-semibold ${s.label}`}>{s.text}</span>
-            {check.optional && <span className="text-[10px] font-medium text-zinc-600">Optional</span>}
+            <span className={`text-[11px] font-semibold ${s.label}`}>{s.text}</span>
+            {check.optional && <span className="text-[11px] font-medium text-zinc-600">Optional</span>}
           </div>
           <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{check.detail}</p>
         </div>
@@ -77,11 +77,11 @@ function CheckRow({ check }: { check: SEOCheck }) {
           {guide && (
             <div className="flex flex-col gap-1.5 py-1">
               <div className="flex gap-2 items-start">
-                <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wide shrink-0">Why it matters</span>
+                <span className="text-[11px] font-semibold text-amber-400 uppercase tracking-wide shrink-0">Why it matters</span>
                 <span className="text-[11px] text-zinc-400 leading-snug">{guide.why}</span>
               </div>
               <div className="flex gap-2 items-start">
-                <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wide shrink-0">How to fix</span>
+                <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide shrink-0">How to fix</span>
                 <span className="text-[11px] text-zinc-400 leading-snug">{guide.fix}</span>
               </div>
               <HowToFixLink issueId={`seo-fail-${check.id}`} className="mt-0.5" />

@@ -40,7 +40,7 @@ export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
               />
             ))}
           </div>
-          <div className="flex justify-between text-[9px] text-zinc-600 px-0.5 mb-2">
+          <div className="flex justify-between text-[11px] text-zinc-600 px-0.5 mb-2">
             <span>Fresh</span>
             <span>Aging</span>
             <span>Stale</span>
@@ -59,7 +59,7 @@ export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
         {/* Evidence signals */}
         {(freshness.signals ?? []).length > 0 && (
           <div className="border-t border-zinc-800 pt-3 flex flex-col gap-1.5">
-            <p className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider mb-0.5">Detected signals</p>
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-0.5">Detected signals</p>
             {(freshness.signals ?? []).map((s, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-zinc-600 shrink-0" />

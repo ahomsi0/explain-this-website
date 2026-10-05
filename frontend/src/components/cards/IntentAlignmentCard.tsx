@@ -42,7 +42,7 @@ export function IntentAlignmentCard({ intentAlignment }: { intentAlignment: Inte
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-semibold text-zinc-300">{c.claim}</p>
-                <p className="text-[10px] text-zinc-500 mt-0.5">{c.signal}</p>
+                <p className="text-[11px] text-zinc-500 mt-0.5">{c.signal}</p>
               </div>
             </div>
           ))}

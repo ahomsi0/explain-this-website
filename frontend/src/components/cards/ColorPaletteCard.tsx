@@ -49,7 +49,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
         {colorPalette.themeColor && (
           <div className="flex items-center gap-1.5 mb-4">
             <div className="w-3 h-3 rounded-full border border-zinc-700" style={{ background: colorPalette.themeColor }} />
-            <span className="text-[10px] text-zinc-500 font-mono">{colorPalette.themeColor}</span>
+            <span className="text-[11px] text-zinc-500 font-mono">{colorPalette.themeColor}</span>
           </div>
         )}
 
@@ -66,7 +66,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
                 style={{ background: entry.hex }}
               >
                 {copied === entry.hex && (
-                  <span style={{ color: contrastColor(entry.hex), fontSize: 10 }}>✓</span>
+                  <span style={{ color: contrastColor(entry.hex), fontSize: 11 }}>✓</span>
                 )}
               </div>
               <span className="text-[11px] text-zinc-500 font-mono">{entry.hex}</span>
@@ -74,7 +74,7 @@ export function ColorPaletteCard({ colorPalette }: { colorPalette: ColorPalette 
           ))}
         </div>
 
-        <p className="text-[10px] text-zinc-600 mt-3">Click any swatch to copy hex · {colors.length} colors detected</p>
+        <p className="text-[11px] text-zinc-600 mt-3">Click any swatch to copy hex · {colors.length} colors detected</p>
       </div>
     </CardShell>
   );

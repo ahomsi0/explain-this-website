@@ -49,18 +49,18 @@ export function FontAuditCard({ fontAudit }: { fontAudit: FontAudit }) {
                 {(f.weights ?? []).length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(f.weights ?? []).map((w) => (
-                      <span key={w} className="text-[9px] font-mono text-zinc-500 bg-zinc-800/60 rounded px-1 py-px">{w}</span>
+                      <span key={w} className="text-[11px] font-mono text-zinc-500 bg-zinc-800/60 rounded px-1 py-px">{w}</span>
                     ))}
                   </div>
                 )}
               </div>
-              <span className={`text-[9px] font-semibold rounded px-1.5 py-px whitespace-nowrap shrink-0 ${sourceBadgeClass(f.source)}`}>
+              <span className={`text-[11px] font-semibold rounded px-1.5 py-px whitespace-nowrap shrink-0 ${sourceBadgeClass(f.source)}`}>
                 {f.source}
               </span>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-zinc-600 pt-1 border-t border-zinc-800/60">
+        <p className="text-[11px] text-zinc-600 pt-1 border-t border-zinc-800/60">
           {fontAudit.totalWeights} total weight variant{fontAudit.totalWeights !== 1 ? "s" : ""} · each variant is a separate network request
         </p>
       </div>

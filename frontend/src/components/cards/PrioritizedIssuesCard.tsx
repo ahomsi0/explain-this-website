@@ -39,7 +39,7 @@ export function PrioritizedIssuesCard({ issues }: { issues: PrioritizedIssue[] }
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
                     <span className="text-xs font-medium text-zinc-200">{item.issue}</span>
-                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${colorClass}`}>
+                    <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded border ${colorClass}`}>
                       {item.impact}
                     </span>
                   </div>

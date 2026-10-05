@@ -403,7 +403,7 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
 
   return (
     <li className="group flex items-center gap-2 px-3 py-2.5 rounded-lg border border-zinc-800/70 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
-      <button type="button" onClick={onToggle} aria-pressed={selected} className={`shrink-0 w-16 rounded border px-2 py-1 text-[10px] font-semibold transition-colors ${selected ? "border-violet-500/50 bg-violet-500/15 text-violet-300" : "border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}`}>
+      <button type="button" onClick={onToggle} aria-pressed={selected} className={`shrink-0 w-16 rounded border px-2 py-1 text-[11px] font-semibold transition-colors ${selected ? "border-violet-500/50 bg-violet-500/15 text-violet-300" : "border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}`}>
         {selected ? "Selected" : "Compare"}
       </button>
       <a href={`/report/${audit.id}`} className="flex-1 min-w-0">
@@ -436,12 +436,12 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
         <button
           onClick={() => void copyShareLink()}
           title="Copy public share link"
-          className={`shrink-0 text-[10px] font-medium px-2 py-1 transition-colors ${copied ? "text-emerald-400" : "text-violet-400 hover:text-violet-300"}`}
+          className={`shrink-0 text-[11px] font-medium px-2 py-1 transition-colors ${copied ? "text-emerald-400" : "text-violet-400 hover:text-violet-300"}`}
         >
           {copied ? "Copied!" : "Copy link"}
         </button>
       )}
-      {audit.shareable && <button onClick={onRevoke} className="shrink-0 text-[10px] text-amber-400 hover:text-amber-300 px-2 py-1">Revoke share</button>}
+      {audit.shareable && <button onClick={onRevoke} className="shrink-0 text-[11px] text-amber-400 hover:text-amber-300 px-2 py-1">Revoke share</button>}
       <button onClick={onDelete} className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-500 hover:text-red-400 text-xs px-2 py-1 transition-opacity" aria-label={`Delete audit for ${host}`}>Delete</button>
     </li>
   );
@@ -450,8 +450,8 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
 function ScoreChip({ label, value }: { label: string; value?: number }) {
   return (
     <span className="inline-flex items-baseline gap-0.5 rounded bg-zinc-800/70 px-1.5 py-0.5" title={`${label}: ${value ?? "no data"}`}>
-      <span className="text-[8px] font-semibold uppercase tracking-wide text-zinc-500">{label}</span>
-      <span className={`text-[10px] font-semibold tabular-nums ${scoreTone(value)}`}>{value ?? "—"}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{label}</span>
+      <span className={`text-[11px] font-semibold tabular-nums ${scoreTone(value)}`}>{value ?? "—"}</span>
     </span>
   );
 }
@@ -535,7 +535,7 @@ function TrendsPanel({ trends }: { trends: AuditTrend[] }) {
                 <span>{t.first.score}</span>
                 <span className={`font-semibold ${tone}`}>{arrow} {delta > 0 ? "+" : ""}{delta}</span>
                 <span className="text-zinc-300 font-semibold">{t.latest.score}</span>
-                <span className="text-[10px] text-zinc-600">({t.count} audits)</span>
+                <span className="text-[11px] text-zinc-600">({t.count} audits)</span>
               </span>
             </li>
           );

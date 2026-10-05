@@ -96,7 +96,7 @@ function IssueRow({
         className="w-full text-left p-3 flex items-start gap-3 cursor-pointer"
       >
         {/* Priority badge */}
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${priorityStyles(issue.priority)}`}>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${priorityStyles(issue.priority)}`}>
           {priorityLabel(issue.priority)}
         </span>
 
@@ -108,10 +108,10 @@ function IssueRow({
 
         {/* Right side */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${impactStyles(issue.impact)}`}>
+          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${impactStyles(issue.impact)}`}>
             {impactLabel(issue.impact)}
           </span>
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${effortStyles(issue.effort)}`}>
+          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${effortStyles(issue.effort)}`}>
             {effortLabel(issue.effort)}
           </span>
           <span className={`text-zinc-500 transition-colors ${expanded ? "text-zinc-300" : ""}`}>
@@ -137,7 +137,7 @@ function IssueRow({
       {expanded && (
         <div className="border-t border-zinc-800/80">
           <div className="p-3 bg-zinc-950">
-            <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
+            <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
             <p className="text-xs text-zinc-300 leading-relaxed">{issue.howToFix}</p>
             {issue.links && issue.links.length > 0 && (
               <ul className="mt-2 space-y-1">
@@ -194,12 +194,12 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
       {/* Header */}
       <div className="p-5 pb-0 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.2em]">
+          <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">
             Your Fix Plan
           </p>
           <p className="text-xs text-zinc-500 mt-0.5">Issues ranked by impact × severity</p>
         </div>
-        <span className="rounded-full bg-zinc-800 text-zinc-300 text-[10px] px-2 py-0.5">
+        <span className="rounded-full bg-zinc-800 text-zinc-300 text-[11px] px-2 py-0.5">
           {issues.length} {issues.length === 1 ? "issue" : "issues"}
         </span>
       </div>
@@ -224,7 +224,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
               }`}
             >
               {tab.label}
-              <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+              <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${
                 active ? "bg-violet-500/20 text-violet-300" : "bg-zinc-800 text-zinc-500"
               }`}>
                 {tabCounts[tab.id]}
@@ -245,7 +245,7 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
                 <button
                   key={cat.value}
                   onClick={() => setCategoryFilter(cat.value)}
-                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium border transition-colors ${
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border transition-colors ${
                     active
                       ? "text-violet-400 bg-violet-500/10 border-violet-500/25"
                       : "text-zinc-500 bg-zinc-900 border-zinc-800 hover:text-zinc-300"

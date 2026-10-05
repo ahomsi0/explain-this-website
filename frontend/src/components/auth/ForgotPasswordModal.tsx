@@ -153,7 +153,7 @@ export function ForgotPasswordModal({
           {step === "email" ? (
             <form onSubmit={submitEmail} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="reset-email" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Email</label>
+                <label htmlFor="reset-email" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Email</label>
                 <input
                   type="email"
                   id="reset-email"
@@ -175,7 +175,7 @@ export function ForgotPasswordModal({
               <button
                 type="button"
                 onClick={onBackToSignIn}
-                className="text-[10px] text-zinc-500 hover:text-zinc-300 text-center mt-1"
+                className="text-[11px] text-zinc-500 hover:text-zinc-300 text-center mt-1"
               >
                 ← Back to sign in
               </button>
@@ -183,7 +183,7 @@ export function ForgotPasswordModal({
           ) : (
             <form onSubmit={submitCode} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="reset-code" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">6-Digit Code</label>
+                <label htmlFor="reset-code" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">6-Digit Code</label>
                 <input
                   type="text"
                   id="reset-code"
@@ -199,7 +199,7 @@ export function ForgotPasswordModal({
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="reset-password" className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">New Password</label>
+                <label htmlFor="reset-password" className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">New Password</label>
                 <input
                   type="password"
                   id="reset-password"
@@ -223,7 +223,7 @@ export function ForgotPasswordModal({
                 <button
                   type="button"
                   onClick={() => setStep("email")}
-                  className="text-[10px] text-zinc-500 hover:text-zinc-300"
+                  className="text-[11px] text-zinc-500 hover:text-zinc-300"
                 >
                   ← Wrong email?
                 </button>
@@ -231,7 +231,7 @@ export function ForgotPasswordModal({
                   type="button"
                   onClick={resendCode}
                   disabled={resendCooldown > 0 || busy}
-                  className="text-[10px] text-violet-400 hover:text-violet-300 disabled:text-zinc-600 disabled:cursor-not-allowed"
+                  className="text-[11px] text-violet-400 hover:text-violet-300 disabled:text-zinc-600 disabled:cursor-not-allowed"
                 >
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Didn't get it? Resend code"}
                 </button>

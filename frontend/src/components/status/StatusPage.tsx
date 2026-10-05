@@ -46,13 +46,13 @@ export function StatusPage() {
                 <li key={key} className="flex items-center justify-between gap-3 px-4 py-2.5">
                   <span className="text-xs text-zinc-300">{LABELS[key] ?? key}</span>
                   <span className="flex items-center gap-2">
-                    <span className="text-[10px] text-zinc-500 capitalize">{state === "idle" ? "no recent data" : state}</span>
+                    <span className="text-[11px] text-zinc-500 capitalize">{state === "idle" ? "no recent data" : state}</span>
                     <span className={`w-2 h-2 rounded-full ${dotTone(state)}`} />
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[10px] text-zinc-600">
+            <p className="mt-3 text-[11px] text-zinc-600">
               Last checked {new Date(status.time).toLocaleTimeString()} · auto-refreshes every minute
             </p>
           </>

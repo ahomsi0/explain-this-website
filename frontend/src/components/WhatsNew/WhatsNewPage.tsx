@@ -96,11 +96,11 @@ function SpotlightCard({ update }: { update: Update }) {
       <div className="relative">
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span
-            className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
+            className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
           >
             {update.label}
           </span>
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
             Latest
           </span>
           <time className="ml-auto text-[11px] text-zinc-600">{update.date}</time>
@@ -151,7 +151,7 @@ function FeedRow({ update }: { update: Update }) {
       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${t.dot}`} aria-hidden="true" />
       <span className="flex-1 truncate text-sm font-medium text-zinc-400">{update.title}</span>
       <span
-        className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
+        className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.1em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
       >
         {update.label}
       </span>
@@ -189,7 +189,7 @@ export function WhatsNewPage() {
             <section className="mt-5 fade-up" aria-labelledby="prev-updates-label">
               <p
                 id="prev-updates-label"
-                className="mb-2.5 text-[9.5px] font-bold uppercase tracking-[0.14em] text-zinc-600"
+                className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-600"
               >
                 Previous updates
               </p>

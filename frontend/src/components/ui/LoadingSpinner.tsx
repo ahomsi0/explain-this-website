@@ -149,7 +149,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
 
           {/* Left rail — pipeline cards */}
           <div className="w-[240px] border-r border-zinc-900 px-3 py-4 space-y-1.5 shrink-0">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-600 px-2 mb-2">checks</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-zinc-600 px-2 mb-2">checks</p>
             {steps.map((s) => {
               if (s.state === "done") {
                 return (
@@ -160,7 +160,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
                       </svg>
                     </span>
                     <span className="text-xs text-zinc-300 flex-1 truncate">{s.label}</span>
-                    <span className="font-mono text-[10px] text-zinc-500">done</span>
+                    <span className="font-mono text-[11px] text-zinc-500">done</span>
                   </div>
                 );
               }
@@ -171,7 +171,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
                       <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                     </svg>
                     <span className="text-xs text-zinc-100 font-medium flex-1 truncate">{s.label}</span>
-                    <span className="font-mono text-[10px] text-violet-300">running</span>
+                    <span className="font-mono text-[11px] text-violet-300">running</span>
                   </div>
                 );
               }
@@ -179,7 +179,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
                 <div key={s.id} className="flex items-center gap-2.5 px-2.5 py-2 rounded border border-zinc-800 bg-zinc-900/30 opacity-60">
                   <span className="w-2.5 h-2.5 rounded-full border border-zinc-700 shrink-0" />
                   <span className="text-xs text-zinc-500 flex-1 truncate">{s.label}</span>
-                  <span className="font-mono text-[10px] text-zinc-700">pending</span>
+                  <span className="font-mono text-[11px] text-zinc-700">pending</span>
                 </div>
               );
             })}
@@ -187,7 +187,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
 
           {/* Right pane — terminal stream of the currently running check */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="px-5 py-3 border-b border-zinc-900 flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.22em] text-zinc-500">
+            <div className="px-5 py-3 border-b border-zinc-900 flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.22em] text-zinc-500">
               <span className="text-violet-300 truncate">› {activeStep?.label ?? "preparing"}</span>
               <span className="h-px flex-1 bg-zinc-900" />
               <span className="shrink-0">step {activeStep ? activeStep.idx + 1 : 0} of {STEPS.length}</span>
@@ -223,7 +223,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
                   style={{ width: `${totalProgress * 100}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500">
+              <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500">
                 <span><span className="text-violet-400">●</span> progress</span>
                 <span className="tabular-nums">
                   {activeStep ? activeStep.label.toLowerCase() : "warming up"}
@@ -231,7 +231,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
                   {Math.max(0, activeElapsedInStep).toFixed(1)}s
                 </span>
               </div>
-              <p className="mt-2 text-[10px] leading-relaxed text-zinc-700">The progress view is illustrative; the report appears when the backend finishes.</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-zinc-700">The progress view is illustrative; the report appears when the backend finishes.</p>
             </div>
           </div>
         </div>

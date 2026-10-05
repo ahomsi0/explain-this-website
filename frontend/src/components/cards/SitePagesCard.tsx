@@ -47,16 +47,16 @@ export function SitePagesCard({ sitePages }: { sitePages: SitePagesAudit }) {
                     {page.seoScore}/100
                   </span>
                 ) : (
-                  <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-red-950 text-red-400 border border-red-800">
+                  <span className="shrink-0 text-[11px] font-medium px-1.5 py-0.5 rounded bg-red-950 text-red-400 border border-red-800">
                     failed
                   </span>
                 )}
               </div>
               {page.status === "ok" && page.title && (
-                <p className="mt-1 text-[10px] text-zinc-600 truncate">{page.title}</p>
+                <p className="mt-1 text-[11px] text-zinc-600 truncate">{page.title}</p>
               )}
               {page.status === "error" && page.error && (
-                <p className="mt-1 text-[10px] text-zinc-600 truncate">{page.error}</p>
+                <p className="mt-1 text-[11px] text-zinc-600 truncate">{page.error}</p>
               )}
             </div>
           ))}

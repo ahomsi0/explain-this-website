@@ -72,7 +72,7 @@ export function Sidebar({
     <aside className="hidden md:flex flex-col w-[220px] shrink-0 border-r border-zinc-800 bg-zinc-950 px-3 py-5 fixed left-0 top-12 bottom-0 overflow-y-auto scrollbar-none">
       <div className="px-2 mb-5">
         <p className="text-[11px] font-semibold text-zinc-300 tracking-wide">Audit Reports</p>
-        <p className="text-[10px] text-zinc-600 mt-0.5">Section view</p>
+        <p className="text-[11px] text-zinc-600 mt-0.5">Section view</p>
       </div>
 
       <nav className="flex flex-col gap-0.5">
@@ -97,7 +97,7 @@ export function Sidebar({
               <span className="flex-1 text-left">{item.label}</span>
               {item.id === "fixplan" && scores?.issueCount !== undefined && scores.issueCount > 0 && (
                 <span
-                  className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold bg-red-500 text-white"
+                  className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold bg-red-500 text-white"
                   aria-label={`${scores.issueCount} failing checks`}
                 >
                   <span aria-hidden="true">{scores.issueCount}</span>
@@ -199,7 +199,7 @@ export function Sidebar({
           </a>
         </div>
 
-        <p className="px-2.5 text-[10px] text-zinc-600 leading-relaxed">
+        <p className="px-2.5 text-[11px] text-zinc-600 leading-relaxed">
           © {new Date().getFullYear()} Explain This Website
         </p>
       </div>

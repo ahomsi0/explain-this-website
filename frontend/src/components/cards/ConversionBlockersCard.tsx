@@ -171,7 +171,7 @@ export function ConversionBlockersCard({ scores, ux }: ConversionBlockersCardPro
     <CardShell variant="primary">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-zinc-800/80">
-        <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.2em]">
+        <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">
           Conversion Blockers
         </p>
         {criticalCount === 0 ? (
@@ -210,7 +210,7 @@ export function ConversionBlockersCard({ scores, ux }: ConversionBlockersCardPro
 
             {/* What to improve first */}
             <div className="mt-1 pt-3 border-t border-zinc-800/60">
-              <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
                 What to improve first
               </p>
               <p className="text-xs text-zinc-400 leading-relaxed">

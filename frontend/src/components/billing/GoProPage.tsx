@@ -88,7 +88,7 @@ export function GoProPage() {
                 >
                   {iv}
                   {iv === "yearly" && (
-                    <span className="ml-1.5 text-[9px] font-bold text-emerald-400">−30%</span>
+                    <span className="ml-1.5 text-[11px] font-bold text-emerald-400">−30%</span>
                   )}
                 </button>
               ))}

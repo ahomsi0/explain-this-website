@@ -94,7 +94,7 @@ export function ConversionScoreCard({ scores }: { scores: ConversionScores }) {
 
         {/* What to improve first */}
         <div className="mb-1 p-3 rounded-lg bg-violet-950/20 border border-violet-900/30">
-          <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-wider mb-1">What to Improve First</p>
+          <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-wider mb-1">What to Improve First</p>
           <p className="text-xs text-zinc-400">{priority}</p>
         </div>
 
