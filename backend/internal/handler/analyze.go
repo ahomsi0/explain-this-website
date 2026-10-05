@@ -274,14 +274,13 @@ func ReportHandler() http.HandlerFunc {
 			if err == nil {
 				publicShareActive := shareable && shareRevokedAt == nil && shareExpiresAt != nil && shareExpiresAt.After(time.Now())
 				if publicShareActive || (uid != 0 && uid == ownerID) {
-					if !publicShareActive {
-						var privateResult model.AnalysisResult
-						if json.Unmarshal(raw, &privateResult) == nil {
-							privateResult.ReportID = ""
-							w.WriteHeader(http.StatusOK)
-							json.NewEncoder(w).Encode(privateResult)
-							return
-						}
+					// The report ID is intentionally omitted from the stored JSON.
+					// Restore it for active public links so the report toolbar can
+					// continue to copy/share the link after a restart or cache miss.
+					if encoded, ok := encodeStoredReport(raw, id, publicShareActive); ok {
+						w.WriteHeader(http.StatusOK)
+						w.Write(encoded)
+						return
 					}
 					w.WriteHeader(http.StatusOK)
 					w.Write(raw)
@@ -293,6 +292,27 @@ func ReportHandler() http.HandlerFunc {
 		}
 		writeError(w, http.StatusNotFound, "report not found or expired")
 	}
+}
+
+// encodeStoredReport restores response-only fields that are intentionally
+// omitted from the persisted JSON. Public reports need their ID so the
+// frontend can keep sharing the link after the in-memory cache is gone;
+// private responses must continue to hide it.
+func encodeStoredReport(raw []byte, id string, public bool) ([]byte, bool) {
+	var result model.AnalysisResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, false
+	}
+	if public {
+		result.ReportID = id
+	} else {
+		result.ReportID = ""
+	}
+	encoded, err := json.Marshal(result)
+	if err != nil {
+		return nil, false
+	}
+	return encoded, true
 }
 
 func writeError(w http.ResponseWriter, status int, msg string) {
