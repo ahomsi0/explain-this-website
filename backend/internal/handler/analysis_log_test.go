@@ -67,7 +67,7 @@ func TestRecentAuditsIncludeAnonymousAndRespectDeletion(t *testing.T) {
 	}
 
 	// Anonymous analysis goes through the real recorder (query string must be dropped).
-	recordAnonymousAnalysis(ctx, "https://anon.example/"+tag+"?secret=1", "Anon page", false)
+	recordAnonymousAnalysis(ctx, "https://anon.example/"+tag+"?secret=1", "Anon page", false, 0, false)
 
 	// An expired anonymous row, then force the hourly purge to run.
 	if _, err := db.Pool.Exec(ctx,

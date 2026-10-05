@@ -43,7 +43,7 @@ func truncateRunes(s string, n int) string {
 
 // recordAnonymousAnalysis logs an analysis made without an account. Best-effort,
 // like saveAuditForUser: the analysis already succeeded, so failures are ignored.
-func recordAnonymousAnalysis(ctx context.Context, rawURL, title string, cached bool) {
+func recordAnonymousAnalysis(ctx context.Context, rawURL, title string, cached bool, durationMs int, perfAvailable bool) {
 	if !db.IsAvailable() {
 		return
 	}
@@ -55,8 +55,8 @@ func recordAnonymousAnalysis(ctx context.Context, rawURL, title string, cached b
 	insertCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
 	_, _ = db.Pool.Exec(insertCtx,
-		`INSERT INTO anonymous_analyses (url, title, cached) VALUES ($1, $2, $3)`,
-		logged, truncateRunes(strings.TrimSpace(title), maxLoggedTitleLen), cached,
+		`INSERT INTO anonymous_analyses (url, title, cached, duration_ms, perf_available) VALUES ($1, $2, $3, $4, $5)`,
+		logged, truncateRunes(strings.TrimSpace(title), maxLoggedTitleLen), cached, durationMs, perfAvailable,
 	)
 	purgeOldAnonymousAnalyses(insertCtx)
 }

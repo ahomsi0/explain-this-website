@@ -234,6 +234,9 @@ CREATE TABLE IF NOT EXISTS anonymous_analyses (
 CREATE INDEX IF NOT EXISTS anonymous_analyses_created_at_idx
     ON anonymous_analyses (created_at DESC);
 
+ALTER TABLE anonymous_analyses ADD COLUMN IF NOT EXISTS duration_ms INTEGER;
+ALTER TABLE anonymous_analyses ADD COLUMN IF NOT EXISTS perf_available BOOLEAN;
+
 CREATE TABLE IF NOT EXISTS conversion_events (
     id           BIGSERIAL PRIMARY KEY,
     event_name   TEXT NOT NULL,

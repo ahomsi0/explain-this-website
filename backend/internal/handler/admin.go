@@ -208,87 +208,11 @@ func AdminOverviewHandler() http.HandlerFunc {
 		// Recent audits — last 20 across all visitors (see loadRecentAudits).
 		recent := loadRecentAudits(ctx)
 
-		// Audits by day for the last 14 days (filling in zero days client-side is easier
-		// than generating series in SQL across all DB engines).
-		auditsByDay := []dayCount{}
-		if rows, err := db.Pool.Query(ctx, `
-			SELECT to_char(created_at::date, 'YYYY-MM-DD') AS d, COUNT(*) AS n
-			  FROM audits
-			 WHERE created_at >= NOW() - INTERVAL '14 days'
-			 GROUP BY d
-			 ORDER BY d ASC`); err == nil {
-			counts := map[string]int{}
-			for rows.Next() {
-				var d string
-				var n int
-				if err := rows.Scan(&d, &n); err == nil {
-					counts[d] = n
-				}
-			}
-			rows.Close()
-			// Fill zero-count days so the chart renders evenly.
-			for i := 13; i >= 0; i-- {
-				date := time.Now().AddDate(0, 0, -i).Format("2006-01-02")
-				auditsByDay = append(auditsByDay, dayCount{Date: date, Count: counts[date]})
-			}
-		}
-
-		// Top URLs analyzed in the last 30 days.
-		topUrls := []urlCount{}
-		if rows, err := db.Pool.Query(ctx, `
-			SELECT url, COUNT(*) AS n
-			  FROM audits
-			 WHERE created_at >= NOW() - INTERVAL '30 days'
-			 GROUP BY url
-			 ORDER BY n DESC
-			 LIMIT 10`); err == nil {
-			for rows.Next() {
-				var row urlCount
-				if err := rows.Scan(&row.URL, &row.Count); err == nil {
-					topUrls = append(topUrls, row)
-				}
-			}
-			rows.Close()
-		}
-
-		// Slowest 10 audits in last 30 days.
-		slowAudits := []slowAuditRow{}
-		if rows, err := db.Pool.Query(ctx, `
-			SELECT url, duration_ms, created_at
-			  FROM audits
-			 WHERE duration_ms IS NOT NULL AND deleted_at IS NULL
-			   AND created_at > NOW() - INTERVAL '30 days'
-			 ORDER BY duration_ms DESC
-			 LIMIT 10`); err == nil {
-			for rows.Next() {
-				var r slowAuditRow
-				if err := rows.Scan(&r.URL, &r.DurationMs, &r.CreatedAt); err == nil {
-					slowAudits = append(slowAudits, r)
-				}
-			}
-			rows.Close()
-		}
-
-		// Audit outcomes (PageSpeed hit rate) last 14 days.
-		auditOutcomes := []auditOutcomeRow{}
-		if rows, err := db.Pool.Query(ctx, `
-			SELECT to_char(created_at::date, 'YYYY-MM-DD') AS d,
-			       COUNT(*)                                 AS total,
-			       SUM(CASE WHEN perf_available IS TRUE THEN 1 ELSE 0 END) AS perf_ok,
-			       SUM(CASE WHEN perf_available IS NOT TRUE THEN 1 ELSE 0 END) AS perf_fail
-			  FROM audits
-			 WHERE deleted_at IS NULL
-			   AND created_at > NOW() - INTERVAL '14 days'
-			 GROUP BY d
-			 ORDER BY d DESC`); err == nil {
-			for rows.Next() {
-				var r auditOutcomeRow
-				if err := rows.Scan(&r.Date, &r.Total, &r.PerfOK, &r.PerfFail); err == nil {
-					auditOutcomes = append(auditOutcomes, r)
-				}
-			}
-			rows.Close()
-		}
+		// Admin charts: saved audits + anonymous analyses (see admin_stats.go).
+		auditsByDay := loadAuditsByDay(ctx)
+		topUrls := loadTopURLs(ctx)
+		slowAudits := loadSlowAudits(ctx)
+		auditOutcomes := loadAuditOutcomes(ctx)
 
 		// Consent-gated first-party conversion events over the last 30 days.
 		funnel := conversionFunnel{}
