@@ -101,8 +101,8 @@ func generateRecommendations(seoChecks []model.SEOCheck, ux model.UXResult) (wea
 	}
 
 	if !ux.HasContactInfo {
-		weakPoints = append(weakPoints, "No contact information found — reduces credibility and trust")
-		recommendations = append(recommendations, "Display a phone number, email address, or live chat option in the header or footer")
+		weakPoints = append(weakPoints, "No way to get in touch found — visitors can't tell how to reach you")
+		recommendations = append(recommendations, "Add any contact route: a contact page, support link, or community/discussions link in the header or footer. An email or phone number is not required")
 	}
 
 	return weakPoints, recommendations

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ahomsi/explain-website/internal/model"
 	"golang.org/x/net/html"
 )
 
@@ -131,5 +132,28 @@ func TestPrivacyIgnoresMailtoAndTel(t *testing.T) {
 	doc, _ := html.Parse(strings.NewReader(raw))
 	if ux := analyzeUX(doc, raw); !ux.HasPrivacyPolicy {
 		t.Fatal("link text 'privacy policy' must still match")
+	}
+}
+
+func buildRecommendationsForTest(t *testing.T) (weak, recs []string) {
+	t.Helper()
+	return generateRecommendations(nil, model.UXResult{})
+}
+
+func TestAdviceDoesNotRequireEmailOrPhone(t *testing.T) {
+	_, recs := buildRecommendationsForTest(t)
+	for _, r := range recs {
+		if strings.Contains(r, "phone number, email address") {
+			t.Fatalf("advice still pushes phone/email: %q", r)
+		}
+	}
+	found := false
+	for _, r := range recs {
+		if strings.Contains(r, "An email or phone number is not required") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected reworded contact recommendation, got %v", recs)
 	}
 }
