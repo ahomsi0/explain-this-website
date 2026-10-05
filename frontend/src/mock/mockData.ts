@@ -84,7 +84,7 @@ export const mockAnalysisResult: AnalysisResult = {
     'Add <link rel="canonical"> on all pages to prevent duplicate content issues',
     "Audit product images and add descriptive alt attributes",
     "Set og:image to a 1200x630px product or brand image",
-    "Add a phone number or live chat widget in the header or footer",
+    "Add a contact page, support link or live chat widget in the header or footer",
   ],
   intent: {
     category: "ecommerce",
