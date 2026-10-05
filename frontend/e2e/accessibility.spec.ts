@@ -2,8 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { declineConsent, installApiFallback, mockJson } from "./fixtures";
 
-// Dark is the default theme every first-time visitor (and scanner) sees.
-// Light-theme contrast is tracked separately.
+// Dark is the default theme every first-time visitor (and scanner) sees;
+// light is opt-in. Both must stay clean.
+const THEMES = ["dark", "light"] as const;
 
 async function expectNoViolations(page: Page, label: string) {
   // Freeze fades so colours are final when axe measures contrast.
@@ -13,8 +14,9 @@ async function expectNoViolations(page: Page, label: string) {
   expect(summary, `${label} accessibility violations`).toEqual([]);
 }
 
-test.describe("accessibility", () => {
+for (const theme of THEMES) test.describe(`accessibility (${theme} theme)`, () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript((t) => localStorage.setItem("theme", t), theme);
     await installApiFallback(page);
     await mockJson(page, "/api/usage", { plan: "free", dailyLimit: 5, dailyUsed: 0, dailyRemaining: 5 });
     await page.goto("/");
@@ -31,7 +33,18 @@ test.describe("accessibility", () => {
     await expectNoViolations(page, "landing");
   });
 
+  test("public pages have no violations", async ({ page }) => {
+    test.slow(); // loads ~10 pages through the dev server
+    await declineConsent(page);
+    for (const route of ["/guides", "/guides/broken-links", "/privacy", "/terms", "/whats-new", "/status", "/compare", "/go-pro", "/history", "/no-such-page"]) {
+      await page.goto(route);
+      await expect(page.locator("body")).not.toBeEmpty();
+      await expectNoViolations(page, route);
+    }
+  });
+
   test("report sections have no violations", async ({ page, isMobile }) => {
+    test.slow(); // walks every report section
     test.skip(isMobile, "The section sidebar is desktop-only; the phone report header is tracked separately.");
     await declineConsent(page);
     await page.getByLabel("Website URL to analyze").fill("example.com");

@@ -113,6 +113,8 @@ html.light .bg-zinc-900\/40 { background-color: rgba(250,245,255,0.7) !important
 html.light .bg-zinc-900\/50 { background-color: rgba(250,245,255,0.8) !important; }
 html.light .bg-zinc-900\/60 { background-color: rgba(250,245,255,0.85) !important; }
 html.light .bg-zinc-900\/70 { background-color: rgba(250,245,255,0.9) !important; }
+html.light .bg-zinc-900\/95 { background-color: rgba(255,255,255,0.97) !important; }
+html.light .bg-zinc-950\/60 { background-color: rgba(245,243,255,0.6) !important; }
 html.light .bg-zinc-800\/50 { background-color: rgba(237,233,254,0.6) !important; }
 html.light .bg-zinc-800\/70 { background-color: rgba(237,233,254,0.75) !important; }
 
@@ -146,6 +148,21 @@ html.light .bg-blue-950    { background-color: #eff6ff !important; }
 html.light .bg-violet-950  { background-color: #f5f3ff !important; }
 html.light .bg-zinc-800.rounded { background-color: #ede9fe !important; }
 
+/* Translucent tinted surfaces — without these the dark tints sit on the light
+   page as muddy greys and text on them fails WCAG AA contrast. */
+html.light .bg-zinc-800\/30    { background-color: rgba(237,233,254,0.45) !important; }
+html.light .bg-zinc-800\/60    { background-color: rgba(237,233,254,0.7) !important; }
+html.light .bg-zinc-900\/20    { background-color: rgba(250,245,255,0.5) !important; }
+html.light .bg-red-950\/20     { background-color: rgba(254,226,226,0.5) !important; }
+html.light .bg-red-500\/10     { background-color: rgba(254,226,226,0.6) !important; }
+html.light .bg-red-500\/15     { background-color: rgba(254,226,226,0.75) !important; }
+html.light .bg-emerald-950\/20 { background-color: rgba(220,252,231,0.6) !important; }
+html.light .bg-emerald-500\/10 { background-color: rgba(220,252,231,0.7) !important; }
+html.light .bg-amber-950\/20   { background-color: rgba(254,243,199,0.55) !important; }
+html.light .bg-amber-950\/40   { background-color: rgba(254,243,199,0.8) !important; }
+html.light .bg-amber-500\/5    { background-color: rgba(254,243,199,0.45) !important; }
+html.light .bg-amber-500\/10   { background-color: rgba(254,243,199,0.7) !important; }
+
 /* Status badge borders */
 html.light .border-emerald-800 { border-color: #86efac !important; }
 html.light .border-emerald-900 { border-color: #86efac !important; }
@@ -155,11 +172,30 @@ html.light .border-amber-900   { border-color: #fcd34d !important; }
 html.light .border-blue-800    { border-color: #93c5fd !important; }
 html.light .border-violet-800  { border-color: #c4b5fd !important; }
 
+/* Guides: category accent text (dark uses --accent, light a darker shade) */
+.guide-accent { color: var(--accent); }
+html.light .guide-accent { color: var(--accent-light) !important; }
+
 /* Status text colors */
 html.light .text-emerald-400 { color: #166534 !important; }
-html.light .text-red-400     { color: #dc2626 !important; }
+html.light .text-red-400     { color: #b91c1c !important; }
 html.light .text-amber-400   { color: #92400e !important; }
-html.light .text-blue-400    { color: #2563eb !important; }
+html.light .text-blue-400    { color: #1d4ed8 !important; }
+html.light .text-blue-300    { color: #1d4ed8 !important; }
+html.light .text-orange-400  { color: #9a3412 !important; }
+html.light .text-pink-300    { color: #9d174d !important; }
+html.light .text-emerald-300,
+html.light .text-emerald-500,
+html.light .text-emerald-400\/80 { color: #166534 !important; }
+html.light .text-red-300,
+html.light .text-red-500,
+html.light .text-red-300\/70 { color: #b91c1c !important; }
+html.light .text-amber-300,
+html.light .text-amber-500,
+html.light .text-amber-500\/80,
+html.light .text-amber-400\/70,
+html.light .text-amber-200\/90,
+html.light .text-amber-200\/70 { color: #92400e !important; }
 
 /* Card shell + header in light mode */
 html.light {

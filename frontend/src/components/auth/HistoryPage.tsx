@@ -192,29 +192,29 @@ export function HistoryPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 px-4 sm:px-6 py-10">
+      <main className="flex-1 px-4 sm:px-6 py-10">
         <div className="max-w-3xl mx-auto">
           <RowSkeleton rows={5} />
         </div>
-      </div>
+      </main>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex-1 px-4 sm:px-6 py-16">
+      <main className="flex-1 px-4 sm:px-6 py-16">
         <div className="max-w-md mx-auto rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 text-center">
-          <h2 className="text-lg font-semibold text-zinc-100">Sign in to see your history</h2>
+          <h1 className="text-lg font-semibold text-zinc-100">Sign in to see your history</h1>
           <p className="mt-2 text-sm text-zinc-400">Your saved audits, comparisons, and share links live here once you're signed in.</p>
           <button
             onClick={() => setAuthOpen(true)}
-            className="mt-5 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-semibold text-white bg-violet-500 hover:bg-violet-400 transition-colors"
+            className="mt-5 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
           >
             Sign in
           </button>
         </div>
         <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
-      </div>
+      </main>
     );
   }
 
@@ -222,7 +222,7 @@ export function HistoryPage() {
   const hasFilters = search !== "" || sort !== "newest" || sharedOnly || days !== 0;
 
   return (
-    <div className="flex-1 px-4 sm:px-6 py-8 sm:py-10">
+    <main className="flex-1 px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-end justify-between gap-3 flex-wrap">
           <div>
@@ -307,7 +307,7 @@ export function HistoryPage() {
             <div className="text-center py-16">
               <p className="text-sm text-zinc-400">{hasFilters ? "No audits match your filters" : "No audits yet"}</p>
               <p className="mt-1 text-xs text-zinc-500">{hasFilters ? "Try clearing the search or filters." : "Run your first analysis to see it here."}</p>
-              {!hasFilters && <a href="/" className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-semibold text-white bg-violet-500 hover:bg-violet-400 transition-colors">Analyze a website</a>}
+              {!hasFilters && <a href="/" className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors">Analyze a website</a>}
             </div>
           )}
           {!fetching && data && data.items.length === 0 && data.total > 0 && (
@@ -369,7 +369,7 @@ export function HistoryPage() {
         )}
       </div>
       {comparison && <AuditComparison comparison={comparison} onClose={() => setComparison(null)} />}
-    </div>
+    </main>
   );
 }
 

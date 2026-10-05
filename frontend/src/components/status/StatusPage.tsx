@@ -31,7 +31,7 @@ export function StatusPage() {
   const allOk = status?.status === "ok";
 
   return (
-    <div className="flex-1 px-4 sm:px-6 py-10">
+    <main className="flex-1 px-4 sm:px-6 py-10">
       <div className="max-w-xl mx-auto">
         <h1 className="text-xl font-bold text-zinc-100">System status</h1>
         {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
@@ -58,6 +58,6 @@ export function StatusPage() {
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 }

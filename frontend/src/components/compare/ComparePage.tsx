@@ -135,7 +135,7 @@ export function ComparePage() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-5 w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-md bg-violet-500 hover:bg-violet-400 active:bg-violet-600 px-5 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="mt-5 w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-md bg-violet-600 hover:bg-violet-500 active:bg-violet-600 px-5 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy ? (
               <>
