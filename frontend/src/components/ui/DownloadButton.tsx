@@ -60,7 +60,7 @@ function cap(s: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-export function DownloadButton({ result }: { result: AnalysisResult }) {
+export function DownloadButton({ result, inMenu = false }: { result: AnalysisResult; inMenu?: boolean }) {
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const handleDownload = async () => {
@@ -85,7 +85,7 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
       disabled={loading}
       aria-label="Download report as PDF"
       title="Download report as PDF"
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors disabled:opacity-50"
+      className={`flex items-center gap-2 px-3 ${inMenu ? "py-2.5 w-full rounded-md border-0" : "py-1.5 rounded-md border"} text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-50 ${inMenu ? "justify-start hover:bg-zinc-800" : "hover:bg-zinc-800 border-zinc-800 hover:border-zinc-700"}`}
     >
       {loading ? (
         <span className="w-3 h-3 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
@@ -96,7 +96,7 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
       )}
-      <span className="hidden sm:inline">{failed ? "Failed" : "PDF"}</span>
+      <span className={inMenu ? "" : "hidden sm:inline"}>{failed ? "Failed" : "PDF"}</span>
     </button>
   );
 }
@@ -400,7 +400,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
       ["Lead Capture Form", ux.hasForms            ? "YES" : "NO", san(ux.hasForms            ? `${ux.formCount} form${ux.formCount !== 1 ? "s" : ""} detected`      : "No forms")],
       ["Social Proof",      ux.hasSocialProof      ? "YES" : "NO", ux.hasSocialProof      ? "Reviews/testimonials present" : "No social proof detected"],
       ["Trust Signals",     ux.hasTrustSignals     ? "YES" : "NO", ux.hasTrustSignals     ? "Trust badges or guarantees"   : "No trust signals"],
-      ["Contact Info",      ux.hasContactInfo      ? "YES" : "NO", ux.hasContactInfo      ? "Email or phone present"        : "No contact info on page"],
+      ["Contact Info",      ux.hasContactInfo      ? "YES" : "NO", ux.hasContactInfo      ? "Contact route found"           : "No contact route found"],
       ["Mobile Responsive", ux.mobileReady         ? "YES" : "NO", ux.mobileReady         ? "Viewport meta present"         : "Missing viewport tag"],
       ["Privacy Policy",    ux.hasPrivacyPolicy    ? "YES" : "NO", ux.hasPrivacyPolicy    ? "Policy link found"             : "No privacy policy link"],
       ["Cookie Banner",     ux.hasCookieBanner     ? "YES" : "NO", ux.hasCookieBanner     ? "Consent UI detected"           : "No consent UI"],

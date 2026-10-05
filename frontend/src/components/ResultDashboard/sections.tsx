@@ -82,7 +82,9 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
         <div className="flex flex-col gap-2">
           <SEOAuditCard seoChecks={result.seoChecks} />
           <SecurityHeadersCard checks={result.securityHeaders} />
-          <LinkCheckCard linkCheck={result.linkCheck} />
+          <div id="report-broken-links" tabIndex={-1} className="scroll-mt-32">
+            <LinkCheckCard linkCheck={result.linkCheck} />
+          </div>
           <IntentAlignmentCard intentAlignment={result.intentAlignment} />
         </div>
       );

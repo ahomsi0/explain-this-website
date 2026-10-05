@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { Insights, InsightItem } from "../../utils/insights";
 import { CardShell } from "../ui/CardShell";
-import { scoreColor, scoreBg } from "../../utils/scoreColors";
+import { scoreColor, scoreBg, scoreLabel } from "../../utils/scoreColors";
 
 type ScoreKey = "seo" | "performance" | "ux" | "conversion";
 
@@ -61,14 +61,6 @@ const SCORE_EXPLANATIONS: Record<ScoreKey, (score: number) => { means: string; n
   }),
 };
 
-function overallLabel(n: number) {
-  if (n >= 80) return "Excellent";
-  if (n >= 65) return "Good";
-  if (n >= 50) return "Fair";
-  if (n >= 35) return "Poor";
-  return "Critical";
-}
-
 function ImpactDot({ impact }: { impact: InsightItem["impact"] }) {
   return (
     <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${
@@ -106,7 +98,7 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, unavailable, isO
       )}
       <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${pillBg}`} title={tooltip}>
         <span className={`text-xl font-bold tabular-nums leading-none ${pillColor}`}>{displayScore}</span>
-        <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider text-center leading-tight flex items-center gap-0.5">
+        <span className="text-xs font-semibold text-zinc-400 text-center leading-tight flex items-center gap-1">
           {viewToggle ? (
             <>
               <button type="button" onClick={(e) => { e.stopPropagation(); if (viewToggle.active !== "mobile") viewToggle.onSwitch(); }}
@@ -187,12 +179,12 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
               <span className={`text-xl font-bold leading-none tabular-nums ${scoreColor(overallScore)}`}>{overallScore}</span>
               <span className="text-[9px] text-zinc-600 mt-0.5">/100</span>
             </div>
-            <span className={`text-[10px] font-semibold ${scoreColor(overallScore)}`}>{overallLabel(overallScore)}</span>
+            <span className={`max-w-24 text-center text-xs font-semibold ${scoreColor(overallScore)}`}>{scoreLabel(overallScore)}</span>
           </div>
         </div>
 
         {/* Sub-scores */}
-        <div className="grid grid-cols-4 gap-2 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
           <ScorePill label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
           <ScorePill
             label="Performance"
@@ -228,7 +220,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
                     <ImpactDot impact={item.impact} />
                     <div>
                       <p className="text-xs font-medium text-zinc-200">{item.title}</p>
-                      <p className="text-[11px] text-zinc-500 leading-snug">{item.description}</p>
+                      <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 ))}
@@ -253,7 +245,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
                     <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 bg-emerald-500" />
                     <div>
                       <p className="text-xs font-medium text-zinc-200">{item.title}</p>
-                      <p className="text-[11px] text-zinc-500 leading-snug">{item.description}</p>
+                      <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 ))}

@@ -1,3 +1,7 @@
+export function scoreLabel(n: number): string {
+  return n >= 75 ? "Looking good" : n >= 50 ? "Room to improve" : "Needs attention";
+}
+
 export function scoreColor(n: number): string {
   return n >= 75 ? "text-emerald-400" : n >= 50 ? "text-amber-400" : "text-red-400";
 }

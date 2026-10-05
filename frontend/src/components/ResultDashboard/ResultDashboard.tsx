@@ -6,10 +6,7 @@ import { LogoMark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
 import type { AnalyzeOptions } from "../../services/analyzeApi";
 import { scoreColor as sharedScoreColor } from "../../utils/scoreColors";
-import { CopyButton }   from "../ui/CopyButton";
-import { DownloadButton } from "../ui/DownloadButton";
-import { ShareButton } from "../ui/ShareButton";
-import { BadgeButton } from "../ui/BadgeButton";
+import { ReportActionsMenu } from "./ReportActionsMenu";
 import { Sidebar, MobileSectionNav } from "./Sidebar";
 import { SectionView } from "./sections";
 import { SECTIONS, type SectionId } from "./sectionConfig";
@@ -151,26 +148,26 @@ export function ResultDashboard({
 
       {/* ── Top bar ── */}
       <header className="fixed inset-x-0 top-0 z-30 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
-        <div className="px-4 sm:px-6 h-12 flex items-center gap-3">
+        <div className="px-3 sm:px-4 lg:px-6 h-16 sm:h-12 flex items-center gap-1 sm:gap-3">
           <a href="/" aria-label="Explain This Website home" className="flex items-center gap-2 shrink-0">
             <LogoMark size={22} />
             {/* One h1 at every width: the visible wordmark only shows on larger screens, so the
                 full title is always available to screen readers (and to phones, which have no other h1). */}
             <h1 className="text-xs font-semibold text-zinc-300">
-              <span aria-hidden="true" className="hidden sm:inline">Explain This Website</span>
+              <span aria-hidden="true" className="hidden lg:inline">Explain This Website</span>
               <span className="sr-only">Explain This Website — Website Analysis Report</span>
             </h1>
           </a>
 
-          <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden sm:block" />
+          <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden lg:block" />
 
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[280px]">
+            <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[280px]">
               <FaviconOrInitial src={result.overview.favicon} hostname={hostname} />
               <span className="text-xs font-semibold text-zinc-200 truncate">{hostname}</span>
               <span className="text-[10px] text-zinc-600 shrink-0">· {relativeTime(result.fetchedAt)}</span>
             </div>
-            <span className="sm:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
+            <span className="hidden sm:inline lg:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
               <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
@@ -210,11 +207,11 @@ export function ResultDashboard({
             {searchError && <span id="report-url-error" role="alert" className="hidden md:block text-[10px] text-red-400">{searchError}</span>}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <button
               onClick={toggle}
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              className="flex items-center justify-center w-7 h-7 rounded-md text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
+              className="flex items-center justify-center w-11 h-11 sm:w-7 sm:h-7 rounded-md text-zinc-400 hover:text-zinc-200 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
             >
               {theme === "dark" ? (
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -230,16 +227,14 @@ export function ResultDashboard({
                 </svg>
               )}
             </button>
-            <CopyButton result={result} />
-            <DownloadButton result={result} />
-            <BadgeButton url={result.url} reportId={result.reportId} />
-            <ShareButton reportId={result.reportId} canShare={isPro} />
+            <ReportActionsMenu result={result} canShare={isPro}
+              onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined} />
             {onAnalyze && (
               <button
                 onClick={() => onAnalyze(result.url, "report", { refresh: true })}
                 title="Re-fetch and re-analyze this page, bypassing the recent-results cache"
                 aria-label="Re-run fresh"
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
+                className="hidden sm:flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -252,7 +247,7 @@ export function ResultDashboard({
             ) : (
               <button
                 onClick={() => setAuthOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
+                className="flex min-h-11 sm:min-h-0 items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
               >
                 Sign in
               </button>
@@ -262,7 +257,7 @@ export function ResultDashboard({
       </header>
 
       {/* Spacer — the header is position:fixed so flow content must clear it. */}
-      <div className="h-12 shrink-0" aria-hidden="true" />
+      <div className="h-16 sm:h-12 shrink-0" aria-hidden="true" />
 
       {/* ── Mobile section nav (only < md) ── */}
       <MobileSectionNav items={SECTIONS} active={activeSection} onSelect={setActiveSection} />
@@ -289,58 +284,58 @@ export function ResultDashboard({
         />
 
         <main className="flex-1 min-w-0">
-          <CachedResultNotice
-            ageSeconds={result.cachedAgeSeconds}
-            onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined}
-          />
+      <CachedResultNotice
+        ageSeconds={result.cachedAgeSeconds}
+        onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined}
+      />
 
-          {/* Metrics strip */}
-          <div className="border-b border-zinc-800 bg-zinc-900/30 [container-type:inline-size]">
-            <div className="flex items-stretch">
-              <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
-              {(() => {
-                // Prefer mobile; fall back to desktop when PageSpeed only
-                // returned one strategy for this run.
-                const lh = result.performance?.mobile?.lighthouse ?? result.performance?.desktop?.lighthouse;
-                return (
-                  <>
-                    {lh?.accessibility !== undefined &&
-                      <MetricTile label="Accessibility" value={lh.accessibility} suffix="/100" valueClass={scoreColor(lh.accessibility)} />}
-                    {lh?.bestPractices !== undefined &&
-                      <MetricTile label="Best Practices" value={lh.bestPractices} suffix="/100" valueClass={scoreColor(lh.bestPractices)} />}
-                  </>
-                );
-              })()}
-              {result.performance?.mobile?.lighthouse?.seo !== undefined &&
-                <MetricTile label="Lighthouse SEO" value={result.performance.mobile.lighthouse.seo} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />}
-              {result.performance?.mobile?.lighthouse?.performance !== undefined &&
-                <MetricTile label="Performance" value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />}
-              {result.performance?.mobile?.lcp?.displayValue && (
-                <MetricTile label="LCP"             value={result.performance.mobile.lcp.displayValue}       valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
-              )}
-              <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
-              <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
-              <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
-              {(() => {
-                const highConfidenceTech = result.techStack.filter(t => t.confidence === "high");
-                return highConfidenceTech.length > 0 ? (
-                  <TechStackTile items={highConfidenceTech} />
-                ) : null;
-              })()}
-            </div>
-          </div>
+      {/* Metrics strip */}
+      <div className="hidden md:block border-b border-zinc-800 bg-zinc-900/30 [container-type:inline-size]">
+        <div className="flex items-stretch">
+          <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
+          {(() => {
+            // Prefer mobile; fall back to desktop when PageSpeed only
+            // returned one strategy for this run.
+            const lh = result.performance?.mobile?.lighthouse ?? result.performance?.desktop?.lighthouse;
+            return (
+              <>
+                {lh?.accessibility !== undefined &&
+                  <MetricTile label="Accessibility" value={lh.accessibility} suffix="/100" valueClass={scoreColor(lh.accessibility)} />}
+                {lh?.bestPractices !== undefined &&
+                  <MetricTile label="Best Practices" value={lh.bestPractices} suffix="/100" valueClass={scoreColor(lh.bestPractices)} />}
+              </>
+            );
+          })()}
+          {result.performance?.mobile?.lighthouse?.seo !== undefined &&
+            <MetricTile label="Lighthouse SEO" value={result.performance.mobile.lighthouse.seo} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />}
+          {result.performance?.mobile?.lighthouse?.performance !== undefined &&
+            <MetricTile label="Performance" value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />}
+          {result.performance?.mobile?.lcp?.displayValue && (
+            <MetricTile label="LCP"             value={result.performance.mobile.lcp.displayValue}       valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
+          )}
+          <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
+          <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
+          <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
+          {(() => {
+            const highConfidenceTech = result.techStack.filter(t => t.confidence === "high");
+            return highConfidenceTech.length > 0 ? (
+              <TechStackTile items={highConfidenceTech} />
+            ) : null;
+          })()}
+        </div>
+      </div>
 
-          {/* Section content */}
-          <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-[1800px]">
-            <div className="mb-5">
-              <h2 className="text-lg sm:text-xl font-bold text-zinc-100">{currentMeta.title}</h2>
-              <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-2xl leading-relaxed">{currentMeta.description}</p>
-            </div>
+      {/* Section content */}
+      <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-[1800px]">
+        <div className="mb-5">
+          <h2 className="text-lg sm:text-xl font-bold text-zinc-100">{currentMeta.title}</h2>
+          <p className="text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">{currentMeta.description}</p>
+        </div>
 
-            <ErrorBoundary key={activeSection}>
-              <SectionView id={activeSection} result={result} />
-            </ErrorBoundary>
-          </div>
+        <ErrorBoundary key={activeSection}>
+          <SectionView id={activeSection} result={result} />
+        </ErrorBoundary>
+      </div>
         </main>
       </div>
 
