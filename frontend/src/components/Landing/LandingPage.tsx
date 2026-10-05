@@ -185,8 +185,8 @@ export function LandingPage({
                   ].map(({ label, pct, color, pass }) => (
                     <div key={label}>
                       <div className="flex justify-between mb-1">
-                        <span className="text-[10px] text-zinc-500">{label}</span>
-                        <span className={`text-[10px] font-semibold ${pass ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-red-400"}`}>
+                        <span className="text-[11px] text-zinc-500">{label}</span>
+                        <span className={`text-[11px] font-semibold ${pass ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-red-400"}`}>
                           {pass ? "Pass" : pct >= 50 ? "Warn" : "Fail"}
                         </span>
                       </div>
@@ -218,11 +218,11 @@ export function LandingPage({
                     ].map(({ val, lbl, color }) => (
                       <div key={lbl} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-2 text-center">
                         <div className={`text-sm font-bold ${color}`}>{val}</div>
-                        <div className="text-[9px] text-zinc-600 uppercase tracking-wider mt-0.5">{lbl}</div>
+                        <div className="text-[11px] text-zinc-600 uppercase tracking-wider mt-0.5">{lbl}</div>
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  <p className="text-[11px] text-zinc-500 leading-relaxed">
                     <span className="text-amber-400 font-semibold">Fix: </span>
                     First Contentful Paint is slow. Defer non-critical scripts.
                   </p>
@@ -247,12 +247,12 @@ export function LandingPage({
                       { name: "TypeScript", color: "text-violet-300  bg-violet-500/10  border-violet-500/20"  },
                       { name: "+6 more",   color: "text-zinc-400    bg-zinc-800        border-zinc-700"       },
                     ].map(({ name, color }) => (
-                      <span key={name} className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold border ${color}`}>
+                      <span key={name} className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold border ${color}`}>
                         {name}
                       </span>
                     ))}
                   </div>
-                  <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  <p className="text-[11px] text-zinc-500 leading-relaxed">
                     Modern React/Next.js stack on Vercel. TypeScript detected — good for maintainability.
                   </p>
                 </div>
@@ -276,8 +276,8 @@ export function LandingPage({
             <div className="rounded-2xl border border-zinc-800 overflow-hidden">
               {/* Table header */}
               <div className="grid grid-cols-2 bg-zinc-900/60 border-b border-zinc-800">
-                <div className="px-5 py-3 text-[10px] font-bold tracking-[0.14em] uppercase text-emerald-400 border-r border-zinc-800">Works well for</div>
-                <div className="px-5 py-3 text-[10px] font-bold tracking-[0.14em] uppercase text-amber-400">Known limits</div>
+                <div className="px-5 py-3 text-[11px] font-bold tracking-[0.14em] uppercase text-emerald-400 border-r border-zinc-800">Works well for</div>
+                <div className="px-5 py-3 text-[11px] font-bold tracking-[0.14em] uppercase text-amber-400">Known limits</div>
               </div>
 
               {[
@@ -300,11 +300,11 @@ export function LandingPage({
               ].map((row, i) => (
                 <div key={i} className="grid grid-cols-2 border-b border-zinc-800/50 last:border-0">
                   <div className="px-5 py-3 text-[11.5px] text-zinc-400 leading-relaxed flex items-start gap-2.5 border-r border-zinc-800/50 bg-zinc-900/30">
-                    <svg className="shrink-0 mt-0.5 text-emerald-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg aria-hidden="true" className="shrink-0 mt-0.5 text-emerald-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     {row.ok}
                   </div>
                   <div className="px-5 py-3 text-[11.5px] text-zinc-400 leading-relaxed flex items-start gap-2.5 bg-zinc-900/20">
-                    <svg className="shrink-0 mt-0.5 text-amber-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <svg aria-hidden="true" className="shrink-0 mt-0.5 text-amber-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     {row.limit}
                   </div>
                 </div>
@@ -338,7 +338,7 @@ export function LandingPage({
                     i === 2 ? "rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" : ""
                   }`}
                 >
-                  <span className="inline-block mb-3 px-2 py-0.5 rounded text-[9px] font-bold tracking-[0.12em] uppercase text-violet-300 bg-violet-500/10 border border-violet-500/20">
+                  <span className="inline-block mb-3 px-2 py-0.5 rounded text-[11px] font-bold tracking-[0.12em] uppercase text-violet-300 bg-violet-500/10 border border-violet-500/20">
                     {s.verb}
                   </span>
                   <h3 className="text-sm font-bold text-zinc-100 mb-1.5">{s.title}</h3>

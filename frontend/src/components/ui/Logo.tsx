@@ -8,6 +8,7 @@
 export function LogoMark({ size = 28 }: { size?: number }) {
   return (
     <svg
+      aria-hidden="true"
       width={size}
       height={size}
       viewBox="0 0 32 32"
