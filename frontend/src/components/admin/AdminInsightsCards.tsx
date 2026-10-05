@@ -85,7 +85,7 @@ export function RecentAuditsCard({ rows }: { rows: RecentAuditRow[] }) {
                 <p className="text-xs text-zinc-200 font-medium truncate">{r.title || host(r.url)}</p>
                 <p className="text-[10px] text-zinc-500 truncate">
                   {host(r.url)}
-                  {r.email && <span className="text-zinc-600"> · {r.email}</span>}
+                  <span className="text-zinc-600"> · {r.email || "anonymous"}</span>
                 </p>
               </div>
               <span className="text-[10px] text-zinc-500 tabular-nums shrink-0">{timeAgo(r.createdAt)}</span>

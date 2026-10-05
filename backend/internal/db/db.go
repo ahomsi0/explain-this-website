@@ -219,6 +219,21 @@ CREATE TABLE IF NOT EXISTS anonymous_daily_usage (
     PRIMARY KEY (visitor_id, usage_date)
 );
 
+-- One row per anonymous analysis so the admin "Recent Audits" list reflects all
+-- traffic, not only signed-in users (their audits live in the audits table).
+-- No visitor id, IP address or account is stored and the URL has its query
+-- string removed. Rows are purged after 90 days.
+CREATE TABLE IF NOT EXISTS anonymous_analyses (
+    id         BIGSERIAL PRIMARY KEY,
+    url        TEXT NOT NULL,
+    title      TEXT,
+    cached     BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS anonymous_analyses_created_at_idx
+    ON anonymous_analyses (created_at DESC);
+
 CREATE TABLE IF NOT EXISTS conversion_events (
     id           BIGSERIAL PRIMARY KEY,
     event_name   TEXT NOT NULL,

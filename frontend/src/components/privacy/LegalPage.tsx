@@ -5,10 +5,10 @@ const CONTENT: Record<LegalKind, { title: string; intro: string; sections: { tit
     title: "Privacy Policy",
     intro: "This policy explains what Explain This Website collects, why we collect it, and the choices you have.",
     sections: [
-      { title: "Information we process", body: "When you analyze a URL, we process the URL and the public response needed to create the report. If you create an account, we store your email address, password hash, usage totals, and saved audit history. We may retain operational logs such as request timestamps, error details, and an anonymous quota identifier." },
+      { title: "Information we process", body: "When you analyze a URL, we process the URL and the public response needed to create the report. If you create an account, we store your email address, password hash, usage totals, and saved audit history. We may retain operational logs such as request timestamps, error details, and an anonymous quota identifier. Analyses run without an account are also logged as the analyzed page address (without any query string), the page title, and a timestamp, with no account or visitor identifier attached." },
       { title: "How we use it", body: "We use this information to provide analyses, enforce daily limits, save history, secure the service, diagnose failures, and improve the product. We do not ask for, or submit, passwords, private credentials, or form data from the site you analyze." },
       { title: "Third-party services", body: "A report may use Google PageSpeed Insights for performance data and Microlink for the optional page screenshot preview. Password reset and broadcast email use Resend when configured. Optional Google Analytics is loaded only after you grant analytics consent; you can decline it in the banner." },
-      { title: "Retention and choices", body: "Saved audits remain in your account until you delete them or request deletion. Public share links are time-limited and can be revoked. You may decline optional analytics, update your account through the product, or contact support@explainthewebsite.com for access, correction, or deletion requests." },
+      { title: "Retention and choices", body: "Saved audits remain in your account until you delete them or request deletion. The log of analyses run without an account is deleted after 90 days. Public share links are time-limited and can be revoked. You may decline optional analytics, update your account through the product, or contact support@explainthewebsite.com for access, correction, or deletion requests." },
       { title: "Security and changes", body: "We use reasonable technical safeguards, including encrypted transport, hashed passwords, and access controls. No internet service can guarantee absolute security. We may update this policy as the service changes and will update the date below." },
     ],
   },
@@ -33,7 +33,7 @@ export function LegalPage({ kind }: { kind: LegalKind }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Explain This Website</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{content.title}</h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">{content.intro}</p>
-        <p className="mt-3 text-xs text-zinc-600">Last updated: August 21, 2026</p>
+        <p className="mt-3 text-xs text-zinc-600">Last updated: October 5, 2026</p>
         <div className="mt-10 space-y-8">
           {content.sections.map((section) => (
             <section key={section.title}>
