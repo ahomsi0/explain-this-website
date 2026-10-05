@@ -36,7 +36,7 @@ export function ConsentBanner() {
           <button
             type="button"
           onClick={() => { setAnalyticsConsent("granted"); setConsent("granted"); track("analytics_consent_granted"); }}
-            className="rounded-md bg-violet-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-400"
+            className="rounded-md bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-500"
           >
             Allow analytics
           </button>
