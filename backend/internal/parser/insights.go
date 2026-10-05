@@ -381,9 +381,9 @@ func computeConversionScores(ux model.UXResult, seo map[string]string, stats mod
 	}
 	if ux.HasContactInfo {
 		trust += 20
-		trustReasons = append(trustReasons, "contact info visible")
+		trustReasons = append(trustReasons, "contact route visible")
 	} else {
-		trustReasons = append(trustReasons, "no contact info")
+		trustReasons = append(trustReasons, "no contact route")
 	}
 	if ux.HasSocialProof {
 		trust += 15
@@ -555,7 +555,7 @@ func findBiggestOpportunity(seo map[string]string, ux model.UXResult, stats mode
 	case seo["meta_desc"] == "fail":
 		return "There is no meta description, so Google auto-generates one. Writing a compelling 120–160 character description would immediately improve click-through rates from search."
 	case !ux.HasContactInfo:
-		return "There's no contact information visible on the page. For most business sites, making it easy to get in touch is a direct driver of leads and trust."
+		return "There's no way to get in touch visible on the page. For most business sites, an easy route to contact — a contact page, support link or community forum — builds trust and generates leads."
 	default:
 		return "The biggest opportunity is improving overall content structure — a clearer headline, stronger CTA, and visible trust signals would make a meaningful difference."
 	}
@@ -578,7 +578,7 @@ func buildCompetitorInsight(intent model.IntentSummary, tech []model.TechItem, u
 		return "SaaS is a crowded space — clear positioning, a prominent free trial offer, and a tight value proposition are the fastest ways to stand out to first-time visitors."
 	case "portfolio":
 		if !ux.HasContactInfo {
-			return "Portfolio sites compete on credibility and ease of contact — making it simple for potential clients to reach out is the most direct way to generate leads."
+			return "Portfolio sites compete on credibility and ease of contact — a clear contact route (a contact page, form or profile link) is the most direct way to generate leads."
 		}
 		return "Portfolios compete on distinctiveness and outcomes — showcasing measurable results alongside visuals helps separate strong work from a crowded field."
 	case "blog":
@@ -587,7 +587,7 @@ func buildCompetitorInsight(intent model.IntentSummary, tech []model.TechItem, u
 		return "Landing pages are won or lost on conversion rate — a single clear headline, one focused CTA, and visible social proof are the essential ingredients that separate high-converting pages from low ones."
 	case "service":
 		if !ux.HasContactInfo {
-			return "Service businesses that make it immediately easy to get in touch consistently win more leads — a phone number, booking form, or live chat are high-value additions."
+			return "Service businesses that make it immediately easy to get in touch consistently win more leads — a contact page, booking form, phone number or live chat are high-value additions."
 		}
 		return "Service businesses compete locally and on trust — reviews, case studies, and clear contact paths are the primary differentiators in most niches."
 	case "corporate":
@@ -656,7 +656,7 @@ func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats mode
 		add(12, "No Open Graph tags", "Reach", "Social shares show a blank preview — no image, no description — which drastically reduces click-throughs.")
 	}
 	if !ux.HasContactInfo {
-		add(13, "No contact information visible", "Trust + Conversion", "Hard to reach = hard to trust. Contact info is a basic credibility signal for most businesses.")
+		add(13, "No way to get in touch visible", "Trust + Conversion", "Hard to reach = hard to trust. A visible contact route (contact page, support or community link) is a basic credibility signal.")
 	}
 
 	// Sort by priority and take top 5
@@ -750,12 +750,12 @@ func buildELI5(seo map[string]string, ux model.UXResult) []model.ELI5Item {
 			"There's nothing on the page to prove your business is legitimate. No reviews, no testimonials, no certificates. First-time visitors have no reason to trust you over a competitor.")
 	}
 	if !ux.HasContactInfo {
-		add("No contact information",
-			"Visitors can't find a way to reach you. Most people expect to see a phone number, email, or contact link — without it, the site feels less trustworthy.")
+		add("No contact route",
+			"Visitors can't find a way to reach you. A contact page, support link or community/discussions link is enough — you don't have to publish an email or phone number.")
 	}
 	if !ux.HasPrivacyPolicy {
 		add("No privacy policy",
-			"There's no privacy policy link. This is legally required in many countries (like under GDPR) and tells visitors that their data is handled responsibly.")
+			"There's no privacy policy link. This is legally required in many countries (like under GDPR) and tells visitors their data is handled responsibly. Add a footer link labelled “Privacy Policy” pointing to a /privacy page.")
 	}
 
 	// Cap at 8 most important items

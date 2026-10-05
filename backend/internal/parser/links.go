@@ -2,7 +2,6 @@ package parser
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -72,23 +71,23 @@ func sameSiteHost(a, b string) bool {
 	return strings.TrimPrefix(a, "www.") == strings.TrimPrefix(b, "www.")
 }
 
-// CheckLinks extracts up to linkCheckCap external links from doc and HEAD-probes each one.
+// CheckLinks extracts up to linkCheckCap external links from doc and probes each one.
 func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.LinkCheckResult {
-	links := extractExternalLinks(doc, sourceURL)
-	if len(links) > linkCheckCap {
-		links = links[:linkCheckCap]
+	anchors := extractExternalAnchors(doc, sourceURL)
+	if len(anchors) > linkCheckCap {
+		anchors = anchors[:linkCheckCap]
 	}
 
-	if len(links) == 0 {
+	if len(anchors) == 0 {
 		return model.LinkCheckResult{}
 	}
 
-	items := make([]model.LinkCheckItem, len(links))
-	completed := make([]bool, len(links))
+	items := make([]model.LinkCheckItem, len(anchors))
+	completed := make([]bool, len(anchors))
 	sem := make(chan struct{}, linkCheckConcurrent)
 	var wg sync.WaitGroup
 
-	for i, u := range links {
+	for i, a := range anchors {
 		if ctx.Err() != nil {
 			break
 		}
@@ -99,23 +98,24 @@ func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.Lin
 			wg.Done()
 			continue
 		}
-		go func(idx int, target string) {
+		go func(idx int, anchor externalAnchor) {
 			defer wg.Done()
 			defer func() { <-sem }()
 			if ctx.Err() != nil {
 				return
 			}
-			item := probeLink(ctx, target)
+			item := probeLink(ctx, anchor.URL)
 			if ctx.Err() != nil {
 				return
 			}
+			item.Text = anchor.Text
 			items[idx] = item
 			completed[idx] = true
-		}(i, u)
+		}(i, a)
 	}
 	wg.Wait()
 
-	checkedItems := make([]model.LinkCheckItem, 0, len(links))
+	checkedItems := make([]model.LinkCheckItem, 0, len(anchors))
 	for i, item := range items {
 		if !completed[i] {
 			continue
@@ -127,6 +127,8 @@ func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.Lin
 		switch {
 		case item.IsBroken:
 			result.Broken++
+		case item.Reason == reasonUnreachable || item.Reason == reasonBlocked:
+			result.Unverified++
 		case item.IsRedirect:
 			result.Redirects++
 		default:
@@ -136,15 +138,22 @@ func CheckLinks(ctx context.Context, doc *html.Node, sourceURL string) model.Lin
 	return result
 }
 
-// extractExternalLinks returns deduplicated external hrefs from <a> tags.
-func extractExternalLinks(doc *html.Node, sourceURL string) []string {
+// externalAnchor is a deduplicated external link and the text it was shown with.
+type externalAnchor struct {
+	URL  string
+	Text string
+}
+
+// extractExternalAnchors returns deduplicated external links from <a> tags,
+// keeping the anchor text of the first occurrence of each URL.
+func extractExternalAnchors(doc *html.Node, sourceURL string) []externalAnchor {
 	var sourceHost string
 	if u, err := url.Parse(sourceURL); err == nil {
 		sourceHost = normalizedHostname(u.Hostname())
 	}
 
 	seen := map[string]bool{}
-	var links []string
+	var anchors []externalAnchor
 
 	var walk func(*html.Node)
 	walk = func(n *html.Node) {
@@ -154,7 +163,7 @@ func extractExternalLinks(doc *html.Node, sourceURL string) []string {
 				norm := u.String()
 				if !seen[norm] {
 					seen[norm] = true
-					links = append(links, norm)
+					anchors = append(anchors, externalAnchor{URL: norm, Text: evidenceText(extractText(n))})
 				}
 			}
 		}
@@ -163,41 +172,70 @@ func extractExternalLinks(doc *html.Node, sourceURL string) []string {
 		}
 	}
 	walk(doc)
+	return anchors
+}
+
+// extractExternalLinks returns deduplicated external hrefs from <a> tags.
+func extractExternalLinks(doc *html.Node, sourceURL string) []string {
+	anchors := extractExternalAnchors(doc, sourceURL)
+	links := make([]string, len(anchors))
+	for i, a := range anchors {
+		links[i] = a.URL
+	}
 	return links
 }
 
-// probeLink makes a HEAD request (falling back to GET on 405) and returns the result.
+const (
+	reasonNotFound    = "not_found"
+	reasonServerError = "server_error"
+	reasonUnreachable = "unreachable"
+	reasonBlocked     = "blocked"
+)
+
+// classifyStatus maps an HTTP status to a reason and whether the link counts as
+// broken. Only 404/410 and 5xx are broken; other 4xx (401, 403, 429, 999, ...)
+// usually mean bot protection, so they are "blocked" (unverified), not broken.
+func classifyStatus(status int) (reason string, broken bool) {
+	switch {
+	case status == http.StatusNotFound || status == http.StatusGone:
+		return reasonNotFound, true
+	case status >= 500:
+		return reasonServerError, true
+	case status >= 400:
+		return reasonBlocked, false
+	}
+	return "", false
+}
+
+func doProbe(ctx context.Context, method, target string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, target, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; ExplainThisWebsite/1.0)")
+	return linkClient.Do(req)
+}
+
+// probeLink makes a HEAD request and, on any error or 4xx/5xx, confirms with a
+// GET before judging: many servers reject, rate-limit or time out HEAD while
+// serving the same URL fine via GET.
 func probeLink(ctx context.Context, target string) model.LinkCheckItem {
 	item := model.LinkCheckItem{URL: target, FinalURL: target}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodHead, target, nil)
-	if err != nil {
-		item.IsBroken = true
-		return item
+	resp, err := doProbe(ctx, http.MethodHead, target)
+	if err != nil || resp.StatusCode >= 400 {
+		if getResp, getErr := doProbe(ctx, http.MethodGet, target); getErr == nil {
+			if err == nil {
+				resp.Body.Close()
+			}
+			resp, err = getResp, nil
+		}
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; ExplainThisWebsite/1.0)")
-
-	resp, err := linkClient.Do(req)
 	if err != nil {
-		item.Status = 0
-		item.IsBroken = true
+		item.Reason = reasonUnreachable
 		return item
 	}
 	defer resp.Body.Close()
-
-	// Some servers reject or block HEAD while serving the same URL via GET;
-	// retry those responses before calling a link broken.
-	if resp.StatusCode == http.StatusMethodNotAllowed ||
-		resp.StatusCode == http.StatusNotImplemented || resp.StatusCode == http.StatusForbidden {
-		req2, _ := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
-		req2.Header.Set("User-Agent", req.Header.Get("User-Agent"))
-		resp2, err2 := linkClient.Do(req2)
-		if err2 == nil {
-			_, _ = io.Copy(io.Discard, io.LimitReader(resp2.Body, 1<<20))
-			resp2.Body.Close()
-			resp = resp2
-		}
-	}
 
 	item.Status = resp.StatusCode
 	if resp.Request != nil {
@@ -214,6 +252,6 @@ func probeLink(ctx context.Context, target string) model.LinkCheckItem {
 			}
 		}
 	}
-	item.IsBroken = resp.StatusCode >= 400
+	item.Reason, item.IsBroken = classifyStatus(resp.StatusCode)
 	return item
 }

@@ -165,6 +165,9 @@ func analyzeUX(doc *html.Node, rawHTML string) model.UXResult {
 	for _, m := range phoneRegex.FindAllString(visibleLower, -1) {
 		if looksLikePhone(m) {
 			result.HasContactInfo = true
+			if result.ContactEvidence == nil {
+				result.ContactEvidence = &model.Evidence{Text: evidenceText(m)}
+			}
 			break
 		}
 	}
@@ -272,14 +275,32 @@ func walkUX(n *html.Node, result *model.UXResult) {
 					break
 				}
 			}
-			if tag == "a" {
-				href := strings.ToLower(getAttr(n, "href"))
-				if strings.HasPrefix(href, "mailto:") || strings.HasPrefix(href, "tel:") {
+			if tag == "button" {
+				display := evidenceText(extractText(n))
+				if isContactText(display) {
 					result.HasContactInfo = true
+					if result.ContactEvidence == nil {
+						result.ContactEvidence = &model.Evidence{Href: "", Text: display}
+					}
+				}
+			}
+			if tag == "a" {
+				rawHref := getAttr(n, "href")
+				href := strings.ToLower(rawHref)
+				display := evidenceText(extractText(n))
+				if isContactRoute(rawHref, display) {
+					result.HasContactInfo = true
+					if result.ContactEvidence == nil {
+						result.ContactEvidence = &model.Evidence{Href: rawHref, Text: display}
+					}
 				}
 				// Privacy policy link
-				if strings.Contains(href, "privacy") || strings.Contains(text, "privacy policy") {
+				isMailOrTel := strings.HasPrefix(strings.TrimSpace(href), "mailto:") || strings.HasPrefix(strings.TrimSpace(href), "tel:")
+				if (!isMailOrTel && strings.Contains(href, "privacy")) || strings.Contains(text, "privacy policy") {
 					result.HasPrivacyPolicy = true
+					if result.PrivacyEvidence == nil {
+						result.PrivacyEvidence = &model.Evidence{Href: rawHref, Text: display}
+					}
 				}
 			}
 

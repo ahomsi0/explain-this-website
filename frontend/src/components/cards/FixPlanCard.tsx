@@ -139,6 +139,22 @@ function IssueRow({
           <div className="p-3 bg-zinc-950">
             <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
             <p className="text-xs text-zinc-300 leading-relaxed">{issue.howToFix}</p>
+            {issue.links && issue.links.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {issue.links.map((l) => (
+                  <li key={l.url}>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-violet-400 hover:text-violet-300 underline break-all"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
             <HowToFixLink issueId={issue.id} className="mt-2" />
           </div>
         </div>
