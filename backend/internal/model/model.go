@@ -97,6 +97,12 @@ type RenderingInfo struct {
 	Notice               string `json:"notice,omitempty"`
 }
 
+// Evidence records the page element that satisfied a check.
+type Evidence struct {
+	Href string `json:"href"` // empty when the match was visible text only (e.g. a phone number)
+	Text string `json:"text"` // link text, or the matched text
+}
+
 // UXResult holds the results of conversion and UX heuristic analysis.
 type UXResult struct {
 	// Conversion signals
@@ -114,6 +120,10 @@ type UXResult struct {
 	HasVideoContent     bool `json:"hasVideoContent"`
 	HasNewsletterSignup bool `json:"hasNewsletterSignup"`
 	HasPrivacyPolicy    bool `json:"hasPrivacyPolicy"`
+	// Evidence for the contact/privacy checks: the first element that matched.
+	// nil when the signal was not found.
+	ContactEvidence *Evidence `json:"contactEvidence,omitempty"`
+	PrivacyEvidence *Evidence `json:"privacyEvidence,omitempty"`
 }
 
 // PageStats holds raw structural metrics extracted from the page.
@@ -173,16 +183,22 @@ type LinkCheckItem struct {
 	Status     int    `json:"status"`     // HTTP status code; 0 = unreachable
 	FinalURL   string `json:"finalUrl"`   // destination after any redirects
 	IsRedirect bool   `json:"isRedirect"` // true when FinalURL != URL
-	IsBroken   bool   `json:"isBroken"`   // true when status 0, 4xx, or 5xx
+	IsBroken   bool   `json:"isBroken"`   // true only for not_found / server_error
+	// Reason is empty for healthy links, otherwise one of:
+	// "not_found" (404/410), "server_error" (5xx), "unreachable" (no response),
+	// "blocked" (other 4xx, e.g. 403/429/999 — likely bot protection).
+	Reason string `json:"reason,omitempty"`
+	Text   string `json:"text,omitempty"` // anchor text on the page, when any
 }
 
 // LinkCheckResult summarises the health of all probed external links.
 type LinkCheckResult struct {
-	Checked   int             `json:"checked"`
-	OK        int             `json:"ok"`
-	Broken    int             `json:"broken"`
-	Redirects int             `json:"redirects"`
-	Items     []LinkCheckItem `json:"items"`
+	Checked    int             `json:"checked"`
+	OK         int             `json:"ok"`
+	Broken     int             `json:"broken"`
+	Unverified int             `json:"unverified"` // unreachable or blocked: could not be confirmed either way
+	Redirects  int             `json:"redirects"`
+	Items      []LinkCheckItem `json:"items"`
 }
 
 // ColorEntry is one extracted brand colour with its occurrence frequency.
