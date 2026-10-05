@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 // contactWord matches contact-ish words as whole words, so "/helpful-articles"
@@ -26,8 +27,10 @@ func isContactRoute(href, text string) bool {
 	if u, err := url.Parse(h); err == nil {
 		host := strings.TrimPrefix(u.Hostname(), "www.")
 		if host == "github.com" || host == "gitlab.com" {
-			if strings.Contains(u.Path, "/discussions") || strings.Contains(u.Path, "/issues") {
-				return true
+			for _, seg := range strings.Split(u.Path, "/") {
+				if seg == "discussions" || seg == "issues" {
+					return true
+				}
 			}
 		}
 		if contactWord.MatchString(u.Path) {
@@ -35,8 +38,12 @@ func isContactRoute(href, text string) bool {
 		}
 	}
 
+	// Text-only matches need a real, navigable href.
+	if h == "" || strings.HasPrefix(h, "#") || strings.HasPrefix(h, "javascript:") {
+		return false
+	}
 	t := strings.ToLower(strings.TrimSpace(text))
-	return t != "" && len(t) <= maxContactTextLen && contactWord.MatchString(t)
+	return t != "" && utf8.RuneCountInString(t) <= maxContactTextLen && contactWord.MatchString(t)
 }
 
 // evidenceText trims and collapses whitespace in link text and caps its length.

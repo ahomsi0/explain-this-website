@@ -286,7 +286,8 @@ func walkUX(n *html.Node, result *model.UXResult) {
 					}
 				}
 				// Privacy policy link
-				if strings.Contains(href, "privacy") || strings.Contains(text, "privacy policy") {
+				isMailOrTel := strings.HasPrefix(strings.TrimSpace(href), "mailto:") || strings.HasPrefix(strings.TrimSpace(href), "tel:")
+				if (!isMailOrTel && strings.Contains(href, "privacy")) || strings.Contains(text, "privacy policy") {
 					result.HasPrivacyPolicy = true
 					if result.PrivacyEvidence == nil {
 						result.PrivacyEvidence = &model.Evidence{Href: rawHref, Text: display}

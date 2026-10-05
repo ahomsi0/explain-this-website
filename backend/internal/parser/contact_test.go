@@ -89,3 +89,47 @@ func TestPrivacyEvidence(t *testing.T) {
 		t.Fatalf("expected no privacy match, got %+v", ux)
 	}
 }
+
+func TestContactRoutesTightened(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+		want bool
+	}{
+		{"text without href", `<a>Contact</a>`, false},
+		{"hash href", `<a href="#">Contact</a>`, false},
+		{"javascript href", `<a href="javascript:void(0)">Help</a>`, false},
+		{"text with real href", `<a href="/x">Contact us</a>`, true},
+		{"unicode text within limit", `<a href="/x">Contact — 联系我们 联系我们 联系我们 联系我们 联系我们 联系我们</a>`, true},
+		{"github discussions item", `<a href="https://github.com/user/proj/discussions/12">Talk</a>`, true},
+		{"github issues-demo repo", `<a href="https://github.com/user/issues-demo">Source</a>`, false},
+		{"gitlab issues", `<a href="https://gitlab.com/u/p/-/issues">Bugs</a>`, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, _, _ := uxFor(t, tc.body)
+			if got != tc.want {
+				t.Fatalf("HasContactInfo = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestPrivacyIgnoresMailtoAndTel(t *testing.T) {
+	for _, body := range []string{
+		`<a href="mailto:privacy@x.com">Email us</a>`,
+		`<a href="tel:+15551234567">Privacy line</a>`,
+	} {
+		raw := "<html><body>" + body + "</body></html>"
+		doc, _ := html.Parse(strings.NewReader(raw))
+		ux := analyzeUX(doc, raw)
+		if ux.HasPrivacyPolicy || ux.PrivacyEvidence != nil {
+			t.Fatalf("%s: unexpected privacy match %+v", body, ux.PrivacyEvidence)
+		}
+	}
+	raw := `<html><body><a href="mailto:a@b.com">Our privacy policy</a></body></html>`
+	doc, _ := html.Parse(strings.NewReader(raw))
+	if ux := analyzeUX(doc, raw); !ux.HasPrivacyPolicy {
+		t.Fatal("link text 'privacy policy' must still match")
+	}
+}
