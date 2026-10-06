@@ -41,7 +41,10 @@ function Flag({ label, count, severity }: { label: string; count: number; severi
 export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
   if (!audit || audit.total === 0) return null;
 
-  const { label, cls } = ratingFromPct(audit.modernPct, audit.total);
+  // SVG is vector and can't be converted, so the modern-format score only
+  // applies when there are bitmaps. Older saved reports lack `raster`.
+  const bitmaps = audit.raster ?? audit.total;
+  const { label, cls } = ratingFromPct(audit.modernPct, bitmaps);
   const legacy = audit.jpg + audit.png + audit.gif;
 
   return (
@@ -56,6 +59,9 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
         </div>
 
         {/* Modern % progress */}
+        {bitmaps === 0 ? (
+          <p className="mb-4 text-[11px] text-zinc-500">No bitmap images — nothing to convert to WebP or AVIF.</p>
+        ) : (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[11px] text-zinc-500">Modern formats (WebP / AVIF)</span>
@@ -70,6 +76,7 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
             />
           </div>
         </div>
+        )}
 
         {/* Format breakdown bars */}
         <div className="flex flex-col gap-2 mb-4">

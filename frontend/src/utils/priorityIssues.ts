@@ -223,12 +223,15 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     }
   }
 
-  // Image format
-  if (r.imageAudit.modernPct < 50) {
+  // Image format — only meaningful when the page has bitmap images. A page with
+  // no images (or only SVG, which can't be converted) must not be told "0%".
+  // Older saved reports lack `raster`, so fall back to the old total.
+  const bitmapImages = r.imageAudit.raster ?? r.imageAudit.total ?? 0;
+  if (bitmapImages > 0 && r.imageAudit.modernPct < 50) {
     issues.push(makeIssue(
       "image-format",
       "Convert images to WebP/AVIF",
-      `Only ${r.imageAudit.modernPct}% of images use modern formats. Switching saves significant bandwidth.`,
+      `Only ${r.imageAudit.modernPct}% of bitmap images use modern formats. Switching saves significant bandwidth.`,
       "Re-export or convert all images to WebP or AVIF format and update your image tags.",
       "medium",
       "easy",

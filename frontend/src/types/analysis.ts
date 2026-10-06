@@ -292,6 +292,8 @@ export interface ImageFormatAudit {
   svg: number;
   missingDims: number;
   missingLazy: number;
+  /** Bitmap images (webp/avif/jpg/png/gif); SVG excluded. Absent on older saved reports. */
+  raster?: number;
   modernPct: number;
 }
 

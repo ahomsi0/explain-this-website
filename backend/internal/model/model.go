@@ -166,7 +166,8 @@ type ImageFormatAudit struct {
 	SVG         int `json:"svg"`
 	MissingDims int `json:"missingDims"` // no width+height attrs (causes CLS)
 	MissingLazy int `json:"missingLazy"` // no loading=lazy (above a rough fold threshold)
-	ModernPct   int `json:"modernPct"`   // (webp+avif) / total * 100
+	Raster      int `json:"raster"`      // bitmap images (webp, avif, jpg, png, gif); SVG is vector and excluded
+	ModernPct   int `json:"modernPct"`   // (webp+avif) / raster * 100; meaningless when raster is 0
 }
 
 // SecurityHeaderCheck is a single HTTP security-header audit result.
