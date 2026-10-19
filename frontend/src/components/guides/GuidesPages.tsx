@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { CATEGORY_ORDER, GUIDES, guideForIssue, type Guide, type GuideCategory } from "../../guides/guides";
+import { CATEGORY_ORDER, GUIDES, guideForIssue, relatedGuides, type Guide, type GuideCategory } from "../../guides/guides";
 
 // Tool name → URL for clickable links
 const TOOL_URLS: Record<string, string> = {
@@ -259,9 +259,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
     );
   }
 
-  const related = Object.values(GUIDES)
-    .filter((g) => g.category === guide.category && g.slug !== guide.slug)
-    .slice(0, 3);
+  const related = relatedGuides(guide);
 
   return (
     <main className="flex-1">
@@ -378,6 +376,31 @@ export function GuideDetailPage({ slug }: { slug: string }) {
               })}
             </div>
 
+            {guide.commonMistakes && guide.commonMistakes.length > 0 && (
+              <section className="mt-8">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Common mistakes</h2>
+                <ul className="flex flex-col gap-2">
+                  {guide.commonMistakes.map((m) => (
+                    <li key={m} className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-[13.5px] text-zinc-400 leading-relaxed">{m}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {guide.howToVerify && (
+              <section className="mt-8">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">How to check it worked</h2>
+                <p className="text-[13.5px] text-zinc-400 leading-relaxed">{guide.howToVerify}</p>
+              </section>
+            )}
+
+            <p className="mt-8 text-[13.5px] text-zinc-500 leading-relaxed">
+              Not sure if this affects your site?{" "}
+              <a href="/" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">Analyze your website for free</a>{" "}
+              or{" "}
+              <a href="/compare" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">compare it with a competitor</a>.
+            </p>
+
             {/* Related guides */}
             {related.length > 0 && (
               <div className="mt-10 pt-8 border-t border-zinc-800">
@@ -385,6 +408,9 @@ export function GuideDetailPage({ slug }: { slug: string }) {
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {related.map((g) => <GuideCard key={g.slug} guide={g} />)}
                 </div>
+                <a href="/guides" className="mt-5 inline-flex text-[12.5px] text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
+                  Browse all {Object.keys(GUIDES).length} fix guides
+                </a>
               </div>
             )}
           </div>

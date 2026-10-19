@@ -27,6 +27,12 @@ export interface Guide {
   stepImages?: Record<number, { src: string; caption: string }>;
   /** Ready-to-copy prompt users can paste into an AI assistant to get tailored fix advice. */
   aiPrompt?: string;
+  /** Pitfalls people hit while applying the fix. */
+  commonMistakes?: string[];
+  /** How to confirm the fix worked. */
+  howToVerify?: string;
+  /** Hand-picked related slugs (any category), shown before same-category guides. */
+  relatedSlugs?: string[];
 }
 
 export const GUIDES: Record<string, Guide> = {
@@ -764,6 +770,104 @@ export const GUIDES: Record<string, Guide> = {
     aiPrompt: "Several pages on my website have few or no internal links pointing to them, making them hard for search engines and visitors to discover. Can you show me how to build an effective internal linking strategy, find orphaned pages, and add contextual links using descriptive anchor text?",
   },
 };
+
+// Extra depth for the SEO guides: pitfalls, verification, and cross-category
+// related links. Merged into GUIDES so every consumer sees one shape.
+const GUIDE_EXTRAS: Record<string, Pick<Guide, "commonMistakes" | "howToVerify" | "relatedSlugs">> = {
+  "page-title": {
+    commonMistakes: [
+      "Using the same title on every page, so Google can't tell the pages apart.",
+      "Stuffing keywords ('Cheap Shoes | Buy Shoes | Shoes Online') instead of describing the page.",
+      "Leaving the CMS default, such as 'Home' or 'Untitled'.",
+    ],
+    howToVerify:
+      "Search Google for site:yourdomain.com and read the blue headlines. Each should be unique, readable and not cut off with '…'. Re-run an audit to confirm the title check passes.",
+    relatedSlugs: ["meta-description", "open-graph-tags", "search-intent"],
+  },
+  "meta-description": {
+    commonMistakes: [
+      "Writing one description and reusing it across the whole site.",
+      "Going over about 160 characters, so the end gets cut off in results.",
+      "Describing the company instead of what this specific page gives the visitor.",
+    ],
+    howToVerify:
+      "View the page source and search for name=\"description\", or inspect the page in Google Search Console. Google may still rewrite the snippet, but a clear description is used far more often than a missing one.",
+    relatedSlugs: ["page-title", "open-graph-tags", "call-to-action"],
+  },
+  "canonical-url": {
+    commonMistakes: [
+      "Pointing the canonical at a different page, which tells Google to ignore this one.",
+      "Using relative URLs or mixing http and https, www and non-www.",
+      "Adding a canonical to a page that is also set to noindex.",
+    ],
+    howToVerify:
+      "Open Search Console's URL Inspection for the page and compare 'User-declared canonical' with 'Google-selected canonical'. They should match.",
+    relatedSlugs: ["redirect-chains", "sitemap", "robots-directive"],
+  },
+  "structured-data": {
+    commonMistakes: [
+      "Marking up content that isn't visible on the page.",
+      "Copying example markup without replacing the placeholder values.",
+      "Adding invalid JSON, such as a trailing comma, which makes the whole block unreadable.",
+    ],
+    howToVerify:
+      "Paste the page URL into Google's Rich Results Test. It lists every detected type and any errors or warnings.",
+    relatedSlugs: ["open-graph-tags", "page-title", "internal-linking"],
+  },
+  "internal-linking": {
+    commonMistakes: [
+      "Using 'click here' or 'read more' as link text instead of describing the destination.",
+      "Leaving important pages reachable only through search or a sitemap.",
+      "Linking only from the footer, which passes much less weight than links in the main content.",
+    ],
+    howToVerify:
+      "In Search Console, open Links → Internal links and check that your key pages have many links. Crawl the site with Screaming Frog and look for pages with zero inlinks.",
+    relatedSlugs: ["broken-links", "sitemap", "canonical-url"],
+  },
+  "sitemap": {
+    commonMistakes: [
+      "Listing redirected, noindexed or 404 URLs.",
+      "Forgetting to reference the sitemap in robots.txt.",
+      "Never resubmitting after the site structure changes.",
+    ],
+    howToVerify:
+      "Submit the sitemap in Search Console → Sitemaps. The status should read 'Success' and the discovered-URL count should match your page count.",
+    relatedSlugs: ["robots-directive", "internal-linking", "canonical-url"],
+  },
+  "robots-directive": {
+    commonMistakes: [
+      "Leaving 'Disallow: /' or a site-wide noindex on after launching from staging.",
+      "Blocking CSS or JavaScript files, which stops Google rendering the page properly.",
+      "Using robots.txt to hide a page: blocked pages can still appear in results, so use noindex instead.",
+    ],
+    howToVerify:
+      "Open yourdomain.com/robots.txt and read it, then run the page through URL Inspection in Search Console. It reports whether crawling and indexing are allowed.",
+    relatedSlugs: ["sitemap", "canonical-url", "page-title"],
+  },
+  "open-graph-tags": {
+    commonMistakes: [
+      "Using an image smaller than 1200×630, which gets cropped or ignored.",
+      "Using a relative image URL; it must be absolute.",
+      "Not refreshing the platform's cache after changing the tags.",
+    ],
+    howToVerify:
+      "Paste the URL into the Facebook Sharing Debugger or LinkedIn Post Inspector and use 'Scrape again' to see exactly what a shared link will look like.",
+    relatedSlugs: ["page-title", "meta-description", "structured-data"],
+  },
+};
+
+for (const [slug, extra] of Object.entries(GUIDE_EXTRAS)) {
+  if (GUIDES[slug]) Object.assign(GUIDES[slug], extra);
+}
+
+/** Up to `limit` related guides: hand-picked first, then same category. */
+export function relatedGuides(guide: Guide, limit = 4): Guide[] {
+  const picked = (guide.relatedSlugs ?? []).map((s) => GUIDES[s]).filter((g): g is Guide => !!g && g.slug !== guide.slug);
+  const sameCategory = Object.values(GUIDES).filter(
+    (g) => g.category === guide.category && g.slug !== guide.slug && !picked.includes(g),
+  );
+  return [...picked, ...sameCategory].slice(0, limit);
+}
 
 export const CATEGORY_ORDER: GuideCategory[] = ["Performance", "SEO", "UX & Conversion", "Security", "Content"];
 

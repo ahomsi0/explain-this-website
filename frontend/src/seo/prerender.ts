@@ -1,6 +1,6 @@
 // Pure string builders for the build-time prerender (scripts/prerender.mjs).
 // Imported directly by Node: relative `.ts` imports only.
-import { CATEGORY_ORDER, GUIDES } from "../guides/guides.ts";
+import { CATEGORY_ORDER, GUIDES, relatedGuides } from "../guides/guides.ts";
 import type { Guide } from "../guides/guides.ts";
 import {
   OG_IMAGE,
@@ -79,11 +79,13 @@ export function guideBodyHtml(guide: Guide): string {
   const tools = guide.tools?.length
     ? `<h2>Helpful tools</h2><ul>${guide.tools.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>`
     : "";
-  const related = Object.values(GUIDES)
-    .filter((g) => g.category === guide.category && g.slug !== guide.slug)
-    .slice(0, 3)
-    .map((g) => `<li><a href="/guides/${g.slug}">${escapeHtml(g.title)}</a></li>`)
+  const related = relatedGuides(guide)
+    .map((g) => `<li><a href="/guides/${g.slug}">${escapeHtml(g.title)}</a>: ${escapeHtml(g.summary)}</li>`)
     .join("");
+  const mistakes = guide.commonMistakes?.length
+    ? `<h2>Common mistakes</h2><ul>${guide.commonMistakes.map((m) => `<li>${escapeHtml(m)}</li>`).join("")}</ul>`
+    : "";
+  const verify = guide.howToVerify ? `<h2>How to check it worked</h2><p>${escapeHtml(guide.howToVerify)}</p>` : "";
   return main(
     `<nav aria-label="Breadcrumb"><a href="/">Home</a> › <a href="/guides">Fix guides</a></nav>` +
       `<h1>${escapeHtml(guide.title)}</h1>` +
@@ -91,8 +93,12 @@ export function guideBodyHtml(guide: Guide): string {
       `<h2>What it means</h2><p>${escapeHtml(guide.whatItMeans)}</p>` +
       `<h2>Why it matters</h2><p>${escapeHtml(guide.whyItMatters)}</p>` +
       `<h2>How to fix it</h2><ol>${steps}</ol>` +
+      mistakes +
+      verify +
       tools +
-      (related ? `<h2>Related guides</h2><ul>${related}</ul>` : ""),
+      `<p>Not sure if this affects your site? <a href="/">Analyze your website for free</a> or <a href="/compare">compare it with a competitor</a>.</p>` +
+      (related ? `<h2>Related guides</h2><ul>${related}</ul>` : "") +
+      `<p><a href="/guides">Browse all ${Object.keys(GUIDES).length} fix guides</a></p>`,
   );
 }
 

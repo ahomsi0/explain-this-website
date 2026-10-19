@@ -27,11 +27,16 @@ interface StaticPage {
   indexable: boolean;
 }
 
-const withSite = (title: string) => `${title} · ${SITE_NAME}`;
+const MAX_TITLE = 60;
+// Google truncates titles around 60 characters, so drop the brand suffix when it would push past that.
+const withSite = (title: string) => {
+  const full = `${title} · ${SITE_NAME}`;
+  return full.length <= MAX_TITLE ? full : title;
+};
 
 const HOME_TITLE = "Explain This Website — Instant Website Analyzer";
 const HOME_DESCRIPTION =
-  "Paste any URL and get an instant analysis: tech stack detection, SEO audit, UX signals, conversion score, and actionable recommendations. Free, no login required.";
+  "Paste any URL and get an instant analysis: tech stack, SEO audit, UX signals, conversion score and recommendations. Free, no login required.";
 
 const STATIC_PAGES: Record<string, StaticPage> = {
   "/": { title: HOME_TITLE, description: HOME_DESCRIPTION, indexable: true },

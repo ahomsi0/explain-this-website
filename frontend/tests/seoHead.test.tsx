@@ -17,7 +17,7 @@ beforeEach(() => {
 describe("usePageMeta", () => {
   it("writes title, description, canonical, social tags and JSON-LD for a guide", () => {
     renderHook(() => usePageMeta("/guides/lcp", null));
-    expect(document.title).toBe("Fix slow Largest Contentful Paint (LCP) · Explain This Website");
+    expect(document.title).toBe("Fix slow Largest Contentful Paint (LCP)");
     expect(meta('meta[name="description"]')).toContain("LCP");
     expect(meta('meta[name="robots"]')).toBe("index, follow");
     expect(canonical()).toBe("https://www.explainthiswebsite.com/guides/lcp");

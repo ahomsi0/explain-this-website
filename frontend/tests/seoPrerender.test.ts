@@ -21,7 +21,7 @@ describe("renderPage", () => {
   it("replaces the marked head block and keeps the rest of the template", () => {
     expect(html).not.toContain("OLD");
     expect(html).toContain('<script src="/a.js"></script>');
-    expect(html).toContain("<title>Fix slow Largest Contentful Paint (LCP) · Explain This Website</title>");
+    expect(html).toContain("<title>Fix slow Largest Contentful Paint (LCP)</title>");
     expect(html).toContain('<link rel="canonical" href="https://www.explainthiswebsite.com/guides/lcp" />');
     expect(html).toContain('<meta name="robots" content="index, follow" />');
     expect(html).toContain('<meta property="og:type" content="article" />');
