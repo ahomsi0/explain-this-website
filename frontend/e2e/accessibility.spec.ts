@@ -38,7 +38,9 @@ for (const theme of THEMES) test.describe(`accessibility (${theme} theme)`, () =
     await declineConsent(page);
     for (const route of ["/guides", "/guides/broken-links", "/privacy", "/terms", "/whats-new", "/status", "/compare", "/go-pro", "/history", "/no-such-page"]) {
       await page.goto(route);
-      await expect(page.locator("body")).not.toBeEmpty();
+      // Routes are code-split: wait for the page's own <main> landmark, not just
+      // the shell, or axe measures the empty Suspense fallback.
+      await expect(page.getByRole("main")).toBeVisible();
       await expectNoViolations(page, route);
     }
   });
