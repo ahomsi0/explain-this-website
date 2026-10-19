@@ -107,6 +107,12 @@ export function bodyHtmlForPath(path: string): string {
     const slug = path.slice("/guides/".length);
     if (Object.hasOwn(GUIDES, slug)) return guideBodyHtml(GUIDES[slug]);
   }
+  if (path === "/404") {
+    return main(
+      `<h1>Page not found</h1><p>The page you’re looking for doesn’t exist or has moved.</p>` +
+        `<p><a href="/">Analyze a website</a> · <a href="/guides">Fix guides</a> · <a href="/compare">Compare sites</a></p>`,
+    );
+  }
   const meta = metaForPath(path);
   const heading = path === "/" ? SITE_NAME : meta.title.replace(` · ${SITE_NAME}`, "");
   const intro = `<h1>${escapeHtml(heading)}</h1><p>${escapeHtml(meta.description)}</p>`;

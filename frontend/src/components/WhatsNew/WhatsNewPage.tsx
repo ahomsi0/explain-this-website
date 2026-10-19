@@ -204,7 +204,7 @@ export function WhatsNewPage() {
           <section className="mt-8 border-t border-zinc-900 py-10 text-center">
             <p className="text-sm text-zinc-500">Have an idea or found something that needs fixing?</p>
             <a
-              href="mailto:support@explainthewebsite.com"
+              href="mailto:support@explainthiswebsite.com"
               className="mt-2 inline-block text-sm text-violet-400 underline decoration-violet-500/30 underline-offset-4 transition-colors hover:text-violet-300"
             >
               Send us a note

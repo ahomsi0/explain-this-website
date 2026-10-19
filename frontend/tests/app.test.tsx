@@ -45,4 +45,10 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: /Understand any website\s*in seconds\./ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
+
+  it("renders a not-found page for unknown paths", async () => {
+    window.history.replaceState({}, "", "/no-such-page");
+    render(<App />);
+    expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
+  });
 });

@@ -15,7 +15,11 @@
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/report/:id([a-f0-9]{32})",
+      "destination": "/_spa.html"
+    },
+    {
+      "source": "/(history|dashboard|go-pro|verify-email)",
       "destination": "/_spa.html"
     }
   ],

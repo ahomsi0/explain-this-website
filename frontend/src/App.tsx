@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode, Suspense, lazy } from "react";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { LoadingSpinner } from "./components/ui/LoadingSpinner";
 import { ErrorBanner } from "./components/ui/ErrorBanner";
-import { ResultDashboard } from "./components/ResultDashboard/ResultDashboard";
 import { fetchReport } from "./services/analyzeApi";
 import type { AnalysisResult } from "./types/analysis";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -10,25 +9,31 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/useAuth";
 import { LandingPage } from "./components/Landing/LandingPage";
 import { fetchUsage, type UsageSummary } from "./services/authApi";
-import { AdminDashboard } from "./components/admin/AdminDashboard";
-import { GoProPage } from "./components/billing/GoProPage";
-import { ComparePage } from "./components/compare/ComparePage";
 import { ConsentBanner } from "./components/privacy/ConsentBanner";
-import { LegalPage } from "./components/privacy/LegalPage";
-import { WhatsNewPage } from "./components/WhatsNew/WhatsNewPage";
 import { SiteFooter } from "./components/ui/SiteFooter";
 import { SiteHeader } from "./components/ui/SiteHeader";
+import { NotFoundPage } from "./components/ui/NotFoundPage";
 import { ReportSkeleton } from "./components/ui/Skeletons";
 import { AuthModal } from "./components/auth/AuthModal";
-import { HistoryPage } from "./components/auth/HistoryPage";
-import { GuidesIndexPage, GuideDetailPage } from "./components/guides/GuidesPages";
 import { usePageMeta } from "./seo/usePageMeta";
-import { VerifyEmailPage } from "./components/auth/VerifyEmailPage";
-import { StatusPage } from "./components/status/StatusPage";
 import { track } from "./lib/analytics";
 import { isRepeatUser, recordAnalysisCompleted } from "./lib/conversionTracking";
 import { rememberUrl } from "./lib/recentUrls";
 import type { AnalyzeOptions } from "./services/analyzeApi";
+
+// Route-level code splitting: the landing page stays in the main chunk; every
+// other view loads on demand so the homepage ships less JavaScript.
+const ResultDashboard = lazy(() => import("./components/ResultDashboard/ResultDashboard").then((m) => ({ default: m.ResultDashboard })));
+const AdminDashboard = lazy(() => import("./components/admin/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
+const GoProPage = lazy(() => import("./components/billing/GoProPage").then((m) => ({ default: m.GoProPage })));
+const ComparePage = lazy(() => import("./components/compare/ComparePage").then((m) => ({ default: m.ComparePage })));
+const LegalPage = lazy(() => import("./components/privacy/LegalPage").then((m) => ({ default: m.LegalPage })));
+const WhatsNewPage = lazy(() => import("./components/WhatsNew/WhatsNewPage").then((m) => ({ default: m.WhatsNewPage })));
+const HistoryPage = lazy(() => import("./components/auth/HistoryPage").then((m) => ({ default: m.HistoryPage })));
+const GuidesIndexPage = lazy(() => import("./components/guides/GuidesPages").then((m) => ({ default: m.GuidesIndexPage })));
+const GuideDetailPage = lazy(() => import("./components/guides/GuidesPages").then((m) => ({ default: m.GuideDetailPage })));
+const VerifyEmailPage = lazy(() => import("./components/auth/VerifyEmailPage").then((m) => ({ default: m.VerifyEmailPage })));
+const StatusPage = lazy(() => import("./components/status/StatusPage").then((m) => ({ default: m.StatusPage })));
 
 type AnalysisSource = "landing" | "example" | "report";
 
@@ -40,7 +45,7 @@ function PageShell({ children, header, footer = true }: { children: ReactNode; h
     <div className="min-h-screen flex flex-col bg-zinc-950">
       {header}
       <div className={`flex-1 flex flex-col ${header ? "pt-14" : ""}`}>
-        {children}
+        <Suspense fallback={<div className="flex-1 min-h-[50vh]" aria-busy="true" />}>{children}</Suspense>
         {footer && <SiteFooter />}
       </div>
     </div>
@@ -168,7 +173,7 @@ function AppInner() {
   // usable while /api/auth/me waits for a cold-starting or unavailable API;
   // the header updates once the session check completes.
 
-  if (pathname === "/verify-email") return <VerifyEmailPage />;
+  if (pathname === "/verify-email") return <Suspense fallback={null}><VerifyEmailPage /></Suspense>;
 
   if (isDashboardRoute) {
     if (!user) return <PageShell header={chrome}><div className="flex-1 flex items-center justify-center text-zinc-500">Access denied.</div></PageShell>;
@@ -186,6 +191,12 @@ function AppInner() {
   {
     const guideSlug = pathname.match(/^\/guides\/([a-z0-9-]+)$/)?.[1];
     if (guideSlug) return <PageShell header={chrome}><GuideDetailPage slug={guideSlug} /></PageShell>;
+  }
+
+  // Anything else that isn't the landing page or a shared report is a 404.
+  // Vercel already serves dist/404.html for these; this covers client routing.
+  if (pathname !== "/" && !/^\/report\/[a-f0-9]{32}$/.test(pathname)) {
+    return <PageShell header={chrome}><NotFoundPage /></PageShell>;
   }
 
   // Shared report route takes over the whole page.

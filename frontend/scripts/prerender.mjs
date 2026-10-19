@@ -37,5 +37,9 @@ for (const path of paths) {
 // duplicate-of-home page. React's usePageMeta sets the real tags at runtime.
 writeFileSync(resolve(dist, "_spa.html"), renderPage(template, metaForPath("/__spa__"), ""));
 
+// Vercel serves 404.html from the output directory, with a real 404 status,
+// for any path the rewrites in vercel.json don't claim.
+writeFileSync(resolve(dist, "404.html"), renderPage(template, metaForPath("/404"), bodyHtmlForPath("/404")));
+
 writeFileSync(resolve(dist, "sitemap.xml"), buildSitemap((p) => (p.startsWith("/guides/") ? guideDate : null)));
-console.log(`prerender: wrote ${paths.length} pages + sitemap.xml`);
+console.log(`prerender: wrote ${paths.length} pages + 404.html + sitemap.xml`);

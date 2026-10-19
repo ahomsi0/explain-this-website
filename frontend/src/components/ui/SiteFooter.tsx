@@ -9,7 +9,7 @@ export function SiteFooter() {
           <a href="/compare" className="hover:text-zinc-400 transition-colors">Compare sites</a>
           <a href="/guides" className="hover:text-zinc-400 transition-colors">Fix guides</a>
           <a href="/status" className="hover:text-zinc-400 transition-colors">Status</a>
-          <a href="mailto:support@explainthewebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
+          <a href="mailto:support@explainthiswebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
           <a href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</a>
           <a href="/terms" className="hover:text-zinc-400 transition-colors">Terms</a>
           <a href="/whats-new" className="hover:text-zinc-400 transition-colors">What&apos;s new</a>

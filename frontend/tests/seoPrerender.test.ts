@@ -117,10 +117,16 @@ describe("outFileFor", () => {
 describe("hosting config", () => {
   const read = (f: string) => readFileSync(resolve(process.cwd(), f), "utf8");
 
-  it("rewrites unknown URLs to the noindex SPA shell, not the home page", () => {
+  it("rewrites only client-side routes to the noindex SPA shell; everything else falls through to 404.html", () => {
     const vercel = JSON.parse(read("vercel.json"));
-    expect(vercel.rewrites).toEqual([{ source: "/(.*)", destination: "/_spa.html" }]);
+    const sources = vercel.rewrites.map((r: { source: string; destination: string }) => {
+      expect(r.destination).toBe("/_spa.html");
+      return r.source;
+    });
+    expect(sources).toEqual(["/report/:id([a-f0-9]{32})", "/(history|dashboard|go-pro|verify-email)"]);
+    expect(sources).not.toContain("/(.*)");
     expect(metaForPath("/__spa__").robots).toBe("noindex, nofollow");
+    expect(metaForPath("/404").robots).toBe("noindex, nofollow");
   });
 
   it("sends X-Robots-Tag noindex for private routes instead of blocking them in robots.txt", () => {
@@ -131,5 +137,14 @@ describe("hosting config", () => {
     for (const s of ["/report/:path*", "/history", "/dashboard", "/go-pro", "/verify-email"]) expect(sources).toContain(s);
     // A Disallow would stop crawlers from ever seeing the noindex.
     expect(read("public/robots.txt")).not.toMatch(/^Disallow:\s*\S/m);
+  });
+});
+
+describe("404 page", () => {
+  it("is noindex and links back into the site", () => {
+    const html = renderPage(TEMPLATE, metaForPath("/404"), bodyHtmlForPath("/404"));
+    expect(html).toContain('<meta name="robots" content="noindex, nofollow" />');
+    expect(html).toContain("<h1>Page not found</h1>");
+    expect(html).toContain('href="/guides"');
   });
 });
