@@ -6,7 +6,7 @@ Usage model:
 - Anonymous visitors: `5` analyses per day, no account required
 - Free accounts: `5` analyses per day plus saved audit history
 
-**Live:** [explain-this-website.vercel.app](https://explain-this-website.vercel.app/)
+**Live:** [www.explainthiswebsite.com](https://www.explainthiswebsite.com/)
 
 ---
 
@@ -176,7 +176,7 @@ Vitest covers utilities, API behavior, and component rendering/interactions. Pla
 Returns an SVG score shield for the URL based on its latest server-side analysis (recent cache entry, else most recent saved audit). Never-analyzed URLs get a neutral badge. Cacheable (`max-age=3600`) — designed for READMEs and site footers:
 
 ```html
-<a href="https://explain-this-website.vercel.app">
+<a href="https://www.explainthiswebsite.com">
   <img src="https://api.explainthewebsite.com/api/badge?url=example.com" alt="Website audit score" height="20">
 </a>
 ```

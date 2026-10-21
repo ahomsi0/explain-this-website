@@ -129,6 +129,14 @@ describe("hosting config", () => {
     expect(metaForPath("/404").robots).toBe("noindex, nofollow");
   });
 
+  it("308-redirects the apex and the vercel.app host to the canonical www host", () => {
+    const vercel = JSON.parse(read("vercel.json"));
+    const hosts = vercel.redirects
+      .filter((r: { permanent: boolean; destination: string; source: string }) => r.permanent && r.source === "/(.*)" && r.destination === "https://www.explainthiswebsite.com/$1")
+      .flatMap((r: { has: { type: string; value: string }[] }) => r.has.filter((h) => h.type === "host").map((h) => h.value));
+    expect(hosts).toEqual(["explainthiswebsite.com", "explain-this-website.vercel.app"]);
+  });
+
   it("sends X-Robots-Tag noindex for private routes instead of blocking them in robots.txt", () => {
     const vercel = JSON.parse(read("vercel.json"));
     const sources = vercel.headers

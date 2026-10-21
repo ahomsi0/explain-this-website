@@ -11,6 +11,17 @@
       ],
       "destination": "https://www.explainthiswebsite.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "explain-this-website.vercel.app"
+        }
+      ],
+      "destination": "https://www.explainthiswebsite.com/$1",
+      "permanent": true
     }
   ],
   "rewrites": [
