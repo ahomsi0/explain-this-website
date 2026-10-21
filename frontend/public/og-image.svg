@@ -58,7 +58,7 @@
   <text x="860" y="460" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#71717a">OK  Viewport tag</text>
 
   <!-- URL badge bottom right -->
-  <text x="1120" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#3f3f46" text-anchor="end">explainthewebsite.vercel.app</text>
+  <text x="1120" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#3f3f46" text-anchor="end">explainthiswebsite.com</text>
 
   <defs>
     <linearGradient id="logoGrad" x1="80" y1="80" x2="136" y2="136" gradientUnits="userSpaceOnUse">

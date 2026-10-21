@@ -6,6 +6,8 @@ import type { Guide } from "../guides/guides.ts";
 
 export const SITE_URL = "https://www.explainthiswebsite.com";
 export const SITE_NAME = "Explain This Website";
+/** One-word brand token so navigational searches for the bare name resolve to this site. */
+export const SITE_ALT_NAME = "ExplainThisWebsite";
 export const OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const INDEXABLE = "index, follow";
 export const NOINDEX = "noindex, nofollow";
@@ -100,7 +102,7 @@ export function serializeJsonLd(data: JsonLd): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-const ORGANIZATION: JsonLd = { "@type": "Organization", name: SITE_NAME, url: SITE_URL };
+const ORGANIZATION: JsonLd = { "@type": "Organization", name: SITE_NAME, alternateName: SITE_ALT_NAME, url: SITE_URL };
 
 function breadcrumb(items: { name: string; path: string }[]): JsonLd {
   return {
@@ -136,7 +138,7 @@ function homeJsonLd(): JsonLd[] {
         "Actionable recommendations",
       ],
     },
-    { "@context": "https://schema.org", "@type": "WebSite", name: SITE_NAME, url: `${SITE_URL}/` },
+    { "@context": "https://schema.org", "@type": "WebSite", name: SITE_NAME, alternateName: SITE_ALT_NAME, url: `${SITE_URL}/` },
     { "@context": "https://schema.org", ...ORGANIZATION },
   ];
 }

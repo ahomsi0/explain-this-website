@@ -177,7 +177,7 @@ Returns an SVG score shield for the URL based on its latest server-side analysis
 
 ```html
 <a href="https://www.explainthiswebsite.com">
-  <img src="https://api.explainthewebsite.com/api/badge?url=example.com" alt="Website audit score" height="20">
+  <img src="https://explain-the-website.onrender.com/api/badge?url=example.com" alt="Website audit score" height="20">
 </a>
 ```
 
