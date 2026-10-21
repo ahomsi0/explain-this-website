@@ -102,7 +102,13 @@ export function serializeJsonLd(data: JsonLd): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-const ORGANIZATION: JsonLd = { "@type": "Organization", name: SITE_NAME, alternateName: SITE_ALT_NAME, url: SITE_URL };
+const ORGANIZATION: JsonLd = {
+  "@type": "Organization",
+  name: SITE_NAME,
+  alternateName: SITE_ALT_NAME,
+  url: SITE_URL,
+  sameAs: ["https://github.com/ahomsi0/explain-this-website"],
+};
 
 function breadcrumb(items: { name: string; path: string }[]): JsonLd {
   return {
