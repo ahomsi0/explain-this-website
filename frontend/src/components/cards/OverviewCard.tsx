@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Overview, PageLoadHint, AIDetection, RenderingInfo } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { CardHeader } from "../ui/CardHeader";
+import { builderSlugForName } from "../../builders/builders";
 
 const loadLabel: Record<PageLoadHint, { text: string; cls: string }> = {
   lightweight: { text: "Lightweight", cls: "text-emerald-400 bg-emerald-950 border-emerald-900" },
@@ -84,13 +85,28 @@ export function OverviewCard({ overview, rendering, url, fetchedAt, aiDetection 
               {overview.language.toUpperCase()}
             </span>
           )}
-          {aiDetection?.isAIBuilt && (
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-violet-800 text-violet-400 bg-violet-950 flex items-center gap-1">
-              <span className="text-[11px] font-semibold uppercase">AI</span>
-              <span>{aiDetection.builder ? `Built with ${aiDetection.builder}` : "AI-assisted"}</span>
-              {aiDetection.confidence === "medium" && <span className="text-violet-600">?</span>}
-            </span>
-          )}
+          {aiDetection?.isAIBuilt && (() => {
+            const slug = builderSlugForName(aiDetection.builder);
+            const badge = (
+              <>
+                <span className="text-[11px] font-semibold uppercase">AI</span>
+                <span>{aiDetection.builder ? `Built with ${aiDetection.builder}` : "AI-assisted"}</span>
+                {aiDetection.confidence === "medium" && <span className="text-violet-600">?</span>}
+              </>
+            );
+            const cls = "text-[11px] font-medium px-2 py-0.5 rounded border border-violet-800 text-violet-400 bg-violet-950 flex items-center gap-1";
+            return slug ? (
+              <a
+                href={`/built-with/${slug}`}
+                title={`How we detect ${aiDetection.builder} and what it means`}
+                className={`${cls} hover:border-violet-600 hover:text-violet-300 transition-colors`}
+              >
+                {badge}
+              </a>
+            ) : (
+              <span className={cls}>{badge}</span>
+            );
+          })()}
         </div>
 
         {overview.description && (

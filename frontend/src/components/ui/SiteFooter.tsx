@@ -8,6 +8,7 @@ export function SiteFooter() {
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 max-w-full">
           <a href="/compare" className="hover:text-zinc-400 transition-colors">Compare sites</a>
           <a href="/guides" className="hover:text-zinc-400 transition-colors">Fix guides</a>
+          <a href="/built-with" className="hover:text-zinc-400 transition-colors">Built with</a>
           <a href="/status" className="hover:text-zinc-400 transition-colors">Status</a>
           <a href="mailto:support@explainthiswebsite.com" className="hover:text-zinc-400 transition-colors">Support</a>
           <a href="/privacy" className="hover:text-zinc-400 transition-colors">Privacy</a>

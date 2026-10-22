@@ -36,7 +36,7 @@ for (const theme of THEMES) test.describe(`accessibility (${theme} theme)`, () =
   test("public pages have no violations", async ({ page }) => {
     test.slow(); // loads ~10 pages through the dev server
     await declineConsent(page);
-    for (const route of ["/guides", "/guides/broken-links", "/privacy", "/terms", "/whats-new", "/status", "/compare", "/go-pro", "/history", "/no-such-page"]) {
+    for (const route of ["/guides", "/guides/broken-links", "/built-with", "/built-with/lovable", "/privacy", "/terms", "/whats-new", "/status", "/compare", "/go-pro", "/history", "/no-such-page"]) {
       await page.goto(route);
       // Routes are code-split: wait for the page's own <main> landmark, not just
       // the shell, or axe measures the empty Suspense fallback.

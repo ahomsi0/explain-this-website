@@ -4,6 +4,7 @@ import { compareLive, type AuditComparison } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 import { AuthModal } from "../auth/AuthModal";
 import { AuditComparison as AuditComparisonView } from "../auth/AuditComparison";
+import { COMPARE_CONTENT, COMPARE_INTRO } from "../../seo/compareContent";
 
 function SiteField({
   id,
@@ -101,11 +102,8 @@ export function ComparePage() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Head to head</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Compare two sites</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">
-          Run fresh audits of your site and a competitor's in parallel and see exactly where you lead or lag —
-          SEO scores, performance, conversion readiness, trust signals, and more.
-        </p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Compare two websites side by side</h1>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">{COMPARE_INTRO}</p>
 
         {!user && (
           <div className="mt-6 flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/5 px-4 py-3">
@@ -173,6 +171,43 @@ export function ComparePage() {
               <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">{body}</p>
             </div>
           ))}
+        </section>
+
+        <section className="mt-14 border-t border-zinc-800 pt-10" aria-labelledby="compare-guide-heading">
+          <h2 id="compare-guide-heading" className="text-lg font-semibold text-zinc-100">How the comparison works</h2>
+          <div className="mt-6 grid gap-8 md:grid-cols-2">
+            {COMPARE_CONTENT.map((sec) => (
+              <div key={sec.heading}>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">{sec.heading}</h3>
+                {sec.paragraphs?.map((p) => (
+                  <p key={p} className="text-[13.5px] text-zinc-400 leading-relaxed mb-3">{p}</p>
+                ))}
+                {sec.bullets && (
+                  <ul className="flex flex-col gap-2">
+                    {sec.bullets.map((b) => (
+                      <li key={b} className="flex gap-2 text-[13px] text-zinc-400 leading-relaxed">
+                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-zinc-700 shrink-0" aria-hidden="true" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {sec.links && (
+                  <ul className="flex flex-col gap-1.5">
+                    {sec.links.map((l) => (
+                      <li key={l.href}>
+                        <a href={l.href} className="text-[13px] text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">{l.label}</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-[13px] text-zinc-500">
+            Want to see what a site was built with first?{" "}
+            <a href="/built-with" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">AI and no-code builder detection</a>.
+          </p>
         </section>
       </main>
 

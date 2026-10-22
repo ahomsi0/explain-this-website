@@ -149,6 +149,10 @@ export function LandingPage({
               Every issue we flag comes with a repair guide —{" "}
               <a href="/guides" className="text-zinc-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
                 browse the fix guides
+              </a>
+              , or find out{" "}
+              <a href="/built-with" className="text-zinc-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
+                what a website is built with
               </a>.
             </p>
           </div>

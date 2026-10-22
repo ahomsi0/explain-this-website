@@ -2,10 +2,15 @@
 // Imported directly by Node: relative `.ts` imports only.
 import { CATEGORY_ORDER, GUIDES, relatedGuides } from "../guides/guides.ts";
 import type { Guide } from "../guides/guides.ts";
+import { BUILDERS, buildersOfKind, displayName, relatedBuilders } from "../builders/builders.ts";
+import type { Builder } from "../builders/builders.ts";
+import { COMPARE_CONTENT, COMPARE_INTRO } from "./compareContent.ts";
+import type { ContentSection } from "./compareContent.ts";
 import {
   OG_IMAGE,
   SITE_NAME,
   SITE_URL,
+  builderTitle,
   canonicalFor,
   metaForPath,
   publicPaths,
@@ -102,11 +107,99 @@ export function guideBodyHtml(guide: Guide): string {
   );
 }
 
+const li = (items: string[]) => items.map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+
+function builderLinksHtml(builders: Builder[]): string {
+  return `<ul>${builders
+    .map((b) => `<li><a href="/built-with/${b.slug}">${escapeHtml(displayName(b))}</a>: ${escapeHtml(b.summary)}</li>`)
+    .join("")}</ul>`;
+}
+
+export const BUILT_WITH_INTRO =
+  "Paste a URL into the analyzer and the Overview card tells you when a site was made with one of 21 AI or no-code website builders. This page explains what that badge means, how the detection works and how to check a site yourself.";
+
+export const HOW_DETECTION_WORKS = [
+  "The analyzer fetches the page and searches the raw HTML for each builder's public fingerprints: the hosting domains it publishes to (such as lovable.app or framerusercontent.com) and the value of the <meta name=\"generator\"> tag that many builders write into the head.",
+  "A match on any fingerprint reports the builder with high confidence. Phrases such as \"powered by AI\" with no builder fingerprint report \"AI-assisted\" with medium confidence and no name.",
+  "Nothing is guessed from design, copy style or page structure. If the HTML does not reference the builder, the analyzer says nothing about it.",
+];
+
+export const DETECTION_LIMITS = [
+  "A site on a custom domain whose owner removed every reference to the builder is not detected. This is common for code-generation tools such as Lovable or Bolt once a developer takes the code elsewhere.",
+  "Editors such as Cursor and Windsurf produce ordinary code. They are only reported when a page explicitly declares them in a generator tag.",
+  "Only the fetched page is inspected, usually the home page. A builder used for one landing page on a larger site will not show up when you analyze the home page.",
+  "Detection is a statement about the HTML, not a judgement about quality. Several of these builders produce faster, better-structured pages than many hand-built sites.",
+];
+
+export function builtWithHubBodyHtml(): string {
+  return main(
+    `<nav aria-label="Breadcrumb"><a href="/">Home</a> › Built with</nav>` +
+      `<h1>What is this website built with?</h1>` +
+      `<p>${escapeHtml(BUILT_WITH_INTRO)}</p>` +
+      `<p><a href="/">Analyze a website now</a> to see its builder, tech stack, SEO audit and performance in one report.</p>` +
+      `<h2>How detection works</h2><ul>${li(HOW_DETECTION_WORKS)}</ul>` +
+      `<h2>AI website builders we detect</h2>${builderLinksHtml(buildersOfKind("ai"))}` +
+      `<h2>No-code website builders we detect</h2>${builderLinksHtml(buildersOfKind("no-code"))}` +
+      `<h2>What it cannot detect</h2><ul>${li(DETECTION_LIMITS)}</ul>` +
+      `<p>Already know the builder and want to fix what the audit found? <a href="/guides">Browse the fix guides</a> or <a href="/compare">compare two sites side by side</a>.</p>`,
+  );
+}
+
+export function builderBodyHtml(builder: Builder): string {
+  const name = displayName(builder);
+  const related = relatedBuilders(builder)
+    .map((b) => `<li><a href="/built-with/${b.slug}">${escapeHtml(builderTitle(b))}</a></li>`)
+    .join("");
+  return main(
+    `<nav aria-label="Breadcrumb"><a href="/">Home</a> › <a href="/built-with">Built with</a></nav>` +
+      `<h1>${escapeHtml(builderTitle(builder))}</h1>` +
+      `<p>${escapeHtml(builder.summary)}</p>` +
+      `<p><a href="/">Paste the URL into the analyzer</a> and the Overview card shows a “Built with ${escapeHtml(name)}” badge when the page matches, alongside the full tech stack, SEO audit and performance scores.</p>` +
+      `<h2>What ${escapeHtml(name)} is</h2><p>${escapeHtml(builder.whatItIs)}</p>` +
+      `<h2>Signals the analyzer checks for ${escapeHtml(name)}</h2>` +
+      `<p>The detector searches the page HTML for any of these strings. One match reports the builder with high confidence.</p>` +
+      `<ul>${builder.signals.map((sig) => `<li><code>${escapeHtml(sig)}</code></li>`).join("")}</ul>` +
+      `<h2>How to check it yourself</h2><ol>${li(builder.manualChecks)}</ol>` +
+      `<h2>What ${escapeHtml(name)} sites usually show in an audit</h2><ul>${li(builder.implications)}</ul>` +
+      `<p>These are tendencies from audits, not rules. <a href="/">Run the analyzer</a> on the site in question, then use the <a href="/guides">fix guides</a> for anything it flags, or <a href="/compare">compare it with a competitor</a>.</p>` +
+      (related ? `<h2>Related builders</h2><ul>${related}</ul>` : "") +
+      `<p><a href="/built-with">All ${Object.keys(BUILDERS).length} builders we detect</a> · <a href="${escapeHtml(builder.website)}" rel="nofollow noopener">${escapeHtml(name)} website</a></p>`,
+  );
+}
+
+function contentSectionsHtml(sections: ContentSection[]): string {
+  return sections
+    .map((sec) => {
+      const paras = (sec.paragraphs ?? []).map((t) => `<p>${escapeHtml(t)}</p>`).join("");
+      const bullets = sec.bullets?.length ? `<ul>${li(sec.bullets)}</ul>` : "";
+      const links = sec.links?.length
+        ? `<ul>${sec.links.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`).join("")}</ul>`
+        : "";
+      return `<h2>${escapeHtml(sec.heading)}</h2>${paras}${bullets}${links}`;
+    })
+    .join("");
+}
+
+export function compareBodyHtml(): string {
+  return main(
+    `<h1>Compare two websites side by side</h1>` +
+      `<p>${escapeHtml(COMPARE_INTRO)}</p>` +
+      contentSectionsHtml(COMPARE_CONTENT) +
+      `<p>Want to see what a site was built with first? <a href="/built-with">AI and no-code builder detection</a>.</p>`,
+  );
+}
+
 export function bodyHtmlForPath(path: string): string {
   if (path.startsWith("/guides/")) {
     const slug = path.slice("/guides/".length);
     if (Object.hasOwn(GUIDES, slug)) return guideBodyHtml(GUIDES[slug]);
   }
+  if (path.startsWith("/built-with/")) {
+    const slug = path.slice("/built-with/".length);
+    if (Object.hasOwn(BUILDERS, slug)) return builderBodyHtml(BUILDERS[slug]);
+  }
+  if (path === "/built-with") return builtWithHubBodyHtml();
+  if (path === "/compare") return compareBodyHtml();
   if (path === "/404") {
     return main(
       `<h1>Page not found</h1><p>The page you’re looking for doesn’t exist or has moved.</p>` +
@@ -116,8 +209,14 @@ export function bodyHtmlForPath(path: string): string {
   const meta = metaForPath(path);
   const heading = path === "/" ? SITE_NAME : meta.title.replace(` · ${SITE_NAME}`, "");
   const intro = `<h1>${escapeHtml(heading)}</h1><p>${escapeHtml(meta.description)}</p>`;
-  if (path === "/") return main(`${intro}<p><a href="/compare">Compare two websites</a></p><h2>Fix guides</h2>${guideLinksHtml()}`);
-  if (path === "/guides") return main(`${intro}${guideLinksHtml()}`);
+  if (path === "/") {
+    return main(
+      `${intro}<p><a href="/compare">Compare two websites</a> · <a href="/built-with">What is a website built with?</a></p><h2>Fix guides</h2>${guideLinksHtml()}`,
+    );
+  }
+  if (path === "/guides") {
+    return main(`${intro}${guideLinksHtml()}<p>Looking for the platform behind a site? <a href="/built-with">See the AI and no-code builders we detect</a>.</p>`);
+  }
   // Legal, status, compare and what's-new bodies are rendered by React; the
   // static copy only needs a heading and summary so the page is never empty.
   return main(`${intro}<p><a href="/">Analyze a website</a> · <a href="/guides">Fix guides</a></p>`);

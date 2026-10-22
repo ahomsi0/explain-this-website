@@ -3,6 +3,8 @@
 // directly), so: relative imports with `.ts` extensions only, no `@/` alias.
 import { GUIDES } from "../guides/guides.ts";
 import type { Guide } from "../guides/guides.ts";
+import { BUILDERS, displayName } from "../builders/builders.ts";
+import type { Builder } from "../builders/builders.ts";
 
 export const SITE_URL = "https://www.explainthiswebsite.com";
 export const SITE_NAME = "Explain This Website";
@@ -49,9 +51,15 @@ const STATIC_PAGES: Record<string, StaticPage> = {
     indexable: true,
   },
   "/compare": {
-    title: withSite("Compare Sites"),
+    title: "Compare Two Websites Side by Side: SEO, Speed & Tech Stack",
     description:
-      "Analyze two websites at once and compare tech stack, SEO, performance and conversion signals side by side. Free, no login required.",
+      "Run a live head-to-head audit of two websites and compare SEO, Core Web Vitals, tech stack, conversion signals and security side by side. Free account.",
+    indexable: true,
+  },
+  "/built-with": {
+    title: "What Is This Website Built With? AI & No-Code Builder Detector",
+    description:
+      "Find out if a website was built with Lovable, Bolt, v0, Framer, Replit or 17 other AI and no-code builders, how detection works, and how to check it yourself.",
     indexable: true,
   },
   "/whats-new": {
@@ -186,10 +194,51 @@ function guideMeta(guide: Guide): PageMeta {
   };
 }
 
+export function builderTitle(builder: Builder): string {
+  return `Is This Website Built With ${displayName(builder)}? How to Tell`;
+}
+
+function builderMeta(builder: Builder): PageMeta {
+  const path = `/built-with/${builder.slug}`;
+  const canonical = canonicalFor(path);
+  const name = displayName(builder);
+  const title = builderTitle(builder);
+  const description = truncate(
+    `Is it built with ${name}? The exact signals our analyzer checks, how to verify in view-source, and what ${name} sites typically show in an SEO and speed audit.`,
+    160,
+  );
+  return {
+    title: withSite(title),
+    description,
+    canonical,
+    robots: INDEXABLE,
+    ogType: "article",
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: title,
+        description,
+        image: OG_IMAGE,
+        mainEntityOfPage: canonical,
+        author: ORGANIZATION,
+        publisher: ORGANIZATION,
+        about: { "@type": "SoftwareApplication", name: builder.name, url: builder.website },
+      },
+      breadcrumb([
+        { name: "Home", path: "/" },
+        { name: "Built with", path: "/built-with" },
+        { name, path },
+      ]),
+    ],
+  };
+}
+
 function staticMeta(path: string, page: StaticPage): PageMeta {
   let jsonLd: JsonLd[] = [];
   if (path === "/") jsonLd = homeJsonLd();
   if (path === "/guides") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Fix Guides", path: "/guides" }])];
+  if (path === "/built-with") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Built with", path: "/built-with" }])];
   return {
     title: page.title,
     description: page.description,
@@ -216,8 +265,10 @@ export function metaForPath(rawPath: string): PageMeta {
   if (Object.hasOwn(STATIC_PAGES, path)) return staticMeta(path, STATIC_PAGES[path]);
   const slug = path.match(/^\/guides\/([a-z0-9-]+)$/)?.[1];
   if (slug && Object.hasOwn(GUIDES, slug)) return guideMeta(GUIDES[slug]);
+  const builderSlug = path.match(/^\/built-with\/([a-z0-9-]+)$/)?.[1];
+  if (builderSlug && Object.hasOwn(BUILDERS, builderSlug)) return builderMeta(BUILDERS[builderSlug]);
   if (path.startsWith("/report/")) return privateMeta(path, "Shared website report");
-  return privateMeta(path, slug ? "Guide not found" : "Page not found");
+  return privateMeta(path, slug ? "Guide not found" : builderSlug ? "Builder not found" : "Page not found");
 }
 
 /** Every indexable route: static pages flagged indexable, plus every guide. */
@@ -225,5 +276,9 @@ export function publicPaths(): string[] {
   const statics = Object.entries(STATIC_PAGES)
     .filter(([, page]) => page.indexable)
     .map(([path]) => path);
-  return [...statics, ...Object.keys(GUIDES).map((slug) => `/guides/${slug}`)];
+  return [
+    ...statics,
+    ...Object.keys(GUIDES).map((slug) => `/guides/${slug}`),
+    ...Object.keys(BUILDERS).map((slug) => `/built-with/${slug}`),
+  ];
 }

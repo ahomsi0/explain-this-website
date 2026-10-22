@@ -34,6 +34,8 @@ const GuidesIndexPage = lazy(() => import("./components/guides/GuidesPages").the
 const GuideDetailPage = lazy(() => import("./components/guides/GuidesPages").then((m) => ({ default: m.GuideDetailPage })));
 const VerifyEmailPage = lazy(() => import("./components/auth/VerifyEmailPage").then((m) => ({ default: m.VerifyEmailPage })));
 const StatusPage = lazy(() => import("./components/status/StatusPage").then((m) => ({ default: m.StatusPage })));
+const BuiltWithHubPage = lazy(() => import("./components/builtwith/BuiltWithPages").then((m) => ({ default: m.BuiltWithHubPage })));
+const BuilderDetailPage = lazy(() => import("./components/builtwith/BuiltWithPages").then((m) => ({ default: m.BuilderDetailPage })));
 
 type AnalysisSource = "landing" | "example" | "report";
 
@@ -191,6 +193,11 @@ function AppInner() {
   {
     const guideSlug = pathname.match(/^\/guides\/([a-z0-9-]+)$/)?.[1];
     if (guideSlug) return <PageShell header={chrome}><GuideDetailPage slug={guideSlug} /></PageShell>;
+  }
+  if (pathname === "/built-with") return <PageShell header={chrome}><BuiltWithHubPage /></PageShell>;
+  {
+    const builderSlug = pathname.match(/^\/built-with\/([a-z0-9-]+)$/)?.[1];
+    if (builderSlug) return <PageShell header={chrome}><BuilderDetailPage slug={builderSlug} /></PageShell>;
   }
 
   // Anything else that isn't the landing page or a shared report is a 404.

@@ -36,6 +36,12 @@ export function SiteHeader({
           >
             Compare
           </a>
+          <a
+            href="/built-with"
+            className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+          >
+            Built with
+          </a>
         </nav>
         <div className="hidden sm:block w-px h-4 bg-zinc-800" aria-hidden="true" />
         <button
