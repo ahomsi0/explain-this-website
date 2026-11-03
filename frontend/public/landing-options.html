@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Landing page directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Anton&family=Archivo:wght@400;500;600;700&display=swap" />
+<style>
+  * { box-sizing:border-box; margin:0; }
+  body { background:#111; color:#eee; font-family:Archivo,system-ui,sans-serif; }
+  .divider { position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:14px; padding:10px 20px; background:#111; color:#aaa; font:500 12px/1 "JetBrains Mono",monospace; letter-spacing:.08em; text-transform:uppercase; border-bottom:1px solid #2a2a2a; }
+  .divider b { color:#fff; }
+  .divider span { color:#777; letter-spacing:0; text-transform:none; font-family:Archivo,system-ui,sans-serif; font-size:12.5px; }
+  .divider .jump { margin-left:auto; display:flex; gap:10px; }
+  .divider .jump a { color:#888; text-decoration:none; }
+  .divider .jump a:hover { color:#fff; }
+
+  /* ───────────────────────── 1. RED PEN (editorial, paper) ───────────────────────── */
+  .d1 { background:#f6f1e7; color:#1a1714; font-family:"IBM Plex Mono",ui-monospace,monospace; position:relative; overflow:hidden; }
+  .d1 .wrap { max-width:1180px; margin:0 auto; padding:0 36px; }
+  .d1 nav { display:flex; align-items:center; justify-content:space-between; height:68px; border-bottom:1.5px solid #1a1714; font-size:12.5px; }
+  .d1 nav .brand { display:flex; align-items:center; gap:10px; font-family:Fraunces,serif; font-weight:600; font-size:19px; letter-spacing:-.01em; }
+  .d1 nav .brand mark { background:#7c3aed; color:#fff; padding:0 5px; border-radius:2px; }
+  .d1 nav .links { display:flex; gap:26px; }
+  .d1 nav .links a { color:#1a1714; text-decoration:none; border-bottom:1.5px solid transparent; }
+  .d1 nav .links a:hover { border-color:#1a1714; }
+  .d1 .hero { display:grid; grid-template-columns:7fr 5fr; gap:48px; padding:72px 0 64px; align-items:end; }
+  .d1 .eyebrow { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#6b655c; margin-bottom:26px; display:flex; gap:18px; }
+  .d1 h1 { font-family:Fraunces,serif; font-weight:400; font-size:clamp(44px,6.2vw,84px); line-height:.98; letter-spacing:-.025em; }
+  .d1 h1 em { font-style:italic; font-weight:400; }
+  .d1 h1 mark { background:#7c3aed; color:#fff; display:inline-block; padding:0 .08em; line-height:.9; transform:skew(-2deg) rotate(-.6deg); }
+  .d1 .sub { margin-top:30px; font-size:15px; line-height:1.65; max-width:520px; color:#3f3a33; }
+  .d1 form { margin-top:36px; display:flex; align-items:center; border-bottom:2px solid #1a1714; padding-bottom:10px; gap:14px; }
+  .d1 form .p { color:#7c3aed; font-weight:600; }
+  .d1 form input { flex:1; border:0; background:none; font:inherit; font-size:18px; color:#1a1714; outline:0; }
+  .d1 form input::placeholder { color:#9a9388; }
+  .d1 form button { border:0; background:#1a1714; color:#f6f1e7; font:inherit; font-weight:600; padding:12px 18px; cursor:pointer; }
+  .d1 .fine { margin-top:14px; font-size:12px; color:#6b655c; }
+  .d1 .fine u { text-decoration-color:#7c3aed; text-underline-offset:3px; }
+  /* annotated report excerpt */
+  .d1 .sheet { background:#fff; border:1.5px solid #1a1714; box-shadow:10px 10px 0 #1a1714; padding:22px 24px 26px; position:relative; transform:rotate(-1deg); }
+  .d1 .sheet .hd { display:flex; justify-content:space-between; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#6b655c; border-bottom:1px solid #e3ddd1; padding-bottom:10px; margin-bottom:14px; }
+  .d1 .sheet .score { font-family:Fraunces,serif; font-size:72px; line-height:1; letter-spacing:-.03em; }
+  .d1 .sheet .score small { font-size:18px; color:#6b655c; letter-spacing:0; }
+  .d1 .sheet ul { list-style:none; margin-top:16px; font-size:12.5px; line-height:1.9; }
+  .d1 .sheet li { display:flex; gap:10px; }
+  .d1 .sheet li i { font-style:normal; width:36px; font-weight:600; }
+  .d1 .sheet li.bad i { color:#c2410c; }
+  .d1 .sheet li.ok i { color:#15803d; }
+  .d1 .sheet li.warn i { color:#b45309; }
+  .d1 .note { position:absolute; font-family:Fraunces,serif; font-style:italic; font-size:15px; color:#7c3aed; line-height:1.25; }
+  .d1 .note.n1 { right:-46px; top:92px; width:150px; transform:rotate(3deg); }
+  .d1 .note.n2 { left:-64px; bottom:46px; width:140px; transform:rotate(-4deg); }
+  .d1 .note svg { display:block; margin-top:4px; }
+  .d1 .strip { border-top:1.5px solid #1a1714; border-bottom:1.5px solid #1a1714; padding:18px 0; display:flex; justify-content:space-between; font-size:12.5px; }
+  .d1 .strip b { font-weight:600; }
+  .d1 .proof { padding:64px 0 80px; display:grid; grid-template-columns:repeat(3,1fr); gap:40px; }
+  .d1 .proof h3 { font-family:Fraunces,serif; font-weight:600; font-size:26px; letter-spacing:-.02em; margin-bottom:12px; }
+  .d1 .proof p { font-size:13.5px; line-height:1.65; color:#3f3a33; }
+  .d1 .proof .num { font-family:Fraunces,serif; font-size:13px; color:#7c3aed; margin-bottom:18px; display:block; }
+
+  /* ───────────────────────── 2. INSTRUMENT (terminal / lab) ───────────────────────── */
+  .d2 { background:#0b0d0c; color:#d7dcd4; font-family:"JetBrains Mono",ui-monospace,monospace; position:relative; overflow:hidden; }
+  .d2::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px); pointer-events:none; }
+  .d2 .wrap { max-width:1180px; margin:0 auto; padding:0 36px; position:relative; }
+  .d2 nav { display:flex; align-items:center; justify-content:space-between; height:56px; border-bottom:1px solid #1f2522; font-size:12px; }
+  .d2 nav .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.02em; }
+  .d2 nav .brand mark { background:#f5a524; color:#0b0d0c; padding:0 4px; }
+  .d2 nav .links { display:flex; gap:22px; color:#8a948d; }
+  .d2 nav .links a { color:inherit; text-decoration:none; }
+  .d2 nav .links a:hover { color:#f5a524; }
+  .d2 .hero { display:grid; grid-template-columns:1.05fr .95fr; gap:40px; padding:64px 0 56px; }
+  .d2 .tag { font-size:11px; color:#f5a524; letter-spacing:.12em; margin-bottom:22px; }
+  .d2 .tag::before { content:"// "; color:#4b5551; }
+  .d2 h1 { font-weight:700; font-size:clamp(34px,4.4vw,58px); line-height:1.06; letter-spacing:-.035em; color:#f2f5f0; }
+  .d2 h1 .dim { color:#6a746e; }
+  .d2 .sub { margin-top:22px; font-size:13.5px; line-height:1.75; color:#8a948d; max-width:520px; }
+  .d2 .prompt { margin-top:34px; border:1px solid #2a332e; background:#0f1311; padding:14px 16px; display:flex; align-items:center; gap:12px; font-size:15px; }
+  .d2 .prompt .ps { color:#f5a524; }
+  .d2 .prompt input { flex:1; background:none; border:0; outline:0; color:#f2f5f0; font:inherit; }
+  .d2 .prompt input::placeholder { color:#4b5551; }
+  .d2 .prompt kbd { font:inherit; font-size:11px; color:#8a948d; border:1px solid #2a332e; padding:3px 6px; }
+  .d2 .meta { margin-top:12px; font-size:11.5px; color:#4b5551; display:flex; gap:18px; }
+  .d2 .meta b { color:#8a948d; font-weight:500; }
+  /* live log */
+  .d2 .log { border:1px solid #2a332e; background:#0f1311; font-size:12.5px; line-height:1.9; padding:16px 18px; position:relative; }
+  .d2 .log .ttl { display:flex; justify-content:space-between; color:#4b5551; font-size:11px; border-bottom:1px dashed #2a332e; padding-bottom:8px; margin-bottom:10px; }
+  .d2 .log .row { display:grid; grid-template-columns:52px 1fr auto; gap:14px; }
+  .d2 .log .row .t { color:#4b5551; }
+  .d2 .log .row .ok { color:#5ad27a; }
+  .d2 .log .row .fail { color:#ff6b57; }
+  .d2 .log .row .warn { color:#f5a524; }
+  .d2 .log .row.cur .t::after { content:"_"; animation:blink 1s steps(2) infinite; }
+  @keyframes blink { to { opacity:0; } }
+  .d2 .dial { position:absolute; right:-30px; bottom:-70px; width:300px; height:300px; border-radius:50%; border:1px solid #2a332e; display:flex; align-items:center; justify-content:center; font-size:88px; font-weight:700; color:#f2f5f0; letter-spacing:-.05em; background:radial-gradient(circle at 50% 50%, #0f1311 60%, transparent 61%); }
+  .d2 .dial::before { content:""; position:absolute; inset:14px; border-radius:50%; border:2px dashed #2a332e; }
+  .d2 .dial small { position:absolute; bottom:70px; font-size:11px; color:#8a948d; letter-spacing:.12em; }
+  .d2 .dial b { position:absolute; inset:-1px; border-radius:50%; border:3px solid transparent; border-top-color:#f5a524; border-right-color:#f5a524; transform:rotate(-45deg); }
+  .d2 .stats { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid #1f2522; border-bottom:1px solid #1f2522; }
+  .d2 .stats div { padding:22px 0; border-right:1px solid #1f2522; padding-left:18px; }
+  .d2 .stats div:first-child { padding-left:0; }
+  .d2 .stats div:last-child { border-right:0; }
+  .d2 .stats .v { font-size:30px; font-weight:700; letter-spacing:-.04em; color:#f2f5f0; }
+  .d2 .stats .k { font-size:11px; color:#8a948d; margin-top:4px; letter-spacing:.08em; text-transform:uppercase; }
+  .d2 .how { padding:56px 0 72px; display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-left:1px solid #1f2522; }
+  .d2 .how div { padding:0 28px 0 22px; border-right:1px solid #1f2522; }
+  .d2 .how .n { color:#f5a524; font-size:11px; letter-spacing:.12em; margin-bottom:14px; }
+  .d2 .how h3 { font-size:17px; font-weight:700; letter-spacing:-.02em; margin-bottom:10px; color:#f2f5f0; }
+  .d2 .how p { font-size:12.5px; line-height:1.75; color:#8a948d; }
+
+  /* ───────────────────────── 3. POSTER (brutalist, loud) ───────────────────────── */
+  .d3 { background:#ffe14d; color:#0a0a0a; font-family:Archivo,system-ui,sans-serif; overflow:hidden; }
+  .d3 .wrap { max-width:1240px; margin:0 auto; padding:0 36px; }
+  .d3 nav { display:flex; align-items:center; justify-content:space-between; height:64px; border-bottom:3px solid #0a0a0a; font-weight:600; font-size:13px; }
+  .d3 nav .brand { display:flex; align-items:center; gap:10px; font-family:Anton,Impact,sans-serif; font-size:22px; letter-spacing:.01em; text-transform:uppercase; }
+  .d3 nav .brand mark { background:#0a0a0a; color:#ffe14d; padding:0 6px; }
+  .d3 nav .links { display:flex; gap:0; }
+  .d3 nav .links a { color:#0a0a0a; text-decoration:none; padding:0 18px; height:64px; display:flex; align-items:center; border-left:3px solid #0a0a0a; }
+  .d3 nav .links a:last-child { background:#0a0a0a; color:#ffe14d; }
+  .d3 .hero { padding:48px 0 0; }
+  .d3 h1 { font-family:Anton,Impact,sans-serif; text-transform:uppercase; font-size:clamp(64px,11.5vw,168px); line-height:.94; letter-spacing:.005em; }
+  .d3 h1 .o { color:transparent; -webkit-text-stroke:3px #0a0a0a; }
+  .d3 h1 .hl { background:#0a0a0a; color:#ffe14d; padding:.02em .08em 0; display:inline-block; line-height:.9; margin-top:.06em; }
+  .d3 .row { display:grid; grid-template-columns:1.3fr 1fr; gap:36px; margin-top:34px; align-items:start; }
+  .d3 .sub { font-size:18px; line-height:1.45; font-weight:500; max-width:560px; }
+  .d3 form { margin-top:28px; display:grid; grid-template-columns:1fr auto; border:3px solid #0a0a0a; background:#fff; }
+  .d3 form input { border:0; outline:0; background:none; font:inherit; font-size:20px; font-weight:500; padding:18px 20px; }
+  .d3 form input::placeholder { color:#8a8060; }
+  .d3 form button { border:0; border-left:3px solid #0a0a0a; background:#0a0a0a; color:#ffe14d; font-family:Anton,Impact,sans-serif; text-transform:uppercase; font-size:22px; letter-spacing:.03em; padding:0 30px; cursor:pointer; }
+  .d3 .fine { margin-top:12px; font-size:13px; font-weight:500; }
+  .d3 .fine u { text-decoration-thickness:2px; text-underline-offset:3px; }
+  .d3 .stack { border:3px solid #0a0a0a; background:#fff; }
+  .d3 .stack .r { display:grid; grid-template-columns:1fr auto; align-items:center; padding:14px 18px; border-bottom:3px solid #0a0a0a; font-weight:600; font-size:14px; }
+  .d3 .stack .r:last-child { border-bottom:0; }
+  .d3 .stack .r b { font-family:Anton,Impact,sans-serif; font-size:30px; letter-spacing:.01em; }
+  .d3 .stack .r.bad { background:#0a0a0a; color:#ffe14d; }
+  .d3 .stack .r small { font-size:11px; letter-spacing:.1em; text-transform:uppercase; display:block; font-weight:600; opacity:.65; }
+  .d3 .ticker { margin-top:48px; border-top:3px solid #0a0a0a; border-bottom:3px solid #0a0a0a; background:#0a0a0a; color:#ffe14d; font-family:Anton,Impact,sans-serif; text-transform:uppercase; font-size:26px; letter-spacing:.02em; white-space:nowrap; overflow:hidden; padding:10px 0; }
+  .d3 .ticker div { display:inline-block; animation:tick 28s linear infinite; }
+  @keyframes tick { to { transform:translateX(-50%); } }
+  .d3 .ticker span { margin:0 28px; }
+  .d3 .three { display:grid; grid-template-columns:repeat(3,1fr); border-left:3px solid #0a0a0a; border-right:3px solid #0a0a0a; border-bottom:3px solid #0a0a0a; margin-bottom:80px; }
+  .d3 .three div { padding:28px 26px 32px; border-right:3px solid #0a0a0a; }
+  .d3 .three div:last-child { border-right:0; }
+  .d3 .three .k { font-family:Anton,Impact,sans-serif; font-size:64px; line-height:1; margin-bottom:12px; }
+  .d3 .three h3 { font-size:18px; font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:.02em; }
+  .d3 .three p { font-size:14px; line-height:1.55; font-weight:500; }
+
+  @media (max-width:900px) {
+    .d1 .hero, .d2 .hero, .d3 .row { grid-template-columns:1fr; }
+    .d1 .proof, .d2 .how, .d2 .stats, .d3 .three { grid-template-columns:1fr; }
+    .d2 .dial { display:none; }
+    .d1 .note { display:none; }
+    .d1 .sheet { transform:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="divider" id="top"><b>1 · Red pen</b><span>Editorial, on paper. A proofreader for websites. Serif display, mono body, one violet highlight.</span><div class="jump"><a href="#one">1</a><a href="#two">2</a><a href="#three">3</a></div></div>
+<section class="d1" id="one">
+  <div class="wrap">
+    <nav>
+      <div class="brand"><svg width="24" height="24" viewBox="0 0 64 64"><polygon points="7,23 58,20 59,38 8,41" fill="#7c3aed"/><rect x="12" y="12" width="34" height="7" rx="3.5" fill="#1a1714"/><rect x="12" y="28.5" width="42" height="7" rx="3.5" fill="#1a1714"/><rect x="12" y="45" width="26" height="7" rx="3.5" fill="#1a1714"/></svg>explain <mark>this</mark> website</div>
+      <div class="links"><a href="#">Guides</a><a href="#">Compare</a><a href="#">Built with</a><a href="#">Sign in</a></div>
+    </nav>
+    <div class="hero">
+      <div>
+        <div class="eyebrow"><span>Free</span><span>5 audits a day</span><span>No account needed</span></div>
+        <h1>Every website has a <mark>story</mark>.<br/>We <em>read</em> it back to you.</h1>
+        <p class="sub">Paste a URL. In about twenty seconds you get a plain-English report: what the site runs on, where its SEO leaks, how fast it really is, and the exact fixes in order of impact.</p>
+        <form onsubmit="return false"><span class="p">https://</span><input placeholder="example.com" /><button type="submit">Read it</button></form>
+        <p class="fine">Every finding links to a <u>repair guide</u>. Nothing is stored unless you sign in.</p>
+      </div>
+      <div>
+        <div class="sheet">
+          <div class="hd"><span>Report · acme-plumbing.co.uk</span><span>Oct 2026</span></div>
+          <div class="score">71<small> / 100</small></div>
+          <ul>
+            <li class="ok"><i>OK</i>HTTPS and valid certificate</li>
+            <li class="bad"><i>NO</i>No meta description on 14 pages</li>
+            <li class="warn"><i>SLOW</i>LCP 4.1 s on mobile (hero image 2.3 MB)</li>
+            <li class="ok"><i>OK</i>One H1 per page</li>
+            <li class="bad"><i>NO</i>Phone number not clickable on mobile</li>
+            <li class="ok"><i>OK</i>Built with WordPress + Elementor</li>
+          </ul>
+          <div class="note n1">fix this first,<br/>it is one image<svg width="60" height="26" viewBox="0 0 60 26" fill="none" stroke="#7c3aed" stroke-width="1.5"><path d="M58 2C40 4 20 8 2 24"/><path d="M8 18l-6 6 8 1"/></svg></div>
+          <div class="note n2">14 pages,<br/>same title tag<svg width="60" height="26" viewBox="0 0 60 26" fill="none" stroke="#7c3aed" stroke-width="1.5"><path d="M2 2c18 2 38 8 56 22"/><path d="M52 18l6 6-8 1"/></svg></div>
+        </div>
+      </div>
+    </div>
+    <div class="strip"><span><b>20 sections</b> per report</span><span><b>38</b> fix guides</span><span><b>21</b> AI and no-code builders detected</span><span><b>PDF</b> export and share links</span></div>
+    <div class="proof">
+      <div><span class="num">01</span><h3>Written for the owner, not the developer</h3><p>Each issue says what it is, why it costs you visitors, and what to do about it. The jargon is in a tooltip, not the headline.</p></div>
+      <div><span class="num">02</span><h3>Ordered by impact</h3><p>The report leads with the two or three changes that would move the score most. Everything else waits below the fold.</p></div>
+      <div><span class="num">03</span><h3>Honest about limits</h3><p>Pages behind a login, paywalled content and bot walls cannot be read. The report says so instead of guessing.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><b>2 · Instrument</b><span>A diagnostic tool, not a marketing site. Monospace throughout, amber on near-black, live check log, big tabular numbers.</span><div class="jump"><a href="#one">1</a><a href="#two">2</a><a href="#three">3</a></div></div>
+<section class="d2" id="two">
+  <div class="wrap">
+    <nav>
+      <div class="brand"><svg width="22" height="22" viewBox="0 0 64 64"><polygon points="7,23 58,20 59,38 8,41" fill="#f5a524"/><rect x="12" y="12" width="34" height="7" rx="3.5" fill="#f2f5f0"/><rect x="12" y="28.5" width="42" height="7" rx="3.5" fill="#f2f5f0"/><rect x="12" y="45" width="26" height="7" rx="3.5" fill="#f2f5f0"/></svg>explain <mark>this</mark> website</div>
+      <div class="links"><a href="#">guides</a><a href="#">compare</a><a href="#">built-with</a><a href="#">sign in</a></div>
+    </nav>
+    <div class="hero">
+      <div>
+        <div class="tag">website audit · free · 5/day</div>
+        <h1>Point it at a URL.<br/><span class="dim">Get the diagnosis.</span></h1>
+        <p class="sub">Fifty-plus checks run in parallel: tech stack, SEO, PageSpeed, Core Web Vitals, conversion signals, security headers, broken links. One report, every finding with a fix.</p>
+        <div class="prompt"><span class="ps">$ explain</span><input placeholder="https://example.com" /><kbd>↵</kbd></div>
+        <div class="meta"><span>runtime <b>~20s</b></span><span>sections <b>20</b></span><span>account <b>optional</b></span></div>
+      </div>
+      <div style="position:relative">
+        <div class="log">
+          <div class="ttl"><span>acme-plumbing.co.uk</span><span>live</span></div>
+          <div class="row"><span class="t">0.21s</span><span>fetch + render</span><span class="ok">ok</span></div>
+          <div class="row"><span class="t">0.34s</span><span>tech stack: WordPress, Elementor, GA4</span><span class="ok">high</span></div>
+          <div class="row"><span class="t">0.90s</span><span>meta description</span><span class="fail">missing ×14</span></div>
+          <div class="row"><span class="t">1.12s</span><span>canonical, hreflang, sitemap</span><span class="ok">ok</span></div>
+          <div class="row"><span class="t">6.80s</span><span>LCP mobile</span><span class="warn">4.1s</span></div>
+          <div class="row"><span class="t">7.02s</span><span>security headers</span><span class="fail">3 of 6</span></div>
+          <div class="row"><span class="t">8.40s</span><span>contact route on mobile</span><span class="fail">not tappable</span></div>
+          <div class="row cur"><span class="t">9.1s</span><span>broken links (82 probed)</span><span></span></div>
+        </div>
+        <div class="dial"><b></b>71<small>SEO SCORE</small></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="v">20</div><div class="k">report sections</div></div>
+      <div><div class="v">38</div><div class="k">fix guides</div></div>
+      <div><div class="v">21</div><div class="k">builders detected</div></div>
+      <div><div class="v">0</div><div class="k">credentials needed</div></div>
+    </div>
+    <div class="how">
+      <div><div class="n">01 / PASTE</div><h3>Any public URL</h3><p>Landing page, blog, store, docs. If the open web can reach it, so can the analyzer.</p></div>
+      <div><div class="n">02 / ANALYZE</div><h3>Fifty signals, parallel</h3><p>Page fetch, PageSpeed, link probes and twenty scored sections run at once, so the whole thing finishes in seconds.</p></div>
+      <div><div class="n">03 / ACT</div><h3>Every issue, fix included</h3><p>Each flagged item links to a step-by-step guide. Save history, share a link, or export a PDF.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><b>3 · Poster</b><span>Loud, flat, printed. Condensed display type, three-pixel rules, one colour. Impossible to mistake for a SaaS template.</span><div class="jump"><a href="#one">1</a><a href="#two">2</a><a href="#three">3</a></div></div>
+<section class="d3" id="three">
+  <div class="wrap">
+    <nav>
+      <div class="brand"><svg width="24" height="24" viewBox="0 0 64 64"><polygon points="7,23 58,20 59,38 8,41" fill="#0a0a0a"/><rect x="12" y="12" width="34" height="7" rx="3.5" fill="#0a0a0a"/><rect x="12" y="28.5" width="42" height="7" rx="3.5" fill="#ffe14d"/><rect x="12" y="45" width="26" height="7" rx="3.5" fill="#0a0a0a"/></svg>explain <mark>this</mark> website</div>
+      <div class="links"><a href="#">Guides</a><a href="#">Compare</a><a href="#">Built with</a><a href="#">Sign in</a></div>
+    </nav>
+    <div class="hero">
+      <h1>What is<br/><span class="o">wrong</span> with<br/><span class="hl">your site?</span></h1>
+      <div class="row">
+        <div>
+          <p class="sub">Paste a URL and find out in twenty seconds. Tech stack, SEO, speed, conversion, security. Every problem comes with the fix. Free, five a day, no account.</p>
+          <form onsubmit="return false"><input placeholder="yourwebsite.com" /><button type="submit">Audit it</button></form>
+          <p class="fine">Not sure what a site runs on? <u>Check the builder</u>. Want to beat a competitor? <u>Compare two sites</u>.</p>
+        </div>
+        <div class="stack">
+          <div class="r"><span><small>SEO score</small>acme-plumbing.co.uk</span><b>71</b></div>
+          <div class="r bad"><span><small>Biggest problem</small>Hero image is 2.3 MB. LCP 4.1 s on mobile.</span><b>FIX</b></div>
+          <div class="r"><span><small>Then</small>14 pages share one title tag</span><b>02</b></div>
+          <div class="r"><span><small>Then</small>Phone number is not tappable</span><b>03</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="ticker"><div><span>Tech stack</span>·<span>SEO audit</span>·<span>Core Web Vitals</span>·<span>Conversion signals</span>·<span>Security headers</span>·<span>Broken links</span>·<span>Built-with detection</span>·<span>PDF export</span>·<span>Tech stack</span>·<span>SEO audit</span>·<span>Core Web Vitals</span>·<span>Conversion signals</span>·<span>Security headers</span>·<span>Broken links</span>·<span>Built-with detection</span>·<span>PDF export</span>·</div></div>
+    <div class="three">
+      <div><div class="k">20</div><h3>Sections</h3><p>Overview, tech stack, SEO, performance, UX, content, links, security, and the summary that tells you where to start.</p></div>
+      <div><div class="k">38</div><h3>Fix guides</h3><p>Plain-English repair steps for everything the audit can flag, written for the person who owns the site.</p></div>
+      <div><div class="k">21</div><h3>Builders</h3><p>Lovable, Bolt, v0, Framer, Replit, Hostinger and fifteen more, spotted from the page itself.</p></div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
