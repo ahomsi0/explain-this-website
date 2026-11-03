@@ -56,9 +56,11 @@ export function LandingPage({
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Striped grid backdrop + film-grain noise — replaces the gradient blobs */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[820px] hero-grid" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[820px] hero-noise" aria-hidden="true" />
+      {/* Grid backdrop + film-grain noise over the whole landing page, with a
+          brighter patch behind the hero. Covering the full height avoids the
+          hard change from grid to flat colour halfway down the page. */}
+      <div className="pointer-events-none absolute inset-0 hero-grid" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 hero-noise" aria-hidden="true" />
 
       <main className="relative z-10">
         {/* Universal header (logo, theme toggle, auth) comes from the app shell. */}
