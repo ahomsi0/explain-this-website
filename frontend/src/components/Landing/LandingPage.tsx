@@ -148,7 +148,7 @@ export function LandingPage({
             )}
 
             <p className="mt-3 text-center text-xs text-zinc-600">
-              Every issue we flag comes with a repair guide —{" "}
+              Every issue we flag comes with a repair guide:{" "}
               <a href="/guides" className="text-zinc-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
                 browse the fix guides
               </a>
@@ -160,17 +160,15 @@ export function LandingPage({
           </div>
         </section>
 
-        {/* ✦ "What you get" — sample output cards */}
-        <section className="px-4 sm:px-6 pb-20" aria-labelledby="what-you-get-heading">
+        {/* Three sample cards from a real report. This is the only block below
+            the hero on purpose: the page should stay out of the way of the input. */}
+        <section className="px-4 sm:px-6 pb-24" aria-labelledby="what-you-get-heading">
           <div className="mx-auto max-w-4xl">
-            <div className="text-center mb-10">
-              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">What you get</p>
-              <h2 id="what-you-get-heading" className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">
-                A 20-section audit, ready in seconds
-              </h2>
-            </div>
+            <h2 id="what-you-get-heading" className="mb-5 text-center text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.2em]">
+              What a report looks like
+            </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* SEO preview card */}
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 bg-emerald-500/[0.04] border-b border-zinc-800">
@@ -259,101 +257,14 @@ export function LandingPage({
                     ))}
                   </div>
                   <p className="text-[11px] text-zinc-500 leading-relaxed">
-                    Modern React/Next.js stack on Vercel. TypeScript detected — good for maintainability.
+                    Modern React/Next.js stack on Vercel. TypeScript detected, good for maintainability.
                   </p>
                 </div>
               </div>
             </div>
-
-            <p className="text-center text-[11px] text-zinc-600">
-              + 17 more sections: AI Summary, Colors, Images, Fonts, Security, Conversion, and more.
-            </p>
           </div>
         </section>
 
-        {/* Scope & limits — comparison table */}
-        <section className="px-4 sm:px-6 pb-20" aria-labelledby="scope-heading">
-          <div className="mx-auto max-w-4xl">
-            <div className="text-center mb-8">
-              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">Scope &amp; limits</p>
-              <h2 id="scope-heading" className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">What this tool is built for</h2>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800 overflow-hidden">
-              {/* Table header */}
-              <div className="grid grid-cols-2 bg-zinc-900/60 border-b border-zinc-800">
-                <div className="px-5 py-3 text-[11px] font-bold tracking-[0.14em] uppercase text-emerald-400 border-r border-zinc-800">Works well for</div>
-                <div className="px-5 py-3 text-[11px] font-bold tracking-[0.14em] uppercase text-amber-400">Known limits</div>
-              </div>
-
-              {[
-                {
-                  ok: "Public landing pages, blogs, docs & stores",
-                  limit: "Login-only, paywalled, or bot-protected pages",
-                },
-                {
-                  ok: "HTML, metadata, headings, images, links & scripts",
-                  limit: "Client-rendered or infinite-scroll content (may be partial)",
-                },
-                {
-                  ok: "Lighthouse / PageSpeed scores for reachable pages",
-                  limit: "Performance scores can vary run-to-run or be unavailable",
-                },
-                {
-                  ok: "Tech stack, security headers, open graph & structured data",
-                  limit: "We never submit forms or use credentials on your behalf",
-                },
-              ].map((row, i) => (
-                <div key={i} className="grid grid-cols-2 border-b border-zinc-800/50 last:border-0">
-                  <div className="px-5 py-3 text-[11.5px] text-zinc-400 leading-relaxed flex items-start gap-2.5 border-r border-zinc-800/50 bg-zinc-900/30">
-                    <svg aria-hidden="true" className="shrink-0 mt-0.5 text-emerald-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    {row.ok}
-                  </div>
-                  <div className="px-5 py-3 text-[11.5px] text-zinc-400 leading-relaxed flex items-start gap-2.5 bg-zinc-900/20">
-                    <svg aria-hidden="true" className="shrink-0 mt-0.5 text-amber-400" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    {row.limit}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="mt-4 text-center text-[11px] text-zinc-600">
-              See the <a className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300 transition-colors" href="/terms">Terms</a> for full scope and the <a className="text-zinc-400 underline underline-offset-2 hover:text-zinc-300 transition-colors" href="/privacy">Privacy Policy</a> for data handling.
-            </p>
-          </div>
-        </section>
-
-        {/* How it works — verb pill steps */}
-        <section className="px-4 sm:px-6 pb-20">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">How it works</p>
-              <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-zinc-100">URL in. Report out.</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-[3px]">
-              {[
-                { verb: "Paste", title: "Any public URL", desc: "Landing page, blog, store, docs — anything the open web can reach. No account needed." },
-                { verb: "Analyze", title: "50+ signals in parallel", desc: "Page fetch, PageSpeed, and 20 scored sections — all running simultaneously in seconds." },
-                { verb: "Act", title: "Every issue, fix included", desc: "Each flagged item links to a step-by-step repair guide. Save history or share links on Pro." },
-              ].map((s, i) => (
-                <div
-                  key={s.verb}
-                  className={`bg-zinc-900/50 border border-zinc-800 p-5 ${
-                    i === 0 ? "rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none" :
-                    i === 2 ? "rounded-b-xl sm:rounded-r-xl sm:rounded-bl-none" : ""
-                  }`}
-                >
-                  <span className="inline-block mb-3 px-2 py-0.5 rounded text-[11px] font-bold tracking-[0.12em] uppercase text-violet-300 bg-violet-500/10 border border-violet-500/20">
-                    {s.verb}
-                  </span>
-                  <h3 className="text-sm font-bold text-zinc-100 mb-1.5">{s.title}</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">{s.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );
