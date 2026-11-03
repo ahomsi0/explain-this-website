@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Landing page directions, round 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" />
+<style>
+  :root { --bg:#0d0d12; --panel:#121218; --line:#26262e; --line2:#1c1c23; --t1:#f4f4f5; --t2:#a1a1aa; --t3:#6b6b76; --v:#7c3aed; --v400:#a78bfa; --ok:#4ade80; --bad:#f87171; --warn:#fbbf24; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#000; color:var(--t1); font-family:Geist,"Instrument Sans",system-ui,sans-serif; font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .divider { position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:14px; padding:10px 20px; background:#000; color:#aaa; font:500 11px/1 "Geist Mono",monospace; letter-spacing:.08em; text-transform:uppercase; border-bottom:1px solid #222; }
+  .divider b { color:#fff; }
+  .divider span { color:#777; letter-spacing:0; text-transform:none; font-family:Geist,system-ui,sans-serif; font-size:12.5px; }
+  .divider .jump { margin-left:auto; display:flex; gap:12px; }
+  .divider .jump a { color:#888; text-decoration:none; }
+  section { background:var(--bg); }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 32px; }
+  nav { height:52px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line2); font-size:12.5px; }
+  nav .brand { display:flex; align-items:center; gap:8px; font-weight:600; letter-spacing:-.01em; color:var(--t1); }
+  nav .brand mark { background:var(--v); color:#fff; padding:0 4px; border-radius:3px; }
+  nav .links { display:flex; gap:22px; color:var(--t2); }
+  nav .links a { color:inherit; text-decoration:none; }
+  nav .links a:hover { color:var(--t1); }
+  nav .links a.btn { color:var(--t1); border:1px solid var(--line); padding:5px 10px; border-radius:5px; }
+  .mono { font-family:"Geist Mono",ui-monospace,monospace; }
+  .k { font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--t3); }
+  h1 { font-size:34px; line-height:1.15; letter-spacing:-.025em; font-weight:600; color:var(--t1); }
+  h1 span { color:var(--v400); }
+  .sub { color:var(--t2); font-size:14.5px; line-height:1.6; max-width:460px; }
+  form { display:flex; border:1px solid var(--line); background:var(--panel); border-radius:6px; overflow:hidden; }
+  form:focus-within { border-color:var(--v400); }
+  form input { flex:1; background:none; border:0; outline:0; font:inherit; font-size:14px; padding:11px 14px; color:var(--t1); }
+  form input::placeholder { color:var(--t3); }
+  form button { background:var(--v); color:#fff; border:0; font:inherit; font-weight:500; font-size:13.5px; padding:0 16px; cursor:pointer; }
+  .fine { font-size:12px; color:var(--t3); }
+  .fine a { color:var(--t2); text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--line); }
+  .pad { height:64px; }
+
+  /* ───────────── A. QUIET LEDGER ───────────── */
+  .a .hero { display:grid; grid-template-columns:1fr 1fr; gap:56px; padding:72px 0 64px; align-items:center; }
+  .a .k { margin-bottom:16px; }
+  .a .sub { margin-top:14px; }
+  .a form { margin-top:24px; max-width:440px; }
+  .a .fine { margin-top:10px; }
+  .a .card { border:1px solid var(--line); border-radius:8px; background:var(--panel); overflow:hidden; }
+  .a .card .hd { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--line2); font-size:12px; color:var(--t2); }
+  .a .card .hd b { font-weight:500; color:var(--t1); }
+  .a .card .hd i { font-style:normal; color:var(--t3); font-size:11px; }
+  .a .row { display:grid; grid-template-columns:1fr 40px 54px; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line2); font-size:13px; }
+  .a .row:last-of-type { border-bottom:0; }
+  .a .row .n { color:var(--t1); }
+  .a .row .n small { display:block; color:var(--t3); font-size:11.5px; margin-top:1px; }
+  .a .row .s { font-variant-numeric:tabular-nums; text-align:right; color:var(--t1); font-weight:500; }
+  .a .row .bar { height:4px; background:var(--line); border-radius:2px; position:relative; }
+  .a .row .bar::after { content:""; position:absolute; inset:0; width:var(--w); background:var(--v); border-radius:2px; }
+  .a .card .ft { display:flex; justify-content:space-between; align-items:baseline; padding:12px 14px; border-top:1px solid var(--line2); background:#0f0f15; }
+  .a .card .ft .big { font-size:26px; font-weight:600; letter-spacing:-.03em; }
+  .a .card .ft .big small { font-size:12px; color:var(--t3); font-weight:400; letter-spacing:0; }
+  .a .card .ft p { font-size:12px; color:var(--t2); max-width:240px; text-align:right; }
+  .a .list { border-top:1px solid var(--line2); display:grid; grid-template-columns:repeat(3,1fr); gap:40px; padding:40px 0 0; }
+  .a .list h3 { font-size:13.5px; font-weight:600; margin-bottom:6px; }
+  .a .list p { font-size:13px; color:var(--t2); line-height:1.55; }
+  .a .list .num { font-size:11px; color:var(--v400); letter-spacing:.08em; margin-bottom:10px; display:block; }
+
+  /* ───────────── B. QUIET ANNOTATED ───────────── */
+  .b .hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:48px; padding:72px 0 64px; align-items:center; }
+  .b .k { margin-bottom:16px; }
+  .b .sub { margin-top:14px; }
+  .b form { margin-top:24px; max-width:440px; }
+  .b .fine { margin-top:10px; }
+  .b .draft { position:relative; padding:18px 156px 18px 0; }
+  .b .page { border:1px solid var(--line); border-radius:6px; background:var(--panel); padding:12px; width:100%; max-width:360px; }
+  .b .page .bar { display:flex; gap:4px; padding-bottom:10px; border-bottom:1px solid var(--line2); margin-bottom:12px; }
+  .b .page .bar i { width:6px; height:6px; border-radius:50%; background:var(--line); }
+  .b .page .img { height:84px; border:1px dashed var(--line); border-radius:4px; display:grid; place-items:center; font-size:10.5px; color:var(--t3); }
+  .b .page .ln { height:6px; background:var(--line2); border-radius:3px; margin-top:9px; }
+  .b .page .ln.s { width:55%; } .b .page .ln.m { width:80%; }
+  .b .page .btn { margin-top:12px; width:96px; height:24px; border:1px solid var(--line); border-radius:4px; display:grid; place-items:center; font-size:9.5px; color:var(--t2); }
+  .b .co { position:absolute; left:calc(100% - 142px); width:142px; font-size:11.5px; line-height:1.4; color:var(--t2); padding-left:12px; border-left:2px solid var(--line); }
+  .b .co b { display:block; font-weight:600; color:var(--t1); font-size:11.5px; }
+  .b .co.warn { border-color:var(--warn); } .b .co.bad { border-color:var(--bad); } .b .co.ok { border-color:var(--ok); }
+  .b .co.c1 { top:34px; } .b .co.c2 { top:118px; } .b .co.c3 { top:190px; }
+  .b .co::before { content:""; position:absolute; left:-40px; top:9px; width:38px; height:1px; background:var(--line); }
+  .b .strip { border-top:1px solid var(--line2); border-bottom:1px solid var(--line2); display:flex; justify-content:space-between; padding:14px 0; font-size:12.5px; color:var(--t2); }
+  .b .strip b { color:var(--t1); font-weight:500; }
+  .b .list { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; padding:40px 0 0; }
+  .b .list h3 { font-size:13.5px; font-weight:600; margin-bottom:6px; }
+  .b .list p { font-size:13px; color:var(--t2); line-height:1.55; }
+  .b .list .num { font-size:11px; color:var(--v400); letter-spacing:.08em; margin-bottom:10px; display:block; }
+
+  @media (max-width:760px) {
+    .a .hero, .b .hero, .a .list, .b .list { grid-template-columns:1fr; }
+    .b .draft { padding-right:0; } .b .co { display:none; }
+    .b .strip { flex-wrap:wrap; gap:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="divider"><b>A · Quiet ledger</b><span>34px headline, 14px body, one card, one accent. Everything else is spacing and hairlines.</span><div class="jump"><a href="#a">A</a><a href="#b">B</a></div></div>
+<section class="a" id="a">
+  <div class="wrap">
+    <nav>
+      <div class="brand"><svg width="18" height="18" viewBox="0 0 64 64"><polygon points="7,23 58,20 59,38 8,41" fill="#7c3aed"/><rect x="12" y="12" width="34" height="7" rx="3.5" fill="#f4f4f5"/><rect x="12" y="28.5" width="42" height="7" rx="3.5" fill="#f4f4f5"/><rect x="12" y="45" width="26" height="7" rx="3.5" fill="#f4f4f5"/></svg>explain <mark>this</mark> website</div>
+      <div class="links"><a href="#">Guides</a><a href="#">Compare</a><a href="#">Built with</a><a href="#" class="btn">Sign in</a></div>
+    </nav>
+    <div class="hero">
+      <div>
+        <div class="k">Free website audit</div>
+        <h1>Find out what is holding your website <span>back</span>.</h1>
+        <p class="sub">Paste a URL. In about twenty seconds you get a scored report across SEO, speed, UX and conversion, with the fixes ranked by impact.</p>
+        <form onsubmit="return false"><input placeholder="https://yoursite.com" /><button type="submit">Analyze</button></form>
+        <p class="fine">5 free audits a day, no account. Sign in to keep history or <a href="#">compare two sites</a>.</p>
+      </div>
+      <div class="card">
+        <div class="hd"><b>acme-plumbing.co.uk</b><i class="mono">20 sections · 19 s</i></div>
+        <div class="row"><div class="n">SEO<small>14 pages without a meta description</small></div><div class="s">74</div><div class="bar" style="--w:74%"></div></div>
+        <div class="row"><div class="n">Performance<small>LCP 4.1 s on mobile, hero image 2.3 MB</small></div><div class="s">48</div><div class="bar" style="--w:48%"></div></div>
+        <div class="row"><div class="n">UX<small>Phone number not tappable on mobile</small></div><div class="s">82</div><div class="bar" style="--w:82%"></div></div>
+        <div class="row"><div class="n">Conversion<small>No social proof above the fold</small></div><div class="s">66</div><div class="bar" style="--w:66%"></div></div>
+        <div class="ft"><div class="big">71<small> / 100</small></div><p>Fix the hero image and the descriptions and this site moves into the 80s.</p></div>
+      </div>
+    </div>
+    <div class="list">
+      <div><span class="num">01</span><h3>Written for the owner</h3><p>Each issue says what it is, why it costs visitors, and what to do. The jargon stays in a tooltip.</p></div>
+      <div><span class="num">02</span><h3>Ranked by impact</h3><p>The report leads with the two or three changes that would move the score most.</p></div>
+      <div><span class="num">03</span><h3>Every fix has a guide</h3><p>38 plain-English repair guides, linked from the finding they fix. Share a link or export a PDF.</p></div>
+    </div>
+    <div class="pad"></div>
+  </div>
+</section>
+
+<div class="divider"><b>B · Quiet annotated</b><span>The wireframe idea at a sensible size: a small page sketch with three notes beside it, like a reviewer's margin.</span><div class="jump"><a href="#a">A</a><a href="#b">B</a></div></div>
+<section class="b" id="b">
+  <div class="wrap">
+    <nav>
+      <div class="brand"><svg width="18" height="18" viewBox="0 0 64 64"><polygon points="7,23 58,20 59,38 8,41" fill="#7c3aed"/><rect x="12" y="12" width="34" height="7" rx="3.5" fill="#f4f4f5"/><rect x="12" y="28.5" width="42" height="7" rx="3.5" fill="#f4f4f5"/><rect x="12" y="45" width="26" height="7" rx="3.5" fill="#f4f4f5"/></svg>explain <mark>this</mark> website</div>
+      <div class="links"><a href="#">Guides</a><a href="#">Compare</a><a href="#">Built with</a><a href="#" class="btn">Sign in</a></div>
+    </nav>
+    <div class="hero">
+      <div>
+        <div class="k">Website audit, explained</div>
+        <h1>Your website, with the problems <span>marked</span> where they are.</h1>
+        <p class="sub">Paste a URL and get every finding placed on the page it belongs to: the heavy image, the missing tags, the button nobody can tap. Each one links to its fix.</p>
+        <form onsubmit="return false"><input placeholder="https://yoursite.com" /><button type="submit">Analyze</button></form>
+        <p class="fine">Free, 5 a day, no account. <a href="#">What a site is built with</a> is in every report.</p>
+      </div>
+      <div class="draft">
+        <div class="page">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <div class="img">hero image · 2.3 MB</div>
+          <div class="ln m"></div><div class="ln"></div><div class="ln s"></div>
+          <div class="btn">Call us</div>
+          <div class="ln m" style="margin-top:18px"></div><div class="ln s"></div>
+        </div>
+        <div class="co warn c1"><b>LCP 4.1 s</b>Hero image is 2.3 MB. Resize, serve as WebP.</div>
+        <div class="co bad c2"><b>No meta description</b>Missing on 14 pages. Google writes its own.</div>
+        <div class="co ok c3"><b>Stack detected</b>WordPress, Elementor, GA4.</div>
+      </div>
+    </div>
+    <div class="strip"><span><b>20</b> report sections</span><span><b>38</b> fix guides</span><span><b>21</b> builders detected</span><span><b>~20 s</b> per audit</span></div>
+    <div class="list">
+      <div><span class="num">01</span><h3>Paste any public URL</h3><p>Landing page, blog, store or docs. If the open web can reach it, the analyzer can.</p></div>
+      <div><span class="num">02</span><h3>Fifty checks, in parallel</h3><p>Page fetch, PageSpeed, link probes and twenty scored sections run at once.</p></div>
+      <div><span class="num">03</span><h3>Act on it</h3><p>Every finding links to a step-by-step guide. Save history, share a link, export a PDF.</p></div>
+    </div>
+    <div class="pad"></div>
+  </div>
+</section>
+
+</body>
+</html>
