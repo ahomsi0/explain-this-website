@@ -1,47 +1,31 @@
-// Logo mark for "Explain This Website"
-// A browser window with a magnifying glass overlaid — "looking inside a website"
+// Logo for "Explain This Website": three lines of a page with one of them
+// swiped by a highlighter. The wordmark repeats the idea by highlighting
+// "this". One accent colour on one shape, so it reads at 16 px.
 //
-// Sharpened pass: taller chrome bar, uniform brighter dots, fewer/bolder
-// content lines, larger lens with a dark separator ring + a tiny highlight,
-// thicker handle. Stays readable at favicon sizes (16/20/24).
+// The lines use currentColor; the wrapper sets text-zinc-100, which the light
+// theme remaps to ink (see index.css), so the mark adapts without props.
 
-export function LogoMark({ size = 28 }: { size?: number }) {
+export const LOGO_ACCENT = "#7c3aed";
+
+export function LogoMark({ size = 28, className = "" }: { size?: number; className?: string }) {
   return (
-    <svg
-      aria-hidden="true"
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Outer rounded tile */}
-      <rect width="32" height="32" rx="8" fill="#7c3aed" />
-
-      {/* Browser window body */}
-      <rect x="5" y="7" width="22" height="18" rx="2.5" fill="#1e1b4b" />
-
-      {/* Browser chrome bar — taller, brighter mid-violet */}
-      <rect x="5" y="7" width="22" height="6" rx="2.5" fill="#5b21b6" />
-
-      {/* Window dots — uniform light violet, slightly larger */}
-      <circle cx="9.5"  cy="10" r="1.15" fill="#a78bfa" />
-      <circle cx="13"   cy="10" r="1.15" fill="#a78bfa" />
-      <circle cx="16.5" cy="10" r="1.15" fill="#a78bfa" />
-
-      {/* Page content lines — fewer, bolder, light accent */}
-      <rect x="8" y="16.5" width="11" height="2" rx="1" fill="#a78bfa" opacity="0.85" />
-      <rect x="8" y="20"   width="7"  height="2" rx="1" fill="#a78bfa" opacity="0.55" />
-
-      {/* Magnifying glass — bigger lens, dark separator for clarity */}
-      <circle cx="21" cy="21" r="5.2" fill="#7c3aed" stroke="#1e1b4b" strokeWidth="0.6" />
-      <circle cx="21" cy="21" r="3.3" fill="none" stroke="#fff" strokeWidth="1.9" />
-      {/* Glass highlight — premium polish */}
-      <circle cx="19.7" cy="19.7" r="0.7" fill="#fff" opacity="0.85" />
-
-      {/* Handle — thicker, slightly longer */}
-      <line x1="23.7" y1="23.7" x2="26.5" y2="26.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
+    <span className={`inline-flex text-zinc-100 ${className}`}>
+      <svg
+        aria-hidden="true"
+        width={size}
+        height={size}
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Highlighter swipe, slightly skewed like a real marker stroke */}
+        <polygon points="7,23 58,20 59,38 8,41" fill={LOGO_ACCENT} />
+        {/* Page lines */}
+        <rect x="12" y="12" width="34" height="7" rx="3.5" fill="currentColor" />
+        <rect x="12" y="28.5" width="42" height="7" rx="3.5" fill="currentColor" />
+        <rect x="12" y="45" width="26" height="7" rx="3.5" fill="currentColor" />
+      </svg>
+    </span>
   );
 }
 
@@ -49,8 +33,10 @@ export function LogoWordmark({ size = 28 }: { size?: number }) {
   return (
     <div className="flex items-center gap-2.5">
       <LogoMark size={size} />
-      <span className="text-sm font-semibold text-zinc-100 tracking-tight">
-        Explain This Website
+      <span className="text-sm font-semibold text-zinc-100 tracking-tight whitespace-nowrap">
+        explain{" "}
+        <mark className="rounded-[3px] bg-violet-600 px-1 py-px text-white">this</mark>{" "}
+        website
       </span>
     </div>
   );
