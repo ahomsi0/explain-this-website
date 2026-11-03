@@ -43,7 +43,7 @@ export const GUIDES: Record<string, Guide> = {
     category: "Performance",
     summary: "Make the biggest visible element on your page load in under 2.5 seconds.",
     whatItMeans:
-      "LCP measures how long it takes for the largest element a visitor sees — usually a hero image or headline — to appear on screen. Google considers anything over 4 seconds poor and under 2.5 seconds good.",
+      "LCP measures how long it takes for the largest element a visitor sees, usually a hero image or headline, to appear on screen. Google considers anything over 4 seconds poor and under 2.5 seconds good.",
     whyItMatters:
       "Visitors decide within seconds whether a page is worth waiting for, and Google ranks slow pages lower. Every extra second of LCP measurably increases the share of people who leave before seeing your offer.",
     steps: [
@@ -181,7 +181,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "page-title",
     title: "Write a proper page title",
     category: "SEO",
-    summary: "The single most important on-page SEO element — 50–60 characters that sell the click.",
+    summary: "The single most important on-page SEO element: 50 to 60 characters that sell the click.",
     whatItMeans:
       "The page title (<title> tag) is the blue headline shown in Google results and the browser tab. It's the strongest on-page ranking signal and your ad copy on the search results page.",
     whyItMatters:
@@ -220,7 +220,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "h1-heading",
     title: "Use exactly one H1 heading",
     category: "SEO",
-    summary: "The H1 tells Google and visitors what the page is about — there should be one per page.",
+    summary: "The H1 tells Google and visitors what the page is about. There should be one per page.",
     whatItMeans:
       "The H1 is the main headline of a page. Pages with zero H1s give Google no headline signal; pages with several dilute it.",
     whyItMatters:
@@ -238,7 +238,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "image-alt-text",
     title: "Add alt text to images",
     category: "SEO",
-    summary: "Describe each image in a few words — for accessibility, SEO, and slow connections.",
+    summary: "Describe each image in a few words, for accessibility, SEO, and slow connections.",
     whatItMeans:
       "Alt text is the written description attached to an image tag. Screen readers speak it to blind visitors, Google reads it to understand the image, and browsers show it when an image fails to load.",
     whyItMatters:
@@ -292,7 +292,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "https",
     title: "Serve the site over HTTPS",
     category: "Security",
-    summary: "The padlock in the address bar — table stakes for trust, SEO, and browser features.",
+    summary: "The padlock in the address bar: table stakes for trust, SEO, and browser features.",
     whatItMeans:
       "HTTPS encrypts traffic between the visitor and your site. Without it, browsers label the page 'Not secure' and networks between the visitor and you can read or alter the traffic.",
     whyItMatters:
@@ -347,7 +347,7 @@ export const GUIDES: Record<string, Guide> = {
     category: "SEO",
     summary: "Machine-readable labels that earn rich results like star ratings in search.",
     whatItMeans:
-      "Structured data (JSON-LD) explicitly tells search engines what your content is — a product with a price, a business with opening hours, an article with an author.",
+      "Structured data (JSON-LD) explicitly tells search engines what your content is: a product with a price, a business with opening hours, an article with an author.",
     whyItMatters:
       "Pages with valid schema can win rich results — star ratings, prices, FAQs directly in search — which visibly increase click-through over plain blue links.",
     steps: [
@@ -385,7 +385,7 @@ export const GUIDES: Record<string, Guide> = {
     category: "UX & Conversion",
     summary: "One obvious button that tells visitors exactly what to do next.",
     whatItMeans:
-      "A call-to-action (CTA) is the primary button you want every visitor to click — 'Get a quote', 'Book a demo', 'Start free trial'. Pages without one leave the visitor to figure out the next step alone.",
+      "A call-to-action (CTA) is the primary button you want every visitor to click: 'Get a quote', 'Book a demo', 'Start free trial'. Pages without one leave the visitor to figure out the next step alone.",
     whyItMatters:
       "The CTA is the single biggest conversion lever on any page. Visitors rarely hunt for how to buy or contact you; if the action isn't obvious within seconds, they leave.",
     steps: [
@@ -420,7 +420,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "social-proof",
     title: "Show social proof",
     category: "UX & Conversion",
-    summary: "Numbers and voices of other customers — 'Join 4,000 teams' beats any slogan.",
+    summary: "Numbers and voices of other customers. 'Join 4,000 teams' beats any slogan.",
     whatItMeans:
       "Social proof is evidence that other people chose you: customer counts, reviews, case studies, user-generated content, or a live 'recently purchased' stream.",
     whyItMatters:
@@ -457,7 +457,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "contact-info",
     title: "Make it easy to get in touch",
     category: "UX & Conversion",
-    summary: "Any visible contact route — a contact page, support link or community link.",
+    summary: "Any visible contact route: a contact page, support link or community link.",
     whatItMeans:
       "A visible contact route (contact page, support link or community link) in the header, footer, or a dedicated page tells visitors a real person is reachable. Its absence reads as a signal the site may not be a real business.",
     whyItMatters:
@@ -531,7 +531,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "generic-copy",
     title: "Replace generic marketing copy",
     category: "Content",
-    summary: "'World-class solutions' describes nobody — specifics describe you.",
+    summary: "'World-class solutions' describes nobody. Specifics describe you.",
     whatItMeans:
       "Generic copy is text that could appear on any competitor's site unchanged: 'innovative solutions', 'best-in-class service', 'we're passionate about quality'. Readers' eyes slide over it because it carries no information.",
     whyItMatters:
@@ -589,7 +589,7 @@ export const GUIDES: Record<string, Guide> = {
     slug: "reading-level",
     title: "Simplify overly complex content",
     category: "Content",
-    summary: "Most web copy should be readable at roughly Grade 8 — clear, short, direct.",
+    summary: "Most web copy should be readable at roughly Grade 8: clear, short, direct.",
     whatItMeans:
       "Reading level estimates the education needed to follow your text. 'Advanced' usually means long sentences, dense paragraphs, and jargon — not that your audience is stupid, but that the writing makes them work.",
     whyItMatters:

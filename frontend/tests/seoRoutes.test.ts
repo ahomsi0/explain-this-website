@@ -58,7 +58,7 @@ describe("metaForPath (indexable pages)", () => {
   });
 
   it("keeps the established titles", () => {
-    expect(metaForPath("/").title).toBe("Explain This Website — Instant Website Analyzer");
+    expect(metaForPath("/").title).toBe("Explain This Website: Instant Website Analyzer");
     expect(metaForPath("/whats-new").title).toBe("What’s New · Explain This Website");
   });
 

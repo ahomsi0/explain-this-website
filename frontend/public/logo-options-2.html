@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Logo options, round 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" />
+<style>
+  :root { --bg:#09090b; --panel:#18181b; --line:#27272a; --text:#e4e4e7; --muted:#71717a; --accent:#7c3aed; --accent2:#a78bfa; --paper:#fafafa; --ink:#0a0a0a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; padding:40px 24px 80px; }
+  h1 { font-size:22px; font-weight:600; margin:0 0 6px; }
+  .lede { color:var(--muted); font-size:13.5px; max-width:720px; line-height:1.6; margin:0 0 36px; }
+  .grid { display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); max-width:1400px; }
+  .opt { border:1px solid var(--line); border-radius:14px; background:var(--panel); overflow:hidden; }
+  .head { padding:16px 18px 12px; display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  .head b { font-size:15px; }
+  .head span { color:var(--muted); font-size:12px; }
+  .why { padding:0 18px 14px; color:var(--muted); font-size:12.5px; line-height:1.55; }
+  .row { display:grid; grid-template-columns:1fr 1fr; }
+  .cell { padding:22px 18px; display:flex; flex-direction:column; gap:18px; }
+  .cell.dark { background:#0f0f12; }
+  .cell.light { background:var(--paper); color:var(--ink); }
+  .sizes { display:flex; align-items:flex-end; gap:18px; }
+  .lockup { display:flex; align-items:center; gap:10px; font-weight:600; font-size:17px; letter-spacing:-0.01em; white-space:nowrap; }
+  .lockup.mono { font-family:"JetBrains Mono",ui-monospace,monospace; font-weight:600; font-size:13px; letter-spacing:-0.03em; }
+  .hl { background:var(--accent); color:#fff; padding:0 4px; border-radius:2px; }
+  .light .hl { background:#111; color:#fff; }
+  .cap { font-size:10.5px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+  svg { display:block; }
+  /* colour tokens the SVGs use */
+  .dark { --fg:#fff; --ac:#8b5cf6; --dim:#52525b; }
+  .light { --fg:#0a0a0a; --ac:#6d28d9; --dim:#a1a1aa; }
+</style>
+</head>
+<body>
+<h1>Logo options, round 2</h1>
+<p class="lede">Six directions that avoid the "rounded tile + icon + gradient" template. Each is a single idea, drawn with one weight of line, shown on dark and light at 96, 32 and 16 px with its wordmark. Colours are placeholders: violet is kept so nothing else on the site has to change, but every mark also works in plain black.</p>
+
+<div class="grid">
+
+<!-- A. Highlight -->
+<div class="opt" id="a">
+  <div class="head"><b>A. Highlight</b><span>the product is a highlighter for websites</span></div>
+  <div class="why">Three lines of a page, one of them swiped with a marker. The wordmark repeats the idea by highlighting "this". Reads at 16 px because the swipe is the only shape with colour.</div>
+  <div class="row">
+    <template id="svg-a"><svg viewBox="0 0 64 64" fill="none"><polygon points="9,25 57,22 58,38 10,41" fill="var(--ac)"/><rect x="14" y="13" width="34" height="5" rx="2.5" fill="var(--fg)"/><rect x="14" y="29" width="40" height="5" rx="2.5" fill="var(--fg)"/><rect x="14" y="45" width="26" height="5" rx="2.5" fill="var(--fg)"/></svg></template>
+    <div class="cell dark" data-svg="svg-a" data-mono="1" data-word='explain <span class="hl">this</span> website'></div>
+    <div class="cell light" data-svg="svg-a" data-mono="1" data-word='explain <span class="hl">this</span> website'></div>
+  </div>
+</div>
+
+<!-- B. Speech window -->
+<div class="opt" id="b">
+  <div class="head"><b>B. Speech window</b><span>a browser that talks</span></div>
+  <div class="why">One continuous outline: a browser window whose bottom edge turns into a speech-bubble tail. "Explain" and "website" in a single stroke, no fill, no tile. The three dots keep it recognisably a browser.</div>
+  <div class="row">
+    <template id="svg-b"><svg viewBox="0 0 64 64" fill="none" stroke="var(--fg)" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"><path d="M16 11h32a7 7 0 0 1 7 7v20a7 7 0 0 1-7 7H30L19 55V45h-3a7 7 0 0 1-7-7V18a7 7 0 0 1 7-7z"/><path d="M9 22h46"/><circle cx="16" cy="16.5" r="1.2" fill="var(--ac)" stroke="var(--ac)"/><circle cx="22" cy="16.5" r="1.2" fill="var(--ac)" stroke="var(--ac)"/><circle cx="28" cy="16.5" r="1.2" fill="var(--ac)" stroke="var(--ac)"/></svg></template>
+    <div class="cell dark" data-svg="svg-b" data-word="Explain This Website"></div>
+    <div class="cell light" data-svg="svg-b" data-word="Explain This Website"></div>
+  </div>
+</div>
+
+<!-- C. Squiggle -->
+<div class="opt" id="c">
+  <div class="head"><b>C. Squiggle</b><span>we point at what is wrong</span></div>
+  <div class="why">Text lines with a spell-check underline beneath one of them. Everyone knows what the wavy line means. The squiggle is the only accent, so the mark survives being tiny and stays unmistakable.</div>
+  <div class="row">
+    <template id="svg-c"><svg viewBox="0 0 64 64" fill="none"><rect x="10" y="13" width="44" height="5" rx="2.5" fill="var(--fg)"/><rect x="10" y="27" width="32" height="5" rx="2.5" fill="var(--fg)"/><path d="M10 39q4-4 8 0t8 0t8 0t8 0" stroke="var(--ac)" stroke-width="3.5" stroke-linecap="round"/><rect x="10" y="47" width="22" height="5" rx="2.5" fill="var(--fg)"/></svg></template>
+    <div class="cell dark" data-svg="svg-c" data-word="Explain This Website"></div>
+    <div class="cell light" data-svg="svg-c" data-word="Explain This Website"></div>
+  </div>
+</div>
+
+<!-- D. Margin note -->
+<div class="opt" id="d">
+  <div class="head"><b>D. Margin note</b><span>annotations in the margin of a page</span></div>
+  <div class="why">A square bracket and a dot beside a block of text, the way an editor marks a paragraph. Calm, editorial, nothing like a SaaS tile. The bracket alone works as a favicon.</div>
+  <div class="row">
+    <template id="svg-d"><svg viewBox="0 0 64 64" fill="none"><path d="M21 13h-8v38h8" stroke="var(--ac)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="32" r="2.6" fill="var(--ac)"/><rect x="29" y="15" width="26" height="5" rx="2.5" fill="var(--fg)"/><rect x="29" y="27" width="20" height="5" rx="2.5" fill="var(--fg)"/><rect x="29" y="39" width="24" height="5" rx="2.5" fill="var(--fg)"/><rect x="29" y="51" width="14" height="5" rx="2.5" fill="var(--fg)" opacity=".55"/></svg></template>
+    <div class="cell dark" data-svg="svg-d" data-word="Explain This Website"></div>
+    <div class="cell light" data-svg="svg-d" data-word="Explain This Website"></div>
+  </div>
+</div>
+
+<!-- E. The e -->
+<div class="opt" id="e">
+  <div class="head"><b>E. The "e"</b><span>a letterform, not an icon</span></div>
+  <div class="why">A geometric lowercase e with its crossbar running straight through to the edge, so the aperture reads as an open mouth. Letter marks age well and stay ownable. Pairs with the plain wordmark; the e can also sit alone on social avatars.</div>
+  <div class="row">
+    <template id="svg-e"><svg viewBox="0 0 64 64" fill="none" stroke="var(--fg)" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 32h40a20 20 0 1 0-4.7 12.9"/><path d="M12 32h40" stroke="var(--ac)"/></svg></template>
+    <div class="cell dark" data-svg="svg-e" data-word="explain this website" data-mono="1"></div>
+    <div class="cell light" data-svg="svg-e" data-word="explain this website" data-mono="1"></div>
+  </div>
+</div>
+
+<!-- F. Tooltip -->
+<div class="opt" id="f">
+  <div class="head"><b>F. Tooltip</b><span>hover anything, get an explanation</span></div>
+  <div class="why">A cursor with a tooltip above it. The tooltip is the explanation, the cursor is "this". Familiar to anyone who has used a computer, and it has not been used to death by analytics tools.</div>
+  <div class="row">
+    <template id="svg-f"><svg viewBox="0 0 64 64" fill="none"><path d="M12 9h40a5 5 0 0 1 5 5v14a5 5 0 0 1-5 5H34l-5 6-5-6H12a5 5 0 0 1-5-5V14a5 5 0 0 1 5-5z" fill="var(--ac)"/><rect x="15" y="16" width="20" height="4" rx="2" fill="#fff"/><rect x="15" y="23" width="30" height="4" rx="2" fill="#fff" opacity=".7"/><path d="M30 36l17 7-7 3 4 8-4 2-4-8-6 5z" fill="var(--fg)" stroke="var(--fg)" stroke-width="1.5" stroke-linejoin="round"/></svg></template>
+    <div class="cell dark" data-svg="svg-f" data-word="Explain This Website"></div>
+    <div class="cell light" data-svg="svg-f" data-word="Explain This Website"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  // Render each option's SVG at three sizes plus a lockup, in both themes.
+  for (const cell of document.querySelectorAll(".cell")) {
+    const tpl = document.getElementById(cell.dataset.svg).innerHTML.trim();
+    const sizes = document.createElement("div"); sizes.className = "sizes";
+    for (const px of [96, 32, 16]) {
+      const w = document.createElement("div");
+      w.innerHTML = tpl; const s = w.firstChild; s.setAttribute("width", px); s.setAttribute("height", px);
+      sizes.appendChild(w);
+    }
+    const lock = document.createElement("div"); lock.className = "lockup" + (cell.dataset.mono ? " mono" : "");
+    const w = document.createElement("div"); w.innerHTML = tpl; const s = w.firstChild; s.setAttribute("width", 26); s.setAttribute("height", 26);
+    lock.appendChild(s);
+    const t = document.createElement("span"); t.innerHTML = cell.dataset.word; lock.appendChild(t);
+    const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = cell.classList.contains("dark") ? "dark · 96 / 32 / 16 · lockup" : "light · 96 / 32 / 16 · lockup";
+    cell.append(cap, sizes, lock);
+  }
+</script>
+</body>
+</html>

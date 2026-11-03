@@ -38,7 +38,7 @@ const withSite = (title: string) => {
   return full.length <= MAX_TITLE ? full : title;
 };
 
-const HOME_TITLE = "Explain This Website — Instant Website Analyzer";
+const HOME_TITLE = "Explain This Website: Instant Website Analyzer";
 const HOME_DESCRIPTION =
   "Paste any URL and get an instant analysis: tech stack, SEO audit, UX signals, conversion score and recommendations. Free, no login required.";
 
