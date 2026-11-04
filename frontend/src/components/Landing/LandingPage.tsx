@@ -185,9 +185,9 @@ export function LandingPage({
             <h2 id="what-you-get-heading" className="mb-5 text-center text-[11px] font-semibold text-zinc-500 uppercase tracking-[0.2em]">
               What a report looks like
             </h2>
-            <ul className="border-t border-zinc-800">
+            <ul className="border-t border-zinc-700">
               {SAMPLE_FINDINGS.map((f) => (
-                <li key={f.text} className="grid grid-cols-[48px_1fr] sm:grid-cols-[56px_1fr_auto] gap-x-4 sm:gap-x-5 gap-y-1 items-baseline py-3 px-1 border-b border-zinc-800/80">
+                <li key={f.text} className="grid grid-cols-[48px_1fr] sm:grid-cols-[56px_1fr_auto] gap-x-4 sm:gap-x-5 gap-y-1 items-baseline py-3 px-1 border-b border-zinc-700">
                   <span className={`font-mono text-[11px] tracking-[0.08em] ${tagColor[f.tag]}`}>{f.tag}</span>
                   <span className="text-[14px] text-zinc-100">
                     {f.text}
