@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Sample report block, style options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+<style>
+  :root { --bg:#0d0d12; --panel:#121218; --line:#27272a; --line2:#1f1f26; --t1:#f4f4f5; --t2:#a1a1aa; --t3:#71717a; --t4:#52525b; --v:#7c3aed; --v400:#a78bfa; --ok:#34d399; --bad:#f87171; --warn:#fbbf24; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--t1); font-family:Inter,system-ui,sans-serif; font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(to right, rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.035) 1px, transparent 1px); background-size:64px 64px; }
+  .divider { position:sticky; top:0; z-index:5; display:flex; gap:14px; align-items:center; padding:10px 20px; background:#000; border-bottom:1px solid #222; font:500 11px/1 "JetBrains Mono",monospace; letter-spacing:.08em; text-transform:uppercase; color:#aaa; }
+  .divider b { color:#fff; } .divider span { font-family:Inter; text-transform:none; letter-spacing:0; color:#777; font-size:12.5px; }
+  .block { max-width:896px; margin:0 auto; padding:56px 24px 72px; }
+  .eyebrow { text-align:center; font-size:11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--t3); margin-bottom:20px; }
+  .mono { font-family:"JetBrains Mono",ui-monospace,monospace; }
+
+  /* 1. One excerpt */
+  .x { border:1px solid var(--line); border-radius:10px; background:rgba(18,18,24,.8); display:grid; grid-template-columns:1.4fr 1fr; }
+  .x .l { padding:18px 20px; border-right:1px solid var(--line2); }
+  .x .r { padding:18px 20px; }
+  .x .hd { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .x .hd .u { font-size:12.5px; color:var(--t2); }
+  .x .hd .sc { font-size:12.5px; color:var(--t3); }
+  .x .hd .sc b { color:var(--t1); font-weight:600; font-size:15px; }
+  .x .f { display:grid; grid-template-columns:8px 1fr; gap:12px; padding:9px 0; border-top:1px solid var(--line2); align-items:start; }
+  .x .f i { width:8px; height:8px; border-radius:50%; margin-top:6px; }
+  .x .f .t { font-size:13.5px; color:var(--t1); }
+  .x .f .t small { display:block; color:var(--t3); font-size:12px; margin-top:1px; }
+  .x .f .t a { color:var(--v400); text-decoration:none; font-size:12px; }
+  .x .r h4 { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); font-weight:500; margin-bottom:10px; }
+  .x .r dl { display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:12.5px; }
+  .x .r dt { color:var(--t3); } .x .r dd { color:var(--t1); }
+  .x .r .more { margin-top:14px; font-size:12px; color:var(--t3); }
+
+  /* 2. Findings list, no boxes */
+  .y { border-top:1px solid var(--line); }
+  .y .row { display:grid; grid-template-columns:56px 1fr auto; gap:18px; align-items:baseline; padding:13px 4px; border-bottom:1px solid var(--line2); }
+  .y .tag { font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.08em; }
+  .y .tag.fail { color:var(--bad); } .y .tag.warn { color:var(--warn); } .y .tag.pass { color:var(--ok); } .y .tag.info { color:var(--v400); }
+  .y .t { font-size:14px; color:var(--t1); }
+  .y .t small { color:var(--t3); font-size:12.5px; margin-left:8px; }
+  .y .fx { font-size:12px; color:var(--t3); white-space:nowrap; }
+  .y .fx a { color:var(--t2); text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--line); }
+  .y .ft { display:flex; justify-content:space-between; padding:12px 4px 0; font-size:12px; color:var(--t3); }
+  .y .ft b { color:var(--t1); font-weight:500; }
+
+  /* 3. Three plain tiles, one accent */
+  .z { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .z .c { border:1px solid var(--line); border-radius:10px; background:rgba(18,18,24,.8); padding:16px 18px; }
+  .z .c .k { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); font-weight:500; display:flex; justify-content:space-between; }
+  .z .c .k b { color:var(--t1); font-weight:600; letter-spacing:0; text-transform:none; font-size:13px; }
+  .z .c .big { font-size:34px; font-weight:600; letter-spacing:-.03em; line-height:1; margin:14px 0 4px; }
+  .z .c .big small { font-size:13px; color:var(--t3); font-weight:400; letter-spacing:0; }
+  .z .c p { font-size:12.5px; color:var(--t2); line-height:1.55; }
+  .z .c ul { list-style:none; margin-top:12px; display:grid; gap:5px; font-size:12.5px; }
+  .z .c li { display:flex; justify-content:space-between; color:var(--t2); }
+  .z .c li span:last-child { color:var(--t3); }
+  .z .c li.hl span:last-child { color:var(--v400); }
+  .z .c .stack { margin-top:12px; font-size:12.5px; color:var(--t2); line-height:1.7; }
+  .z .c .stack b { color:var(--t1); font-weight:500; }
+
+  @media (max-width:720px) { .x, .z { grid-template-columns:1fr; } .x .l { border-right:0; border-bottom:1px solid var(--line2); } .y .row { grid-template-columns:48px 1fr; } .y .fx { grid-column:2; } }
+</style>
+</head>
+<body>
+
+<div class="divider"><b>1 · One excerpt</b><span>A single panel that reads like a cut from a real report: findings on the left, stack on the right. Severity is a dot, not a pill. One violet link per finding.</span></div>
+<div class="block">
+  <div class="eyebrow">What a report looks like</div>
+  <div class="x">
+    <div class="l">
+      <div class="hd"><span class="u">acme-plumbing.co.uk</span><span class="sc">Overall <b>71</b> / 100</span></div>
+      <div class="f"><i style="background:var(--bad)"></i><div class="t">Hero image is 2.3 MB, so LCP is 4.1 s on mobile<small>Performance · the single biggest fix on this site · <a href="#">how to fix</a></small></div></div>
+      <div class="f"><i style="background:var(--bad)"></i><div class="t">14 pages have no meta description<small>SEO · Google is writing its own snippets · <a href="#">how to fix</a></small></div></div>
+      <div class="f"><i style="background:var(--warn)"></i><div class="t">Phone number is plain text on mobile<small>UX · visitors cannot tap to call · <a href="#">how to fix</a></small></div></div>
+      <div class="f"><i style="background:var(--ok)"></i><div class="t">HTTPS, canonical tags and sitemap are all in place<small>SEO · nothing to do here</small></div></div>
+    </div>
+    <div class="r">
+      <h4>Built with</h4>
+      <dl><dt>CMS</dt><dd>WordPress</dd><dt>Builder</dt><dd>Elementor</dd><dt>Analytics</dt><dd>GA4</dd><dt>CDN</dt><dd>Cloudflare</dd><dt>Host</dt><dd>SiteGround</dd></dl>
+      <div class="more">+ 16 more sections: Core Web Vitals, links, security headers, content, conversion.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><b>2 · Findings list</b><span>No boxes at all. A short list of what the audit said about one site, with a mono severity tag and the fix link. The lightest possible proof.</span></div>
+<div class="block">
+  <div class="eyebrow">What a report looks like</div>
+  <div class="y">
+    <div class="row"><span class="tag fail">FAIL</span><span class="t">Hero image is 2.3 MB, LCP 4.1 s on mobile<small>Performance</small></span><span class="fx"><a href="#">Fix guide</a></span></div>
+    <div class="row"><span class="tag fail">FAIL</span><span class="t">14 pages have no meta description<small>SEO</small></span><span class="fx"><a href="#">Fix guide</a></span></div>
+    <div class="row"><span class="tag warn">WARN</span><span class="t">Phone number is not tappable on mobile<small>UX</small></span><span class="fx"><a href="#">Fix guide</a></span></div>
+    <div class="row"><span class="tag pass">PASS</span><span class="t">HTTPS, canonical, sitemap, one H1 per page<small>SEO</small></span><span class="fx"></span></div>
+    <div class="row"><span class="tag info">STACK</span><span class="t">WordPress, Elementor, GA4, Cloudflare<small>High confidence</small></span><span class="fx"></span></div>
+    <div class="ft"><span>acme-plumbing.co.uk · overall <b>71</b> / 100</span><span>20 sections, 19 seconds</span></div>
+  </div>
+</div>
+
+<div class="divider"><b>3 · Plain tiles</b><span>Keeps three tiles, strips the colour: no tinted headers, no pills, no bars. One big number per tile, a few lines of plain text, violet only on the one row that matters.</span></div>
+<div class="block">
+  <div class="eyebrow">What a report looks like</div>
+  <div class="z">
+    <div class="c">
+      <div class="k"><b>SEO</b><span>14 checks</span></div>
+      <div class="big">74<small> / 100</small></div>
+      <p>Solid structure, weak snippets.</p>
+      <ul>
+        <li><span>Title tags</span><span>pass</span></li>
+        <li class="hl"><span>Meta descriptions</span><span>14 missing</span></li>
+        <li><span>Image alt text</span><span>3 missing</span></li>
+      </ul>
+    </div>
+    <div class="c">
+      <div class="k"><b>Performance</b><span>mobile</span></div>
+      <div class="big">48<small> / 100</small></div>
+      <p>One image is most of the problem.</p>
+      <ul>
+        <li class="hl"><span>LCP</span><span>4.1 s</span></li>
+        <li><span>CLS</span><span>0.05</span></li>
+        <li><span>TBT</span><span>210 ms</span></li>
+      </ul>
+    </div>
+    <div class="c">
+      <div class="k"><b>Built with</b><span>high confidence</span></div>
+      <div class="stack"><b>WordPress</b> with Elementor<br/><b>GA4</b> analytics<br/><b>Cloudflare</b> CDN, SiteGround hosting</div>
+      <p style="margin-top:12px">Plus 17 more sections: links, security headers, content, conversion, fix plan.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
