@@ -8,11 +8,12 @@ import { onAnalyticsConsentChange, trackOnce } from "../../lib/analytics";
 type Tag = "FAIL" | "WARN" | "PASS" | "STACK";
 
 const SAMPLE_FINDINGS: { tag: Tag; text: string; category: string; guide?: string }[] = [
-  { tag: "FAIL", text: "Hero image is 2.3 MB, LCP 4.1 s on mobile", category: "Performance", guide: "lcp" },
-  { tag: "FAIL", text: "14 pages have no meta description", category: "SEO", guide: "meta-description" },
-  { tag: "WARN", text: "Phone number is not tappable on mobile", category: "UX", guide: "contact-info" },
-  { tag: "PASS", text: "HTTPS, canonical, sitemap, one H1 per page", category: "SEO" },
-  { tag: "STACK", text: "WordPress, Elementor, GA4, Cloudflare", category: "High confidence" },
+  { tag: "FAIL", text: "No call to action anywhere on the page", category: "Conversion", guide: "call-to-action" },
+  { tag: "FAIL", text: "No Content-Security-Policy header", category: "Security", guide: "security-headers" },
+  { tag: "WARN", text: "LCP 3.5 s on mobile, 14 render-blocking scripts", category: "Performance", guide: "lcp" },
+  { tag: "WARN", text: "Meta description is 165 characters, over the 160 limit", category: "SEO", guide: "meta-description" },
+  { tag: "PASS", text: "HTTPS, canonical, one H1, Open Graph, JSON-LD", category: "SEO" },
+  { tag: "STACK", text: "Next.js on Vercel", category: "High confidence" },
 ];
 
 const tagColor: Record<Tag, string> = {
@@ -177,7 +178,7 @@ export function LandingPage({
           </div>
         </section>
 
-        {/* One sample from a real report, as a plain findings list. This is the
+        {/* A real report of ahmadhomsi.com (4 Nov 2026), as a plain findings list. This is the
             only block below the hero on purpose: the page stays out of the way
             of the input, and the preview reads the way the report itself does. */}
         <section className="px-4 sm:px-6 pb-24" aria-labelledby="what-you-get-heading">
@@ -207,8 +208,8 @@ export function LandingPage({
               ))}
             </ul>
             <p className="flex flex-wrap justify-between gap-x-4 gap-y-1 pt-3 px-1 text-[12px] text-zinc-500">
-              <span>acme-plumbing.co.uk · overall <span className="text-zinc-100 font-medium">71</span> / 100</span>
-              <span>20 sections, 19 seconds</span>
+              <span>ahmadhomsi.com · overall <span className="text-zinc-100 font-medium">61</span> / 100</span>
+              <span>20 sections, audited 4 Nov 2026</span>
             </p>
           </div>
         </section>
