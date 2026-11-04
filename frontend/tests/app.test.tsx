@@ -42,7 +42,7 @@ describe("App", () => {
   it("renders the landing page while session restoration is pending", () => {
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: /Understand any website\s*in seconds\./ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Explain this website\s*in seconds\./ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
 

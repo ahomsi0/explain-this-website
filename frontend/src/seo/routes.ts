@@ -40,7 +40,7 @@ const withSite = (title: string) => {
 
 const HOME_TITLE = "Explain This Website: Instant Website Analyzer";
 const HOME_DESCRIPTION =
-  "Paste any URL and get an instant analysis: tech stack, SEO audit, UX signals, conversion score and recommendations. Free, no login required.";
+  "Explain This Website explains any site in plain English: what it does, what it's built with, how it ranks and what to fix. Free, no login.";
 
 const STATIC_PAGES: Record<string, StaticPage> = {
   "/": { title: HOME_TITLE, description: HOME_DESCRIPTION, indexable: true },
@@ -116,6 +116,7 @@ const ORGANIZATION: JsonLd = {
   alternateName: SITE_ALT_NAME,
   url: SITE_URL,
   sameAs: ["https://github.com/ahomsi0/explain-this-website"],
+  founder: { "@type": "Person", name: "Ahmad Homsi", url: "https://www.ahmadhomsi.com" },
 };
 
 function breadcrumb(items: { name: string; path: string }[]): JsonLd {
@@ -139,7 +140,7 @@ function homeJsonLd(): JsonLd[] {
       name: SITE_NAME,
       url: `${SITE_URL}/`,
       description:
-        "Paste any URL and get an instant analysis: tech stack detection, SEO audit, UX signals, conversion score, and actionable recommendations.",
+        "Explain This Website reads any URL and explains it in plain English: tech stack, SEO audit, Core Web Vitals, UX and conversion signals, and what to fix first.",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Any",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

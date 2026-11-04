@@ -108,14 +108,16 @@ export function LandingPage({
             </div>
 
             <h1 className="text-center text-4xl sm:text-6xl font-bold tracking-tight leading-[1.05]">
-              <span className="text-zinc-100">Understand any website </span>
-              <span className="text-violet-300">
+              {/* The brand name is the headline: it is the exact phrase people
+                  search for, and the rendered H1 is what Google indexes. */}
+              <span className="text-zinc-100">Explain this website </span>
+              <span className="text-violet-300 whitespace-nowrap">
                 in seconds.
               </span>
             </h1>
 
             <p className="mt-6 text-center text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
-              Start with 5 free analyses a day without signing in. Create an account to save your audit history.
+              Paste any URL and get it explained in plain English: what the site does, what it's built with, how it ranks and what to fix.
             </p>
 
             {/* URL input with inline deep scan toggle */}
