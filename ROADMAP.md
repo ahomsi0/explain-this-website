@@ -12,9 +12,36 @@ Nothing is being built right now.
 
 ## Next
 
-- **Check the live site by hand.** A real sign-up, sign-in, and one behind-login analysis with a real account.
-- **Strengthen the two pages Google already shows.** `/guides/lcp` is short for its topic and ranks around position 50. `/compare` gets the most impressions on the site but ranks past position 90. Better content helps most once a few other sites link here.
-- **Get a few links to the site** (owner task). Product Hunt, tool directories, developer communities. This moves rankings more than any on-site change.
+All three were set aside for later by the owner on 2026-11-13. They do not depend on each other, so they can be picked up in any order.
+
+### 1. Check the live site by hand
+
+Owner task, about 10 minutes.
+
+- Sign up with a new email, confirm it, sign out and sign back in.
+- Open `/capture`, paste the source of one page that sits behind a login, and confirm the report opens.
+- Check that the report says it is private and has no share button.
+
+This is the one part of the November work that nobody has tried for real.
+
+### 2. Get a few links to the site
+
+Owner task, about 20 minutes. This moves search rankings more than any on-site change, because a new site with no links stays on page nine however good its pages are.
+
+- Submit to Product Hunt.
+- Submit to two or three tool directories.
+- Post it once where developers or site owners gather.
+
+The listing text and a short launch post can be drafted on request.
+
+### 3. Strengthen the two pages Google already shows
+
+Build task.
+
+- **`/guides/lcp`** is about 340 words and ranks around position 50 for "largest contentful paint". It needs a full explanation, examples, and answers to the questions people search for.
+- **`/compare`** gets a third of all impressions but ranks past position 90, with about 535 words. It needs content that matches searches like "compare two websites seo".
+
+Best done before or alongside item 2, so the new links land on pages worth ranking.
 
 ## Later
 

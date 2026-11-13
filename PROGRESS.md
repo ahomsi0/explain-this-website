@@ -15,6 +15,13 @@ Last updated: 2026-11-13
 - A real sign-up and sign-in on the live site after the auth page changes.
 - A real behind-login analysis on the live site with a signed-in account. It was tested locally against the real API code with a throwaway account token, and the live API correctly refuses requests without a session.
 
+**Set aside for later** (on 2026-11-13, details in [ROADMAP.md](ROADMAP.md))
+
+- The live-site check above. Owner task.
+- Getting a few links to the site: Product Hunt, tool directories, one community post. Owner task.
+- Strengthening `/guides/lcp` and `/compare`, the two pages Google already shows.
+- The Chrome extension for pages behind a login.
+
 ## Search (SEO)
 
 Numbers from Google Search Console for the whole domain, web search only. Search Console data runs about three days behind, so this snapshot covers **August 31 to November 10, 2026**, which is everything Google has recorded for the site so far.
