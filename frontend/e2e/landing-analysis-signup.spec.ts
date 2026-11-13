@@ -28,7 +28,7 @@ test.describe("landing to analysis to signup", () => {
 
   // Runs on phones too: below md the sidebar is hidden and the header carries
   // its own "New audit" button, so a report is never a dead end.
-  test("analyzes a URL and opens the report dashboard", async ({ page }) => {
+  test("analyzes a URL and opens the report dashboard", async ({ page, isMobile }) => {
     await page.getByLabel("Website URL to analyze").fill("example.com");
     await page.getByRole("button", { name: "Analyze", exact: true }).click();
 
@@ -36,15 +36,24 @@ test.describe("landing to analysis to signup", () => {
     await expect(page.getByRole("heading", { name: "Audit Overview", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "New Audit" })).toBeVisible();
 
-    await page.getByRole("button", { name: "Report actions" }).click();
-    const actionsMenu = page.getByRole("menu", { name: "Report actions menu" });
-    await expect(actionsMenu).toBeVisible();
-    await expect(actionsMenu.getByRole("menuitem", { name: "Copy report" })).toBeVisible();
-    await expect(actionsMenu.getByRole("menuitem", { name: "Download report as PDF" })).toBeVisible();
-    await expect(actionsMenu.getByRole("menuitem", { name: "Copy embeddable score badge" })).toBeVisible();
-    await expect(actionsMenu.getByRole("menuitem", { name: "Share report" })).toBeVisible();
-    await page.getByRole("button", { name: "Report actions" }).click();
-    await expect(actionsMenu).toBeHidden();
+    const actionNames = ["Share report", "Download report as PDF", "Copy report", "Copy embeddable score badge"];
+    if (isMobile) {
+      // Phones have no room for four header buttons, so they get a menu.
+      await page.getByRole("button", { name: "Report actions" }).click();
+      const actionsMenu = page.getByRole("menu", { name: "Report actions menu" });
+      await expect(actionsMenu).toBeVisible();
+      for (const name of actionNames) await expect(actionsMenu.getByRole("menuitem", { name })).toBeVisible();
+      await page.getByRole("button", { name: "Report actions" }).click();
+      await expect(actionsMenu).toBeHidden();
+    } else {
+      // Everywhere else the actions are buttons in the header: no menu to open.
+      const toolbar = page.getByRole("group", { name: "Report actions" });
+      for (const name of actionNames) await expect(toolbar.getByRole("button", { name })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Report actions" })).toBeHidden();
+      // Icon-only buttons name themselves on hover.
+      await toolbar.getByRole("button", { name: "Download report as PDF" }).hover();
+      await expect(toolbar.getByText("Download as PDF")).toBeVisible();
+    }
   });
 
   test("completes signup from the report screen", async ({ page }) => {

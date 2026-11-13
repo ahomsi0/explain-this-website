@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { AnalysisResult, StrategyData } from "../../types/analysis";
 import { computeInsights } from "../../utils/insights";
 import { MenuAction } from "./MenuAction";
+import { ToolbarAction } from "./ToolbarAction";
 
 type JsPDFDocument = import("jspdf").jsPDF;
 type JsPDFConstructor = typeof import("jspdf").default;
@@ -61,7 +62,7 @@ function cap(s: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-export function DownloadButton({ result }: { result: AnalysisResult }) {
+export function DownloadButton({ result, variant = "menu" }: { result: AnalysisResult; variant?: "toolbar" | "menu" }) {
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const handleDownload = async () => {
@@ -80,11 +81,29 @@ export function DownloadButton({ result }: { result: AnalysisResult }) {
     }
     finally { setLoading(false); }
   };
+  const status = loading ? ({ text: "Preparing PDF…", tone: "hint" } as const) : failed ? ({ text: "PDF failed", tone: "error" } as const) : undefined;
+
+  if (variant === "toolbar") {
+    return (
+      <ToolbarAction
+        tooltip="Download as PDF"
+        status={status}
+        onClick={() => void handleDownload()}
+        disabled={loading}
+        ariaLabel="Download report as PDF"
+        icon={
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+        }
+      />
+    );
+  }
   return (
     <MenuAction
       label="Download PDF"
       hint="The full report as a file"
-      status={loading ? { text: "Preparing…", tone: "hint" } : failed ? { text: "Failed", tone: "error" } : undefined}
+      status={status}
       onClick={() => void handleDownload()}
       disabled={loading}
       ariaLabel="Download report as PDF"
