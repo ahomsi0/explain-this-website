@@ -187,6 +187,24 @@ describe("hosting config", () => {
     expect(metaForPath(`/report/${id}`).robots).toBe("noindex, nofollow");
   });
 
+  it("hides the static text copy in browsers that run JavaScript, without removing it", () => {
+    const template = read("index.html");
+    // The copy is still in the HTML for crawlers and no-JS visitors...
+    const html = renderPage(template, metaForPath("/"), bodyHtmlForPath("/"));
+    expect(html).toMatch(/<div id="root"><main data-prerender /);
+    expect(html).toContain("<h1>Explain This Website</h1>");
+    // ...and only hidden by a class that an inline script adds before first
+    // paint, with a fallback that reveals it if the app never starts.
+    const head = template.slice(0, template.indexOf("</head>"));
+    expect(head).toContain('document.documentElement.classList.add("js")');
+    expect(head).toContain("html.js [data-prerender] { display: none; }");
+    expect(head).toMatch(/setTimeout\(function \(\) \{\s*if \(document\.querySelector\("\[data-prerender\]"\)\) document\.documentElement\.classList\.remove\("js"\);/);
+    // Every prerendered body goes through the same wrapper.
+    for (const path of ["/guides", "/guides/lcp", "/compare", "/built-with/lovable", "/404"]) {
+      expect(bodyHtmlForPath(path), path).toMatch(/^<main data-prerender /);
+    }
+  });
+
   it("308-redirects the apex and the vercel.app host to the canonical www host", () => {
     const vercel = JSON.parse(read("vercel.json"));
     const hosts = vercel.redirects

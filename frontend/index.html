@@ -11,7 +11,19 @@
       try {
         if (localStorage.getItem("theme") === "light") document.documentElement.classList.add("light");
       } catch (e) { /* storage blocked: stay on the default dark theme */ }
+
+      // Every page ships a plain-text copy of itself inside #root for search
+      // engines and no-JS visitors. In a normal browser it showed for a moment
+      // as a block of unstyled words before the app replaced it. The "js"
+      // class hides it (see the style below). If the app has still not
+      // started after 4 seconds, for example because its script failed to
+      // load, the copy is shown after all so the page is never left blank.
+      document.documentElement.classList.add("js");
+      setTimeout(function () {
+        if (document.querySelector("[data-prerender]")) document.documentElement.classList.remove("js");
+      }, 4000);
     </script>
+    <style>html.js [data-prerender] { display: none; }</style>
 
     <!-- Fonts: start loading immediately (parallel with CSS) instead of after
          the CSS @import resolves — cuts the font-swap layout shift that

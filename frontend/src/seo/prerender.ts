@@ -69,7 +69,10 @@ export function renderPage(template: string, meta: PageMeta, bodyHtml: string): 
 const MAIN_STYLE =
   "max-width:48rem;margin:0 auto;padding:6rem 1.5rem 3rem;color:#e4e4e7;font-family:Inter,system-ui,sans-serif;line-height:1.6";
 
-const main = (inner: string) => `<main style="${MAIN_STYLE}">${inner}</main>`;
+// data-prerender marks this as the static copy for crawlers and no-JS
+// visitors. index.html hides it in browsers that run JavaScript, where it
+// would otherwise flash as plain text before the app replaces it.
+const main = (inner: string) => `<main data-prerender style="${MAIN_STYLE}">${inner}</main>`;
 
 function guideLinksHtml(): string {
   return CATEGORY_ORDER.map((category) => {
