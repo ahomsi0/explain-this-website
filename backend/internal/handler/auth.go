@@ -7,9 +7,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"net/mail"
-	"os"
 	"strings"
 	"time"
 
@@ -154,11 +154,10 @@ func SignupHandler() http.HandlerFunc {
 			if err != nil {
 				return
 			}
-			appURL := os.Getenv("APP_URL")
-			if appURL == "" {
-				appURL = "https://www.explainthiswebsite.com"
+			if err := email.SendVerifyEmail(bgCtx, emailAddr, verifyURLFor(token)); err != nil {
+				// Signup still succeeds; the user can ask for the link again.
+				log.Printf("signup: verification email not sent for user %d: %v", userID, err)
 			}
-			_ = email.SendVerifyEmail(bgCtx, emailAddr, appURL+"/verify-email?token="+token)
 		}()
 
 		if err := issueSession(w, r, u.ID); err != nil {

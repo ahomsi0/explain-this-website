@@ -119,6 +119,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	mux.HandleFunc("POST /api/auth/forgot-password", handler.ForgotPasswordHandler())
 	mux.HandleFunc("POST /api/auth/reset-password", handler.ResetPasswordHandler())
 	mux.HandleFunc("GET /api/auth/verify-email", handler.VerifyEmailHandler())
+	mux.HandleFunc("POST /api/auth/resend-verification", auth.RequireSessionAuth(handler.ResendVerificationHandler()))
 	mux.HandleFunc("GET /api/auth/me", auth.RequireSessionAuth(handler.MeHandler()))
 	mux.HandleFunc("DELETE /api/auth/me", auth.RequireSessionAuth(handler.DeleteAccountHandler()))
 	mux.HandleFunc("POST /api/billing/checkout-session", auth.RequireSessionAuth(handler.BillingCheckoutSessionHandler()))
@@ -349,7 +350,7 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 
 func isAuthMutation(path string) bool {
 	switch path {
-	case "/api/auth/signup", "/api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password":
+	case "/api/auth/signup", "/api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/resend-verification":
 		return true
 	default:
 		return false
