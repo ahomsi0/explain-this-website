@@ -37,7 +37,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-2">
           <AISummaryCard summary={result.aiSummary} />
-          <ExecutiveSummaryCard insights={insights} />
+          <ExecutiveSummaryCard insights={insights} firstImpression={result.firstImpression} />
           <OverviewCard
             overview={result.overview}
             rendering={result.rendering}

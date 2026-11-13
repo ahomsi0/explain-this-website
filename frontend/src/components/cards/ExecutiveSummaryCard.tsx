@@ -1,6 +1,7 @@
 // frontend/src/components/cards/ExecutiveSummaryCard.tsx
 import { useState } from "react";
 import type { Insights, InsightItem } from "../../utils/insights";
+import type { FirstImpression } from "../../types/analysis";
 import { CardShell } from "../ui/CardShell";
 import { scoreColor, scoreFill, scoreLabel } from "../../utils/scoreColors";
 
@@ -118,19 +119,26 @@ function Meter({ value, unavailable }: { value: number; unavailable?: boolean })
   );
 }
 
-function ScoreStat({ label, score, tooltip, scoreKey, expScore, unavailable, isOpen, onToggle, viewToggle }: {
+function ScoreStat({ label, score, tooltip, scoreKey, expScore, unavailable, isOpen, onToggle, viewToggle, suffix, meterValue, explanation }: {
   label: string;
   score: number;
   tooltip: string;
   scoreKey?: ScoreKey;
   expScore?: number;   // override score used for explanation (e.g. -1 when perf unavailable)
+  /** Unit shown after the number when the score is not out of 100, e.g. "/ 10". */
+  suffix?: string;
+  /** Meter fill out of 100 when `score` is on another scale. */
+  meterValue?: number;
+  /** Popover text supplied by the caller instead of looked up by `scoreKey`. */
+  explanation?: { means: string; next?: string };
   unavailable?: boolean;
   isOpen?: boolean;
   onToggle?: () => void;
   /** Optional M/D text toggle shown in the label row */
   viewToggle?: { active: "mobile" | "desktop"; onSwitch: () => void };
 }) {
-  const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(expScore ?? score) : null;
+  const exp: { means: string; next?: string } | null =
+    explanation ?? (scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(expScore ?? score) : null);
   const displayScore = unavailable ? "N/A" : score;
 
   return (
@@ -144,7 +152,7 @@ function ScoreStat({ label, score, tooltip, scoreKey, expScore, unavailable, isO
         />
       )}
       <div title={tooltip}>
-        <Meter value={score} unavailable={unavailable} />
+        <Meter value={meterValue ?? score} unavailable={unavailable} />
         <span className="mt-2.5 text-xs font-medium text-zinc-400 leading-tight flex items-center gap-1">
           {viewToggle ? (
             <>
@@ -175,8 +183,9 @@ function ScoreStat({ label, score, tooltip, scoreKey, expScore, unavailable, isO
             </button>
           )}
         </span>
-        <p className={`mt-1.5 text-2xl font-semibold tabular-nums leading-none tracking-tight ${unavailable ? "text-zinc-500" : "text-zinc-100"}`}>
+        <p className={`mt-1.5 flex items-baseline gap-1 text-2xl font-semibold tabular-nums leading-none tracking-tight ${unavailable ? "text-zinc-500" : "text-zinc-100"}`}>
           {displayScore}
+          {suffix && !unavailable && <span className="text-xs font-normal tracking-normal text-zinc-500">{suffix}</span>}
         </p>
       </div>
       {isOpen && exp && (
@@ -185,20 +194,24 @@ function ScoreStat({ label, score, tooltip, scoreKey, expScore, unavailable, isO
           <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
             What this means
           </p>
-          <p className="text-[11px] text-zinc-300 leading-snug mb-2.5">{exp.means}</p>
-          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
-            What to do next
-          </p>
-          <p className="text-[11px] text-zinc-300 leading-snug">{exp.next}</p>
+          <p className={`text-[11px] text-zinc-300 leading-snug ${exp.next ? "mb-2.5" : ""}`}>{exp.means}</p>
+          {exp.next && (
+            <>
+              <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                What to do next
+              </p>
+              <p className="text-[11px] text-zinc-300 leading-snug">{exp.next}</p>
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
+export function ExecutiveSummaryCard({ insights, firstImpression }: { insights: Insights; firstImpression?: FirstImpression }) {
   const { overallScore, seoScore, perfScore, perfScoreMobile, perfScoreDesktop, perfUnavailable, uxScore, conversionScore, topIssues, quickWins, summarySentence } = insights;
-  const [openKey, setOpenKey] = useState<ScoreKey | null>(null);
+  const [openKey, setOpenKey] = useState<ScoreKey | "impression" | null>(null);
   const [perfView, setPerfView] = useState<"mobile" | "desktop">("mobile");
 
   const hasBothPerf = perfScoreMobile >= 0 && perfScoreDesktop >= 0;
@@ -206,18 +219,26 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
     ? (perfView === "mobile" ? perfScoreMobile : perfScoreDesktop)
     : perfScore;
 
-  function toggle(key: ScoreKey) {
+  function toggle(key: ScoreKey | "impression") {
     setOpenKey((prev) => (prev === key ? null : key));
   }
+
+  // First impression used to live only in the header strip, which phones do
+  // not show and which is absent from every tab but Overview. Older saved
+  // reports may not have it, so the grid is four or five columns wide.
+  const hasImpression = typeof firstImpression?.score === "number";
+  const headerGrid = hasImpression ? "sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-4";
+  const summarySpan = hasImpression ? "sm:col-span-2 lg:col-span-4" : "sm:col-span-3";
+  const statsGrid = hasImpression ? "sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-4";
 
   return (
     <CardShell variant="primary">
       <div className="p-5">
         {/* Header row */}
-        {/* Same four columns as the sub-scores, so the overall stat sits
-            exactly above the last one. */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-5 mb-6">
-          <div className="sm:col-span-3">
+        {/* Same columns as the sub-scores, so the overall stat sits exactly
+            above the last one. */}
+        <div className={`grid grid-cols-1 ${headerGrid} gap-x-5 gap-y-5 mb-6`}>
+          <div className={summarySpan}>
             <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em] mb-1">Executive Summary</p>
             <p className="text-sm text-zinc-300 leading-relaxed max-w-xl">{summarySentence}</p>
           </div>
@@ -234,7 +255,7 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
         </div>
 
         {/* Sub-scores */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-5 gap-y-5 mb-6">
+        <div className={`grid grid-cols-2 ${statsGrid} gap-x-5 gap-y-5 mb-6`}>
           <ScoreStat label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
           <ScoreStat
             label="Performance"
@@ -249,6 +270,18 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
           />
           <ScoreStat label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux"          isOpen={openKey === "ux"}          onToggle={() => toggle("ux")} />
           <ScoreStat label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"      scoreKey="conversion"  isOpen={openKey === "conversion"}  onToggle={() => toggle("conversion")} />
+          {hasImpression && (
+            <ScoreStat
+              label="First impression"
+              score={firstImpression!.score}
+              suffix="/ 10"
+              meterValue={firstImpression!.score * 10}
+              tooltip="How the page lands in the first few seconds"
+              explanation={{ means: [firstImpression!.label, firstImpression!.explanation].filter(Boolean).join(". ") }}
+              isOpen={openKey === "impression"}
+              onToggle={() => toggle("impression")}
+            />
+          )}
         </div>
 
         {/* Top issues + Quick wins */}
