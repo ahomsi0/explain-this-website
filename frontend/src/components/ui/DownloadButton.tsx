@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { AnalysisResult, StrategyData } from "../../types/analysis";
 import { computeInsights } from "../../utils/insights";
+import { MenuAction } from "./MenuAction";
 
 type JsPDFDocument = import("jspdf").jsPDF;
 type JsPDFConstructor = typeof import("jspdf").default;
@@ -60,7 +61,7 @@ function cap(s: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-export function DownloadButton({ result, inMenu = false }: { result: AnalysisResult; inMenu?: boolean }) {
+export function DownloadButton({ result }: { result: AnalysisResult }) {
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const handleDownload = async () => {
@@ -80,24 +81,14 @@ export function DownloadButton({ result, inMenu = false }: { result: AnalysisRes
     finally { setLoading(false); }
   };
   return (
-    <button
-      onClick={handleDownload}
+    <MenuAction
+      label="Download PDF"
+      hint="The full report as a file"
+      status={loading ? { text: "Preparing…", tone: "hint" } : failed ? { text: "Failed", tone: "error" } : undefined}
+      onClick={() => void handleDownload()}
       disabled={loading}
-      aria-label="Download report as PDF"
-      title="Download report as PDF"
-      className={`flex items-center gap-2 px-3 ${inMenu ? "py-2.5 w-full rounded-md border-0" : "py-1.5 rounded-md border"} text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-50 ${inMenu ? "justify-start hover:bg-zinc-800" : "hover:bg-zinc-800 border-zinc-800 hover:border-zinc-700"}`}
-    >
-      {loading ? (
-        <span className="w-3 h-3 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
-      ) : (
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-      )}
-      <span className={inMenu ? "" : "hidden sm:inline"}>{failed ? "Failed" : "PDF"}</span>
-    </button>
+      ariaLabel="Download report as PDF"
+    />
   );
 }
 

@@ -39,10 +39,10 @@ test.describe("landing to analysis to signup", () => {
     await page.getByRole("button", { name: "Report actions" }).click();
     const actionsMenu = page.getByRole("menu", { name: "Report actions menu" });
     await expect(actionsMenu).toBeVisible();
-    await expect(actionsMenu.getByRole("button", { name: "Copy report" })).toBeVisible();
-    await expect(actionsMenu.getByRole("button", { name: "Download report as PDF" })).toBeVisible();
-    await expect(actionsMenu.getByRole("button", { name: "Copy embeddable score badge" })).toBeVisible();
-    await expect(actionsMenu.getByRole("button", { name: "Share report" })).toBeVisible();
+    await expect(actionsMenu.getByRole("menuitem", { name: "Copy report" })).toBeVisible();
+    await expect(actionsMenu.getByRole("menuitem", { name: "Download report as PDF" })).toBeVisible();
+    await expect(actionsMenu.getByRole("menuitem", { name: "Copy embeddable score badge" })).toBeVisible();
+    await expect(actionsMenu.getByRole("menuitem", { name: "Share report" })).toBeVisible();
     await page.getByRole("button", { name: "Report actions" }).click();
     await expect(actionsMenu).toBeHidden();
   });

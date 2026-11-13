@@ -8,7 +8,7 @@ it("keeps the menu open so share availability feedback is visible", () => {
   render(<ReportActionsMenu result={mockAnalysisResult} />);
 
   fireEvent.click(screen.getByRole("button", { name: "Report actions" }));
-  fireEvent.click(screen.getByRole("button", { name: "Share report" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Share report" }));
 
   expect(screen.getByRole("menu", { name: "Report actions menu" })).toBeVisible();
   expect(screen.getByText("Not available")).toBeVisible();
@@ -24,7 +24,7 @@ it("copies the report link for any visitor, with no plan check", async () => {
   render(<ReportActionsMenu result={{ ...mockAnalysisResult, reportId }} />);
 
   fireEvent.click(screen.getByRole("button", { name: "Report actions" }));
-  fireEvent.click(screen.getByRole("button", { name: "Share report" }));
+  fireEvent.click(screen.getByRole("menuitem", { name: "Share report" }));
 
   expect(await screen.findByText("Link copied")).toBeVisible();
   expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/report/${reportId}`);
