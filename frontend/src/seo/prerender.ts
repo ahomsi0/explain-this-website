@@ -6,6 +6,7 @@ import { BUILDERS, buildersOfKind, displayName, relatedBuilders } from "../build
 import type { Builder } from "../builders/builders.ts";
 import { COMPARE_CONTENT, COMPARE_INTRO } from "./compareContent.ts";
 import type { ContentSection } from "./compareContent.ts";
+import { TECH_COVERAGE } from "./facts.ts";
 import {
   OG_IMAGE,
   SITE_NAME,
@@ -141,6 +142,7 @@ export function builtWithHubBodyHtml(): string {
     `<nav aria-label="Breadcrumb"><a href="/">Home</a> › Built with</nav>` +
       `<h1>What is this website built with?</h1>` +
       `<p>${escapeHtml(BUILT_WITH_INTRO)}</p>` +
+      `<p>${escapeHtml(TECH_COVERAGE)}</p>` +
       `<p><a href="/">Analyze a website now</a> to see its builder, tech stack, SEO audit and performance in one report.</p>` +
       `<h2>How detection works</h2><ul>${li(HOW_DETECTION_WORKS)}</ul>` +
       `<h2>AI website builders we detect</h2>${builderLinksHtml(buildersOfKind("ai"))}` +

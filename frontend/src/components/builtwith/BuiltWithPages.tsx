@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BUILDERS, buildersOfKind, displayName, relatedBuilders, type Builder, type BuilderKind } from "../../builders/builders";
 import { builderTitle } from "../../seo/routes";
 import { BUILT_WITH_INTRO, DETECTION_LIMITS, HOW_DETECTION_WORKS } from "../../seo/prerender";
+import { TECH_COVERAGE } from "../../seo/facts";
 
 const link = "text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors";
 const eyebrow = "text-[11px] font-bold uppercase tracking-widest text-zinc-600";
@@ -64,6 +65,7 @@ export function BuiltWithHubPage() {
             What is this website built with?
           </h1>
           <p className="mt-3 text-[14px] text-zinc-400 leading-relaxed max-w-2xl">{BUILT_WITH_INTRO}</p>
+          <p className="mt-3 text-[14px] text-zinc-400 leading-relaxed max-w-2xl">{TECH_COVERAGE}</p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <AnalyzeCta label="Analyze a website" />
             <span className="text-[12.5px] text-zinc-500">

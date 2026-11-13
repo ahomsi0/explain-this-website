@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { authHref } from "../../lib/authLinks";
+import { TECH_COUNT_LABEL } from "../../seo/facts";
 import { URLInput } from "../UrlInput/UrlInput";
 import { fetchAudits, type AuthUser, type UsageSummary } from "../../services/authApi";
 import type { AnalyzeOptions } from "../../services/analyzeApi";
@@ -171,7 +172,7 @@ export function LandingPage({
               <a href="/guides" className="text-zinc-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
                 browse the fix guides
               </a>
-              , or find out{" "}
+              . Each report also checks for {TECH_COUNT_LABEL} technologies, so you can see{" "}
               <a href="/built-with" className="text-zinc-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
                 what a website is built with
               </a>.
