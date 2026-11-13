@@ -16,6 +16,7 @@ import { authHref } from "../../lib/authLinks";
 import { UserMenu } from "../auth/UserMenu";
 import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
+import { useNow } from "../../hooks/useNow";
 
 function FaviconOrInitial({ src, hostname }: { src: string; hostname: string }) {
   const [failed, setFailed] = useState(false);
@@ -38,14 +39,20 @@ function FaviconOrInitial({ src, hostname }: { src: string; hostname: string }) 
   );
 }
 
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+function relativeTime(iso: string, now: number): string {
+  const diff = now - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
   if (mins < 1)  return "just now";
   if (mins < 60) return `${mins} min ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24)  return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
+}
+
+// Its own component so the clock tick re-renders this text, not the dashboard.
+function ReportAge({ iso }: { iso: string }) {
+  const now = useNow();
+  return <span className="text-[11px] text-zinc-600 shrink-0">· {relativeTime(iso, now)}</span>;
 }
 
 function computeScores(result: AnalysisResult) {
@@ -167,7 +174,7 @@ export function ResultDashboard({
             <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0 max-w-[280px]">
               <FaviconOrInitial src={result.overview.favicon} hostname={hostname} />
               <span className="text-xs font-semibold text-zinc-200 truncate">{hostname}</span>
-              <span className="text-[11px] text-zinc-600 shrink-0">· {relativeTime(result.fetchedAt)}</span>
+              <ReportAge iso={result.fetchedAt} />
             </div>
             <span className="hidden sm:inline lg:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
@@ -301,6 +308,7 @@ export function ResultDashboard({
         <main className="flex-1 min-w-0">
       <CachedResultNotice
         ageSeconds={result.cachedAgeSeconds}
+        receivedAt={result.receivedAt}
         onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined}
       />
 

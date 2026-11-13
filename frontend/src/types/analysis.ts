@@ -322,6 +322,8 @@ export interface AnalysisResult {
   reportId?: string;
   // Present only when the API served this from its short-TTL cache.
   cachedAgeSeconds?: number;
+  // Set by the app, not the API: when this response arrived (ms since epoch).
+  receivedAt?: number;
   imageAudit: ImageFormatAudit;
   siteFreshness: SiteFreshness;
   securityHeaders: SecurityHeaderCheck[];

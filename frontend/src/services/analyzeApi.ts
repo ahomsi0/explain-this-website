@@ -116,7 +116,9 @@ export async function analyzeWebsite(
         onServerReached?.();
       }
 
-      return data as AnalysisResult;
+      // Stamp the arrival time so ages the API reported (the cached result
+      // notice) can keep counting while the report stays open.
+      return { ...(data as AnalysisResult), receivedAt: Date.now() };
     } catch (err) {
       if (signal?.aborted) throw err;
       // If it's an application-level error (from the throw above), don't retry.

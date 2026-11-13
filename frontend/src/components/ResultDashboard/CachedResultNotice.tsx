@@ -2,13 +2,24 @@
 // fixing something can hand back the pre-fix analysis. A silent cache hit looks
 // exactly like "my fix did nothing", so say it out loud and offer the way out.
 
-import { formatCacheAge } from "../../lib/cacheAge";
+import { useState } from "react";
+import { currentCacheAge, formatCacheAge } from "../../lib/cacheAge";
+import { useNow } from "../../hooks/useNow";
 
-export function CachedResultNotice({ ageSeconds, onRerun }: {
+export function CachedResultNotice({ ageSeconds, receivedAt, onRerun }: {
+  /** Age of the cached result when the API answered. */
   ageSeconds?: number;
+  /** When that answer arrived (ms). Falls back to when this notice first showed. */
+  receivedAt?: number;
   onRerun?: () => void;
 }) {
+  // The age keeps counting while the report stays open: a notice that still
+  // says "9 minutes" a quarter of an hour later is simply wrong.
+  const now = useNow();
+  const [shownAt] = useState(() => Date.now());
   if (!ageSeconds) return null;
+
+  const age = currentCacheAge(ageSeconds, receivedAt ?? shownAt, now);
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-amber-500/20 bg-amber-500/[0.07] px-4 py-2 sm:px-6">
@@ -17,7 +28,7 @@ export function CachedResultNotice({ ageSeconds, onRerun }: {
         <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
       </svg>
       <p className="text-xs text-amber-200/90">
-        Cached result from {formatCacheAge(ageSeconds)} ago. Any changes you made since then aren&rsquo;t reflected here.
+        Cached result from {formatCacheAge(age)} ago. Any changes you made since then aren&rsquo;t reflected here.
       </p>
       {onRerun && (
         <button
