@@ -8,9 +8,19 @@ Nothing here is a promise or a date. Items move up when they are ready to be bui
 
 ## Now
 
+Nothing is being built right now.
+
+## Next
+
+- **Check the live site by hand.** A real sign-up, sign-in, and one behind-login analysis with a real account.
+- **Detect server frameworks from cookies and headers.** Django is found today only when the page contains its form token or debug markers. Laravel and Flask are not detected at all. Reading cookie names (`csrftoken`, `laravel_session`, `_rails_session`, `PHPSESSID` and similar) would catch most of them. Raise the "370+" number if the catalog grows enough.
+- **Privacy policy line** about pages sent from the user's browser: what is stored, who can open the report, that the page itself is never fetched by the server.
+
+## Later
+
 ### Chrome extension for pages behind a login
 
-Designed, not started. Waiting on a go-ahead.
+Designed, not started. Set aside for later by the owner on 2026-11-13. The design below is ready to build from when the time comes.
 
 - **What it does.** One click on the toolbar icon sends the page the user is looking at to the existing confirm step on the site. A second button opens the normal public analysis for the current address.
 - **Why.** Pasting page source works but loses speed timings and security headers, and JavaScript apps need a trip into developer tools. The extension reads the finished page, so all three come back.
@@ -18,16 +28,10 @@ Designed, not started. Waiting on a go-ahead.
 - **Server work.** None. `POST /api/analyze-capture` already accepts `source: "browser"`, headers and timings.
 - **Site work.** A receiver on `/capture` for the handover, the speed and security sections back in those reports, an "Add to Chrome" link on `/behind-login` once a store address exists.
 - **Owner tasks.** Create a Chrome Web Store developer account (one-time $5), upload the zip, pass review. Try it once by hand on a logged-in page before submitting.
+- **After it.** Edge takes the Chrome build as is. Firefox needs small manifest changes. Safari is skipped.
 
-## Next
+### Smaller items
 
-- **Detect server frameworks from cookies and headers.** Django is found today only when the page contains its form token or debug markers. Laravel and Flask are not detected at all. Reading cookie names (`csrftoken`, `laravel_session`, `_rails_session`, `PHPSESSID` and similar) would catch most of them. Raise the "370+" number if the catalog grows enough.
-- **Privacy policy line** about pages sent from the user's browser: what is stored, who can open the report, that the page itself is never fetched by the server.
-- **Check the live site by hand.** A real sign-up, sign-in, and one behind-login analysis with a real account.
-
-## Later
-
-- **Edge and Firefox builds of the extension.** Edge takes the Chrome build as is. Firefox needs small manifest changes. Safari is skipped.
 - **En dashes in number ranges** across site copy.
 
 ## Parked
@@ -36,5 +40,5 @@ Designed, not started. Waiting on a go-ahead.
 
 ## Decided against
 
-- **Bookmark button for pages behind a login.** Built and shipped on 2026-11-13, then removed. The owner did not like it, and sites with a strict content security policy can block bookmark buttons. The extension replaces it.
+- **Bookmark button for pages behind a login.** Built and shipped on 2026-11-13, then removed. The owner did not like it, and sites with a strict content security policy can block bookmark buttons. Pasting the page source covers it for now, and the extension is the planned replacement.
 - **Asking users for their login details** so the server can sign in for them. Never. The server does not fetch pages behind a login at all.
