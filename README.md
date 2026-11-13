@@ -18,7 +18,7 @@ Usage model:
 |---|---|
 | **Executive Summary** | Overall score (0–100), sub-scores for SEO / Performance / UX / Conversion, top issues, quick wins, and a one-sentence summary |
 | **Overview** | Page title, meta description, favicon, language, estimated page weight |
-| **Tech Stack** | CMS, frameworks, analytics, CDNs, e-commerce platforms, media embeds (30+ technologies) + confidence labels (high / medium / low) |
+| **Tech Stack** | CMS, frameworks, analytics, CDNs, e-commerce platforms, media embeds (400+ technologies), read from the page source, response headers and the names of cookies the server sets, with confidence labels (high / medium / low) |
 | **SEO Audit** | 14 checks — HTTPS, mixed content, title/description length, canonical, H1, image alt text, Open Graph, structured data, viewport, robots directive, hreflang, international readiness (lang, hreflang validity, og:locale), sitemap |
 | **Performance** | Google PageSpeed Insights (mobile + desktop): Lighthouse scores, Core Web Vitals (LCP, FCP, TBT, CLS, Speed Index), field data (CrUX) where available, and third-party impact |
 | **UX & Conversion** | CTAs, forms, social proof, trust signals, contact info, mobile-readiness, cookie banner, live chat, video, newsletter signup, privacy policy |

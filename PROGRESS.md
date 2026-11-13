@@ -108,6 +108,9 @@ Newest first. One line per thing a visitor or the owner would notice. Git histor
 ### November 2026
 
 - **Pages behind a login.** A signed-in user can analyze a page the analyzer cannot reach (dashboards, staging sites, intranets) by sending it from their own browser. The server never fetches the page, the report is private to its owner, and link checks, Lighthouse, the AI summary and the domain lookup are skipped. New public page `/behind-login`, private page `/capture`, new endpoint `POST /api/analyze-capture`.
+- **Server frameworks detected from headers and cookies.** The tech stack now reads the server's response headers and the names of the cookies it sets, so Django, Laravel, Rails, Flask, ASP.NET, Java and others show up even when the page itself gives nothing away. Also new: web servers (LiteSpeed, IIS, Caddy, Gunicorn and more), hosts and edge services (Azure, AWS load balancers, Imperva, Sucuri and more). Cookie values are never stored or shown, only names. Guesses from naming conventions are marked medium confidence.
+- **"400+ technologies"**, up from 370+. The catalog now holds 419.
+- **Privacy policy and terms cover pages you send yourself**: what is received, that the page is not kept, that the report is private, and that cookie values are not stored.
 - **Bookmark button removed** the same day it shipped. Pasting the page source is the one way in until the Chrome extension exists. Reports from pasted source say that speed and response headers were not measured.
 - **Login wall notice.** When a fetched page turns out to be a login form, the report says so and points to the behind-login route.
 - **Cached result age keeps counting.** The "Cached result from N minutes ago" notice now updates while the report stays open.

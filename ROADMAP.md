@@ -13,8 +13,8 @@ Nothing is being built right now.
 ## Next
 
 - **Check the live site by hand.** A real sign-up, sign-in, and one behind-login analysis with a real account.
-- **Detect server frameworks from cookies and headers.** Django is found today only when the page contains its form token or debug markers. Laravel and Flask are not detected at all. Reading cookie names (`csrftoken`, `laravel_session`, `_rails_session`, `PHPSESSID` and similar) would catch most of them. Raise the "370+" number if the catalog grows enough.
-- **Privacy policy line** about pages sent from the user's browser: what is stored, who can open the report, that the page itself is never fetched by the server.
+- **Strengthen the two pages Google already shows.** `/guides/lcp` is short for its topic and ranks around position 50. `/compare` gets the most impressions on the site but ranks past position 90. Better content helps most once a few other sites link here.
+- **Get a few links to the site** (owner task). Product Hunt, tool directories, developer communities. This moves rankings more than any on-site change.
 
 ## Later
 
@@ -33,6 +33,8 @@ Designed, not started. Set aside for later by the owner on 2026-11-13. The desig
 ### Smaller items
 
 - **En dashes in number ranges** across site copy.
+- **Tidy tech categories.** Font services such as Bunny Fonts and Google Fonts are listed under Framework.
+- **Cookies set during a redirect are not seen.** Framework detection reads the cookies on the final response only. Reading the ones set on the way there would catch a few more sites.
 
 ## Parked
 
