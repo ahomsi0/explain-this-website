@@ -246,7 +246,7 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
 
       {elapsed > 45 && (
         <p className="mt-6 text-[11px] text-amber-400/70 max-w-xs text-center leading-relaxed">
-          Taking longer than usual — PageSpeed can be slow under load.
+          Taking longer than usual. PageSpeed can be slow under load.
         </p>
       )}
     </div>

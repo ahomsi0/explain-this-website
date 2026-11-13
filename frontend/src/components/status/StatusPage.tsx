@@ -39,7 +39,7 @@ export function StatusPage() {
         {status && (
           <>
             <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-medium ${allOk ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-amber-500/30 bg-amber-500/10 text-amber-300"}`}>
-              {allOk ? "All systems operational" : "Some systems are degraded — analyses may be slower or partially unavailable."}
+              {allOk ? "All systems operational" : "Some systems are degraded. Analyses may be slower or partially unavailable."}
             </div>
             <ul className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/40 divide-y divide-zinc-800/60">
               {Object.entries(status.checks).map(([key, state]) => (

@@ -309,7 +309,7 @@ export function HistoryPage() {
             </div>
           )}
           {!fetching && data && data.items.length === 0 && data.total > 0 && (
-            <p className="text-xs text-zinc-500 text-center py-10">This page is empty — go back a page.</p>
+            <p className="text-xs text-zinc-500 text-center py-10">This page is empty. Go back a page.</p>
           )}
           {!fetching && items.length > 0 && (
             <ul className="flex flex-col gap-1">
@@ -410,7 +410,7 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
       </a>
       {s && (
         <div className="hidden sm:flex items-center gap-1.5 shrink-0" title="Overall · SEO · UX · Performance · Conversion">
-          <span className={`text-sm font-bold tabular-nums ${scoreTone(s.overall)}`}>{s.overall ?? "—"}</span>
+          <span className={`text-sm font-bold tabular-nums ${scoreTone(s.overall)}`}>{s.overall ?? "n/a"}</span>
           <span className="flex items-center gap-1">
             <ScoreChip label="SEO" value={s.seo} />
             <ScoreChip label="UX" value={s.ux} />
@@ -449,7 +449,7 @@ function ScoreChip({ label, value }: { label: string; value?: number }) {
   return (
     <span className="inline-flex items-baseline gap-0.5 rounded bg-zinc-800/70 px-1.5 py-0.5" title={`${label}: ${value ?? "no data"}`}>
       <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{label}</span>
-      <span className={`text-[11px] font-semibold tabular-nums ${scoreTone(value)}`}>{value ?? "—"}</span>
+      <span className={`text-[11px] font-semibold tabular-nums ${scoreTone(value)}`}>{value ?? "n/a"}</span>
     </span>
   );
 }

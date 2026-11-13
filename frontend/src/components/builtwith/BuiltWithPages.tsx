@@ -189,7 +189,7 @@ export function BuilderDetailPage({ slug }: { slug: string }) {
           <div className="flex-1 min-w-0">
             <section aria-labelledby="manual-checks">
               <h2 id="manual-checks" className={`${eyebrow} mb-5`}>
-                How to check it yourself — {builder.manualChecks.length} steps
+                How to check it yourself: {builder.manualChecks.length} steps
               </h2>
               <ol className="flex flex-col gap-3">
                 {builder.manualChecks.map((step, i) => (

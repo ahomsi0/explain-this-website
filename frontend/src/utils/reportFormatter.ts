@@ -20,8 +20,8 @@ export function formatReport(result: AnalysisResult): string {
     .join("\n");
 
   const uxSummary = [
-    `  Call-to-Action:    ${ux.hasCTA    ? `Yes — ${ux.ctaCount} detected`           : "Not detected"}`,
-    `  Lead Capture Form: ${ux.hasForms  ? `Yes — ${ux.formCount} form(s)`           : "Not detected"}`,
+    `  Call-to-Action:    ${ux.hasCTA    ? `Yes, ${ux.ctaCount} detected`           : "Not detected"}`,
+    `  Lead Capture Form: ${ux.hasForms  ? `Yes, ${ux.formCount} form(s)`           : "Not detected"}`,
     `  Social Proof:      ${yn(ux.hasSocialProof)}`,
     `  Trust Signals:     ${yn(ux.hasTrustSignals)}`,
     `  Contact Info:      ${yn(ux.hasContactInfo)}`,
@@ -35,10 +35,10 @@ export function formatReport(result: AnalysisResult): string {
 
   const convScores = result.conversionScores ? [
     `  Overall:      ${pct(result.conversionScores.overall)}`,
-    `  Clarity:      ${pct(result.conversionScores.clarity)}  — ${result.conversionScores.clarityNote}`,
-    `  Trust:        ${pct(result.conversionScores.trust)}  — ${result.conversionScores.trustNote}`,
-    `  CTA Strength: ${pct(result.conversionScores.ctaStrength)}  — ${result.conversionScores.ctaNote}`,
-    `  Friction:     ${pct(result.conversionScores.friction)}  — ${result.conversionScores.frictionNote}`,
+    `  Clarity:      ${pct(result.conversionScores.clarity)}  (${result.conversionScores.clarityNote})`,
+    `  Trust:        ${pct(result.conversionScores.trust)}  (${result.conversionScores.trustNote})`,
+    `  CTA Strength: ${pct(result.conversionScores.ctaStrength)}  (${result.conversionScores.ctaNote})`,
+    `  Friction:     ${pct(result.conversionScores.friction)}  (${result.conversionScores.frictionNote})`,
   ].join("\n") : "  No conversion scores available";
 
   const intentSec = result.intent ? [
@@ -72,11 +72,11 @@ export function formatReport(result: AnalysisResult): string {
     ? result.eli5.map((e) => `  ${e.technical}\n    ${e.simple}`).join("\n\n")
     : "  No summary available";
 
-  const biggestOpp  = result.biggestOpportunity  || "—";
-  const compInsight = result.competitorInsight    || "—";
+  const biggestOpp  = result.biggestOpportunity  || "n/a";
+  const compInsight = result.competitorInsight    || "n/a";
   const impression  = result.firstImpression
-    ? `${result.firstImpression.score}/10 — ${result.firstImpression.label}: ${result.firstImpression.explanation}`
-    : "—";
+    ? `${result.firstImpression.score}/10, ${result.firstImpression.label}: ${result.firstImpression.explanation}`
+    : "n/a";
 
   return `WEBSITE ANALYSIS REPORT
 ${divider}

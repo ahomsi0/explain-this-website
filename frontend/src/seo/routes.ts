@@ -104,7 +104,7 @@ export function truncate(text: string, max: number): string {
   const cut = text.slice(0, max - 1);
   const lastSpace = cut.lastIndexOf(" ");
   const base = lastSpace > 0 ? cut.slice(0, lastSpace) : cut;
-  return `${base.replace(/[\s.,;:—-]+$/, "")}…`;
+  return `${base.replace(/[\s.,;:\u2014-]+$/, "")}…`;
 }
 
 /** JSON for an inline <script type="application/ld+json">; `<` is escaped so the payload can never close the tag. */

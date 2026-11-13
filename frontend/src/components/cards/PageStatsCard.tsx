@@ -72,7 +72,7 @@ export function PagePerfCard({ pageStats }: { pageStats: PageStats }) {
     {
       label: "Render-blocking scripts",
       value: pageStats.renderBlockingScripts,
-      note: pageStats.renderBlockingScripts === 0 ? "none — great" : pageStats.renderBlockingScripts <= 3 ? "slows first paint" : "delays page load",
+      note: pageStats.renderBlockingScripts === 0 ? "none, great" : pageStats.renderBlockingScripts <= 3 ? "slows first paint" : "delays page load",
       status: pageStats.renderBlockingScripts === 0 ? "good" : pageStats.renderBlockingScripts <= 3 ? "warn" : "bad",
     },
     {

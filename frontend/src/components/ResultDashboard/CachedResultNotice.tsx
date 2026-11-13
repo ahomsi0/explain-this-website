@@ -17,7 +17,7 @@ export function CachedResultNotice({ ageSeconds, onRerun }: {
         <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
       </svg>
       <p className="text-xs text-amber-200/90">
-        Cached result from {formatCacheAge(ageSeconds)} ago — any changes you made since then aren&rsquo;t reflected here.
+        Cached result from {formatCacheAge(ageSeconds)} ago. Any changes you made since then aren&rsquo;t reflected here.
       </p>
       {onRerun && (
         <button

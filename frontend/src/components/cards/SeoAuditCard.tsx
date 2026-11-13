@@ -95,16 +95,16 @@ function CheckRow({ check }: { check: SEOCheck }) {
 
 function seoInsightText(score: number): { meaning: string; nextStep: string } {
   if (score >= 80) return {
-    meaning: "Your SEO fundamentals are strong — most key signals are properly set up.",
+    meaning: "Your SEO fundamentals are strong: most key signals are properly set up.",
     nextStep: "Focus on content quality and building backlinks to keep improving rankings.",
   };
   if (score >= 50) return {
     meaning: "Your SEO is decent but missing several optimizations that affect visibility.",
-    nextStep: "Fix the failing checks above — meta tags and headings have the biggest impact.",
+    nextStep: "Fix the failing checks above: meta tags and headings have the biggest impact.",
   };
   return {
     meaning: "Critical SEO issues are likely preventing your site from ranking well.",
-    nextStep: "Start with title tags and meta descriptions — they take minutes to fix and matter most.",
+    nextStep: "Start with title tags and meta descriptions: they take minutes to fix and matter most.",
   };
 }
 
@@ -135,7 +135,7 @@ export function SEOAuditCard({ seoChecks }: { seoChecks: SEOCheck[] }) {
         </div>
 
         <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
-          We check core SEO signals and show optional enhancements separately — click any fail/warn row for guidance.
+          We check core SEO signals and show optional enhancements separately: click any fail/warn row for guidance.
         </p>
 
         <div className="h-2 w-full bg-zinc-800 rounded-full mb-4 overflow-hidden">

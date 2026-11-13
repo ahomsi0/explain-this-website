@@ -9,5 +9,5 @@
   <text x="70" y="202" font-size="14" fill="#d4d4d8">width="800" height="600"</text>
   <text x="70" y="228" font-size="14" fill="#d4d4d8">alt="Customers at the workshop table"</text>
   <text x="490" y="176" font-size="14" fill="#d4d4d8">/&gt;</text>
-  <text x="70" y="252" fill="#71717a" font-size="12">Exception: your hero/LCP image — keep it eager, add fetchpriority="high" instead.</text>
+  <text x="70" y="252" fill="#71717a" font-size="12">Exception: your hero/LCP image. Keep it eager, add fetchpriority="high" instead.</text>
 </svg>

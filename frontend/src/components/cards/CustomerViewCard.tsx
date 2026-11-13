@@ -8,19 +8,19 @@ function uxVerdictData(trustLevel: "strong" | "moderate" | "weak", offerClear: b
   if (signals === 3) return {
     label: "Strong",
     cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/25",
-    meaning: "Strong first impression — visitors quickly understand the offer and trust the brand.",
+    meaning: "Strong first impression: visitors quickly understand the offer and trust the brand.",
     nextStep: "Keep refining copy freshness and social proof to maintain this standard.",
   };
   if (signals >= 2) return {
     label: "Moderate",
     cls: "text-amber-400 bg-amber-500/10 border-amber-500/25",
     meaning: "Decent UX but some trust or clarity gaps may cause visitors to hesitate.",
-    nextStep: "Improve the weakest signal — unclear offers and missing trust badges are top priorities.",
+    nextStep: "Improve the weakest signal: unclear offers and missing trust badges are top priorities.",
   };
   return {
     label: "Weak",
     cls: "text-red-400 bg-red-500/10 border-red-500/25",
-    meaning: "Visitors are unlikely to convert — the offer is unclear or the site feels untrustworthy.",
+    meaning: "Visitors are unlikely to convert: the offer is unclear or the site feels untrustworthy.",
     nextStep: "Start with a single clear value proposition and add at least one social proof element.",
   };
 }

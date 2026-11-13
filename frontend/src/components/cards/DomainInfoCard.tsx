@@ -9,7 +9,7 @@ function ageBadgeColor(years: number): "green" | "amber" | "red" {
 }
 
 function formatDate(iso: string): string {
-  if (!iso) return "—";
+  if (!iso) return "n/a";
   const [y, m, d] = iso.split("-");
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return `${months[parseInt(m) - 1]} ${d}, ${y}`;
@@ -51,17 +51,17 @@ export function DomainInfoCard({ domainInfo }: { domainInfo: DomainInfo }) {
         )}
         {domainInfo.ageYears > 0 && domainInfo.ageYears < 2 && (
           <p className="text-[11px] text-amber-400 bg-amber-950/50 border border-amber-800/40 rounded px-3 py-2">
-            ⚠ New domain — search engines may rank established domains higher
+            ⚠ New domain: search engines may rank established domains higher
           </p>
         )}
         {domainInfo.expiresAt && daysUntilExpiry(domainInfo.expiresAt) < 0 && (
           <p className="text-[11px] text-red-400 bg-red-950/50 border border-red-800/40 rounded px-3 py-2">
-            ⚠ Domain has expired — renew immediately to prevent losing it
+            ⚠ Domain has expired: renew immediately to prevent losing it
           </p>
         )}
         {domainInfo.expiresAt && daysUntilExpiry(domainInfo.expiresAt) >= 0 && daysUntilExpiry(domainInfo.expiresAt) <= 60 && (
           <p className="text-[11px] text-amber-400 bg-amber-950/50 border border-amber-800/40 rounded px-3 py-2">
-            ⚠ Expires in {daysUntilExpiry(domainInfo.expiresAt)} day{daysUntilExpiry(domainInfo.expiresAt) !== 1 ? "s" : ""} — renew soon to avoid downtime
+            ⚠ Expires in {daysUntilExpiry(domainInfo.expiresAt)} day{daysUntilExpiry(domainInfo.expiresAt) !== 1 ? "s" : ""}: renew soon to avoid downtime
           </p>
         )}
       </div>

@@ -22,7 +22,7 @@ export function FontAuditCard({ fontAudit }: { fontAudit: FontAudit }) {
       <CardShell>
         <CardHeader title="Font Audit" badge="System fonts" badgeColor="green" />
         <div className="p-5">
-          <p className="text-xs text-zinc-500">No external web fonts detected — system fonts in use. Good for performance.</p>
+          <p className="text-xs text-zinc-500">No external web fonts detected: system fonts in use. Good for performance.</p>
         </div>
       </CardShell>
     );
@@ -38,7 +38,7 @@ export function FontAuditCard({ fontAudit }: { fontAudit: FontAudit }) {
       <div className="p-4 flex flex-col gap-3">
         {fontAudit.hasPerfIssue && (
           <div className="text-[11px] text-amber-400 bg-amber-950/50 border border-amber-800/40 rounded px-3 py-2">
-            ⚠ {fontAudit.totalFamilies > 3 ? `${fontAudit.totalFamilies} font families` : `${fontAudit.totalWeights} weight variants`} detected — consider consolidating to improve load time
+            ⚠ {fontAudit.totalFamilies > 3 ? `${fontAudit.totalFamilies} font families` : `${fontAudit.totalWeights} weight variants`} detected: consider consolidating to improve load time
           </div>
         )}
         <div className="flex flex-col gap-2">

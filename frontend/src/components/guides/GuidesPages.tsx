@@ -350,7 +350,7 @@ export function GuideDetailPage({ slug }: { slug: string }) {
           <div className="flex-1 min-w-0">
             {guide.aiPrompt && <AiPromptCard prompt={guide.aiPrompt} />}
             <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-5">
-              How to fix it — {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
+              How to fix it: {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
             </p>
 
             {/* Steps */}

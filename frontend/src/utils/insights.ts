@@ -87,7 +87,7 @@ function buildSummary({
     return "Your site has room for improvement across all key areas.";
   }
   if (strong.length === 0) {
-    return `Your site needs work — key issues include ${weak.join(", ")}.`;
+    return `Your site needs work: key issues include ${weak.join(", ")}.`;
   }
   if (weak.length === 0) {
     return `Your site performs well with ${strong.join(" and ")}.`;

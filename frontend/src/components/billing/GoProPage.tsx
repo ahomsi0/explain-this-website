@@ -177,7 +177,7 @@ export function GoProPage() {
                     ? "Please wait…"
                     : !user
                       ? "Sign in to upgrade"
-                      : `Upgrade to Pro — ${interval === "yearly" ? YEARLY_PRICE + "/yr" : MONTHLY_PRICE + "/mo"}`}
+                      : `Upgrade to Pro: ${interval === "yearly" ? YEARLY_PRICE + "/yr" : MONTHLY_PRICE + "/mo"}`}
                 </button>
               ) : (
                 <p className="mt-6 text-sm text-violet-300">

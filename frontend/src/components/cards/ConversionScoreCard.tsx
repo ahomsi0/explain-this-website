@@ -42,20 +42,20 @@ function whatToImproveFirst(scores: ConversionScores): string {
     { label: "clarity",      score: scores.clarity      },
     { label: "ease",         score: ease                },
   ].sort((a, b) => a.score - b.score)[0];
-  return `Focus on improving ${worst.label} first — at ${worst.score}/100 it's your biggest drag on conversions.`;
+  return `Focus on improving ${worst.label} first: at ${worst.score}/100 it's your biggest drag on conversions.`;
 }
 
 function conversionInsightText(score: number): { meaning: string; nextStep: string } {
   if (score >= 70) return {
-    meaning: "Strong conversion readiness — your offer is clear, trustworthy, and easy to act on.",
+    meaning: "Strong conversion readiness: your offer is clear, trustworthy, and easy to act on.",
     nextStep: "A/B test your CTA copy and button placement to push conversion rates even higher.",
   };
   if (score >= 45) return {
-    meaning: "Moderate conversion potential — some friction or trust gaps are leaving revenue on the table.",
+    meaning: "Moderate conversion potential: some friction or trust gaps are leaving revenue on the table.",
     nextStep: "Address the blockers listed above; even one fix can meaningfully lift conversion rate.",
   };
   return {
-    meaning: "Low conversion readiness — significant barriers are preventing visitors from taking action.",
+    meaning: "Low conversion readiness: significant barriers are preventing visitors from taking action.",
     nextStep: "Start with a single, specific CTA and one trust signal. Don't optimize other areas first.",
   };
 }

@@ -147,12 +147,12 @@ function perfLabel(score?: number): { text: string; cls: string } {
 
 function detectBottleneck(data: StrategyData): string | null {
   const { lcp, tbt, cls, fcp } = data;
-  if (lcp?.rating === "poor") return "Largest Contentful Paint (LCP) is the biggest bottleneck — the main content takes too long to render.";
-  if (tbt?.rating === "poor") return "Total Blocking Time (TBT) is high — JavaScript is blocking the main thread and delaying interactivity.";
-  if (cls?.rating === "poor") return "Cumulative Layout Shift (CLS) is the primary issue — elements are moving around as the page loads.";
-  if (fcp?.rating === "poor") return "First Contentful Paint (FCP) is slow — the browser is taking too long to render anything on screen.";
-  if (lcp?.rating === "needs-improvement") return "LCP needs improvement — optimize your hero image or largest visible element.";
-  if (tbt?.rating === "needs-improvement") return "TBT needs improvement — review render-blocking scripts and defer non-critical JS.";
+  if (lcp?.rating === "poor") return "Largest Contentful Paint (LCP) is the biggest bottleneck: the main content takes too long to render.";
+  if (tbt?.rating === "poor") return "Total Blocking Time (TBT) is high: JavaScript is blocking the main thread and delaying interactivity.";
+  if (cls?.rating === "poor") return "Cumulative Layout Shift (CLS) is the primary issue: elements are moving around as the page loads.";
+  if (fcp?.rating === "poor") return "First Contentful Paint (FCP) is slow: the browser is taking too long to render anything on screen.";
+  if (lcp?.rating === "needs-improvement") return "LCP needs improvement: optimize your hero image or largest visible element.";
+  if (tbt?.rating === "needs-improvement") return "TBT needs improvement: review render-blocking scripts and defer non-critical JS.";
   return null;
 }
 
@@ -176,16 +176,16 @@ function perfInsightText(score?: number): { meaning: string; nextStep: string } 
     nextStep: "Use the available Core Web Vitals and rerun the analysis when PageSpeed data is available.",
   };
   if (score >= 90) return {
-    meaning: "Your page loads fast — users get a smooth, responsive experience.",
+    meaning: "Your page loads fast: users get a smooth, responsive experience.",
     nextStep: "Maintain these scores by running Lighthouse in CI and monitoring Core Web Vitals.",
   };
   if (score >= 50) return {
-    meaning: "Moderate performance — some users, especially on mobile, may experience slow loads.",
+    meaning: "Moderate performance: some users, especially on mobile, may experience slow loads.",
     nextStep: "Address the bottleneck identified above; image optimization is usually the fastest win.",
   };
   return {
-    meaning: "Slow performance is costing you users — Google penalizes slow pages in rankings too.",
-    nextStep: "Start with image compression and deferring render-blocking JS — together they often double scores.",
+    meaning: "Slow performance is costing you users: Google penalizes slow pages in rankings too.",
+    nextStep: "Start with image compression and deferring render-blocking JS: together they often double scores.",
   };
 }
 
@@ -236,13 +236,13 @@ export function PerformanceCard({ performance }: { performance: PerformanceResul
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
             <span>
-              {performance.mobile ? "Desktop" : "Mobile"} score unavailable — Google's PageSpeed API didn't respond in time for this run.
+              {performance.mobile ? "Desktop" : "Mobile"} score unavailable: Google's PageSpeed API didn't respond in time for this run.
             </span>
           </div>
         )}
 
         <p className="text-[11px] text-zinc-600 mb-4 leading-snug">
-          Google's official Lighthouse scores — the SEO score here reflects technical SEO basics Google itself checks.
+          Google's official Lighthouse scores: the SEO score here reflects technical SEO basics Google itself checks.
         </p>
 
         <StrategyView data={data} />

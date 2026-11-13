@@ -82,7 +82,7 @@ export function ComparePage() {
       const result = await compareLive(yoursUrl, compUrl, controller.signal);
       if (controllerRef.current === controller) setComparison(result);
     } catch (err) {
-      if (controllerRef.current === controller) setError(err instanceof Error ? err.message : "Comparison failed — please try again");
+      if (controllerRef.current === controller) setError(err instanceof Error ? err.message : "Comparison failed. Please try again.");
     } finally {
       if (controllerRef.current === controller) {
         controllerRef.current = null;
@@ -146,7 +146,7 @@ export function ComparePage() {
           {busy && (
             <div className="mt-3 flex items-center gap-3">
               <p className="text-xs text-zinc-600">
-                Two full analyses run in parallel — this usually takes 20–60 seconds per site.
+                Two full analyses run in parallel. This usually takes 20–60 seconds per site.
               </p>
               <button
                 type="button"

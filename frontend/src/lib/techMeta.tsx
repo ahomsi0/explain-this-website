@@ -82,7 +82,7 @@ const TECH_DESC: Record<string, string> = {
   "Tailwind CSS": "Utility-first CSS framework for rapid UI development.",
   "Tailwind":     "Utility-first CSS framework for rapid UI development.",
   "Alpine.js":    "Minimal JavaScript framework for adding behavior to HTML.",
-  "HTMX":         "Lets you build modern UIs with HTML attributes — no JS required.",
+  "HTMX":         "Lets you build modern UIs with HTML attributes: no JS required.",
 
   // Media
   "YouTube":      "Embedded YouTube videos for tutorials, demos, or marketing.",

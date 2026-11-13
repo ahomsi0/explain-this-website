@@ -72,7 +72,7 @@ export function VagueLanguageCard({ copyAnalysis }: { copyAnalysis: CopyAnalysis
         )}
 
         {vaguePhrases.length === 0 && (
-          <p className="text-[11px] text-emerald-400/80 mt-1">No vague marketing language detected — copy is specific and clear.</p>
+          <p className="text-[11px] text-emerald-400/80 mt-1">No vague marketing language detected: copy is specific and clear.</p>
         )}
         {vaguePhrases.length > 0 && <HowToFixLink issueId="vague-copy" className="mt-3" />}
       </div>

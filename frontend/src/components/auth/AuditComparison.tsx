@@ -196,7 +196,7 @@ export function AuditComparison({
 
   const verdict = (() => {
     if (leftWins === 0 && rightWins === 0) return "The two audits are evenly matched on every tracked metric.";
-    if (leftWins === rightWins) return `Dead even — each side leads in ${leftWins} metric${leftWins > 1 ? "s" : ""}.`;
+    if (leftWins === rightWins) return `Dead even: each side leads in ${leftWins} metric${leftWins > 1 ? "s" : ""}.`;
     const leader = leftWins > rightWins ? { n: leftWins, l: rightWins, name: hostOf(before) || leftLabel } : { n: rightWins, l: leftWins, name: hostOf(after) || rightLabel };
     return `${leader.name} comes out ahead, leading ${leader.n}–${leader.l} across tracked metrics.`;
   })();
@@ -245,7 +245,7 @@ export function AuditComparison({
             <MetricRow key={def.label} def={def} before={before} after={after} leftLabel={leftLabel} rightLabel={rightLabel} />
           ))}
 
-          <p className="mt-4 mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Issue counts — lower is better</p>
+          <p className="mt-4 mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Issue counts: lower is better</p>
           {ISSUE_METRICS.map((def) => (
             <MetricRow key={def.label} def={def} before={before} after={after} leftLabel={leftLabel} rightLabel={rightLabel} />
           ))}

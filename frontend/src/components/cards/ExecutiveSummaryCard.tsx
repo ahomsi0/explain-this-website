@@ -15,14 +15,14 @@ const SCORE_EXPLANATIONS: Record<ScoreKey, (score: number) => { means: string; n
       ? "Your SEO setup is partial. Several important checks are failing or flagged."
       : "Your SEO has critical gaps that are likely hurting your search visibility.",
     next: s >= 75
-      ? "Focus on content quality and earning backlinks — technical SEO is covered."
+      ? "Focus on content quality and earning backlinks: technical SEO is covered."
       : s >= 50
       ? "Fix the failing checks in the SEO Audit tab, starting with title and meta description."
       : "Open the SEO Audit tab and work through every red item before anything else.",
   }),
   performance: (s) => ({
     means: s < 0
-      ? "Performance data is unavailable — PageSpeed could not be reached for this site."
+      ? "Performance data is unavailable: PageSpeed could not be reached for this site."
       : s >= 75
       ? "Pages load quickly. Users get a good experience across devices."
       : s >= 50
@@ -34,18 +34,18 @@ const SCORE_EXPLANATIONS: Record<ScoreKey, (score: number) => { means: string; n
       ? "Monitor Core Web Vitals in Google Search Console to maintain this."
       : s >= 50
       ? "Optimize images (convert to WebP) and defer non-critical JavaScript."
-      : "Prioritize reducing LCP — compress images and eliminate render-blocking scripts.",
+      : "Prioritize reducing LCP: compress images and eliminate render-blocking scripts.",
   }),
   ux: (s) => ({
     means: s >= 75
-      ? "Key UX signals are in place — visitors have what they need to engage."
+      ? "Key UX signals are in place: visitors have what they need to engage."
       : s >= 50
       ? "Some UX elements are missing. Visitors may feel uncertain about next steps."
       : "Critical UX signals are absent. Visitors are likely confused or distrustful.",
     next: s >= 75
       ? "Run user testing to find friction that metrics can't catch."
       : s >= 50
-      ? "Add missing elements — focus on trust signals and a clear CTA first."
+      ? "Add missing elements: focus on trust signals and a clear CTA first."
       : "Add a CTA and trust signals immediately. These have the highest ROI.",
   }),
   conversion: (s) => ({
@@ -57,7 +57,7 @@ const SCORE_EXPLANATIONS: Record<ScoreKey, (score: number) => { means: string; n
     next: s >= 65
       ? "A/B test your CTA copy and headline to squeeze out more conversions."
       : s >= 45
-      ? "Review the Conversion tab — focus on clarity score and CTA strength first."
+      ? "Review the Conversion tab: focus on clarity score and CTA strength first."
       : "Open the Conversion tab and address every red item. Start with the value proposition.",
   }),
 };
@@ -277,7 +277,10 @@ export function ExecutiveSummaryCard({ insights, firstImpression }: { insights: 
               suffix="/ 10"
               meterValue={firstImpression!.score * 10}
               tooltip="How the page lands in the first few seconds"
-              explanation={{ means: [firstImpression!.label, firstImpression!.explanation].filter(Boolean).join(". ") }}
+              // The audit's sentence already states the rating ("The first
+              // impression is weak…"), so the one-word label is only a
+              // fallback for when there is no sentence.
+              explanation={{ means: firstImpression!.explanation || firstImpression!.label }}
               isOpen={openKey === "impression"}
               onToggle={() => toggle("impression")}
             />

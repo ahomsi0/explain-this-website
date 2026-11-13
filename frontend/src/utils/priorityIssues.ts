@@ -145,7 +145,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "lcp-poor",
       "Critical: Page loads far too slowly",
-      `LCP is ${lcp.displayValue} — Google demotes slow pages; users leave in under 3 seconds.`,
+      `LCP is ${lcp.displayValue}: Google demotes slow pages; users leave in under 3 seconds.`,
       "Compress your largest image, enable a CDN, and defer non-critical JavaScript.",
       "high",
       "hard",
@@ -156,7 +156,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "lcp-fair",
       "Improve page load speed",
-      `LCP is ${lcp.displayValue} — moderate load times reduce conversions by 10–20%.`,
+      `LCP is ${lcp.displayValue}: moderate load times reduce conversions by 10–20%.`,
       "Optimize your largest content image and remove render-blocking scripts.",
       "high",
       "medium",
@@ -171,7 +171,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "cls-poor",
       "Page layout shifts while loading",
-      `CLS is ${cls.displayValue} — content jumping frustrates users and lowers UX scores.`,
+      `CLS is ${cls.displayValue}: content jumping frustrates users and lowers UX scores.`,
       "Set explicit width/height on all images and avoid inserting content above the fold after load.",
       "high",
       "medium",
@@ -186,7 +186,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "tbt-poor",
       "Page is unresponsive to clicks",
-      `TBT is ${tbt.displayValue} — the page freezes after load, making users think it's broken.`,
+      `TBT is ${tbt.displayValue}: the page freezes after load, making users think it's broken.`,
       "Split large JavaScript bundles and defer third-party scripts to after user interaction.",
       "high",
       "hard",
@@ -202,7 +202,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
       issues.push(makeIssue(
         "perf-poor",
         "Mobile performance is critically low",
-        `Mobile performance score is ${mobilePerfScore}/100 — users are likely abandoning the page before it loads.`,
+        `Mobile performance score is ${mobilePerfScore}/100: users are likely abandoning the page before it loads.`,
         "Audit and reduce JavaScript bundle size, compress images, and enable caching.",
         "high",
         "hard",
@@ -213,7 +213,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
       issues.push(makeIssue(
         "perf-fair",
         "Mobile performance needs improvement",
-        `Mobile performance score is ${mobilePerfScore}/100 — moderate load times may hurt conversions.`,
+        `Mobile performance score is ${mobilePerfScore}/100: moderate load times may hurt conversions.`,
         "Optimize images, reduce unused CSS/JS, and consider a CDN.",
         "medium",
         "medium",
@@ -245,7 +245,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "lazy-loading",
       "Add lazy loading to images",
-      `${r.imageAudit.missingLazy} images lack lazy loading — off-screen images delay initial page render.`,
+      `${r.imageAudit.missingLazy} images lack lazy loading: off-screen images delay initial page render.`,
       'Add loading="lazy" to all images that are not in the initial viewport.',
       "medium",
       "easy",
@@ -370,7 +370,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "low-clarity",
       "Clarify what your site offers",
-      `Clarity score is ${n}/100 — visitors can't quickly understand what you offer (threshold: below 40).`,
+      `Clarity score is ${n}/100: visitors can't quickly understand what you offer (threshold: below 40).`,
       'Rewrite your hero headline to answer: "What do you do, for whom, and why today?"',
       "high",
       "medium",
@@ -384,7 +384,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "low-trust-score",
       "Improve trust signals for conversions",
-      `Trust score is ${r.conversionScores.trust}/100 — low trust (below 40) directly reduces conversion rates.`,
+      `Trust score is ${r.conversionScores.trust}/100: low trust (below 40) directly reduces conversion rates.`,
       "Add verified reviews, security certificates, or money-back guarantees to your page.",
       "high",
       "medium",
@@ -399,7 +399,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "high-friction",
       "Reduce conversion friction",
-      `Friction score is ${n}/100 — obstacles above 65 are actively preventing conversions.`,
+      `Friction score is ${n}/100: obstacles above 65 are actively preventing conversions.`,
       "Remove unnecessary form fields, reduce steps to checkout/signup, and add autofill support.",
       "high",
       "medium",
@@ -413,7 +413,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "generic-copy",
       "Replace generic marketing copy",
-      "Copy is flagged as generic — it fails to differentiate your offering from competitors.",
+      "Copy is flagged as generic: it fails to differentiate your offering from competitors.",
       "Identify your unique value proposition and rewrite headlines to be specific and benefit-driven.",
       "high",
       "medium",
@@ -467,7 +467,7 @@ export function computePriorityIssues(result: AnalysisResult): PriorityIssue[] {
     issues.push(makeIssue(
       "complex-content",
       "Content is too complex to read",
-      "Advanced reading level increases bounce — most web copy should be Grade 8.",
+      "Advanced reading level increases bounce: most web copy should be Grade 8.",
       "Shorten sentences, replace jargon with plain language, use bullet points.",
       "medium",
       "easy",

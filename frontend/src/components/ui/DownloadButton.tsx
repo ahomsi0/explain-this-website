@@ -49,7 +49,7 @@ function san(s: string): string {
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/–/g, "-")
-    .replace(/—/g, "--")
+    .replace(/\u2014/g, "--")
     .replace(/…/g, "...")
     .split("")
     .map((ch) => (ch.codePointAt(0) ?? 0) > 0xff ? "?" : ch)
@@ -283,7 +283,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
     doc.text("No critical issues found.", M, y);
     y += 8;
   } else {
-    bullets(insights.topIssues.map(i => `${i.title} — ${i.description}`), RED);
+    bullets(insights.topIssues.map(i => `${i.title}: ${i.description}`), RED);
   }
 
   // Quick wins
@@ -294,7 +294,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
     doc.text("No quick wins detected.", M, y);
     y += 8;
   } else {
-    bullets(insights.quickWins.map(i => `${i.title} — ${i.description}`), GREEN);
+    bullets(insights.quickWins.map(i => `${i.title}: ${i.description}`), GREEN);
   }
 
   // ═══ Site Overview ════════════════════════════════════════════════════════
@@ -306,7 +306,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
     body: [
       ["Title",       san(result.overview.title       || "(none)")],
       ["Description", san(result.overview.description || "(none)")],
-      ["Language",    (result.overview.language       || "—").toUpperCase()],
+      ["Language",    (result.overview.language       || "n/a").toUpperCase()],
       ["Page Weight", cap(result.overview.pageLoadHint)],
     ],
     columnStyles: {
@@ -324,8 +324,8 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
     body: [
       ["Intent",            san(result.intent.label)],
       ["Description",       san(result.intent.description)],
-      ["Biggest Opportunity", san(result.biggestOpportunity || "—")],
-      ["Market Positioning",  san(result.competitorInsight  || "—")],
+      ["Biggest Opportunity", san(result.biggestOpportunity || "n/a")],
+      ["Market Positioning",  san(result.competitorInsight  || "n/a")],
     ],
     columnStyles: {
       0: { cellWidth: 36, fontStyle: "bold", textColor: rgb(DIM) },
@@ -357,7 +357,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
   if (result.performance?.available) {
     const renderPerf = (title: string, s?: StrategyData) => {
       if (!s) return;
-      section(`Performance — ${title}`);
+      section(`Performance: ${title}`);
       table({
         startY: y,
         head: [["Metric", "Value", "Rating"]],
@@ -621,7 +621,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
       body: [
         ["Reading Level",    cap(cs3.readingLevel)],
         ["Avg Sentence Len", `${cs3.avgSentenceLen} words`],
-        ["Top Keywords",     cs3.topKeywords.slice(0, 8).map(san).join("  ·  ") || "—"],
+        ["Top Keywords",     cs3.topKeywords.slice(0, 8).map(san).join("  ·  ") || "n/a"],
       ],
       columnStyles: {
         0: { cellWidth: 36, fontStyle: "bold", textColor: rgb(DIM) },

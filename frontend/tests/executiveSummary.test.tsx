@@ -16,9 +16,17 @@ describe("ExecutiveSummaryCard", () => {
     expect(stat).toHaveTextContent("7/ 10");
 
     fireEvent.click(screen.getByRole("button", { name: "First impression score explanation" }));
-    expect(screen.getByText("Good. Clear headline and a visible CTA.")).toBeInTheDocument();
+    // The sentence alone: it already states the rating, so the label is not repeated in front.
+    expect(screen.getByText("Clear headline and a visible CTA.")).toBeInTheDocument();
+    expect(screen.queryByText(/^Good\./)).not.toBeInTheDocument();
     // It has no generic "what to do next" advice, so that heading is not shown for it.
     expect(screen.queryByText("What to do next")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the one-word rating when the audit gave no sentence", () => {
+    render(<ExecutiveSummaryCard insights={insights} firstImpression={{ score: 3, label: "Weak", explanation: "" }} />);
+    fireEvent.click(screen.getByRole("button", { name: "First impression score explanation" }));
+    expect(screen.getByText("Weak")).toBeInTheDocument();
   });
 
   it("keeps the four-score layout for older reports that have no first impression", () => {

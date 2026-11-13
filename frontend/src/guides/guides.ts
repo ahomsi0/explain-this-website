@@ -52,10 +52,10 @@ export const GUIDES: Record<string, Guide> = {
       "Add fetchpriority=\"high\" and a preload link for the hero image so the browser starts downloading it immediately.",
       "Serve the page through a CDN so the image travels a short physical distance to the visitor.",
       "Remove render-blocking scripts and fonts in the page head so the browser can start painting sooner (see our render-blocking guide).",
-      "Re-run your audit after each change — LCP improvements are cumulative and easy to verify.",
+      "Re-run your audit after each change: LCP improvements are cumulative and easy to verify.",
     ],
     tools: ["PageSpeed Insights", "Squoosh (image compression)", "WebPageTest (waterfall view)"],
-    aiPrompt: "My website's Largest Contentful Paint (LCP) is too slow — the main content takes over 2.5 seconds to appear. Can you identify the likely causes (hero image size, render-blocking resources, or slow server response) and give me specific, prioritised steps to bring LCP under 2.5 seconds?",
+    aiPrompt: "My website's Largest Contentful Paint (LCP) is too slow: the main content takes over 2.5 seconds to appear. Can you identify the likely causes (hero image size, render-blocking resources, or slow server response) and give me specific, prioritised steps to bring LCP under 2.5 seconds?",
   },
   "cls": {
     slug: "cls",
@@ -65,17 +65,17 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "CLS (Cumulative Layout Shift) measures how much visible content moves around while the page loads. Buttons that dodge your cursor and text that gets pushed down are layout shifts.",
     whyItMatters:
-      "Shifting layouts cause mis-taps and frustration — and Google penalises them directly in mobile rankings. High CLS is one of the fastest ways to make a site feel broken.",
+      "Shifting layouts cause mis-taps and frustration, and Google penalises them directly in mobile rankings. High CLS is one of the fastest ways to make a site feel broken.",
     steps: [
       "Add explicit width and height (or an aspect-ratio CSS property) to every <img> and <video> tag so the browser can reserve space before loading.",
       "Reserve space for embeds (ads, videos, social posts, maps) with a fixed-height container.",
-      "Never inject banners, cookie bars, or sign-up prompts above existing content after the page has loaded — overlay them instead.",
+      "Never inject banners, cookie bars, or sign-up prompts above existing content after the page has loaded: overlay them instead.",
       "Load web fonts with font-display: swap and preloaded font files so text doesn't reflow when the real font arrives.",
       "Verify with PageSpeed Insights until CLS is below 0.1.",
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Performance panel"],
     stepImages: { 0: { src: "/guides/cls-layout-shift.svg", caption: "Reserving space keeps the layout stable while images load." } },
-    aiPrompt: "My website has a high Cumulative Layout Shift (CLS) score — elements are jumping around as the page loads, which frustrates visitors and hurts my Google ranking. Can you show me how to add explicit dimensions to images, reserve space for late-loading embeds, and verify the fix with PageSpeed Insights?",
+    aiPrompt: "My website has a high Cumulative Layout Shift (CLS) score: elements are jumping around as the page loads, which frustrates visitors and hurts my Google ranking. Can you show me how to add explicit dimensions to images, reserve space for late-loading embeds, and verify the fix with PageSpeed Insights?",
   },
   "tbt": {
     slug: "tbt",
@@ -88,13 +88,13 @@ export const GUIDES: Record<string, Guide> = {
       "Visitors perceive an unresponsive page as broken and leave. Google's field data (INP) uses the same signal, so high TBT drags both rankings and conversions down together.",
     steps: [
       "Run PageSpeed Insights and note which third-party scripts dominate (chat widgets, analytics, ads, embeds are the usual suspects).",
-      "Remove every third-party script you don't actively use — each one runs on the same main thread as your page.",
+      "Remove every third-party script you don't actively use: each one runs on the same main thread as your page.",
       "Defer the rest: load non-essential scripts after the first user interaction or with the async attribute.",
       "If you use a JavaScript framework, enable code splitting so each page only downloads the code it needs.",
       "Break up long tasks in your own code with setTimeout scheduling or a web worker for heavy computation.",
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Performance", "Lighthouse"],
-    aiPrompt: "My website's Total Blocking Time (TBT) is too high — JavaScript is blocking the main thread after the page appears, making it unresponsive to taps and clicks. Can you identify the types of scripts most likely causing this and walk me through deferring, removing, or splitting them to bring TBT under 200ms?",
+    aiPrompt: "My website's Total Blocking Time (TBT) is too high: JavaScript is blocking the main thread after the page appears, making it unresponsive to taps and clicks. Can you identify the types of scripts most likely causing this and walk me through deferring, removing, or splitting them to bring TBT under 200ms?",
   },
   "mobile-performance": {
     slug: "mobile-performance",
@@ -108,13 +108,13 @@ export const GUIDES: Record<string, Guide> = {
     steps: [
       "Compress and resize every image to the size it's actually displayed at, and serve WebP/AVIF (see our image format guide).",
       "Enable compression (gzip/brotli) and browser caching on your server or CDN.",
-      "Remove unused CSS and JavaScript — most page builders ship far more code than a page uses.",
+      "Remove unused CSS and JavaScript: most page builders ship far more code than a page uses.",
       "Reduce third-party scripts to the minimum that earns its keep.",
       "Check your hosting: if server response (TTFB) is over ~0.8s, a CDN or better hosting will lift every other metric too.",
     ],
     tools: ["PageSpeed Insights", "WebPageTest", "Chrome DevTools → Lighthouse"],
-    stepImages: { 4: { src: "/guides/pagespeed-insights.png", caption: "Re-test after each change — scores move fast once the big items are fixed." } },
-    aiPrompt: "My website has a poor mobile performance score — pages feel slow on phones and my Lighthouse mobile score is below 50. Can you walk me through the highest-impact mobile optimisations in order: image compression first, then JavaScript, then server response time?",
+    stepImages: { 4: { src: "/guides/pagespeed-insights.png", caption: "Re-test after each change: scores move fast once the big items are fixed." } },
+    aiPrompt: "My website has a poor mobile performance score: pages feel slow on phones and my Lighthouse mobile score is below 50. Can you walk me through the highest-impact mobile optimisations in order: image compression first, then JavaScript, then server response time?",
   },
   "image-formats": {
     slug: "image-formats",
@@ -124,18 +124,18 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "JPEG and PNG date from the 1990s. WebP and AVIF are modern formats that all current browsers support, producing dramatically smaller files for the same picture.",
     whyItMatters:
-      "Images are usually the heaviest thing on a page. Cutting their size in half is the single cheapest speed win available — and it directly improves LCP and your mobile score.",
+      "Images are usually the heaviest thing on a page. Cutting their size in half is the single cheapest speed win available, and it directly improves LCP and your mobile score.",
     steps: [
       "Export new images as WebP (or AVIF for even smaller files) directly from your design tool, or batch-convert existing ones with Squoosh or ImageMagick.",
       "On WordPress, install an optimisation plugin (ShortPixel, Imagify, or Smush) that converts automatically.",
       "Use the <picture> tag to serve the modern format with the old one as fallback for very old browsers.",
-      "While you're at it, resize images to their display size — a 4000px-wide photo in a 400px slot wastes 90% of its bytes.",
+      "While you're at it, resize images to their display size: a 4000px-wide photo in a 400px slot wastes 90% of its bytes.",
     ],
     tools: ["Squoosh", "TinyPNG", "ShortPixel / Imagify (WordPress)"],
     aiPrompt: "My website is serving images in JPEG, PNG, or GIF format instead of modern formats. Can you show me how to convert them to WebP or AVIF, which tools to use, and how to serve the modern format with a JPEG/PNG fallback for browsers that don't support it yet?",
     stepImages: {
       0: { src: "/guides/image-formats-compare.svg", caption: "Typical savings for the same photo." },
-      1: { src: "/guides/squoosh-editor.png", caption: "Squoosh.app converts and compresses right in your browser — free, no signup." },
+      1: { src: "/guides/squoosh-editor.png", caption: "Squoosh.app converts and compresses right in your browser: free, no signup." },
     },
   },
   "lazy-loading": {
@@ -149,12 +149,12 @@ export const GUIDES: Record<string, Guide> = {
       "Every image downloaded before the page can render delays what the visitor actually came to see. Lazy loading off-screen images is a one-line change per image with zero visual downside.",
     steps: [
       'Add loading="lazy" to every <img> tag that appears below the first screen.',
-      'Do NOT lazy-load your hero/LCP image — that one should get fetchpriority="high" instead (see our LCP guide).',
+      'Do NOT lazy-load your hero/LCP image: that one should get fetchpriority="high" instead (see our LCP guide).',
       "On WordPress, most caching/optimisation plugins can add lazy loading site-wide in one setting (native browser lazy loading, not JavaScript-based).",
       "Re-run your audit to confirm the image weight on initial load dropped.",
     ],
     tools: ["PageSpeed Insights"],
-    stepImages: { 1: { src: "/guides/lazy-loading-code.svg", caption: "The attribute in context — plus the one image you should NOT lazy-load." } },
+    stepImages: { 1: { src: "/guides/lazy-loading-code.svg", caption: "The attribute in context, plus the one image you should NOT lazy-load." } },
     aiPrompt: "Several images on my website load immediately even when they're far below the visible screen, wasting bandwidth and slowing the initial load. Can you explain how to add loading='lazy' correctly, which images must NOT be lazy-loaded (above-the-fold / hero images), and how to verify it's working?",
   },
   "render-blocking-resources": {
@@ -170,10 +170,10 @@ export const GUIDES: Record<string, Guide> = {
       "Add the defer attribute to every <script> in the head that isn't needed to render the initial view.",
       "Move analytics and marketing tags into a tag manager configured to load after page interaction.",
       "Inline the small amount of CSS needed for the first screen (critical CSS) and load the rest asynchronously.",
-      "Remove plugins/tag-manager entries you no longer use — dead tags are the most common offender.",
+      "Remove plugins/tag-manager entries you no longer use: dead tags are the most common offender.",
     ],
     tools: ["PageSpeed Insights", "Chrome DevTools → Coverage"],
-    aiPrompt: "My website has render-blocking JavaScript and CSS in the <head> that are delaying the first paint — visitors see a blank page until they finish loading. Can you walk me through adding defer to scripts, inlining critical CSS, and loading the rest asynchronously with concrete examples?",
+    aiPrompt: "My website has render-blocking JavaScript and CSS in the <head> that are delaying the first paint: visitors see a blank page until they finish loading. Can you walk me through adding defer to scripts, inlining critical CSS, and loading the rest asynchronously with concrete examples?",
   },
 
   // ── SEO ──────────────────────────────────────────────────────────────────
@@ -187,15 +187,15 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "A missing, duplicate, or vague title makes Google invent its own snippet and weakens your ranking for every search that describes your business. Fixing it is the highest-value 10-minute SEO task there is.",
     steps: [
-      "Describe what the page offers, for whom, in plain words — e.g. 'Wedding Photography in Leeds | Studio Name'.",
+      "Describe what the page offers, for whom, in plain words: e.g. 'Wedding Photography in Leeds | Studio Name'.",
       "Keep it between 50 and 60 characters so Google doesn't truncate it.",
       "Put the most important keyword phrase near the beginning.",
-      "Make every page's title unique — duplicate titles make pages compete with each other.",
+      "Make every page's title unique: duplicate titles make pages compete with each other.",
       "In most CMSs this is an 'SEO title' field (Yoast/Rank Math on WordPress) or an SEO settings panel.",
     ],
     tools: ["Google Search Console", "Ahrefs/Semrush site audit"],
     stepImages: { 1: { src: "/guides/serp-snippet.svg", caption: "How your title and description appear in search results." } },
-    aiPrompt: "My web page is missing a proper title tag — it's either absent, too long, or too generic to earn clicks from search results. Can you write a compelling title tag for a page about [describe your page] that is under 60 characters, includes the primary keyword near the start, and will improve click-through rate?",
+    aiPrompt: "My web page is missing a proper title tag: it's either absent, too long, or too generic to earn clicks from search results. Can you write a compelling title tag for a page about [describe your page] that is under 60 characters, includes the primary keyword near the start, and will improve click-through rate?",
   },
   "meta-description": {
     slug: "meta-description",
@@ -205,12 +205,12 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "The meta description is the summary text Google shows beneath your page title. It doesn't directly affect ranking, but it decides whether searchers click on you or the result above you.",
     whyItMatters:
-      "With no description, Google picks random text from the page — often a menu or legal footer. A written description reliably raises click-through, which is free traffic for zero code.",
+      "With no description, Google picks random text from the page: often a menu or legal footer. A written description reliably raises click-through, which is free traffic for zero code.",
     steps: [
       "Write 140–160 characters: what the visitor gets + a reason to click ('See prices', 'Free trial').",
-      "Include the words a searcher would type — Google bolds them in the snippet.",
+      "Include the words a searcher would type: Google bolds them in the snippet.",
       "In WordPress this is the 'meta description' field in your SEO plugin; on Shopify it's the 'search engine listing' on each product/page.",
-      "Write unique descriptions for your top pages first — homepage, main services, best products.",
+      "Write unique descriptions for your top pages first: homepage, main services, best products.",
     ],
     tools: ["Google Search Console", "SERP snippet preview tools"],
     stepImages: { 2: { src: "/guides/serp-snippet.svg", caption: "The description is your pitch under the blue link." } },
@@ -226,9 +226,9 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Search engines weight the H1 heavily to understand page topic. A clear single H1 that matches the page title reinforces what you rank for and improves accessibility at the same time.",
     steps: [
-      "Open the page in your editor and check the heading structure — exactly one <h1>, then <h2>/<h3> for sections.",
+      "Open the page in your editor and check the heading structure: exactly one <h1>, then <h2>/<h3> for sections.",
       "Make the H1 similar to the page title but written for humans, not search engines.",
-      "In page builders, the 'Title' block usually renders as H1 — extra styled headings should be changed to H2.",
+      "In page builders, the 'Title' block usually renders as H1: extra styled headings should be changed to H2.",
       "Remove empty or decorative heading tags left behind by templates.",
     ],
     tools: ["Chrome DevTools → Elements", "HeadingsMap extension"],
@@ -244,13 +244,13 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Missing alt text excludes visually impaired visitors (an accessibility and legal risk), forfeits Google Images traffic, and fails a Core Web Vitals-adjacent audit that customers increasingly check.",
     steps: [
-      "Describe what the image shows in a short phrase: 'Oak dining table with six chairs' — not 'image' or 'photo'.",
+      "Describe what the image shows in a short phrase: 'Oak dining table with six chairs', not 'image' or 'photo'.",
       "Leave alt text empty for purely decorative images (alt=\"\") so screen readers skip them.",
-      "In WordPress/Shopify this is the 'Alt text' field in the image settings — fill it as you upload, then backfill the existing library.",
+      "In WordPress/Shopify this is the 'Alt text' field in the image settings: fill it as you upload, then backfill the existing library.",
       "Prioritise pages that get traffic first; our SEO tab lists exactly which images are missing alt text.",
     ],
     tools: ["Our SEO audit tab", "WAVE accessibility extension"],
-    aiPrompt: "Many images on my website are missing alt text, which hurts both accessibility and image SEO. Can you explain the rules for writing good alt text — when to describe the image versus leaving it empty for decorative images — and give me concrete examples for different image types?",
+    aiPrompt: "Many images on my website are missing alt text, which hurts both accessibility and image SEO. Can you explain the rules for writing good alt text (when to describe the image versus leaving it empty for decorative images), and give me concrete examples for different image types?",
   },
   "open-graph-tags": {
     slug: "open-graph-tags",
@@ -260,15 +260,15 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "Open Graph (og:) tags tell WhatsApp, LinkedIn, X, Facebook, and iMessage what image and text to show in a link preview. Without them, shares show a bare link or a random image.",
     whyItMatters:
-      "Links with good preview images get substantially more clicks. If anyone ever shares your site — you, customers, a viral moment — you want the best possible first impression.",
+      "Links with good preview images get substantially more clicks. If anyone ever shares your site (you, customers, a viral moment), you want the best possible first impression.",
     steps: [
       "Add these to the page head: og:title, og:description, og:type, og:url, and og:image (a 1200×630 image).",
-      "Most SEO plugins add these automatically from your title/description — enable the 'social' section and set a default share image.",
+      "Most SEO plugins add these automatically from your title/description: enable the 'social' section and set a default share image.",
       "Use absolute URLs for og:image and keep the file under ~1MB.",
       "Verify with the debuggers below after publishing (they also clear the platforms' caches).",
     ],
     tools: ["Facebook Sharing Debugger", "LinkedIn Post Inspector"],
-    aiPrompt: "My website is missing Open Graph meta tags, so links shared on social media show no preview image, title, or description — just a bare URL. Can you show me the exact og: tags I need to add to the HTML <head> and explain the correct image dimensions for social previews?",
+    aiPrompt: "My website is missing Open Graph meta tags, so links shared on social media show no preview image, title, or description: just a bare URL. Can you show me the exact og: tags I need to add to the HTML <head> and explain the correct image dimensions for social previews?",
   },
   "canonical-url": {
     slug: "canonical-url",
@@ -278,15 +278,15 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "The same page is often reachable at multiple URLs (with/without www, with query parameters, http/https). A canonical link tells search engines which one to index so the duplicates don't compete.",
     whyItMatters:
-      "Without a canonical, Google may index the wrong variant and split your ranking signals across duplicate URLs — weakening the page for its most important searches.",
+      "Without a canonical, Google may index the wrong variant and split your ranking signals across duplicate URLs: weakening the page for its most important searches.",
     steps: [
       'Add <link rel="canonical" href="https://yourdomain.com/preferred-path"> to the page head.',
-      "Most SEO plugins output this automatically — check that the setting is on and points at the live domain.",
+      "Most SEO plugins output this automatically: check that the setting is on and points at the live domain.",
       "Make sure the canonical is absolute (full URL with https) and self-referencing on normal pages.",
-      "Verify the page renders on one canonical domain — redirect http→https and non-www→www (or vice versa) at the server.",
+      "Verify the page renders on one canonical domain: redirect http→https and non-www→www (or vice versa) at the server.",
     ],
     tools: ["Google Search Console → URL Inspection"],
-    aiPrompt: "My website has duplicate content issues because pages are reachable at multiple URLs — with and without www, with and without trailing slash, and over both HTTP and HTTPS. Can you show me how to add a canonical link tag and configure server-level redirects to consolidate everything to one authoritative URL?",
+    aiPrompt: "My website has duplicate content issues because pages are reachable at multiple URLs, with and without www, with and without trailing slash, and over both HTTP and HTTPS. Can you show me how to add a canonical link tag and configure server-level redirects to consolidate everything to one authoritative URL?",
   },
   "https": {
     slug: "https",
@@ -298,7 +298,7 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Chrome and Firefox warn visitors away from non-HTTPS pages, Google uses HTTPS as a ranking signal, and payment or login flows are effectively impossible without it.",
     steps: [
-      "Get a free certificate from Let's Encrypt — most hosts (and Cloudflare) issue and renew them automatically in the dashboard.",
+      "Get a free certificate from Let's Encrypt: most hosts (and Cloudflare) issue and renew them automatically in the dashboard.",
       "Redirect all http:// traffic to https:// with a permanent (301) redirect.",
       "Update any hardcoded http:// links inside your pages and CMS to https://.",
       "Re-run the audit to confirm the padlock and check for mixed-content warnings (see our mixed content guide).",
@@ -314,10 +314,10 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       'The viewport tag (<meta name="viewport" content="width=device-width, initial-scale=1">) tells phones to render the page at the device\'s width. Without it, phones show a zoomed-out desktop layout.',
     whyItMatters:
-      "Missing viewport makes a site unusable on phones — visitors must pinch and zoom to read anything. Google also flags it in mobile usability reports and ranks accordingly.",
+      "Missing viewport makes a site unusable on phones: visitors must pinch and zoom to read anything. Google also flags it in mobile usability reports and ranks accordingly.",
     steps: [
       'Add <meta name="viewport" content="width=device-width, initial-scale=1"> inside the <head> of every page.',
-      "In most templates and page builders this is already present — if it's missing, your theme is very old; update it.",
+      "In most templates and page builders this is already present: if it's missing, your theme is very old; update it.",
       "Then test on a real phone: text should be readable without zooming and no horizontal scrolling should occur.",
     ],
     tools: ["Chrome DevTools device toolbar"],
@@ -331,15 +331,15 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "A meta robots tag (noindex/nofollow) or a robots.txt rule is instructing search engines not to index this page. Sometimes that's intentional (admin pages), but on a public page it means Google cannot rank it at all.",
     whyItMatters:
-      "A noindex on your homepage or key service pages makes every other SEO effort pointless — the page is invisible to search no matter how good it is.",
+      "A noindex on your homepage or key service pages makes every other SEO effort pointless: the page is invisible to search no matter how good it is.",
     steps: [
-      "Search the page source for 'noindex' — it usually appears in a <meta name=\"robots\"> tag.",
+      "Search the page source for 'noindex': it usually appears in a <meta name=\"robots\"> tag.",
       "Remove the noindex directive from pages that should rank (CMS 'discourage search engines' settings and staging plugins are common culprits).",
       "Check yoursite.com/robots.txt for Disallow rules covering important paths.",
       "After fixing, request re-indexing in Google Search Console.",
     ],
     tools: ["Google Search Console → URL Inspection", "Robots.txt tester"],
-    aiPrompt: "My website's robots.txt file is missing or misconfigured — I'm not sure if it's blocking important pages or allowing access to admin areas. Can you show me how to write a correct robots.txt that lets search engines crawl public pages, blocks private paths, and references my sitemap?",
+    aiPrompt: "My website's robots.txt file is missing or misconfigured: I'm not sure if it's blocking important pages or allowing access to admin areas. Can you show me how to write a correct robots.txt that lets search engines crawl public pages, blocks private paths, and references my sitemap?",
   },
   "structured-data": {
     slug: "structured-data",
@@ -349,7 +349,7 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "Structured data (JSON-LD) explicitly tells search engines what your content is: a product with a price, a business with opening hours, an article with an author.",
     whyItMatters:
-      "Pages with valid schema can win rich results — star ratings, prices, FAQs directly in search — which visibly increase click-through over plain blue links.",
+      "Pages with valid schema can win rich results (star ratings, prices, FAQs directly in search), which visibly increase click-through over plain blue links.",
     steps: [
       "Pick the schema type that matches the page: LocalBusiness, Product, Article, FAQ, or BreadcrumbList.",
       "Generate the JSON-LD with Google's Rich Results template or a schema generator, then paste it before </head>.",
@@ -370,7 +370,7 @@ export const GUIDES: Record<string, Guide> = {
       "The 'Not fully secure' warning erodes trust at the exact moment visitors check who you are, and blocked assets can silently break images, fonts, or embeds.",
     steps: [
       "Open DevTools → Console; Chrome lists every insecure URL on the page.",
-      "Update those references to https:// — most are old image links, fonts, or embed code pasted years ago.",
+      "Update those references to https://: most are old image links, fonts, or embed code pasted years ago.",
       "In WordPress, a search-and-replace plugin (or Better Search Replace on the database) fixes bulk http:// links.",
       "Add a Content-Security-Policy upgrade-insecure-requests directive as a safety net (see our security headers guide).",
     ],
@@ -389,10 +389,10 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "The CTA is the single biggest conversion lever on any page. Visitors rarely hunt for how to buy or contact you; if the action isn't obvious within seconds, they leave.",
     steps: [
-      "Choose the one action that matters most on this page — a page can have multiple buttons, but they should all lead to the same journey.",
+      "Choose the one action that matters most on this page: a page can have multiple buttons, but they should all lead to the same journey.",
       "Place it above the fold (visible without scrolling) and repeat it at the bottom.",
       "Write specific text: 'Get my free quote' beats 'Submit' or 'Learn more'.",
-      "Make it look clickable: high-contrast colour, generous padding, rounded corners — it should be the most visually prominent element on the page.",
+      "Make it look clickable: high-contrast colour, generous padding, rounded corners. It should be the most visually prominent element on the page.",
       "On mobile, keep it thumb-reachable and at least ~44px tall.",
     ],
     tools: ["Our conversion score tab", "A/B testing tool (later)"],
@@ -406,15 +406,15 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "Trust signals are visible proof that real people and institutions vouch for you: testimonials, review scores, client logos, certifications, secure-payment badges, and guarantees.",
     whyItMatters:
-      "Visitors arriving from search don't know you. Without visible proof others survived the experience, most will not hand over money or contact details — no matter how good the offer looks.",
+      "Visitors arriving from search don't know you. Without visible proof others survived the experience, most will not hand over money or contact details: no matter how good the offer looks.",
     steps: [
-      "Add 2–3 real customer testimonials near your CTA — with names, photos, and specifics ('doubled our leads in 2 months').",
+      "Add 2–3 real customer testimonials near your CTA, with names, photos, and specifics ('doubled our leads in 2 months').",
       "Show aggregate review scores with the source (Google, Trustpilot, Capterra) rather than anonymous stars.",
       "Display the logos of known clients or certifications you hold.",
-      "Add a guarantee or refund policy near the buy button — it removes the perceived risk of acting.",
+      "Add a guarantee or refund policy near the buy button: it removes the perceived risk of acting.",
     ],
     tools: ["Our conversion score tab", "Review platforms (Trustpilot, Google Reviews)"],
-    aiPrompt: "My website lacks visible trust signals — no reviews, testimonials, security badges, or guarantees — which is likely causing visitors to leave without converting. Can you list the most effective trust elements to add, where to place them on the page, and what they should say to reduce buying anxiety?",
+    aiPrompt: "My website lacks visible trust signals (no reviews, testimonials, security badges, or guarantees), which is likely causing visitors to leave without converting. Can you list the most effective trust elements to add, where to place them on the page, and what they should say to reduce buying anxiety?",
   },
   "social-proof": {
     slug: "social-proof",
@@ -429,10 +429,10 @@ export const GUIDES: Record<string, Guide> = {
       "Lead with a number if you have one: 'Trusted by 4,000+ shops' under the hero headline.",
       "Embed 3 of your best reviews (with real names/faces) near the CTA.",
       "Link one short case study with a concrete result.",
-      "Refresh it — a 'as featured in' strip from 2017 reads as neglect.",
+      "Refresh it: a 'as featured in' strip from 2017 reads as neglect.",
     ],
     tools: ["Our conversion score tab"],
-    aiPrompt: "My website has no social proof — no customer reviews, user counts, or testimonials to reassure first-time visitors. Can you explain the most effective types of social proof for my site type [SaaS / e-commerce / service business], how to collect it, and where it should appear on the page?",
+    aiPrompt: "My website has no social proof: no customer reviews, user counts, or testimonials to reassure first-time visitors. Can you explain the most effective types of social proof for my site type [SaaS / e-commerce / service business], how to collect it, and where it should appear on the page?",
   },
   "mobile-friendliness": {
     slug: "mobile-friendliness",
@@ -446,12 +446,12 @@ export const GUIDES: Record<string, Guide> = {
     steps: [
       "Open the site on a real phone and list what breaks: overlapping text, cut-off forms, tiny buttons, horizontal scroll.",
       "Ensure the viewport meta tag is present (see our viewport guide).",
-      "Use responsive layout rules (CSS media queries or your builder's mobile settings) — never fixed pixel widths for main containers.",
+      "Use responsive layout rules (CSS media queries or your builder's mobile settings): never fixed pixel widths for main containers.",
       "Make tap targets at least 44×44px with space between them.",
-      "Fix the worst offender first, re-test, repeat — mobile issues are usually a handful of repeating patterns.",
+      "Fix the worst offender first, re-test, repeat: mobile issues are usually a handful of repeating patterns.",
     ],
     tools: ["Chrome DevTools device toolbar", "PageSpeed Insights"],
-    aiPrompt: "My website fails Google's mobile-friendliness test — buttons are too small to tap, text requires zooming, or the layout breaks on small screens. Can you walk me through the specific CSS and HTML changes needed to pass the test, and show me how to verify with Chrome DevTools?",
+    aiPrompt: "My website fails Google's mobile-friendliness test: buttons are too small to tap, text requires zooming, or the layout breaks on small screens. Can you walk me through the specific CSS and HTML changes needed to pass the test, and show me how to verify with Chrome DevTools?",
   },
   "contact-info": {
     slug: "contact-info",
@@ -465,11 +465,11 @@ export const GUIDES: Record<string, Guide> = {
     steps: [
       "Add a Contact, Support or Community link to the site footer on every page. A link to your GitHub Discussions or issue tracker is fine for open-source and side projects.",
       "You do not need to publish an email address or phone number. A contact form or a hosted support page gives visitors a route without exposing either.",
-      "If you do publish a phone number or email, make them clickable (tel: and mailto: links) — half of mobile visitors will tap them.",
+      "If you do publish a phone number or email, make them clickable (tel: and mailto: links). Half of mobile visitors will tap them.",
       "Add a Contact page and link it in the main navigation or footer.",
     ],
     tools: ["Our UX tab"],
-    aiPrompt: "My website makes it hard for visitors to contact me — there's no obvious contact route. Can you suggest a way for visitors to reach me without publishing my email or phone number, tell me exactly where it should appear, and how to make any phone or email links clickable on mobile?",
+    aiPrompt: "My website makes it hard for visitors to contact me: there's no obvious contact route. Can you suggest a way for visitors to reach me without publishing my email or phone number, tell me exactly where it should appear, and how to make any phone or email links clickable on mobile?",
   },
   "privacy-policy": {
     slug: "privacy-policy",
@@ -484,7 +484,7 @@ export const GUIDES: Record<string, Guide> = {
       "Generate a baseline policy with a free generator (Termly, iubenda, or your national data authority's template).",
       "Adapt it to reality: list the analytics/ad tools you actually use and any contact form storage.",
       "Publish it at /privacy and link it in the footer of every page.",
-      "If you use cookies for analytics or ads, add a consent banner (we do — see the banner on this site).",
+      "If you use cookies for analytics or ads, add a consent banner (we do: see the banner on this site).",
     ],
     tools: ["Termly", "iubenda", "Google Privacy & Terms generator"],
     aiPrompt: "My website collects email addresses, uses cookies, and has Google Analytics, but has no privacy policy page. Can you explain what a privacy policy must cover for a small website under GDPR/CCPA and help me draft the key sections (data collection, cookies, user rights, contact)?",
@@ -497,7 +497,7 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "Clarity measures whether the hero section instantly answers 'what is this, who is it for, and why should I care'. Clever slogans and jargon score low; concrete statements score high.",
     whyItMatters:
-      "Visitors give a new page a few seconds. If they can't tell what you offer, they don't scroll further or click anything — every other improvement on the page is wasted.",
+      "Visitors give a new page a few seconds. If they can't tell what you offer, they don't scroll further or click anything: every other improvement on the page is wasted.",
     steps: [
       "Rewrite the hero headline to the formula: what you do + for whom + the outcome ('Wedding photography for couples who hate posing').",
       "Add a one-sentence subheadline with the concrete benefit.",
@@ -506,7 +506,7 @@ export const GUIDES: Record<string, Guide> = {
       "Test on someone outside your industry: can they repeat what you offer after five seconds?",
     ],
     tools: ["Our conversion score tab"],
-    aiPrompt: "My website's main message is unclear — visitors can't tell what I offer, who it's for, or what to do next within the first five seconds. Can you help me write a hero headline and sub-headline that passes the '5-second test' and makes the value proposition immediately obvious?",
+    aiPrompt: "My website's main message is unclear: visitors can't tell what I offer, who it's for, or what to do next within the first five seconds. Can you help me write a hero headline and sub-headline that passes the '5-second test' and makes the value proposition immediately obvious?",
   },
   "conversion-friction": {
     slug: "conversion-friction",
@@ -518,9 +518,9 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Industry benchmarks lose roughly a quarter of users at each unnecessary step. High-friction flows silently discard the visitors your content worked so hard to win.",
     steps: [
-      "Count the fields in your main form — remove every one you don't strictly need (phone, company, 'how did you hear about us' go first).",
+      "Count the fields in your main form: remove every one you don't strictly need (phone, company, 'how did you hear about us' go first).",
       "Allow guest checkout / contact without account creation; ask for account details after the transaction.",
-      "Show all costs early — surprise shipping or fees at the last step is the classic conversion killer.",
+      "Show all costs early: surprise shipping or fees at the last step is the classic conversion killer.",
       "Enable browser autofill and show progress indicators on multi-step forms.",
       "Test the flow on a phone: if it's painful there, it's losing most of your conversions.",
     ],
@@ -537,10 +537,10 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Visitors use specificity to judge credibility. Concrete claims ('installed in 2 hours', '4.9★ from 300 reviews') are believable and memorable; generic claims are neither.",
     steps: [
-      "Find every phrase that would survive a competitor pasting it — those are your targets.",
+      "Find every phrase that would survive a competitor pasting it: those are your targets.",
       "Replace each with a number, name, or concrete outcome: 'same-day service in Leeds' not 'fast local service'.",
       "Rewrite the hero headline last, using the clarity formula (what + who + outcome).",
-      "Read the page aloud — if you'd skip the sentence in a real conversation, cut or sharpen it.",
+      "Read the page aloud: if you'd skip the sentence in a real conversation, cut or sharpen it.",
     ],
     tools: ["Our vague language tab", "Hemingway Editor"],
     aiPrompt: "My website uses vague marketing language like 'world-class', 'cutting-edge', and 'innovative solutions' that visitors skip over because it carries no real information. Can you help me rewrite the following copy to be concrete, specific, and benefit-focused? [paste your text here]",
@@ -579,11 +579,11 @@ export const GUIDES: Record<string, Guide> = {
     steps: [
       "Update the footer copyright year (make it dynamic so it never goes stale again).",
       "Review your top pages: fix old prices, screenshots, dates, and dead references.",
-      "Refresh and re-publish your best old posts with updated information — keep the URL, update the date.",
+      "Refresh and re-publish your best old posts with updated information: keep the URL, update the date.",
       "Remove or redirect pages for products you no longer offer.",
     ],
     tools: ["Our freshness tab", "Google Search Console (pages losing traffic)"],
-    aiPrompt: "My website's content looks outdated — old copyright years, dated screenshots, and references to past events make it appear abandoned. Can you give me a content audit process and a prioritised list of what to update first to signal freshness to visitors and search engines?",
+    aiPrompt: "My website's content looks outdated: old copyright years, dated screenshots, and references to past events make it appear abandoned. Can you give me a content audit process and a prioritised list of what to update first to signal freshness to visitors and search engines?",
   },
   "reading-level": {
     slug: "reading-level",
@@ -591,9 +591,9 @@ export const GUIDES: Record<string, Guide> = {
     category: "Content",
     summary: "Most web copy should be readable at roughly Grade 8: clear, short, direct.",
     whatItMeans:
-      "Reading level estimates the education needed to follow your text. 'Advanced' usually means long sentences, dense paragraphs, and jargon — not that your audience is stupid, but that the writing makes them work.",
+      "Reading level estimates the education needed to follow your text. 'Advanced' usually means long sentences, dense paragraphs, and jargon, not that your audience is stupid, but that the writing makes them work.",
     whyItMatters:
-      "Even expert readers skim web pages. Plain language is read by more people, understood by more people, and converts more people — every serious style guide for the web says the same thing.",
+      "Even expert readers skim web pages. Plain language is read by more people, understood by more people, and converts more people: every serious style guide for the web says the same thing.",
     steps: [
       "Aim for sentences under ~20 words and one idea per sentence.",
       "Replace jargon with the word your customer would use.",
@@ -602,7 +602,7 @@ export const GUIDES: Record<string, Guide> = {
       "Run the page through Hemingway and fix the red/yellow highlights.",
     ],
     tools: ["Hemingway Editor", "Our content tab"],
-    aiPrompt: "My website's copy is too complex — long sentences, industry jargon, and dense paragraphs that most visitors won't read. Can you help me simplify the following text to a clear reading level suitable for a general audience while keeping the meaning intact? [paste your text here]",
+    aiPrompt: "My website's copy is too complex: long sentences, industry jargon, and dense paragraphs that most visitors won't read. Can you help me simplify the following text to a clear reading level suitable for a general audience while keeping the meaning intact? [paste your text here]",
   },
   "search-intent": {
     slug: "search-intent",
@@ -614,13 +614,13 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Google ranks pages that satisfy the searcher's intent and demotes pages people immediately bounce from. Misaligned content gets neither rankings nor conversions no matter how well written it is.",
     steps: [
-      "Search your target keyword in an incognito window and study the top 5 results — their page type (guide, product, tool, pricing) IS the intent.",
+      "Search your target keyword in an incognito window and study the top 5 results: their page type (guide, product, tool, pricing) IS the intent.",
       "Compare with your page: if the results are how-to guides and yours is a sales page, rebuild it to match the dominant type.",
-      "Answer the searcher's actual question in the first screen — don't make them dig for it.",
+      "Answer the searcher's actual question in the first screen: don't make them dig for it.",
       "Cover the sub-questions searchers obviously have next (the 'People also ask' boxes are a cheat sheet).",
     ],
     tools: ["Google Search Console", "'People also ask' boxes"],
-    aiPrompt: "My page targets a keyword but the content doesn't match what people searching that term actually want — visitors bounce immediately. Can you help me diagnose the intent mismatch and restructure the page to match what searchers are really looking for when they type that query?",
+    aiPrompt: "My page targets a keyword but the content doesn't match what people searching that term actually want: visitors bounce immediately. Can you help me diagnose the intent mismatch and restructure the page to match what searchers are really looking for when they type that query?",
   },
   "broken-links": {
     slug: "broken-links",
@@ -632,10 +632,10 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Broken internal links waste Google's crawl budget and dilute rankings; broken external links to your own moved pages frustrate exactly the visitors who were most engaged.",
     steps: [
-      "Open our SEO tab — it lists every broken link found with its location.",
+      "Open our SEO tab: it lists every broken link found with its location.",
       "Fix internal links first: update the URL, or add a 301 redirect from the old address to the new one.",
       "For links to other people's dead pages, either remove the link or replace it with a working source.",
-      "Set up a recurring check (our re-run, or a crawler like Screaming Frog) — link rot returns.",
+      "Set up a recurring check (our re-run, or a crawler like Screaming Frog): link rot returns.",
     ],
     tools: ["Our SEO tab", "Screaming Frog", "Ahrefs broken link report"],
     aiPrompt: "My website has broken links returning 404 errors that damage user experience and waste crawl budget. Can you give me a step-by-step process to audit all my links, decide what to do with each broken one (redirect, remove, or replace), and prevent the same issue recurring?",
@@ -648,12 +648,12 @@ export const GUIDES: Record<string, Guide> = {
     category: "SEO",
     summary: "Tell search engines exactly which pages to index with a machine-readable sitemap.",
     whatItMeans:
-      "An XML sitemap is a file at /sitemap.xml that lists all your important pages, their last-modified dates, and how often they change. Search engines read it to discover content they might otherwise miss — especially on large sites or sites with few internal links.",
+      "An XML sitemap is a file at /sitemap.xml that lists all your important pages, their last-modified dates, and how often they change. Search engines read it to discover content they might otherwise miss, especially on large sites or sites with few internal links.",
     whyItMatters:
       "Without a sitemap, search engines rely on crawling links to find pages. New or orphaned pages can go unindexed for weeks. A sitemap also lets you signal priority and freshness, giving you control over how Googlebot spends its crawl budget.",
     steps: [
-      "Generate the sitemap: most CMS platforms (WordPress, Shopify, Webflow) do this automatically — check Settings or install a plugin like Yoast SEO or Rank Math.",
-      "For custom sites, use a sitemap generator tool (xml-sitemaps.com or a build-step library) or write the XML manually — each <url> entry needs a <loc> and ideally a <lastmod>.",
+      "Generate the sitemap: most CMS platforms (WordPress, Shopify, Webflow) do this automatically. Check Settings or install a plugin like Yoast SEO or Rank Math.",
+      "For custom sites, use a sitemap generator tool (xml-sitemaps.com or a build-step library) or write the XML manually: each <url> entry needs a <loc> and ideally a <lastmod>.",
       "Place the file at https://yourdomain.com/sitemap.xml and verify it's publicly accessible.",
       "Reference the sitemap in your robots.txt file: add the line Sitemap: https://yourdomain.com/sitemap.xml at the bottom.",
       "Submit the sitemap in Google Search Console (Indexing → Sitemaps → Add). This triggers Googlebot to process it immediately.",
@@ -669,16 +669,16 @@ export const GUIDES: Record<string, Guide> = {
     category: "SEO",
     summary: "Tell search engines which language/region version of a page to show each visitor.",
     whatItMeans:
-      "Hreflang is an HTML attribute that tells Google which version of a page targets which language and country. Without it, Google may show the wrong language version in search results — showing your English page to French users, for example.",
+      "Hreflang is an HTML attribute that tells Google which version of a page targets which language and country. Without it, Google may show the wrong language version in search results: showing your English page to French users, for example.",
     whyItMatters:
       "Incorrect or missing hreflang causes duplicate content penalties and sends the wrong language version to the wrong users, increasing bounce rate. It is the single most impactful technical fix for internationally-targeted sites.",
     steps: [
-      "Decide your URL structure: separate domains (fr.example.com), subdirectories (/fr/), or subdomains are all valid — subdirectories are easiest to manage.",
+      "Decide your URL structure: separate domains (fr.example.com), subdirectories (/fr/), or subdomains are all valid. Subdirectories are easiest to manage.",
       "Add hreflang link tags in the <head> of every page variant, including a self-referencing tag: <link rel=\"alternate\" hreflang=\"en\" href=\"https://example.com/page\" />",
       "Always include an x-default tag for the fallback language: <link rel=\"alternate\" hreflang=\"x-default\" href=\"https://example.com/page\" />",
-      "Every page in the cluster must link to every other page — hreflang is bidirectional and breaks silently if any side is missing.",
+      "Every page in the cluster must link to every other page: hreflang is bidirectional and breaks silently if any side is missing.",
       "Validate using Google Search Console (International Targeting report) or the hreflang validator at ahrefs.com/hreflang.",
-      "If you have many pages, implement hreflang via the XML sitemap instead of the HTML head — it scales better and is equally supported by Google.",
+      "If you have many pages, implement hreflang via the XML sitemap instead of the HTML head: it scales better and is equally supported by Google.",
       "Set the page's own language on the <html> element (<html lang=\"en-GB\">). Use hyphens in lang and hreflang values (en-GB, not en_GB), and keep og:locale in step with it (og:locale uses an underscore: en_GB).",
       "Make every hreflang URL absolute (https://example.com/fr/), and make sure each page lists itself plus an x-default entry.",
     ],
@@ -692,16 +692,16 @@ export const GUIDES: Record<string, Guide> = {
     category: "Performance",
     summary: "Prevent invisible or mismatched text while fonts load by preloading and using font-display.",
     whatItMeans:
-      "When a browser encounters a custom font, it can either show invisible text (FOIT — Flash of Invisible Text) or show the fallback font first and swap when the custom font arrives (FOUT — Flash of Unstyled Text). By default, most browsers choose FOIT, which makes text disappear for up to 3 seconds on slow connections.",
+      "When a browser encounters a custom font, it can either show invisible text (FOIT, Flash of Invisible Text) or show the fallback font first and swap when the custom font arrives (FOUT, Flash of Unstyled Text). By default, most browsers choose FOIT, which makes text disappear for up to 3 seconds on slow connections.",
     whyItMatters:
       "Font loading directly impacts LCP and CLS. Invisible text delays LCP. A font swap that shifts layout increments CLS. Both are Core Web Vitals that Google measures in ranking. Optimised font loading can improve your Lighthouse performance score by 5–15 points.",
     steps: [
       "Add font-display: swap to every @font-face rule so the browser shows fallback text immediately instead of hiding it.",
       "Preload your most important font files: <link rel=\"preload\" href=\"/fonts/your-font.woff2\" as=\"font\" type=\"font/woff2\" crossorigin>",
-      "Self-host fonts instead of loading from Google Fonts — this removes one external DNS lookup and connection. Use google-webfonts-helper.herokuapp.com to download the files.",
-      "Only load the font weights and styles you actually use — every unused variant is a wasted download.",
+      "Self-host fonts instead of loading from Google Fonts: this removes one external DNS lookup and connection. Use google-webfonts-helper.herokuapp.com to download the files.",
+      "Only load the font weights and styles you actually use: every unused variant is a wasted download.",
       "Use a system font stack as your fallback and tweak its metrics (size-adjust, ascent-override, descent-override) to minimise layout shift when your custom font swaps in.",
-      "Subset your fonts to only the characters used on the page using pyftsubset or a build tool — this can cut font file size by 50–80%.",
+      "Subset your fonts to only the characters used on the page using pyftsubset or a build tool: this can cut font file size by 50–80%.",
     ],
     tools: ["Google Fonts (font-display parameter)", "google-webfonts-helper", "Fontaine (automatic fallback metrics)"],
     aiPrompt: "My website uses custom web fonts that are causing a flash of invisible text (FOIT) or layout shifts when the font loads. Can you show me how to add font-display: swap, preload the key font files, and configure a close fallback font to minimise the visual disruption?",
@@ -715,14 +715,14 @@ export const GUIDES: Record<string, Guide> = {
     whatItMeans:
       "Browser caching tells a visitor's browser to store a copy of your assets (images, CSS, JS) locally for a set period. On repeat visits, the browser loads those assets instantly from disk instead of downloading them again. For most sites, 60–80% of assets can be cached.",
     whyItMatters:
-      "Repeat visitors are your warmest audience — subscribers, returning customers, people who bookmarked you. A slow repeat-visit experience loses real conversions. Caching also reduces your server and CDN bandwidth costs significantly.",
+      "Repeat visitors are your warmest audience: subscribers, returning customers, people who bookmarked you. A slow repeat-visit experience loses real conversions. Caching also reduces your server and CDN bandwidth costs significantly.",
     steps: [
-      "Set long cache durations (1 year) for versioned assets — files whose name or URL includes a hash or version number: Cache-Control: public, max-age=31536000, immutable",
+      "Set long cache durations (1 year) for versioned assets: files whose name or URL includes a hash or version number: Cache-Control: public, max-age=31536000, immutable",
       "Set shorter durations (1 hour to 1 day) for unversioned assets like your HTML, sitemap, and robots.txt: Cache-Control: public, max-age=3600",
-      "Use a CDN (Cloudflare, Fastly, or your host's built-in CDN) — they cache at the network edge and serve assets from a location close to the visitor.",
+      "Use a CDN (Cloudflare, Fastly, or your host's built-in CDN): they cache at the network edge and serve assets from a location close to the visitor.",
       "If on Apache, add caching rules in .htaccess. On nginx, add expires directives. On Cloudflare, Rules → Cache Rules handles it without touching your server.",
       "Test your headers with Chrome DevTools → Network → select any asset → Headers tab → look for Cache-Control and Age.",
-      "Verify with Google PageSpeed Insights — the 'Serve static assets with an efficient cache policy' audit lists every under-cached resource.",
+      "Verify with Google PageSpeed Insights: the 'Serve static assets with an efficient cache policy' audit lists every under-cached resource.",
     ],
     tools: ["Chrome DevTools → Network tab", "PageSpeed Insights", "Cloudflare Cache Rules"],
     aiPrompt: "My website isn't setting proper Cache-Control headers on static assets, so returning visitors have to re-download everything on each visit. Can you give me the exact header values for different asset types and show me how to configure them on [nginx / Apache / Cloudflare / Vercel]?",
@@ -734,15 +734,15 @@ export const GUIDES: Record<string, Guide> = {
     category: "SEO",
     summary: "Replace multi-hop redirects with direct ones to preserve link equity and speed up page loads.",
     whatItMeans:
-      "A redirect chain is when URL A redirects to URL B, which redirects to URL C. Each hop adds latency and dilutes the PageRank passed through the redirect. A redirect loop is when the chain eventually points back to itself — causing an infinite loop error in browsers and bots.",
+      "A redirect chain is when URL A redirects to URL B, which redirects to URL C. Each hop adds latency and dilutes the PageRank passed through the redirect. A redirect loop is when the chain eventually points back to itself: causing an infinite loop error in browsers and bots.",
     whyItMatters:
       "Each redirect hop adds 100–300ms of latency before the page loads. Googlebot follows redirect chains but passes less link equity with each hop. A chain of 3+ redirects can cause Googlebot to abandon the chain entirely, leaving your canonical page unindexed.",
     steps: [
-      "Audit your redirects using Screaming Frog (Spider → Response Codes → Redirection) or Ahrefs Site Audit — both flag chains and loops automatically.",
+      "Audit your redirects using Screaming Frog (Spider → Response Codes → Redirection) or Ahrefs Site Audit: both flag chains and loops automatically.",
       "Update every redirect in the chain to point directly to the final destination. If A→B→C, change A to redirect to C and remove the intermediate hop.",
-      "Update any internal links or hardcoded URLs that point to the old intermediate URLs — eliminating the need for the redirect entirely is always better than fixing the chain.",
+      "Update any internal links or hardcoded URLs that point to the old intermediate URLs: eliminating the need for the redirect entirely is always better than fixing the chain.",
       "For WordPress: use the Redirection plugin to manage all your redirects in one place. For custom sites: centralise redirects in nginx.conf, .htaccess, or a middleware file.",
-      "Check your XML sitemap — it should only contain final, canonical URLs, not redirecting ones.",
+      "Check your XML sitemap: it should only contain final, canonical URLs, not redirecting ones.",
       "After fixing, verify the chain is gone: curl -IL https://yourdomain.com/old-url should resolve in one or two hops maximum.",
     ],
     tools: ["Screaming Frog SEO Spider", "Ahrefs Site Audit", "httpstatus.io (single URL checker)"],
@@ -759,12 +759,12 @@ export const GUIDES: Record<string, Guide> = {
     whyItMatters:
       "Pages with no internal links pointing to them (orphan pages) are rarely indexed. Pages that receive many internal links with relevant anchor text rank higher for those terms. Internal linking is one of the highest-ROI, zero-cost SEO improvements available to any site.",
     steps: [
-      "Identify your most important pages (money pages, cornerstone content) — these should receive the most internal links from other pages.",
-      "Link from high-traffic or high-authority pages to your important pages using descriptive anchor text that includes the target keyword — not 'click here'.",
-      "Find orphan pages using Screaming Frog (Bulk Export → All Inlinks — filter for pages with 0 inlinks) and add at least one internal link to each.",
+      "Identify your most important pages (money pages, cornerstone content): these should receive the most internal links from other pages.",
+      "Link from high-traffic or high-authority pages to your important pages using descriptive anchor text that includes the target keyword, not 'click here'.",
+      "Find orphan pages using Screaming Frog (Bulk Export → All Inlinks: filter for pages with 0 inlinks) and add at least one internal link to each.",
       "Add contextual links from blog posts or guide pages to relevant product or service pages where the context is genuinely helpful.",
       "Build a hub structure: create one comprehensive page per topic (pillar page) and link all related articles back to it. This concentrates authority on the topic page.",
-      "Audit your navigation — every page in your main nav gets a free internal link from every other page. Make sure the nav links to your most important pages, not just the most recent ones.",
+      "Audit your navigation: every page in your main nav gets a free internal link from every other page. Make sure the nav links to your most important pages, not just the most recent ones.",
     ],
     tools: ["Screaming Frog SEO Spider", "Ahrefs Internal Link Opportunities", "Google Search Console → Links"],
     aiPrompt: "Several pages on my website have few or no internal links pointing to them, making them hard for search engines and visitors to discover. Can you show me how to build an effective internal linking strategy, find orphaned pages, and add contextual links using descriptive anchor text?",

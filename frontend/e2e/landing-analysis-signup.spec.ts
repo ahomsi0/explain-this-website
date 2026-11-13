@@ -32,7 +32,7 @@ test.describe("landing to analysis to signup", () => {
     await page.getByLabel("Website URL to analyze").fill("example.com");
     await page.getByRole("button", { name: "Analyze", exact: true }).click();
 
-    await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Example Store: Best Widgets Online")).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole("heading", { name: "Audit Overview", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "New Audit" })).toBeVisible();
 
@@ -85,7 +85,7 @@ test.describe("landing to analysis to signup", () => {
     await mockJson(page, "/api/auth/signup", testAuthResponse);
     await page.getByLabel("Website URL to analyze").fill("example.com");
     await page.getByRole("button", { name: "Analyze", exact: true }).click();
-    await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Example Store: Best Widgets Online")).toBeVisible({ timeout: 10_000 });
 
     // Sign-up is its own page now; afterwards the visitor is back on the report.
     await page.getByRole("link", { name: "Sign in", exact: true }).click();
@@ -101,7 +101,7 @@ test.describe("landing to analysis to signup", () => {
     await expect(page.getByText("tester@example.com")).toBeVisible();
     await page.getByRole("link", { name: "Continue" }).click();
 
-    await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Example Store: Best Widgets Online")).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByRole("button", { name: "Account menu" })).toBeVisible();
     await page.getByRole("button", { name: "Account menu" }).click();

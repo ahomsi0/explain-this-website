@@ -189,7 +189,7 @@ export function ConversionBlockersCard({ scores, ux }: ConversionBlockersCardPro
           <div className="flex items-center gap-2 py-3">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             <p className="text-xs text-emerald-400/80">
-              No conversion blockers detected — your page is well-optimised for conversions.
+              No conversion blockers detected: your page is well-optimised for conversions.
             </p>
           </div>
         ) : (
@@ -215,7 +215,7 @@ export function ConversionBlockersCard({ scores, ux }: ConversionBlockersCardPro
               </p>
               <p className="text-xs text-zinc-400 leading-relaxed">
                 {topBlocker.severity === "critical"
-                  ? `Start with "${topBlocker.title.toLowerCase()}" — it's actively stopping conversions.`
+                  ? `Start with "${topBlocker.title.toLowerCase()}": it's actively stopping conversions.`
                   : `Focus on "${topBlocker.title.toLowerCase()}" for the quickest improvement.`}
               </p>
             </div>

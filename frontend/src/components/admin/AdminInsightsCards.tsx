@@ -63,7 +63,7 @@ function host(url: string): string {
 function timeAgo(iso: string): string {
   if (!iso || iso.startsWith("0001")) return "never";
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return "—";
+  if (isNaN(d.getTime())) return "n/a";
   const s = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
   if (s < 60) return `${s}s ago`;
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
@@ -118,7 +118,7 @@ export function FailureLogCard({ rows }: { rows: FailureEntry[] }) {
       action={<span className="text-[11px] text-zinc-500">{errorsLastDay} failures · last 24h</span>}
     >
       {rows.length === 0 ? (
-        <p className="text-xs text-emerald-400/80">No failures recorded — everything's running clean.</p>
+        <p className="text-xs text-emerald-400/80">No failures recorded: everything's running clean.</p>
       ) : (
         <ul className="flex flex-col gap-2 max-h-72 overflow-y-auto">
           {rows.map((r, i) => (
@@ -156,7 +156,7 @@ export function AuditsChartCard({ days }: { days: DayCount[] }) {
   const max = Math.max(1, ...days.map(d => d.count));
   const total = days.reduce((s, d) => s + d.count, 0);
   return (
-    <Card title="Audits — Last 14 Days" action={<span className="text-[11px] text-zinc-500">{total} total</span>}>
+    <Card title="Audits: Last 14 Days" action={<span className="text-[11px] text-zinc-500">{total} total</span>}>
       <div className="flex items-end gap-1 h-24">
         {days.map((d) => {
           const pct = (d.count / max) * 100;

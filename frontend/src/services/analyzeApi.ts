@@ -107,7 +107,7 @@ export async function analyzeWebsite(
       if (!data) {
         // 200 OK but no valid JSON — likely Render's proxy "waking up" page.
         // Treat as transient and retry.
-        throw new TypeError("Non-JSON response — server not ready yet");
+        throw new TypeError("Non-JSON response: server not ready yet");
       }
 
       // We have a real successful response from the Go server.

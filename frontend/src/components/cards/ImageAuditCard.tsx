@@ -60,7 +60,7 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
 
         {/* Modern % progress */}
         {bitmaps === 0 ? (
-          <p className="mb-4 text-[11px] text-zinc-500">No bitmap images — nothing to convert to WebP or AVIF.</p>
+          <p className="mb-4 text-[11px] text-zinc-500">No bitmap images: nothing to convert to WebP or AVIF.</p>
         ) : (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">
@@ -92,7 +92,7 @@ export function ImageAuditCard({ audit }: { audit: ImageFormatAudit }) {
         {(audit.missingDims > 0 || audit.missingLazy > 0 || legacy > 0) && (
           <div className="border-t border-zinc-800 pt-3">
             <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider mb-1">Issues</p>
-            <Flag label="Legacy formats (JPG/PNG/GIF) — convert to WebP/AVIF" count={legacy}             severity="warn" />
+            <Flag label="Legacy formats (JPG/PNG/GIF): convert to WebP/AVIF" count={legacy}             severity="warn" />
             <Flag label="Missing width + height (causes layout shift)"         count={audit.missingDims}  severity="warn" />
             <Flag label="Missing loading=lazy"                                  count={audit.missingLazy}  severity="info" />
           </div>

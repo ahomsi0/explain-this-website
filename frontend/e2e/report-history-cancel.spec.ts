@@ -21,7 +21,7 @@ test.describe("report, history, and cancellation flows", () => {
     await mockJson(page, `/api/report/${reportId}`, mockAnalysisResult);
     await page.goto(`/report/${reportId}`);
     await declineConsent(page);
-    await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible();
+    await expect(page.getByText("Example Store: Best Widgets Online")).toBeVisible();
     await page.getByRole("button", { name: "New Audit" }).click();
     await expect(page.getByLabel("Website URL to analyze")).toBeVisible();
   });
