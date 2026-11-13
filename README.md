@@ -8,6 +8,8 @@ Usage model:
 
 **Live:** [www.explainthiswebsite.com](https://www.explainthiswebsite.com/)
 
+**Project status:** [PROGRESS.md](PROGRESS.md) for what is built, [ROADMAP.md](ROADMAP.md) for what is next.
+
 ---
 
 ## What it analyses
