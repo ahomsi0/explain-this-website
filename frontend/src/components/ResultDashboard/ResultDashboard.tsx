@@ -305,9 +305,12 @@ export function ResultDashboard({
       />
 
       {/* Metrics strip: the report's headline numbers. It belongs to the
-          Overview; on the other tabs it only pushed their content down. */}
+          Overview; on the other tabs it only pushed their content down.
+          There it stays pinned under the fixed header (h-12, so top-12)
+          while the page scrolls, so the numbers are always in view. It needs
+          a solid background or the cards scrolling behind would show through. */}
       {activeSection === "overview" && (
-      <div className="hidden md:block border-b border-zinc-800 bg-zinc-900/30">
+      <div data-testid="score-strip" className="hidden md:block sticky top-12 z-20 border-b border-zinc-800 bg-zinc-950">
         {/* Tiles keep a minimum width (see MetricTile). When all of them do
             not fit, the strip scrolls sideways rather than breaking labels
             mid-word. */}

@@ -56,6 +56,31 @@ test.describe("landing to analysis to signup", () => {
     }
   });
 
+  test("keeps the score strip pinned under the header on Overview, and off the other tabs", async ({ page, isMobile }) => {
+    test.skip(isMobile, "The strip is only shown from the md breakpoint up.");
+    await page.getByLabel("Website URL to analyze").fill("example.com");
+    await page.getByRole("button", { name: "Analyze", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Audit Overview", exact: true })).toBeVisible({ timeout: 10_000 });
+
+    const strip = page.getByTestId("score-strip");
+    const header = page.locator('header:has([aria-label="Report actions"])');
+    const headerBottom = (await header.boundingBox())!.height;
+    const restingTop = (await strip.boundingBox())!.y;
+    // It starts directly under the header (which overlaps it by its 1px border).
+    expect(Math.abs(restingTop - headerBottom)).toBeLessThanOrEqual(1);
+
+    // Scroll well into the page: the strip has not moved.
+    await page.mouse.wheel(0, 1500);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(800);
+    expect((await strip.boundingBox())!.y).toBe(restingTop);
+    await expect(strip).toBeInViewport();
+
+    // It belongs to Overview only.
+    await page.locator("aside").getByRole("button", { name: /Fix Plan/ }).click();
+    await expect(page.getByRole("heading", { name: "Your Fix Plan" })).toBeVisible();
+    await expect(strip).toHaveCount(0);
+  });
+
   test("completes signup from the report screen", async ({ page }) => {
     await mockJson(page, "/api/auth/signup", testAuthResponse);
     await page.getByLabel("Website URL to analyze").fill("example.com");
