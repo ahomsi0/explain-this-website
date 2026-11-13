@@ -2,13 +2,13 @@ package parser
 
 import "testing"
 
-// advertisedTechCount is the number the site quotes ("370+ technologies").
+// advertisedTechCount is the number the site quotes ("400+ technologies").
 // The copy lives in frontend/src/seo/facts.ts (TECH_COUNT_LABEL); raise
 // both together, and never let the catalog fall below what the site claims.
-const advertisedTechCount = 370
+const advertisedTechCount = 400
 
 // catalogTechCount counts every distinct technology the tech stack section can
-// report: page source patterns, response header signals and the services
+// report: page source patterns, response header and cookie signals and the services
 // Lighthouse confirms from network requests. Names are deduped the same way
 // the report dedupes them.
 func catalogTechCount() int {
@@ -18,6 +18,15 @@ func catalogTechCount() int {
 	}
 	for _, h := range headerTechSignals {
 		names[canonicalTechName(h.name)] = struct{}{}
+	}
+	for _, h := range headerPresenceSignals {
+		names[canonicalTechName(h.name)] = struct{}{}
+	}
+	for _, c := range cookieTechSignals {
+		names[canonicalTechName(c.name)] = struct{}{}
+	}
+	for _, name := range conventionTechNames {
+		names[canonicalTechName(name)] = struct{}{}
 	}
 	for _, meta := range thirdPartyEntityMap {
 		names[canonicalTechName(meta.Name)] = struct{}{}

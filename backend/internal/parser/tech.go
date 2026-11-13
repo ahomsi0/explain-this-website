@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/ahomsi/explain-website/internal/model"
@@ -1063,95 +1062,6 @@ func stripNoisyHTML(rawHTML string) string {
 	return noscriptRe.ReplaceAllString(cleaned, "")
 }
 
-// headerTechSignal maps a response-header substring to a technology. Headers
-// are explicit, first-party evidence set by the serving infrastructure — the
-// most reliable signal class available.
-type headerTechSignal struct {
-	match    string // lowercased substring to find in any mapped header value
-	name     string
-	category string
-}
-
-var headerTechSignals = []headerTechSignal{
-	{match: "php", name: "PHP", category: "framework"},
-	{match: "express", name: "Express.js", category: "framework"},
-	{match: "next.js", name: "Next.js", category: "framework"},
-	{match: "asp.net", name: "ASP.NET", category: "framework"},
-	{match: "cloudflare", name: "Cloudflare", category: "cdn"},
-	{match: "vercel", name: "Vercel", category: "cdn"},
-	{match: "netlify", name: "Netlify", category: "cdn"},
-	{match: "drupal", name: "Drupal", category: "cms"},
-	{match: "wix", name: "Wix", category: "builder"},
-	{match: "squarespace", name: "Squarespace", category: "builder"},
-	{match: "nginx", name: "Nginx", category: "framework"},
-	{match: "apache", name: "Apache", category: "framework"},
-}
-
-// detectHeaderTech derives high-confidence items from HTTP response headers.
-func detectHeaderTech(headers http.Header) []model.TechItem {
-	if len(headers) == 0 {
-		return nil
-	}
-	type headerHit struct {
-		value    string
-		category string
-	}
-	found := map[string]headerHit{}
-
-	scan := func(value string) {
-		lv := strings.ToLower(value)
-		for _, sig := range headerTechSignals {
-			if strings.Contains(lv, sig.match) {
-				prev, exists := found[sig.name]
-				if !exists || len(value) < len(prev.value) {
-					found[sig.name] = headerHit{value: strings.TrimSpace(value), category: sig.category}
-				}
-			}
-		}
-	}
-	for _, key := range []string{"X-Powered-By", "Server", "X-Generator"} {
-		for _, v := range headers.Values(key) {
-			scan(v)
-		}
-	}
-	// Vercel identifies via a dedicated header rather than `Server`.
-	if len(headers.Values("X-Vercel-Id")) > 0 {
-		found["Vercel"] = headerHit{value: "x-vercel-id", category: "cdn"}
-	}
-
-	names := make([]string, 0, len(found))
-	for name := range found {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
-	items := make([]model.TechItem, 0, len(found))
-	for _, name := range names {
-		h := found[name]
-		items = append(items, model.TechItem{
-			Name:       name,
-			Category:   h.category,
-			Confidence: "high",
-			Score:      95,
-			RuleID:     "http-header",
-			Signals: []model.TechSignal{{
-				Pattern:      "response header",
-				Match:        truncateHeaderValue(h.value),
-				EvidenceType: "explicit",
-				Source:       "first-party",
-			}},
-		})
-	}
-	return items
-}
-
-func truncateHeaderValue(v string) string {
-	if len(v) > 60 {
-		return v[:60]
-	}
-	return v
-}
-
 // detectTech performs substring matching and maps an internal 0-100 score to
 // a confidence label (high/medium/low) for each detected technology.
 // headers is optional; explicit server signals are merged with HTML evidence.
@@ -1209,6 +1119,11 @@ func detectTech(rawHTML string, sourceURL string, headers http.Header) []model.T
 	// names gain the corroborating signal (and upgrade to the header's score,
 	// since headers are set by the serving infrastructure itself).
 	for _, h := range detectHeaderTech(headers) {
+		// github.com answers with the same Server header as the sites it
+		// hosts, but it is not itself a GitHub Pages site.
+		if h.Name == "GitHub Pages" && sourceRoot == "github.com" {
+			continue
+		}
 		idx := -1
 		for i := range found {
 			if strings.EqualFold(found[i].Name, h.Name) {
