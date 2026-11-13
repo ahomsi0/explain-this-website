@@ -557,7 +557,7 @@ function buildPDF(result: AnalysisResult, JsPDF: JsPDFConstructor, autoTable: Au
     section("Detected Tech Stack");
     const catLabels: Record<string, string> = {
       cms: "CMS", ecommerce: "E-commerce", builder: "Builder",
-      framework: "Framework", analytics: "Analytics", cdn: "CDN", media: "Media",
+      framework: "Framework", analytics: "Analytics", cdn: "Hosting and CDN", media: "Media",
     };
     const rows = result.techStack.map(t => [
       catLabels[t.category] ?? t.category,

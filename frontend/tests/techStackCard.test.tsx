@@ -22,7 +22,17 @@ describe("TechStackCard", () => {
     expect(screen.getByText("Possible")).toBeInTheDocument();
 
     expect(
-      screen.getByText("Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals."),
+      screen.getByText("Detection reads the page source, the server's response headers and cookie names, and Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals."),
     ).toBeInTheDocument();
+  });
+});
+
+describe("tech descriptions", () => {
+  it("describes a server-side framework as what it is, not as a JavaScript library", async () => {
+    const { getTechDescription, getTechRoleLabel } = await import("../src/lib/techMeta");
+    const laravel = { name: "Laravel", category: "framework", confidence: "medium" } as const;
+    expect(getTechDescription(laravel)).toMatch(/PHP web framework/);
+    expect(getTechDescription({ name: "Some Unknown Server", category: "framework", confidence: "high" })).not.toMatch(/JavaScript/);
+    expect(getTechRoleLabel({ name: "Heroku", category: "cdn", confidence: "high" })).toBe("Hosting and CDN");
   });
 });

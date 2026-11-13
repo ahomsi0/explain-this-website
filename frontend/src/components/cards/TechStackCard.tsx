@@ -87,7 +87,7 @@ export function TechStackCard({ techStack }: { techStack: TechItem[] }) {
         ))}
       </div>
       <p className="text-[11px] text-zinc-600 leading-relaxed px-1 mt-1">
-        Detection combines HTML pattern-matching with Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
+        Detection reads the page source, the server's response headers and cookie names, and Lighthouse network analysis. Verified entries have explicit signals; Detected ones are likely correct based on partial signals.
       </p>
     </div>
   );
