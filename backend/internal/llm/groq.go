@@ -21,6 +21,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -153,12 +154,12 @@ func (c *Client) Summarise(ctx context.Context, result *model.AnalysisResult) (s
 		content, err := c.chat(ctx, m, digest)
 		if err == nil {
 			adminstate.RecordGroqSuccess()
-			return content, nil
+			return stripEmDashes(content), nil
 		}
 		lastErr = err
 		var apiErr *apiError
 		if i < len(models)-1 && errors.As(err, &apiErr) && apiErr.retryableModel() {
-			log.Printf("groq: model %s unavailable (%v) — retrying with %s", m, apiErr, models[i+1])
+			log.Printf("groq: model %s unavailable (%v); retrying with %s", m, apiErr, models[i+1])
 			continue
 		}
 		break
@@ -235,13 +236,23 @@ const systemPrompt = `You are a senior product analyst writing a plain-English s
 
 Output exactly three paragraphs, separated by a single blank line, no headings, no bullets, no markdown, no preamble like "Here is your summary":
 
-1. **What this site is** — Describe the site's purpose, audience, and tone in 2-3 sentences. Be specific and concrete; cite product names, sectors, or services that appear in the data. Avoid generic phrases like "this website provides information about its products."
+1. **What this site is**: Describe the site's purpose, audience, and tone in 2-3 sentences. Be specific and concrete; cite product names, sectors, or services that appear in the data. Avoid generic phrases like "this website provides information about its products."
 
-2. **What's working** — Call out the top 2-3 genuine strengths from the data. Cite specific signals (high SEO score, fast LCP, clear CTAs, strong trust elements, etc.). If there's nothing strong, say so honestly in one sentence.
+2. **What's working**: Call out the top 2-3 genuine strengths from the data. Cite specific signals (high SEO score, fast LCP, clear CTAs, strong trust elements, etc.). If there's nothing strong, say so honestly in one sentence.
 
-3. **What needs work** — Call out the top 2-3 most impactful issues from the data. Be specific (not "improve SEO" but "the missing meta description on the homepage costs Google search clickthrough"). End with the single most useful thing the owner should fix first.
+3. **What needs work**: Call out the top 2-3 most impactful issues from the data. Be specific (not "improve SEO" but "the missing meta description on the homepage costs Google search clickthrough"). End with the single most useful thing the owner should fix first.
 
-Keep total length under 220 words. Write like a thoughtful consultant, not marketing copy. Do not flatter, do not hedge with weasel words ("might", "could perhaps").`
+Keep total length under 220 words. Write like a thoughtful consultant, not marketing copy. Do not flatter, do not hedge with weasel words ("might", "could perhaps"). Never use the em dash character; use a comma, a colon or a full stop instead.`
+
+// The site's own copy never uses em dashes, and the prompt asks the model
+// not to either. Models slip, so the summary is cleaned before it is stored
+// or shown: a spaced dash becomes a comma, a tight one a hyphen.
+var spacedEmDash = regexp.MustCompile(`\s*\x{2014}\s+|\s+\x{2014}\s*`)
+
+func stripEmDashes(s string) string {
+	s = spacedEmDash.ReplaceAllString(s, ", ")
+	return strings.ReplaceAll(s, "\u2014", "-")
+}
 
 func truncate(s string, n int) string {
 	if len(s) <= n {

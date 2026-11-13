@@ -34,7 +34,7 @@ func Start(cfg config.Config) error {
 	dbCtx, dbCancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer dbCancel()
 	if err := db.Init(dbCtx); err != nil {
-		log.Printf("WARNING: db init failed (%v) — running in anonymous-only mode", err)
+		log.Printf("WARNING: db init failed (%v). Running in anonymous-only mode", err)
 	}
 	defer db.Close()
 
@@ -287,7 +287,7 @@ func warnIfUntrustedProxy() {
 	if strings.TrimSpace(os.Getenv("TRUSTED_PROXY_CIDRS")) != "" {
 		return
 	}
-	log.Printf("WARNING: TRUSTED_PROXY_CIDRS is not set — client IPs fall back to the direct peer address. " +
+	log.Printf("WARNING: TRUSTED_PROXY_CIDRS is not set. Client IPs fall back to the direct peer address. " +
 		"Behind a reverse proxy (Render, Vercel, nginx, …) all traffic shares one bucket, so per-IP rate limits " +
 		"become sitewide limits. Set TRUSTED_PROXY_CIDRS to your proxy's IPs/CIDRs to restore per-client limits.")
 }
@@ -307,7 +307,7 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
 				json.NewEncoder(w).Encode(model.ErrorResponse{
-					Error: "Too many requests — please wait a moment before trying again.",
+					Error: "Too many requests: please wait a moment before trying again.",
 				})
 				return
 			}
@@ -318,7 +318,7 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
-				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many authentication attempts — please wait a moment."})
+				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many authentication attempts: please wait a moment."})
 				return
 			}
 		}
@@ -327,7 +327,7 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
-				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many tracking events — please try again later."})
+				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many tracking events: please try again later."})
 				return
 			}
 		}
@@ -340,7 +340,7 @@ func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("Retry-After", "60")
 				w.WriteHeader(http.StatusTooManyRequests)
-				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many comparisons — please wait a moment before trying again."})
+				json.NewEncoder(w).Encode(model.ErrorResponse{Error: "Too many comparisons: please wait a moment before trying again."})
 				return
 			}
 		}

@@ -36,12 +36,12 @@ func buildDigest(r *model.AnalysisResult) string {
 
 	// Intent — the highest-signal "what is this site" field.
 	if r.Intent.Label != "" {
-		fmt.Fprintf(&b, "Intent: %s — %s\n", r.Intent.Label, r.Intent.Description)
+		fmt.Fprintf(&b, "Intent: %s. %s\n", r.Intent.Label, r.Intent.Description)
 	}
 
 	// First impression / conversion scoring
 	if r.FirstImpression.Score > 0 {
-		fmt.Fprintf(&b, "First-impression score: %d/10 (%s) — %s\n",
+		fmt.Fprintf(&b, "First-impression score: %d/10 (%s). %s\n",
 			r.FirstImpression.Score, r.FirstImpression.Label, r.FirstImpression.Explanation)
 	}
 	if r.ConversionScores.Overall > 0 {
@@ -160,7 +160,7 @@ func buildDigest(r *model.AnalysisResult) string {
 			if i >= 5 {
 				break
 			}
-			fmt.Fprintf(&b, "  - [%s] %s — %s\n", p.Impact, p.Issue, truncate(p.Why, 160))
+			fmt.Fprintf(&b, "  - [%s] %s: %s\n", p.Impact, p.Issue, truncate(p.Why, 160))
 		}
 	}
 	if len(r.WeakPoints) > 0 {

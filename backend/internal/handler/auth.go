@@ -183,7 +183,7 @@ func LoginHandler() http.HandlerFunc {
 		}
 		ip := requestip.ClientIP(r)
 		if !logins.Allow(ip, body.Email) {
-			writeJSONError(w, http.StatusTooManyRequests, "too many attempts — please wait a few minutes and try again")
+			writeJSONError(w, http.StatusTooManyRequests, "too many attempts: please wait a few minutes and try again")
 			return
 		}
 

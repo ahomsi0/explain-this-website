@@ -44,8 +44,8 @@ func SendBroadcast(ctx context.Context, to, subject, body string) error {
 // SendResetCode emails a password reset code to the recipient. If no email backend
 // is configured, delivery is allowed only when APP_ENV is explicitly development.
 func SendResetCode(ctx context.Context, to, code string) error {
-	subject := "Your password reset code — Explain This Website"
-	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.\n\n— Explain This Website", code)
+	subject := "Your Explain This Website password reset code"
+	text := fmt.Sprintf("Your password reset code is: %s\n\nThis code expires in 35 minutes. If you didn't request a reset, you can safely ignore this email.\n\nExplain This Website", code)
 	htmlBody := fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset your password</title></head>
@@ -80,7 +80,7 @@ func SendResetCode(ctx context.Context, to, code string) error {
             </table>
 
             <!-- Fine print -->
-            <p style="margin:0;font-size:12px;line-height:1.6;color:#52525b">If you didn't request a password reset, you can safely ignore this email — your account remains unchanged.</p>
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#52525b">If you didn't request a password reset, you can safely ignore this email. Your account remains unchanged.</p>
 
           </td>
         </tr>
@@ -103,7 +103,7 @@ func SendResetCode(ctx context.Context, to, code string) error {
 // SendVerifyEmail sends an account verification link to a new user.
 func SendVerifyEmail(ctx context.Context, to, verifyURL string) error {
 	subject := "Verify your Explain This Website account"
-	text := fmt.Sprintf("Welcome! Click the link below to verify your email address:\n\n%s\n\nThe link expires in 24 hours. If you didn't create an account, you can safely ignore this email.\n\n— Explain This Website", verifyURL)
+	text := fmt.Sprintf("Welcome! Click the link below to verify your email address:\n\n%s\n\nThe link expires in 24 hours. If you didn't create an account, you can safely ignore this email.\n\nExplain This Website", verifyURL)
 	htmlBody := fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify your email</title></head>

@@ -28,7 +28,7 @@ var ErrNotConfigured = errors.New("database not configured")
 func Init(ctx context.Context) error {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		log.Println("DATABASE_URL not set — running in anonymous-only mode (no accounts/history)")
+		log.Println("DATABASE_URL not set: running in anonymous-only mode (no accounts/history)")
 		return nil
 	}
 
@@ -63,7 +63,7 @@ func Init(ctx context.Context) error {
 			return fmt.Errorf("ping db: %w", pingErr)
 		}
 		if attempt < maxPingAttempts {
-			log.Printf("Postgres ping attempt %d/%d failed: %v — retrying in %s", attempt, maxPingAttempts, pingErr, retryDelay)
+			log.Printf("Postgres ping attempt %d/%d failed: %v. Retrying in %s", attempt, maxPingAttempts, pingErr, retryDelay)
 			select {
 			case <-time.After(retryDelay):
 			case <-ctx.Done():

@@ -177,7 +177,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			Detail: "Site is served over HTTPS"})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "https", Label: "HTTPS", Status: "fail",
-			Detail: "Site is not using HTTPS — insecure and a negative ranking signal"})
+			Detail: "Site is not using HTTPS: insecure and a negative ranking signal"})
 	}
 
 	// ── Mixed content ──────────────────────────────────────────────────────────
@@ -216,7 +216,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 		})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "title", Label: "Page Title", Status: "pass",
-			Detail:  fmt.Sprintf("%d chars — within the recommended range", titleLen),
+			Detail:  fmt.Sprintf("%d chars: within the recommended range", titleLen),
 			Details: []string{s.titleText},
 		})
 	}
@@ -226,7 +226,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 	switch {
 	case s.metaDesc == "":
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "fail",
-			Detail: "No meta description found — search snippet will be auto-generated"})
+			Detail: "No meta description found: search snippet will be auto-generated"})
 	case descLen < 70:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "warning",
 			Detail:  fmt.Sprintf("Description is short (%d chars, recommended 120-160)", descLen),
@@ -239,7 +239,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 		})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "meta_desc", Label: "Meta Description", Status: "pass",
-			Detail:  fmt.Sprintf("%d chars — within the recommended range", descLen),
+			Detail:  fmt.Sprintf("%d chars: within the recommended range", descLen),
 			Details: []string{s.metaDesc},
 		})
 	}
@@ -274,7 +274,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			Detail: "Exactly one H1 found", Details: details})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "h1_count", Label: "H1 Heading", Status: "warning",
-			Detail:  fmt.Sprintf("%d H1 tags found — only one is recommended", s.h1Count),
+			Detail:  fmt.Sprintf("%d H1 tags found: only one is recommended", s.h1Count),
 			Details: s.h1Texts,
 		})
 	}
@@ -303,19 +303,19 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 	// ── Open Graph ─────────────────────────────────────────────────────────────
 	ogDetails := []string{}
 	if s.ogTitle != "" {
-		ogDetails = append(ogDetails, "og:title — "+truncate(s.ogTitle, 60))
+		ogDetails = append(ogDetails, "og:title: "+truncate(s.ogTitle, 60))
 	} else {
-		ogDetails = append(ogDetails, "og:title — missing")
+		ogDetails = append(ogDetails, "og:title: missing")
 	}
 	if s.ogDesc != "" {
-		ogDetails = append(ogDetails, "og:description — "+truncate(s.ogDesc, 60))
+		ogDetails = append(ogDetails, "og:description: "+truncate(s.ogDesc, 60))
 	} else {
-		ogDetails = append(ogDetails, "og:description — missing")
+		ogDetails = append(ogDetails, "og:description: missing")
 	}
 	if s.ogImage != "" {
-		ogDetails = append(ogDetails, "og:image — "+truncate(s.ogImage, 60))
+		ogDetails = append(ogDetails, "og:image: "+truncate(s.ogImage, 60))
 	} else {
-		ogDetails = append(ogDetails, "og:image — missing")
+		ogDetails = append(ogDetails, "og:image: missing")
 	}
 
 	switch {
@@ -334,12 +334,12 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			missing = append(missing, "og:image")
 		}
 		checks = append(checks, model.SEOCheck{ID: "og_tags", Label: "Open Graph Tags", Status: "warning",
-			Detail:  fmt.Sprintf("Partial OG tags — missing: %s", strings.Join(missing, ", ")),
+			Detail:  fmt.Sprintf("Partial OG tags: missing: %s", strings.Join(missing, ", ")),
 			Details: ogDetails,
 		})
 	default:
 		checks = append(checks, model.SEOCheck{ID: "og_tags", Label: "Open Graph Tags", Status: "fail",
-			Detail: "No Open Graph tags found — social shares will look poor"})
+			Detail: "No Open Graph tags found: social shares will look poor"})
 	}
 
 	// ── Structured data ────────────────────────────────────────────────────────
@@ -356,10 +356,10 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			Detail: fmt.Sprintf("%s schema detected", schemaType), Details: details})
 	} else if s.invalidSchemaJSON {
 		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "warning", Optional: true,
-			Detail: "JSON-LD markup was found but is not valid JSON — rich results may be ignored"})
+			Detail: "JSON-LD markup was found but is not valid JSON: rich results may be ignored"})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "schema", Label: "Structured Data", Status: "warning", Optional: true,
-			Detail: "No structured data detected — rich-result markup is optional and depends on your page type"})
+			Detail: "No structured data detected: rich-result markup is optional and depends on your page type"})
 	}
 
 	// ── Viewport ───────────────────────────────────────────────────────────────
@@ -368,7 +368,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			Detail: "Viewport tag present"})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "viewport", Label: "Viewport Meta Tag", Status: "fail",
-			Detail: "No viewport meta tag — page may not render well on mobile"})
+			Detail: "No viewport meta tag: page may not render well on mobile"})
 	}
 
 	// ── Robots ─────────────────────────────────────────────────────────────────
@@ -378,10 +378,10 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			details = []string{s.metaRobotsContent}
 		}
 		checks = append(checks, model.SEOCheck{ID: "robots", Label: "Robots Directive", Status: "fail",
-			Detail: "Page has noindex — it will not appear in search results", Details: details})
+			Detail: "Page has noindex: it will not appear in search results", Details: details})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "robots", Label: "Robots Directive", Status: "pass",
-			Detail: "No noindex directive — page is indexable"})
+			Detail: "No noindex directive: page is indexable"})
 	}
 
 	// ── Hreflang ───────────────────────────────────────────────────────────────
@@ -392,7 +392,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 		})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "hreflang", Label: "Hreflang Tags", Status: "warning", Optional: true,
-			Detail: "No hreflang tags — add if you target multiple languages or regions"})
+			Detail: "No hreflang tags: add if you target multiple languages or regions"})
 	}
 
 	// ── International readiness (lang, hreflang validity, og:locale) ───────────
@@ -424,16 +424,16 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 		switch {
 		case strings.Contains(lower, "yoast"):
 			sitemapFound = true
-			sitemapDetails = append(sitemapDetails, "Yoast SEO detected — sitemap auto-generated at /sitemap_index.xml")
+			sitemapDetails = append(sitemapDetails, "Yoast SEO detected: sitemap auto-generated at /sitemap_index.xml")
 		case strings.Contains(lower, "rank math") || strings.Contains(lower, "rankmath"):
 			sitemapFound = true
-			sitemapDetails = append(sitemapDetails, "RankMath SEO detected — sitemap auto-generated at /sitemap_index.xml")
+			sitemapDetails = append(sitemapDetails, "RankMath SEO detected: sitemap auto-generated at /sitemap_index.xml")
 		case strings.Contains(lower, "aioseo") || strings.Contains(lower, "all-in-one-seo"):
 			sitemapFound = true
-			sitemapDetails = append(sitemapDetails, "All in One SEO detected — sitemap auto-generated")
+			sitemapDetails = append(sitemapDetails, "All in One SEO detected: sitemap auto-generated")
 		case strings.Contains(lower, "seopress"):
 			sitemapFound = true
-			sitemapDetails = append(sitemapDetails, "SEOPress detected — sitemap auto-generated")
+			sitemapDetails = append(sitemapDetails, "SEOPress detected: sitemap auto-generated")
 		}
 	}
 
@@ -442,7 +442,7 @@ func buildChecks(s *seoState, rawHTML, sourceURL string, doc *html.Node) []model
 			Detail: "Sitemap detected", Details: sitemapDetails})
 	} else {
 		checks = append(checks, model.SEOCheck{ID: "sitemap", Label: "Sitemap", Status: "warning", Optional: true,
-			Detail: "No sitemap reference found — add a sitemap and submit it to Google Search Console"})
+			Detail: "No sitemap reference found: add a sitemap and submit it to Google Search Console"})
 	}
 
 	return checks

@@ -45,7 +45,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "ecommerce",
 			Label:       "E-commerce Store",
-			Description: "This appears to be an e-commerce store — it has active product pages with cart mechanics.",
+			Description: "This appears to be an e-commerce store: it has active product pages with cart mechanics.",
 		}
 	}
 
@@ -68,7 +68,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "saas",
 			Label:       "SaaS / Web App",
-			Description: "This looks like a SaaS product — it shows subscription pricing, trial offers, or app-specific language.",
+			Description: "This looks like a SaaS product: it shows subscription pricing, trial offers, or app-specific language.",
 		}
 	}
 
@@ -89,7 +89,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "portfolio",
 			Label:       "Portfolio / Showcase",
-			Description: "This appears to be a personal portfolio — it uses first-person ownership language and presents creative or professional work.",
+			Description: "This appears to be a personal portfolio: it uses first-person ownership language and presents creative or professional work.",
 		}
 	}
 
@@ -113,7 +113,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "blog",
 			Label:       "Blog / Content Site",
-			Description: "This looks like a blog or content publication — it has article metadata, publication dates, or reader engagement patterns.",
+			Description: "This looks like a blog or content publication: it has article metadata, publication dates, or reader engagement patterns.",
 		}
 	}
 
@@ -141,7 +141,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "landing",
 			Label:       "Landing Page",
-			Description: "This looks like a focused landing page — minimal navigation, short content, and strong conversion pressure.",
+			Description: "This looks like a focused landing page: minimal navigation, short content, and strong conversion pressure.",
 		}
 	}
 
@@ -169,7 +169,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "service",
 			Label:       "Service Business",
-			Description: "This looks like a service business — it describes specific services, has contact or booking mechanisms, and targets potential clients.",
+			Description: "This looks like a service business: it describes specific services, has contact or booking mechanisms, and targets potential clients.",
 		}
 	}
 
@@ -202,7 +202,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "corporate",
 			Label:       "Corporate / Business",
-			Description: "This appears to be a corporate website — it has institutional sections like About, Careers, Press, or Investor Relations.",
+			Description: "This appears to be a corporate website: it has institutional sections like About, Careers, Press, or Investor Relations.",
 		}
 	}
 
@@ -211,7 +211,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "media",
 			Label:       "News / Media Site",
-			Description: "This appears to be a news or media site — it has media embeds, many outbound links, and a multi-headline structure.",
+			Description: "This appears to be a news or media site: it has media embeds, many outbound links, and a multi-headline structure.",
 		}
 	}
 
@@ -235,7 +235,7 @@ func inferIntent(overview model.Overview, tech []model.TechItem, ux model.UXResu
 		return model.IntentSummary{
 			Category:    "landing",
 			Label:       "Marketing / Promotional Site",
-			Description: "This page appears promotional in nature — it focuses on driving action rather than providing deep informational content.",
+			Description: "This page appears promotional in nature: it focuses on driving action rather than providing deep informational content.",
 		}
 	default:
 		return model.IntentSummary{
@@ -273,41 +273,41 @@ func buildCustomerView(overview model.Overview, ux model.UXResult, seo map[strin
 
 	// Offer clarity
 	if offerClear {
-		stmts = append(stmts, "As a visitor, I can quickly understand what this website offers — the headline and description communicate the value clearly.")
+		stmts = append(stmts, "As a visitor, I can quickly understand what this website offers: the headline and description communicate the value clearly.")
 	} else {
-		stmts = append(stmts, "As a visitor, I struggle to grasp what this website is about — the main message isn't immediately obvious from the headline.")
+		stmts = append(stmts, "As a visitor, I struggle to grasp what this website is about: the main message isn't immediately obvious from the headline.")
 	}
 
 	// CTA
 	if ctaClear {
-		stmts = append(stmts, "The next step is clear — there's a visible call-to-action guiding me toward taking action.")
+		stmts = append(stmts, "The next step is clear: there's a visible call-to-action guiding me toward taking action.")
 	} else {
-		stmts = append(stmts, "The next step is not obvious — I'm not sure what I'm supposed to do after reading the page.")
+		stmts = append(stmts, "The next step is not obvious: I'm not sure what I'm supposed to do after reading the page.")
 	}
 
 	// Trust
 	switch trustLevel {
 	case "strong":
-		stmts = append(stmts, "Trust is well reinforced — the page has visible signals of legitimacy, security, and credibility.")
+		stmts = append(stmts, "Trust is well reinforced: the page has visible signals of legitimacy, security, and credibility.")
 	case "moderate":
-		stmts = append(stmts, "Trust is partially established — some signals are present, but more reassurance would help first-time visitors feel confident.")
+		stmts = append(stmts, "Trust is partially established: some signals are present, but more reassurance would help first-time visitors feel confident.")
 	case "weak":
-		stmts = append(stmts, "Trust is not well established — there are no visible signals to reassure me that this is a safe and legitimate business.")
+		stmts = append(stmts, "Trust is not well established: there are no visible signals to reassure me that this is a safe and legitimate business.")
 	}
 
 	// Friction / loading
 	heavyPage := stats.RenderBlockingScripts >= 3 || stats.ScriptCount > 12
 	if heavyPage {
-		stmts = append(stmts, "The page may feel slow — multiple blocking scripts can delay content from appearing, which increases early drop-off.")
+		stmts = append(stmts, "The page may feel slow: multiple blocking scripts can delay content from appearing, which increases early drop-off.")
 	} else {
-		stmts = append(stmts, "The page feels accessible and fast — no obvious loading friction was detected.")
+		stmts = append(stmts, "The page feels accessible and fast: no obvious loading friction was detected.")
 	}
 
 	// Value proposition
 	if descOK {
-		stmts = append(stmts, "The value proposition is understandable — I can see what's being offered and why it matters.")
+		stmts = append(stmts, "The value proposition is understandable: I can see what's being offered and why it matters.")
 	} else {
-		stmts = append(stmts, "The value proposition isn't immediately obvious — it's not entirely clear why I should choose this over alternatives.")
+		stmts = append(stmts, "The value proposition isn't immediately obvious: it's not entirely clear why I should choose this over alternatives.")
 	}
 
 	return model.CustomerView{
@@ -517,15 +517,15 @@ func computeFirstImpression(overview model.Overview, ux model.UXResult, seo map[
 	var explanation string
 	switch {
 	case score <= 2:
-		explanation = "The page gives very little to work with in the first few seconds — no clear headline, no CTA, and limited trust signals."
+		explanation = "The page gives very little to work with in the first few seconds: no clear headline, no CTA, and limited trust signals."
 	case score <= 4:
-		explanation = "The first impression is weak — key elements like a clear heading, CTA, or trust signals are missing or underdeveloped."
+		explanation = "The first impression is weak: key elements like a clear heading, CTA, or trust signals are missing or underdeveloped."
 	case score <= 6:
-		explanation = "The page makes a reasonable first impression but key elements could be stronger — especially the headline or CTA clarity."
+		explanation = "The page makes a reasonable first impression but key elements could be stronger, especially the headline or CTA clarity."
 	case score <= 8:
-		explanation = "The page makes a solid first impression — it's clear, has a visible CTA, and feels reasonably trustworthy."
+		explanation = "The page makes a solid first impression: it's clear, has a visible CTA, and feels reasonably trustworthy."
 	default:
-		explanation = "The page makes a strong first impression — the offer is clear, a CTA is prominent, and trust is well established."
+		explanation = "The page makes a strong first impression: the offer is clear, a CTA is prominent, and trust is well established."
 	}
 
 	return model.FirstImpression{Score: score, Label: label, Explanation: explanation}
@@ -537,27 +537,27 @@ func computeFirstImpression(overview model.Overview, ux model.UXResult, seo map[
 func findBiggestOpportunity(seo map[string]string, ux model.UXResult, stats model.PageStats) string {
 	switch {
 	case seo["robots"] == "fail":
-		return "The page has a noindex directive — it won't appear in search results at all. Removing it would immediately restore search visibility."
+		return "The page has a noindex directive: it won't appear in search results at all. Removing it would immediately restore search visibility."
 	case seo["https"] == "fail":
 		return "The site is not on HTTPS. Switching would instantly improve visitor trust, eliminate browser security warnings, and benefit search rankings."
 	case !ux.HasCTA:
 		return "There is no call-to-action on the page. Adding one clear, prominent CTA above the fold would be the single highest-leverage conversion improvement."
 	case seo["h1_count"] == "fail":
-		return "The page has no H1 heading — the most fundamental signal to both visitors and search engines about what the page is about. Adding one is an immediate win."
+		return "The page has no H1 heading: the most fundamental signal to both visitors and search engines about what the page is about. Adding one is an immediate win."
 	case seo["title"] == "fail":
-		return "There is no page title. This is one of the most basic SEO elements — without it, search engines have no title to show in results."
+		return "There is no page title. This is one of the most basic SEO elements, without it, search engines have no title to show in results."
 	case stats.RenderBlockingScripts >= 3:
 		return fmt.Sprintf("%d render-blocking scripts are slowing the page. Deferring or removing them would directly improve loading speed and visitor experience.", stats.RenderBlockingScripts)
 	case !ux.HasTrustSignals && !ux.HasSocialProof:
 		return "There are no visible trust signals or social proof on the page. Adding testimonials, certifications, or a review count near the CTA could significantly lift conversion."
 	case seo["img_alt"] == "fail":
-		return "A majority of images are missing alt text — this directly hurts accessibility, image SEO, and the experience for users relying on screen readers."
+		return "A majority of images are missing alt text: this directly hurts accessibility, image SEO, and the experience for users relying on screen readers."
 	case seo["meta_desc"] == "fail":
 		return "There is no meta description, so Google auto-generates one. Writing a compelling 120–160 character description would immediately improve click-through rates from search."
 	case !ux.HasContactInfo:
-		return "There's no way to get in touch visible on the page. For most business sites, an easy route to contact — a contact page, support link or community forum — builds trust and generates leads."
+		return "There's no way to get in touch visible on the page. For most business sites, an easy route to contact (a contact page, support link or community forum) builds trust and generates leads."
 	default:
-		return "The biggest opportunity is improving overall content structure — a clearer headline, stronger CTA, and visible trust signals would make a meaningful difference."
+		return "The biggest opportunity is improving overall content structure: a clearer headline, stronger CTA, and visible trust signals would make a meaningful difference."
 	}
 }
 
@@ -570,28 +570,28 @@ func buildCompetitorInsight(intent model.IntentSummary, tech []model.TechItem, u
 		if !ux.HasTrustSignals && !ux.HasSocialProof {
 			return "In a competitive e-commerce environment, trust signals like reviews, guarantees, and security badges are often the deciding factor at the moment of purchase."
 		}
-		return "E-commerce is highly competitive — conversion rate optimisation, product photography, and social proof are the most common differentiators against similar stores."
+		return "E-commerce is highly competitive: conversion rate optimisation, product photography, and social proof are the most common differentiators against similar stores."
 	case "saas":
 		if !ux.HasForms {
-			return "SaaS products live and die by their signup funnel — a frictionless trial or demo request form is often the strongest lever against competitors."
+			return "SaaS products live and die by their signup funnel: a frictionless trial or demo request form is often the strongest lever against competitors."
 		}
-		return "SaaS is a crowded space — clear positioning, a prominent free trial offer, and a tight value proposition are the fastest ways to stand out to first-time visitors."
+		return "SaaS is a crowded space: clear positioning, a prominent free trial offer, and a tight value proposition are the fastest ways to stand out to first-time visitors."
 	case "portfolio":
 		if !ux.HasContactInfo {
-			return "Portfolio sites compete on credibility and ease of contact — a clear contact route (a contact page, form or profile link) is the most direct way to generate leads."
+			return "Portfolio sites compete on credibility and ease of contact: a clear contact route (a contact page, form or profile link) is the most direct way to generate leads."
 		}
-		return "Portfolios compete on distinctiveness and outcomes — showcasing measurable results alongside visuals helps separate strong work from a crowded field."
+		return "Portfolios compete on distinctiveness and outcomes: showcasing measurable results alongside visuals helps separate strong work from a crowded field."
 	case "blog":
-		return "Content sites compete on depth and discoverability — structured data, internal linking, and topical clusters are the most effective long-term SEO levers."
+		return "Content sites compete on depth and discoverability: structured data, internal linking, and topical clusters are the most effective long-term SEO levers."
 	case "landing":
-		return "Landing pages are won or lost on conversion rate — a single clear headline, one focused CTA, and visible social proof are the essential ingredients that separate high-converting pages from low ones."
+		return "Landing pages are won or lost on conversion rate: a single clear headline, one focused CTA, and visible social proof are the essential ingredients that separate high-converting pages from low ones."
 	case "service":
 		if !ux.HasContactInfo {
-			return "Service businesses that make it immediately easy to get in touch consistently win more leads — a contact page, booking form, phone number or live chat are high-value additions."
+			return "Service businesses that make it immediately easy to get in touch consistently win more leads: a contact page, booking form, phone number or live chat are high-value additions."
 		}
-		return "Service businesses compete locally and on trust — reviews, case studies, and clear contact paths are the primary differentiators in most niches."
+		return "Service businesses compete locally and on trust: reviews, case studies, and clear contact paths are the primary differentiators in most niches."
 	case "corporate":
-		return "Corporate sites often under-invest in SEO and conversion clarity — well-structured pages with targeted meta content and clear service descriptions can set you apart in organic search."
+		return "Corporate sites often under-invest in SEO and conversion clarity: well-structured pages with targeted meta content and clear service descriptions can set you apart in organic search."
 	default:
 		return "Defining a clearer purpose and audience for this page would be the most impactful way to differentiate it and make it easier to find and convert visitors."
 	}
@@ -617,22 +617,22 @@ func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats mode
 
 	if clientRendered {
 		add(-1, "Audit based on server-delivered HTML only", "Notice",
-			"This page appears to render its content with JavaScript. Findings that depend on visible content — CTAs, headings, trust signals, contact info — may be incomplete. Verify them against the live page.")
+			"This page appears to render its content with JavaScript. Findings that depend on visible content (CTAs, headings, trust signals, contact info) may be incomplete. Verify them against the live page.")
 	}
 	if seo["robots"] == "fail" {
-		add(1, "Page set to noindex", "SEO", "The page will not appear in search results — complete loss of organic traffic.")
+		add(1, "Page set to noindex", "SEO", "The page will not appear in search results: complete loss of organic traffic.")
 	}
 	if !isHTTPS {
 		add(2, "Site not on HTTPS", "SEO + Trust", "Browsers warn visitors it's insecure. Google uses HTTPS as a ranking signal.")
 	}
 	if !ux.HasCTA {
-		add(3, "No call-to-action", "Conversion", "Visitors have no obvious next step — they're likely to leave without converting.")
+		add(3, "No call-to-action", "Conversion", "Visitors have no obvious next step: they're likely to leave without converting.")
 	}
 	if seo["h1_count"] == "fail" {
 		add(4, "Missing H1 heading", "SEO + Clarity", "Without an H1, search engines and visitors can't immediately identify the page topic.")
 	}
 	if seo["title"] == "fail" {
-		add(5, "Missing page title", "SEO", "No title means no search snippet — this is a fundamental on-page SEO requirement.")
+		add(5, "Missing page title", "SEO", "No title means no search snippet: this is a fundamental on-page SEO requirement.")
 	}
 	if stats.RenderBlockingScripts >= 3 {
 		add(6, fmt.Sprintf("%d render-blocking scripts", stats.RenderBlockingScripts), "Performance", "Blocking scripts delay content from appearing, increasing bounce rate from impatient visitors.")
@@ -641,7 +641,7 @@ func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats mode
 		add(7, "Most images lack alt text", "Accessibility + SEO", "Fails accessibility standards and removes those images from Google Image search.")
 	}
 	if !ux.HasTrustSignals && !ux.HasSocialProof {
-		add(8, "No trust signals or social proof", "Conversion + Trust", "Visitors have no reason to believe the site is credible — this directly suppresses conversions.")
+		add(8, "No trust signals or social proof", "Conversion + Trust", "Visitors have no reason to believe the site is credible: this directly suppresses conversions.")
 	}
 	if seo["meta_desc"] == "fail" {
 		add(9, "Missing meta description", "SEO", "Google generates a random snippet, often poorly representing the page in search results.")
@@ -653,7 +653,7 @@ func buildPrioritizedIssues(seo map[string]string, ux model.UXResult, stats mode
 		add(11, "Some images lack alt text", "Accessibility + SEO", "Partial alt coverage still hurts image SEO and accessibility for affected images.")
 	}
 	if seo["og_tags"] == "fail" {
-		add(12, "No Open Graph tags", "Reach", "Social shares show a blank preview — no image, no description — which drastically reduces click-throughs.")
+		add(12, "No Open Graph tags", "Reach", "Social shares show a blank preview (no image, no description), which drastically reduces click-throughs.")
 	}
 	if !ux.HasContactInfo {
 		add(13, "No way to get in touch visible", "Trust + Conversion", "Hard to reach = hard to trust. A visible contact route (contact page, support or community link) is a basic credibility signal.")
@@ -699,7 +699,7 @@ func buildELI5(seo map[string]string, ux model.UXResult) []model.ELI5Item {
 	}
 	if seo["title"] == "fail" {
 		add("Missing page title",
-			"Your page has no title. When it appears in Google search results or browser tabs, it shows as blank — people don't know what they're clicking on.")
+			"Your page has no title. When it appears in Google search results or browser tabs, it shows as blank: people don't know what they're clicking on.")
 	}
 	if seo["title"] == "warning" {
 		add("Page title too long or too short",
@@ -711,19 +711,19 @@ func buildELI5(seo map[string]string, ux model.UXResult) []model.ELI5Item {
 	}
 	if seo["meta_desc"] == "warning" {
 		add("Meta description too short or long",
-			"The short description shown under your page title in Google isn't the right length — either it gets cut off or it's too brief to be convincing.")
+			"The short description shown under your page title in Google isn't the right length: either it gets cut off or it's too brief to be convincing.")
 	}
 	if seo["h1_count"] == "fail" {
 		add("No H1 heading",
-			"Your page has no main heading. Every page needs one clear headline that tells visitors (and Google) what the page is about — like the title of a chapter in a book.")
+			"Your page has no main heading. Every page needs one clear headline that tells visitors (and Google) what the page is about: like the title of a chapter in a book.")
 	}
 	if seo["h1_count"] == "warning" {
 		add("Multiple H1 headings",
-			"Your page has several 'main headings' instead of just one. It's like a book that has three different titles — confusing for both readers and search engines.")
+			"Your page has several 'main headings' instead of just one. It's like a book that has three different titles: confusing for both readers and search engines.")
 	}
 	if seo["img_alt"] == "fail" || seo["img_alt"] == "warning" {
 		add("Images missing alt text",
-			"Some images on your page have no text description. People who can't see images — including visually impaired visitors and Google's image search — rely on those descriptions.")
+			"Some images on your page have no text description. People who can't see images: including visually impaired visitors and Google's image search: rely on those descriptions.")
 	}
 	if seo["canonical"] == "fail" {
 		add("No canonical tag",
@@ -731,11 +731,11 @@ func buildELI5(seo map[string]string, ux model.UXResult) []model.ELI5Item {
 	}
 	if seo["og_tags"] == "fail" {
 		add("No Open Graph tags",
-			"When someone shares your page on Facebook, LinkedIn, or WhatsApp, there's no preview image or description — just a plain link. OG tags are what create the card preview people expect to see.")
+			"When someone shares your page on Facebook, LinkedIn, or WhatsApp, there's no preview image or description: just a plain link. OG tags are what create the card preview people expect to see.")
 	}
 	if seo["schema"] == "fail" {
 		add("No structured data",
-			"Your page is missing special labels that help Google understand your content and display rich results — like star ratings, event dates, or FAQ dropdowns — directly in search results.")
+			"Your page is missing special labels that help Google understand your content and display rich results (like star ratings, event dates, or FAQ dropdowns) directly in search results.")
 	}
 	if seo["viewport"] == "fail" {
 		add("No viewport meta tag",
@@ -743,7 +743,7 @@ func buildELI5(seo map[string]string, ux model.UXResult) []model.ELI5Item {
 	}
 	if !ux.HasCTA {
 		add("No call-to-action",
-			"There's no button or prompt telling visitors what to do next. Without one, people often just leave — they need to be guided toward the next step.")
+			"There's no button or prompt telling visitors what to do next. Without one, people often just leave: they need to be guided toward the next step.")
 	}
 	if !ux.HasTrustSignals && !ux.HasSocialProof {
 		add("No trust signals or social proof",
@@ -751,7 +751,7 @@ func buildELI5(seo map[string]string, ux model.UXResult) []model.ELI5Item {
 	}
 	if !ux.HasContactInfo {
 		add("No contact route",
-			"Visitors can't find a way to reach you. A contact page, support link or community/discussions link is enough — you don't have to publish an email or phone number.")
+			"Visitors can't find a way to reach you. A contact page, support link or community/discussions link is enough: you don't have to publish an email or phone number.")
 	}
 	if !ux.HasPrivacyPolicy {
 		add("No privacy policy",

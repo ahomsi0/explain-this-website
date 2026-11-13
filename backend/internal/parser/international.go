@@ -61,7 +61,7 @@ func buildInternationalCheck(s *seoState, sourceURL string) model.SEOCheck {
 	// <html lang> — also WCAG 3.1.1, so screen readers pronounce the page correctly.
 	switch {
 	case lang == "":
-		issues = append(issues, "The <html> element has no lang attribute — screen readers, translation tools and search engines have to guess the language")
+		issues = append(issues, "The <html> element has no lang attribute: screen readers, translation tools and search engines have to guess the language")
 	case !htmlLangRe.MatchString(lang):
 		issues = append(issues, fmt.Sprintf("lang=%q is not a valid language code (use e.g. \"en\" or \"en-GB\")", lang))
 	}
@@ -81,7 +81,7 @@ func buildInternationalCheck(s *seoState, sourceURL string) model.SEOCheck {
 			if key == "x-default" {
 				hasDefault = true
 			} else if !hreflangRe.MatchString(l) {
-				issues = append(issues, fmt.Sprintf("hreflang %q is not valid — use a language code like \"en\" or \"fr-CA\" (hyphen, not underscore)", l))
+				issues = append(issues, fmt.Sprintf("hreflang %q is not valid: use a language code like \"en\" or \"fr-CA\" (hyphen, not underscore)", l))
 			} else if lang != "" && primaryLanguage(l) == primaryLanguage(lang) {
 				matchesLang = true
 			}
@@ -91,7 +91,7 @@ func buildInternationalCheck(s *seoState, sourceURL string) model.SEOCheck {
 			seen[key] = true
 
 			if u, err := url.Parse(strings.TrimSpace(e.href)); err != nil || !u.IsAbs() {
-				issues = append(issues, fmt.Sprintf("hreflang %q uses a relative URL — hreflang URLs must be absolute", l))
+				issues = append(issues, fmt.Sprintf("hreflang %q uses a relative URL: hreflang URLs must be absolute", l))
 			}
 			// The self-reference must be a real language entry; an x-default
 			// that happens to point here doesn't count.
@@ -100,10 +100,10 @@ func buildInternationalCheck(s *seoState, sourceURL string) model.SEOCheck {
 			}
 		}
 		if !selfRef && !onlyDefault(s.hreflangEntries) {
-			issues = append(issues, "No hreflang entry points to this page itself — every page in the set should list itself")
+			issues = append(issues, "No hreflang entry points to this page itself: every page in the set should list itself")
 		}
 		if !hasDefault && len(s.hreflangEntries) > 1 {
-			issues = append(issues, "No x-default hreflang entry — add one for visitors whose language you don't serve")
+			issues = append(issues, "No x-default hreflang entry: add one for visitors whose language you don't serve")
 		}
 		if lang != "" && htmlLangRe.MatchString(lang) && !matchesLang {
 			issues = append(issues, fmt.Sprintf("lang=%q but there is no hreflang entry for that language", lang))
@@ -127,7 +127,7 @@ func buildInternationalCheck(s *seoState, sourceURL string) model.SEOCheck {
 		if len(s.hreflangEntries) > 0 {
 			check.Detail = fmt.Sprintf("Language (%s), hreflang and locale are consistent", lang)
 		} else {
-			check.Detail = fmt.Sprintf("Language declared as %q — single-language site, nothing else needed", lang)
+			check.Detail = fmt.Sprintf("Language declared as %q: single-language site, nothing else needed", lang)
 		}
 		return check
 	}

@@ -21,7 +21,7 @@ var enabled bool
 func Init() {
 	dsn := strings.TrimSpace(os.Getenv("SENTRY_DSN"))
 	if dsn == "" {
-		log.Println("SENTRY_DSN not set — error reporting disabled")
+		log.Println("SENTRY_DSN not set: error reporting disabled")
 		return
 	}
 	if err := sentry.Init(sentry.ClientOptions{

@@ -24,12 +24,12 @@ func checkHSTS(h http.Header) model.SecurityHeaderCheck {
 	v := strings.TrimSpace(h.Get("Strict-Transport-Security"))
 	if v == "" {
 		return model.SecurityHeaderCheck{ID: "hsts", Label: "Strict-Transport-Security", Status: "fail",
-			Detail: "Header missing — browsers won't enforce HTTPS-only connections"}
+			Detail: "Header missing: browsers won't enforce HTTPS-only connections"}
 	}
 	maxAge, ok := hstsMaxAge(v)
 	if !ok || maxAge <= 0 {
 		return model.SecurityHeaderCheck{ID: "hsts", Label: "Strict-Transport-Security", Status: "fail",
-			Detail: "Header must include a positive max-age — max-age=0 disables HTTPS enforcement"}
+			Detail: "Header must include a positive max-age: max-age=0 disables HTTPS enforcement"}
 	}
 	return model.SecurityHeaderCheck{ID: "hsts", Label: "Strict-Transport-Security", Status: "pass",
 		Detail: v}
@@ -40,10 +40,10 @@ func checkCSP(h http.Header) model.SecurityHeaderCheck {
 	if v == "" {
 		if reportOnly := strings.TrimSpace(h.Get("Content-Security-Policy-Report-Only")); reportOnly != "" {
 			return model.SecurityHeaderCheck{ID: "csp", Label: "Content-Security-Policy", Status: "warning",
-				Detail: "Only a report-only CSP is present — it reports violations but does not block them"}
+				Detail: "Only a report-only CSP is present: it reports violations but does not block them"}
 		}
 		return model.SecurityHeaderCheck{ID: "csp", Label: "Content-Security-Policy", Status: "fail",
-			Detail: "Header missing — no protection against cross-site scripting (XSS)"}
+			Detail: "Header missing: no protection against cross-site scripting (XSS)"}
 	}
 	if !hasKnownCSPDirective(v) {
 		return model.SecurityHeaderCheck{ID: "csp", Label: "Content-Security-Policy", Status: "warning",
@@ -57,7 +57,7 @@ func checkXFrame(h http.Header) model.SecurityHeaderCheck {
 	v := strings.ToUpper(strings.TrimSpace(h.Get("X-Frame-Options")))
 	if v == "" {
 		return model.SecurityHeaderCheck{ID: "xframe", Label: "X-Frame-Options", Status: "warning",
-			Detail: "Header missing — page may be embeddable in iframes (clickjacking risk)"}
+			Detail: "Header missing: page may be embeddable in iframes (clickjacking risk)"}
 	}
 	if v != "DENY" && v != "SAMEORIGIN" {
 		return model.SecurityHeaderCheck{ID: "xframe", Label: "X-Frame-Options", Status: "warning",
@@ -75,7 +75,7 @@ func checkXContentType(h http.Header) model.SecurityHeaderCheck {
 	}
 	if v == "" {
 		return model.SecurityHeaderCheck{ID: "xcontent", Label: "X-Content-Type-Options", Status: "warning",
-			Detail: "Header missing — browsers may MIME-sniff responses"}
+			Detail: "Header missing: browsers may MIME-sniff responses"}
 	}
 	return model.SecurityHeaderCheck{ID: "xcontent", Label: "X-Content-Type-Options", Status: "warning",
 		Detail: "Expected nosniff, got: " + h.Get("X-Content-Type-Options")}
@@ -86,7 +86,7 @@ func checkReferrer(h http.Header) model.SecurityHeaderCheck {
 	v := strings.ToLower(raw)
 	if v == "" {
 		return model.SecurityHeaderCheck{ID: "referrer", Label: "Referrer-Policy", Status: "warning",
-			Detail: "Header missing — referrer defaults vary by browser"}
+			Detail: "Header missing: referrer defaults vary by browser"}
 	}
 	if v == "unsafe-url" || v == "no-referrer-when-downgrade" {
 		return model.SecurityHeaderCheck{ID: "referrer", Label: "Referrer-Policy", Status: "warning",
@@ -104,7 +104,7 @@ func checkPermissions(h http.Header) model.SecurityHeaderCheck {
 	v := strings.TrimSpace(h.Get("Permissions-Policy"))
 	if v == "" {
 		return model.SecurityHeaderCheck{ID: "permissions", Label: "Permissions-Policy", Status: "fail",
-			Detail: "Header missing — no browser feature restrictions set"}
+			Detail: "Header missing: no browser feature restrictions set"}
 	}
 	if !hasPermissionsDirective(v) {
 		return model.SecurityHeaderCheck{ID: "permissions", Label: "Permissions-Policy", Status: "warning",

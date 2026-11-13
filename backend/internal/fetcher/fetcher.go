@@ -71,7 +71,7 @@ func FetchHTML(ctx context.Context, targetURL string, maxBytes int64) (string, h
 
 	ct := resp.Header.Get("Content-Type")
 	if ct != "" && !strings.Contains(ct, "text/html") && !strings.Contains(ct, "application/xhtml") {
-		return "", nil, fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s) — try the homepage instead", ct)
+		return "", nil, fmt.Errorf("this URL doesn't serve a web page (Content-Type: %s). Try the homepage instead", ct)
 	}
 
 	body, err := readBody(resp, maxBytes)
@@ -136,7 +136,7 @@ func NewPublicHTTPClient(timeout time.Duration) *http.Client {
 		Timeout:   timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 5 {
-				return fmt.Errorf("too many redirects — the site may require a login")
+				return fmt.Errorf("too many redirects: the site may require a login")
 			}
 			// Re-validate every redirect target to prevent redirect-based SSRF.
 			if err := validateNoSSRF(req.URL.String()); err != nil {
@@ -194,21 +194,21 @@ func friendlyStatusError(status int, targetURL string) error {
 	case status >= 200 && status < 300:
 		return nil
 	case status == 301 || status == 302 || status == 303 || status == 307 || status == 308:
-		return fmt.Errorf("the site redirected too many times — it may require a login")
+		return fmt.Errorf("the site redirected too many times: it may require a login")
 	case status == 401:
-		return fmt.Errorf("this page requires a login — try the public homepage instead")
+		return fmt.Errorf("this page requires a login: try the public homepage instead")
 	case status == 403:
-		return fmt.Errorf("access denied — this site has strict bot protection. Try a different page or the root domain")
+		return fmt.Errorf("access denied: this site has strict bot protection. Try a different page or the root domain")
 	case status == 404:
-		return fmt.Errorf("page not found — check the URL and try again")
+		return fmt.Errorf("page not found: check the URL and try again")
 	case status == 429:
-		return fmt.Errorf("the site is rate-limiting requests — try again in a moment")
+		return fmt.Errorf("the site is rate-limiting requests: try again in a moment")
 	case status == 999:
-		return fmt.Errorf("this site actively blocks automated requests — LinkedIn, Instagram, and similar platforms cannot be analyzed")
+		return fmt.Errorf("this site actively blocks automated requests: LinkedIn, Instagram, and similar platforms cannot be analyzed")
 	case status >= 500:
-		return fmt.Errorf("the target site returned a server error — it may be temporarily down")
+		return fmt.Errorf("the target site returned a server error: it may be temporarily down")
 	default:
-		return fmt.Errorf("the site returned an unexpected response — the page may require authentication")
+		return fmt.Errorf("the site returned an unexpected response: the page may require authentication")
 	}
 }
 
@@ -218,19 +218,19 @@ func friendlyFetchError(err error) error {
 	msg := err.Error()
 	switch {
 	case isTimeout(err):
-		return fmt.Errorf("the site took too long to respond — it may be slow or blocking requests")
+		return fmt.Errorf("the site took too long to respond: it may be slow or blocking requests")
 	case strings.Contains(msg, "no such host"),
 		strings.Contains(msg, "could not resolve host"):
-		return fmt.Errorf("domain not found — check the URL spelling and try again")
+		return fmt.Errorf("domain not found: check the URL spelling and try again")
 	case strings.Contains(msg, "connection refused"),
 		strings.Contains(msg, "private or internal"):
-		return fmt.Errorf("could not connect to the site — it may be down or not publicly accessible")
+		return fmt.Errorf("could not connect to the site: it may be down or not publicly accessible")
 	case strings.Contains(msg, "too many redirects"):
-		return fmt.Errorf("too many redirects — this site may require a login to view")
+		return fmt.Errorf("too many redirects: this site may require a login to view")
 	case strings.Contains(msg, "certificate"):
-		return fmt.Errorf("SSL certificate error — the site has an invalid security certificate")
+		return fmt.Errorf("SSL certificate error: the site has an invalid security certificate")
 	default:
-		return fmt.Errorf("could not reach the site — please check the URL and try again")
+		return fmt.Errorf("could not reach the site: please check the URL and try again")
 	}
 }
 
