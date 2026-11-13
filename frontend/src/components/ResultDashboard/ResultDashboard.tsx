@@ -66,41 +66,47 @@ function impressionColor(n: number) {
   return n >= 8 ? "text-emerald-400" : n >= 5 ? "text-amber-400" : "text-red-400";
 }
 
+// Every tile in the strip is built the same way so they read as one row: a
+// small label on top (it may wrap to two lines), and the value pinned to the
+// bottom. Tiles stretch to the same height, so every value sits on one line
+// however long its label is.
+const TILE = "flex min-w-[104px] flex-1 basis-0 flex-col justify-between gap-2 border-r border-zinc-800 px-3 py-3 last:border-r-0";
+const TILE_LABEL = "text-xs font-medium leading-tight text-zinc-400 line-clamp-2";
+
 function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   label: string; value: string | number; suffix?: string; valueClass?: string;
 }) {
   return (
-    <div className="flex flex-1 basis-0 min-w-[112px] flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(8px,0.9cqw,12px)]">
-      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight text-[clamp(11px,0.95cqw,12px)]">{label}</span>
-      <div className="flex items-baseline gap-0.5 min-w-0">
-        <span className={`font-bold leading-none whitespace-nowrap text-[clamp(11px,2.2cqw,24px)] ${valueClass}`}>{value}</span>
-        {suffix && <span className="hidden sm:inline text-zinc-600 font-medium shrink-0 text-[clamp(11px,0.9cqw,12px)]">{suffix}</span>}
-      </div>
+    <div className={TILE}>
+      <span className={TILE_LABEL}>{label}</span>
+      <span className="flex items-baseline gap-1 whitespace-nowrap">
+        <span className={`text-xl font-semibold leading-none tabular-nums tracking-tight ${valueClass}`}>{value}</span>
+        {suffix && <span className="text-xs text-zinc-500">{suffix}</span>}
+      </span>
     </div>
   );
 }
 
+// Tech stack as plain text, not chips: it is one more value in the row.
 function TechStackTile({ items }: { items: { name: string }[] }) {
   if (!items.length) return null;
-  const top = items.slice(0, 3);
+  const top = items.slice(0, 2);
   const extra = items.length - top.length;
   return (
-    <div className="flex flex-1 basis-0 min-w-[112px] flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(8px,0.9cqw,12px)]">
-      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight text-[clamp(11px,0.95cqw,12px)]">Tech Stack</span>
-      <div className="flex items-center flex-wrap gap-1 mt-0.5 min-w-0">
-        {top.map((t) => (
-          <span key={t.name} className="max-w-full truncate rounded font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 px-[clamp(2px,0.35cqw,6px)] py-px text-[11px]">
-            {t.name}
-          </span>
-        ))}
-        {extra > 0 && (
-          <span className="rounded font-semibold text-zinc-500 bg-zinc-800 border border-zinc-700 px-[clamp(2px,0.35cqw,6px)] py-px text-[11px]">
-            +{extra}
-          </span>
-        )}
-      </div>
+    <div className={`${TILE} min-w-[136px]`}>
+      <span className={TILE_LABEL}>Tech stack</span>
+      <span className="truncate text-[13px] font-medium leading-none text-zinc-100" title={items.map((t) => t.name).join(", ")}>
+        {top.map((t) => t.name).join(", ")}
+        {extra > 0 && <span className="font-normal text-zinc-500"> +{extra}</span>}
+      </span>
     </div>
   );
+}
+
+/** "3.5 s" from PageSpeed becomes a number and a unit, like every other tile. */
+function splitMeasure(display: string): { value: string; unit?: string } {
+  const m = display.replace(/\u00a0/g, " ").trim().match(/^([\d.,]+)\s*(.*)$/);
+  return m ? { value: m[1], unit: m[2] || undefined } : { value: display };
 }
 
 function lcpColor(rating: string) {
@@ -298,13 +304,15 @@ export function ResultDashboard({
         onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined}
       />
 
-      {/* Metrics strip */}
-      <div className="hidden md:block border-b border-zinc-800 bg-zinc-900/30 [container-type:inline-size]">
+      {/* Metrics strip: the report's headline numbers. It belongs to the
+          Overview; on the other tabs it only pushed their content down. */}
+      {activeSection === "overview" && (
+      <div className="hidden md:block border-b border-zinc-800 bg-zinc-900/30">
         {/* Tiles keep a minimum width (see MetricTile). When all of them do
             not fit, the strip scrolls sideways rather than breaking labels
             mid-word. */}
         <div className="flex items-stretch overflow-x-auto scrollbar-none">
-          <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
+          <MetricTile label="SEO audit"        value={seoScore}                                           suffix="/ 100" valueClass={scoreColor(seoScore)} />
           {(() => {
             // Prefer mobile; fall back to desktop when PageSpeed only
             // returned one strategy for this run.
@@ -312,22 +320,23 @@ export function ResultDashboard({
             return (
               <>
                 {lh?.accessibility !== undefined &&
-                  <MetricTile label="Accessibility" value={lh.accessibility} suffix="/100" valueClass={scoreColor(lh.accessibility)} />}
+                  <MetricTile label="Accessibility" value={lh.accessibility} suffix="/ 100" valueClass={scoreColor(lh.accessibility)} />}
                 {lh?.bestPractices !== undefined &&
-                  <MetricTile label="Best Practices" value={lh.bestPractices} suffix="/100" valueClass={scoreColor(lh.bestPractices)} />}
+                  <MetricTile label="Best practices" value={lh.bestPractices} suffix="/ 100" valueClass={scoreColor(lh.bestPractices)} />}
               </>
             );
           })()}
           {result.performance?.mobile?.lighthouse?.seo !== undefined &&
-            <MetricTile label="Lighthouse SEO" value={result.performance.mobile.lighthouse.seo} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />}
+            <MetricTile label="Lighthouse SEO" value={result.performance.mobile.lighthouse.seo} suffix="/ 100" valueClass={scoreColor(result.performance.mobile.lighthouse.seo)} />}
           {result.performance?.mobile?.lighthouse?.performance !== undefined &&
-            <MetricTile label="Performance" value={result.performance.mobile.lighthouse.performance} suffix="/100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />}
-          {result.performance?.mobile?.lcp?.displayValue && (
-            <MetricTile label="LCP"             value={result.performance.mobile.lcp.displayValue}       valueClass={lcpColor(result.performance.mobile.lcp.rating)} />
-          )}
-          <MetricTile label="UX Score"          value={uxScore}                                           suffix="/100" valueClass={scoreColor(uxScore)} />
-          <MetricTile label="First Impression"  value={result.firstImpression?.score ?? 0}               suffix="/10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
-          <MetricTile label="Conversion Score"  value={result.conversionScores?.overall ?? 0}            suffix="/100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
+            <MetricTile label="Performance" value={result.performance.mobile.lighthouse.performance} suffix="/ 100" valueClass={scoreColor(result.performance.mobile.lighthouse.performance)} />}
+          {result.performance?.mobile?.lcp?.displayValue && (() => {
+            const lcp = splitMeasure(result.performance.mobile.lcp.displayValue);
+            return <MetricTile label="LCP" value={lcp.value} suffix={lcp.unit} valueClass={lcpColor(result.performance.mobile.lcp.rating)} />;
+          })()}
+          <MetricTile label="UX score"          value={uxScore}                                           suffix="/ 100" valueClass={scoreColor(uxScore)} />
+          <MetricTile label="First impression"  value={result.firstImpression?.score ?? 0}               suffix="/ 10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
+          <MetricTile label="Conversion"        value={result.conversionScores?.overall ?? 0}            suffix="/ 100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
           {(() => {
             const highConfidenceTech = result.techStack.filter(t => t.confidence === "high");
             return highConfidenceTech.length > 0 ? (
@@ -336,6 +345,7 @@ export function ResultDashboard({
           })()}
         </div>
       </div>
+      )}
 
       {/* Section content */}
       <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-[1800px]">
