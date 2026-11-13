@@ -86,6 +86,8 @@ const STATIC_PAGES: Record<string, StaticPage> = {
   "/go-pro": { title: withSite("Go Pro"), description: "Upgrade to Pro for higher analysis limits.", indexable: false },
   "/dashboard": { title: withSite("Dashboard"), description: "Your account dashboard.", indexable: false },
   "/verify-email": { title: withSite("Verify Email"), description: "Confirm your email address.", indexable: false },
+  "/login": { title: withSite("Sign In"), description: "Sign in to your Explain This Website account.", indexable: false },
+  "/signup": { title: withSite("Create Account"), description: "Create a free Explain This Website account.", indexable: false },
 };
 
 export function canonicalFor(path: string): string {

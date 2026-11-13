@@ -1,4 +1,3 @@
-import { LogoMark } from "./Logo";
 import { useEffect, useState } from "react";
 
 type StepState = "pending" | "running" | "done";
@@ -118,12 +117,10 @@ export function LoadingSpinner({ url, onCancel }: { url: string; serverSignaled?
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4 py-8">
 
-      {/* Brand strip — small anchor above the card */}
+      {/* What is being analyzed. The brand itself is already in the site
+          header above, so it is not repeated here in a second style. */}
       <div className="w-full max-w-[900px] mb-4 flex items-center gap-2.5 px-1">
-        <LogoMark size={20} />
-        <span className="text-[12px] font-semibold text-zinc-300">Explain This Website</span>
-        <span className="text-zinc-800">·</span>
-        <span className="text-[11px] text-zinc-600 font-mono truncate">{hostname}</span>
+        <span className="text-[11px] text-zinc-500 font-mono truncate">{hostname}</span>
       </div>
 
       {/* ── Hybrid card: split pane + pipeline rail + terminal stream ── */}

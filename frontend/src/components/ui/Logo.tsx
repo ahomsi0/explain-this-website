@@ -29,11 +29,16 @@ export function LogoMark({ size = 28, className = "" }: { size?: number; classNa
   );
 }
 
-export function LogoWordmark({ size = 28 }: { size?: number }) {
+/**
+ * The one brand lockup. Every header uses this, so the logo is the same size
+ * and wording on every screen. `textClassName` lets a crowded header drop the
+ * words at narrow widths (e.g. "hidden lg:inline") and keep just the mark.
+ */
+export function LogoWordmark({ size = 28, textClassName = "" }: { size?: number; textClassName?: string }) {
   return (
     <div className="flex items-center gap-2.5">
       <LogoMark size={size} />
-      <span className="text-sm font-semibold text-zinc-100 tracking-tight whitespace-nowrap">
+      <span className={`text-sm font-semibold text-zinc-100 tracking-tight whitespace-nowrap ${textClassName}`}>
         explain{" "}
         <mark className="rounded-[3px] bg-violet-600 px-1 py-px text-white">this</mark>{" "}
         website

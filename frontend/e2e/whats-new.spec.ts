@@ -21,3 +21,15 @@ test.describe("what's new page", () => {
     await expect(page.getByRole("link", { name: "What's new" })).toHaveAttribute("href", "/whats-new");
   });
 });
+
+test.describe("theme", () => {
+  test("applies the saved light theme before the app's JavaScript runs", async ({ page }) => {
+    await installApiFallback(page);
+    await page.addInitScript(() => localStorage.setItem("theme", "light"));
+    // Hold the app bundle back: the theme must not depend on it, or every
+    // page-to-page navigation flashes dark first.
+    await page.route("**/src/main.tsx", (route) => route.abort());
+    await page.goto("/privacy");
+    await expect(page.locator("html")).toHaveClass(/(^|\s)light(\s|$)/);
+  });
+});

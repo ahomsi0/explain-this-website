@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
 
+    <!-- Apply the saved theme before the first paint. Every page link is a
+         full page load, and without this each one painted dark first and only
+         turned light once the app's JavaScript had loaded and run. Must stay
+         inline and above the stylesheets. ThemeContext keeps it in sync. -->
+    <script>
+      try {
+        if (localStorage.getItem("theme") === "light") document.documentElement.classList.add("light");
+      } catch (e) { /* storage blocked: stay on the default dark theme */ }
+    </script>
+
     <!-- Fonts: start loading immediately (parallel with CSS) instead of after
          the CSS @import resolves — cuts the font-swap layout shift that
          otherwise reflows the page on first visit. -->

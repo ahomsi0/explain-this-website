@@ -45,7 +45,7 @@ export function URLInput({
           disabled={isLoading}
           aria-invalid={!!error}
           aria-describedby={error ? "url-error" : undefined}
-          className="flex-1 px-3 py-3.5 text-[16px] sm:text-sm bg-transparent text-zinc-100 placeholder-zinc-600 focus:outline-none disabled:opacity-50 [&:-webkit-autofill]:![background-color:transparent] [&:-webkit-autofill]:[box-shadow:0_0_0_1000px_theme(colors.zinc.900)_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:theme(colors.zinc.100)]"
+          className="flex-1 min-w-0 px-3 py-3.5 text-[16px] sm:text-sm bg-transparent text-zinc-100 placeholder-zinc-600 focus:outline-none disabled:opacity-50 [&:-webkit-autofill]:![background-color:transparent] [&:-webkit-autofill]:[box-shadow:0_0_0_1000px_theme(colors.zinc.900)_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:theme(colors.zinc.100)]"
           autoComplete="off"
           spellCheck={false}
           autoCapitalize="none"

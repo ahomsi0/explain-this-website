@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/useAuth";
-import { AuthModal } from "../auth/AuthModal";
+import { authHref } from "../../lib/authLinks";
 import { createCheckoutSession, cancelSubscription } from "../../services/authApi";
 import { track } from "../../lib/analytics";
 
@@ -13,7 +13,6 @@ const PRO_LIMIT     = 50;
 
 export function GoProPage() {
   const { user } = useAuth();
-  const [authOpen,  setAuthOpen]  = useState(false);
   const [interval,  setInterval]  = useState<Interval>("monthly");
   const [busy,      setBusy]      = useState<"upgrade" | "cancel" | null>(null);
   const [error,     setError]     = useState<string | null>(null);
@@ -25,7 +24,7 @@ export function GoProPage() {
 
   async function handleUpgrade() {
     track("upgrade_started", { interval, signed_in: Boolean(user) });
-    if (!user) { setAuthOpen(true); return; }
+    if (!user) { window.location.href = authHref("login"); return; }
     if (!billingEnabled) {
       setError("Self-serve billing is currently unavailable. Pro access is admin-granted.");
       return;
@@ -151,10 +150,6 @@ export function GoProPage() {
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
                   Saved audit history
                 </li>
-                <li className="flex items-center gap-2">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
-                  Shareable report links
-                </li>
               </ul>
 
               {cancelled ? (
@@ -195,7 +190,6 @@ export function GoProPage() {
         </div>
       </main>
 
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useAuth } from "../../context/useAuth";
 import { compareLive, type AuditComparison } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
-import { AuthModal } from "../auth/AuthModal";
+import { authHref } from "../../lib/authLinks";
 import { AuditComparison as AuditComparisonView } from "../auth/AuditComparison";
 import { COMPARE_CONTENT, COMPARE_INTRO } from "../../seo/compareContent";
 
@@ -50,7 +50,6 @@ export function ComparePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [comparison, setComparison] = useState<AuditComparison | null>(null);
-  const [authOpen, setAuthOpen] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => {
@@ -63,7 +62,7 @@ export function ComparePage() {
     setError(null);
 
     if (!user) {
-      setAuthOpen(true);
+      window.location.href = authHref("login");
       return;
     }
     const yoursUrl = normalizeInputUrl(yours);
@@ -113,10 +112,10 @@ export function ComparePage() {
             <p className="text-xs text-zinc-300">
               Comparisons run two full audits at once, so they require an account.
               {" "}
-              <button onClick={() => setAuthOpen(true)} className="font-medium text-violet-300 hover:text-violet-200 underline underline-offset-2">
+              <a href={authHref("login")} className="font-medium text-violet-300 hover:text-violet-200 underline underline-offset-2">
                 Sign in
-              </button>{" "}
-              to continue — it's free.
+              </a>{" "}
+              to continue. It's free.
             </p>
           </div>
         )}
@@ -221,7 +220,6 @@ export function ComparePage() {
           subtitle="Your site on the left, the competitor on the right. Green bars mark the winner on each metric."
         />
       )}
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

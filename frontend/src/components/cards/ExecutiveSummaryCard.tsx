@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { Insights, InsightItem } from "../../utils/insights";
 import { CardShell } from "../ui/CardShell";
-import { scoreColor, scoreBg, scoreLabel } from "../../utils/scoreColors";
+import { scoreColor, scoreFill, scoreLabel } from "../../utils/scoreColors";
 
 type ScoreKey = "seo" | "performance" | "ux" | "conversion";
 
@@ -61,15 +61,64 @@ const SCORE_EXPLANATIONS: Record<ScoreKey, (score: number) => { means: string; n
   }),
 };
 
-function ImpactDot({ impact }: { impact: InsightItem["impact"] }) {
+const IMPACT_TAG: Record<InsightItem["impact"], { tag: string; color: string }> = {
+  high:   { tag: "HIGH", color: "text-red-400" },
+  medium: { tag: "MED",  color: "text-amber-400" },
+  low:    { tag: "LOW",  color: "text-zinc-500" },
+};
+
+/**
+ * Top issues and quick wins as plain ruled lists: a mono impact tag, the
+ * issue, and why it matters. No tinted panels, icons or bullets, so the two
+ * columns read as part of the report instead of as two alert boxes.
+ */
+function InsightList({ title, items, empty }: { title: string; items: InsightItem[]; empty: string }) {
   return (
-    <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${
-      impact === "high" ? "bg-red-500" : impact === "medium" ? "bg-amber-500" : "bg-zinc-500"
-    }`} />
+    <div>
+      <p className="flex items-baseline justify-between border-b border-zinc-800 pb-2 text-xs font-medium text-zinc-400">
+        {title}
+        <span className="tabular-nums text-zinc-500">{items.length}</span>
+      </p>
+      {items.length === 0 ? (
+        <p className="pt-3 text-xs text-zinc-500">{empty}</p>
+      ) : (
+        <ul>
+          {items.map((item) => (
+            <li key={item.id} className="grid grid-cols-[38px_1fr] items-baseline gap-x-3 border-b border-zinc-800 py-2.5 last:border-b-0">
+              <span className={`font-mono text-[11px] tracking-[0.08em] ${IMPACT_TAG[item.impact].color}`}>
+                {IMPACT_TAG[item.impact].tag}
+              </span>
+              <div>
+                <p className="text-[13px] font-medium text-zinc-100">{item.title}</p>
+                <p className="mt-0.5 text-[13px] leading-relaxed text-zinc-400">{item.description}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
-function ScorePill({ label, score, tooltip, scoreKey, expScore, unavailable, isOpen, onToggle, viewToggle }: {
+/**
+ * A thin rule filled to the score. It is the only place score colour is
+ * spent on these stats, and unlike a ring outline it carries the value:
+ * you can compare four scores by line length before reading a number.
+ */
+function Meter({ value, unavailable }: { value: number; unavailable?: boolean }) {
+  return (
+    <div className="score-track h-[3px] w-full overflow-hidden rounded-full" aria-hidden="true">
+      {!unavailable && (
+        <div
+          className={`h-full rounded-full ${scoreFill(value)}`}
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ScoreStat({ label, score, tooltip, scoreKey, expScore, unavailable, isOpen, onToggle, viewToggle }: {
   label: string;
   score: number;
   tooltip: string;
@@ -83,8 +132,6 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, unavailable, isO
 }) {
   const exp = scoreKey ? SCORE_EXPLANATIONS[scoreKey]?.(expScore ?? score) : null;
   const displayScore = unavailable ? "N/A" : score;
-  const pillBg = unavailable ? "bg-zinc-900/70 border-zinc-800" : scoreBg(score);
-  const pillColor = unavailable ? "text-zinc-500" : scoreColor(score);
 
   return (
     <div className="relative">
@@ -96,9 +143,9 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, unavailable, isO
           aria-hidden="true"
         />
       )}
-      <div className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border ${pillBg}`} title={tooltip}>
-        <span className={`text-xl font-bold tabular-nums leading-none ${pillColor}`}>{displayScore}</span>
-        <span className="text-xs font-semibold text-zinc-400 text-center leading-tight flex items-center gap-1">
+      <div title={tooltip}>
+        <Meter value={score} unavailable={unavailable} />
+        <span className="mt-2.5 text-xs font-medium text-zinc-400 leading-tight flex items-center gap-1">
           {viewToggle ? (
             <>
               <button type="button" onClick={(e) => { e.stopPropagation(); if (viewToggle.active !== "mobile") viewToggle.onSwitch(); }}
@@ -128,6 +175,9 @@ function ScorePill({ label, score, tooltip, scoreKey, expScore, unavailable, isO
             </button>
           )}
         </span>
+        <p className={`mt-1.5 text-2xl font-semibold tabular-nums leading-none tracking-tight ${unavailable ? "text-zinc-500" : "text-zinc-100"}`}>
+          {displayScore}
+        </p>
       </div>
       {isOpen && exp && (
         <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-2 w-60
@@ -164,29 +214,29 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
     <CardShell variant="primary">
       <div className="p-5">
         {/* Header row */}
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div>
+        {/* Same four columns as the sub-scores, so the overall stat sits
+            exactly above the last one. */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-x-5 gap-y-5 mb-6">
+          <div className="sm:col-span-3">
             <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em] mb-1">Executive Summary</p>
             <p className="text-sm text-zinc-300 leading-relaxed max-w-xl">{summarySentence}</p>
           </div>
-          {/* Overall score ring */}
-          <div className="shrink-0 flex flex-col items-center gap-1">
-            <div className={`w-16 h-16 rounded-full border-2 flex flex-col items-center justify-center ${
-              overallScore >= 75 ? "border-emerald-500/40 bg-emerald-500/5"
-              : overallScore >= 50 ? "border-amber-500/40 bg-amber-500/5"
-              : "border-red-500/40 bg-red-500/5"
-            }`}>
-              <span className={`text-xl font-bold leading-none tabular-nums ${scoreColor(overallScore)}`}>{overallScore}</span>
-              <span className="text-[11px] text-zinc-600 mt-0.5">/100</span>
-            </div>
-            <span className={`max-w-24 text-center text-xs font-semibold ${scoreColor(overallScore)}`}>{scoreLabel(overallScore)}</span>
+          {/* Overall score: the same stat as the four below, one size up. */}
+          <div>
+            <Meter value={overallScore} />
+            <p className="mt-2.5 text-xs font-medium text-zinc-400">Overall score</p>
+            <p className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="text-4xl font-semibold tabular-nums leading-none tracking-tight text-zinc-100">{overallScore}</span>
+              <span className="text-sm text-zinc-500">/ 100</span>
+            </p>
+            <p className={`mt-2 text-xs font-semibold whitespace-nowrap ${scoreColor(overallScore)}`}>{scoreLabel(overallScore)}</p>
           </div>
         </div>
 
         {/* Sub-scores */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
-          <ScorePill label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
-          <ScorePill
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-5 gap-y-5 mb-6">
+          <ScoreStat label="SEO"         score={seoScore}        tooltip="Proportion of SEO checks passing"            scoreKey="seo"         isOpen={openKey === "seo"}         onToggle={() => toggle("seo")} />
+          <ScoreStat
             label="Performance"
             score={displayedPerfScore}
             tooltip={hasBothPerf ? `Mobile: ${perfScoreMobile} · Desktop: ${perfScoreDesktop}` : "PageSpeed mobile performance score"}
@@ -197,61 +247,14 @@ export function ExecutiveSummaryCard({ insights }: { insights: Insights }) {
             unavailable={perfUnavailable}
             viewToggle={hasBothPerf ? { active: perfView, onSwitch: () => setPerfView(v => v === "mobile" ? "desktop" : "mobile") } : undefined}
           />
-          <ScorePill label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux"          isOpen={openKey === "ux"}          onToggle={() => toggle("ux")} />
-          <ScorePill label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"      scoreKey="conversion"  isOpen={openKey === "conversion"}  onToggle={() => toggle("conversion")} />
+          <ScoreStat label="UX"          score={uxScore}         tooltip="UX signals: CTA, trust, mobile, forms, etc." scoreKey="ux"          isOpen={openKey === "ux"}          onToggle={() => toggle("ux")} />
+          <ScoreStat label="Conversion"  score={conversionScore} tooltip="Clarity, trust, CTA strength, friction"      scoreKey="conversion"  isOpen={openKey === "conversion"}  onToggle={() => toggle("conversion")} />
         </div>
 
         {/* Top issues + Quick wins */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Top Issues */}
-          <div className="rounded-lg bg-red-950/20 border border-red-900/30 p-3.5">
-            <div className="flex items-center gap-2 mb-2.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 shrink-0">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-              <span className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">Top Issues</span>
-            </div>
-            {topIssues.length === 0 ? (
-              <p className="text-xs text-zinc-500">No critical issues found.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {topIssues.map((item) => (
-                  <div key={item.id} className="flex items-start gap-2">
-                    <ImpactDot impact={item.impact} />
-                    <div>
-                      <p className="text-xs font-medium text-zinc-200">{item.title}</p>
-                      <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Quick Wins */}
-          <div className="rounded-lg bg-emerald-950/20 border border-emerald-900/30 p-3.5">
-            <div className="flex items-center gap-2 mb-2.5">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 shrink-0">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Quick Wins</span>
-            </div>
-            {quickWins.length === 0 ? (
-              <p className="text-xs text-zinc-500">No quick wins detected.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {quickWins.map((item) => (
-                  <div key={item.id} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 bg-emerald-500" />
-                    <div>
-                      <p className="text-xs font-medium text-zinc-200">{item.title}</p>
-                      <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-6">
+          <InsightList title="Top issues" items={topIssues} empty="No critical issues found." />
+          <InsightList title="Quick wins" items={quickWins} empty="No quick wins detected." />
         </div>
       </div>
     </CardShell>

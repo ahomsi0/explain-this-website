@@ -13,7 +13,7 @@ import {
 } from "../../services/authApi";
 import { useAuth } from "../../context/useAuth";
 import { AuditComparison } from "./AuditComparison";
-import { AuthModal } from "./AuthModal";
+import { authHref } from "../../lib/authLinks";
 import { RowSkeleton } from "../ui/Skeletons";
 
 type SortKey = "newest" | "oldest" | "score" | "url";
@@ -39,7 +39,6 @@ function scoreTone(score?: number): string {
 // per-row score chips, one-click re-run, and classic pagination.
 export function HistoryPage() {
   const { user, loading } = useAuth();
-  const [authOpen, setAuthOpen] = useState(false);
   const [data, setData] = useState<AuditListPage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -206,14 +205,13 @@ export function HistoryPage() {
         <div className="max-w-md mx-auto rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 text-center">
           <h1 className="text-lg font-semibold text-zinc-100">Sign in to see your history</h1>
           <p className="mt-2 text-sm text-zinc-400">Your saved audits, comparisons, and share links live here once you're signed in.</p>
-          <button
-            onClick={() => setAuthOpen(true)}
+          <a
+            href={authHref("login")}
             className="mt-5 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
           >
             Sign in
-          </button>
+          </a>
         </div>
-        <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       </main>
     );
   }

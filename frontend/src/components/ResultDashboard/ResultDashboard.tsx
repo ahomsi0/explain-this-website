@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CachedResultNotice } from "./CachedResultNotice";
 import { useTheme } from "../../context/useTheme";
 import { Separator } from "@/components/ui/separator";
-import { LogoMark } from "../ui/Logo";
+import { LogoWordmark } from "../ui/Logo";
 import type { AnalysisResult } from "../../types/analysis";
 import type { AnalyzeOptions } from "../../services/analyzeApi";
 import { scoreColor as sharedScoreColor } from "../../utils/scoreColors";
@@ -12,7 +12,7 @@ import { SectionView } from "./sections";
 import { SECTIONS, type SectionId } from "./sectionConfig";
 import { ErrorBoundary } from "../ui/ErrorBoundary";
 import { useAuth } from "../../context/useAuth";
-import { AuthModal } from "../auth/AuthModal";
+import { authHref } from "../../lib/authLinks";
 import { UserMenu } from "../auth/UserMenu";
 import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
@@ -70,8 +70,8 @@ function MetricTile({ label, value, suffix, valueClass = "text-zinc-100" }: {
   label: string; value: string | number; suffix?: string; valueClass?: string;
 }) {
   return (
-    <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(3px,0.9cqw,12px)]">
-      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(11px,0.95cqw,12px)]">{label}</span>
+    <div className="flex flex-1 basis-0 min-w-[112px] flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(8px,0.9cqw,12px)]">
+      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight text-[clamp(11px,0.95cqw,12px)]">{label}</span>
       <div className="flex items-baseline gap-0.5 min-w-0">
         <span className={`font-bold leading-none whitespace-nowrap text-[clamp(11px,2.2cqw,24px)] ${valueClass}`}>{value}</span>
         {suffix && <span className="hidden sm:inline text-zinc-600 font-medium shrink-0 text-[clamp(11px,0.9cqw,12px)]">{suffix}</span>}
@@ -85,8 +85,8 @@ function TechStackTile({ items }: { items: { name: string }[] }) {
   const top = items.slice(0, 3);
   const extra = items.length - top.length;
   return (
-    <div className="flex flex-1 basis-0 min-w-0 flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(3px,0.9cqw,12px)]">
-      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight break-words text-[clamp(11px,0.95cqw,12px)]">Tech Stack</span>
+    <div className="flex flex-1 basis-0 min-w-[112px] flex-col gap-1 border-r border-zinc-800 py-2.5 last:border-r-0 sm:py-3 px-[clamp(8px,0.9cqw,12px)]">
+      <span className="text-zinc-500 uppercase tracking-wide font-semibold leading-tight text-[clamp(11px,0.95cqw,12px)]">Tech Stack</span>
       <div className="flex items-center flex-wrap gap-1 mt-0.5 min-w-0">
         {top.map((t) => (
           <span key={t.name} className="max-w-full truncate rounded font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/20 px-[clamp(2px,0.35cqw,6px)] py-px text-[11px]">
@@ -122,13 +122,11 @@ export function ResultDashboard({
   const [activeSection, setActiveSection] = useState<SectionId>("overview");
   const [searchValue, setSearchValue] = useState("");
   const [searchError, setSearchError] = useState("");
-  const [authOpen, setAuthOpen] = useState(false);
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
   const usage = usageOverride ?? result.usage ?? user?.usage;
-  const isPro = ["pro", "owner"].includes(user?.plan ?? usage?.plan ?? "");
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,14 +147,12 @@ export function ResultDashboard({
       {/* ── Top bar ── */}
       <header className="fixed inset-x-0 top-0 z-30 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
         <div className="px-3 sm:px-4 lg:px-6 h-16 sm:h-12 flex items-center gap-1 sm:gap-3">
-          <a href="/" aria-label="Explain This Website home" className="flex items-center gap-2 shrink-0">
-            <LogoMark size={22} />
-            {/* One h1 at every width: the visible wordmark only shows on larger screens, so the
-                full title is always available to screen readers (and to phones, which have no other h1). */}
-            <h1 className="text-xs font-semibold text-zinc-300">
-              <span aria-hidden="true" className="hidden lg:inline">Explain This Website</span>
-              <span className="sr-only">Explain This Website — Website Analysis Report</span>
-            </h1>
+          <a href="/" aria-label="Explain This Website home" className="flex items-center shrink-0">
+            {/* Same lockup and size as the site header on every other page.
+                The words only fit beside the toolbar from lg up. */}
+            <LogoWordmark size={20} textClassName="hidden lg:inline" />
+            {/* One h1 at every width, for screen readers and for phones, which have no other h1. */}
+            <h1 className="sr-only">Explain This Website: website analysis report</h1>
           </a>
 
           <Separator orientation="vertical" className="h-4 bg-zinc-800 hidden lg:block" />
@@ -227,7 +223,20 @@ export function ResultDashboard({
                 </svg>
               )}
             </button>
-            <ReportActionsMenu result={result} canShare={isPro}
+            {/* Below md the sidebar (New Audit) and the "Analyze another URL"
+                box are both hidden, so phones get their own way out of a report. */}
+            <button
+              type="button"
+              onClick={onReset}
+              aria-label="New audit"
+              className="md:hidden flex min-h-11 items-center gap-1 px-2.5 rounded-md text-xs font-semibold text-violet-300 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 transition-colors"
+            >
+              <svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              New
+            </button>
+            <ReportActionsMenu result={result}
               onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined} />
             {onAnalyze && (
               <button
@@ -245,12 +254,12 @@ export function ResultDashboard({
             {user ? (
               <UserMenu />
             ) : (
-              <button
-                onClick={() => setAuthOpen(true)}
+              <a
+                href={authHref("login")}
                 className="flex min-h-11 sm:min-h-0 items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-zinc-100 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 transition-colors"
               >
                 Sign in
-              </button>
+              </a>
             )}
           </div>
         </div>
@@ -291,7 +300,10 @@ export function ResultDashboard({
 
       {/* Metrics strip */}
       <div className="hidden md:block border-b border-zinc-800 bg-zinc-900/30 [container-type:inline-size]">
-        <div className="flex items-stretch">
+        {/* Tiles keep a minimum width (see MetricTile). When all of them do
+            not fit, the strip scrolls sideways rather than breaking labels
+            mid-word. */}
+        <div className="flex items-stretch overflow-x-auto scrollbar-none">
           <MetricTile label="SEO Audit"        value={seoScore}                                           suffix="/100" valueClass={scoreColor(seoScore)} />
           {(() => {
             // Prefer mobile; fall back to desktop when PageSpeed only
@@ -339,7 +351,6 @@ export function ResultDashboard({
         </main>
       </div>
 
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

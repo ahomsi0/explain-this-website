@@ -39,7 +39,7 @@ function ScoreGauge({ label, score }: { label: string; score: number }) {
     <div className="flex flex-col items-center gap-1.5">
       <div className="relative w-14 h-14">
         <svg viewBox="0 0 40 40" className="w-14 h-14 -rotate-90">
-          <circle cx="20" cy="20" r={r} fill="none" stroke="#27272a" strokeWidth="4" />
+          <circle cx="20" cy="20" r={r} fill="none" strokeWidth="4" className="gauge-track" />
           <circle
             cx="20" cy="20" r={r} fill="none" strokeWidth="4"
             strokeDasharray={`${dash} ${circ}`}

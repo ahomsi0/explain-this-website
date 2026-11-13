@@ -1,20 +1,25 @@
 import { CardShell } from "../ui/CardShell";
 
+// A plain numbered list with hairlines between rows, the same pattern as the
+// findings and issue lists. The order is the order to work through them in,
+// so the number carries meaning where a bullet in a tinted box did not.
 export function RecommendationsCard({ recommendations }: { recommendations: string[] }) {
   return (
     <CardShell collapsible defaultOpen={false} title="Recommendations">
-      <div className="p-5">
+      <div className="px-5 py-2">
         {recommendations.length === 0 ? (
-          <p className="text-xs text-zinc-600">No recommendations at this time.</p>
+          <p className="py-3 text-xs text-zinc-500">No recommendations at this time.</p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <ol>
             {recommendations.map((rec, i) => (
-              <div key={i} className="flex items-start gap-2.5 rounded-lg bg-violet-950/15 border border-violet-900/25 px-3 py-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-500 shrink-0 mt-1.5" />
-                <span className="text-xs text-zinc-300 leading-relaxed">{rec}</span>
-              </div>
+              <li key={i} className="grid grid-cols-[28px_1fr] items-baseline gap-x-3 border-b border-zinc-800 py-3 last:border-b-0">
+                <span className="font-mono text-[11px] tabular-nums tracking-[0.06em] text-zinc-500" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="text-[13px] leading-relaxed text-zinc-200">{rec}</span>
+              </li>
             ))}
-          </div>
+          </ol>
         )}
       </div>
     </CardShell>

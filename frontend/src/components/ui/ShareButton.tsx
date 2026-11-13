@@ -1,22 +1,18 @@
 import { useState } from "react";
 
+// Copies the report's public link. Every report has one, on every plan and
+// without an account; `reportId` is only missing for reports that predate
+// links or whose owner revoked sharing.
 export function ShareButton({
   reportId,
-  canShare = false,
   inMenu = false,
 }: {
   reportId?: string;
-  canShare?: boolean;
   inMenu?: boolean;
 }) {
-  const [state, setState] = useState<"idle" | "copied" | "unavailable" | "pro-only">("idle");
+  const [state, setState] = useState<"idle" | "copied" | "unavailable">("idle");
 
   const handleShare = async () => {
-    if (!canShare) {
-      setState("pro-only");
-      setTimeout(() => setState("idle"), 2500);
-      return;
-    }
     if (!reportId) {
       setState("unavailable");
       setTimeout(() => setState("idle"), 2500);
@@ -41,7 +37,7 @@ export function ShareButton({
   return (
     <button
       onClick={handleShare}
-      aria-label={state === "copied" ? "Share report: link copied" : state === "pro-only" ? "Share report: Pro only" : "Share report"}
+      aria-label={state === "copied" ? "Share report: link copied" : "Share report"}
       title="Share report"
       className={`flex items-center gap-2 px-3 ${inMenu ? "py-2.5 w-full rounded-md border-0" : "py-1.5 rounded-md border"} text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors ${inMenu ? "justify-start hover:bg-zinc-800" : "hover:bg-zinc-800 border-zinc-800 hover:border-zinc-700"}`}
     >
@@ -49,13 +45,6 @@ export function ShareButton({
         <>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           <span className={`text-emerald-400 ${inMenu ? "" : "hidden sm:inline"}`}>Link copied</span>
-        </>
-      ) : state === "pro-only" ? (
-        <>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-          <span className={`text-violet-300 ${inMenu ? "" : "hidden sm:inline"}`}>Pro only</span>
         </>
       ) : state === "unavailable" ? (
         <>

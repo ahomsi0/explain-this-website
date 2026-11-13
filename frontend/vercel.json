@@ -30,7 +30,7 @@
       "destination": "/_spa.html"
     },
     {
-      "source": "/(history|dashboard|go-pro|verify-email)",
+      "source": "/(history|dashboard|go-pro|verify-email|login|signup)",
       "destination": "/_spa.html"
     }
   ],
@@ -98,6 +98,24 @@
     },
     {
       "source": "/verify-email",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/signup",
       "headers": [
         {
           "key": "X-Robots-Tag",

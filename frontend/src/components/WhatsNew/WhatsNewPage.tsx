@@ -1,15 +1,37 @@
-type UpdateTone = "violet" | "emerald" | "amber";
-
 type Update = {
   date: string;
   label: string;
   title: string;
   description: string;
   details: string[];
-  tone: UpdateTone;
 };
 
 const UPDATES: Update[] = [
+  {
+    date: "Nov 13, 2026",
+    label: "Reports",
+    title: "Every report has its own link",
+    description:
+      "A finished report now lives at its own address, and anyone can share it. Sharing used to need a Pro plan.",
+    details: [
+      "Copy a report link from the Actions menu, with or without an account",
+      "Links work for 30 days, and signed-in owners can revoke them",
+      "Back, Forward and reload now behave the way you expect on a report",
+      "Phones get a navigation menu and a New button on every report",
+    ],
+  },
+  {
+    date: "Oct 22, 2026",
+    label: "Detection",
+    title: "See which AI or no-code builder made a site",
+    description:
+      "Reports already named the builder behind a site. Each of the 21 builders we detect now has a page explaining how to tell.",
+    details: [
+      "Lovable, Bolt, v0, Framer, Replit and 16 more",
+      "The exact signals we look for, and how to check them by hand",
+      "The compare page now explains what is compared and why",
+    ],
+  },
   {
     date: "Aug 21, 2026",
     label: "Reliability",
@@ -21,7 +43,6 @@ const UPDATES: Update[] = [
       "Clearer expectations for public, reachable pages",
       "Practical recommendations grouped by what to fix first",
     ],
-    tone: "violet",
   },
   {
     date: "Aug 21, 2026",
@@ -34,7 +55,6 @@ const UPDATES: Update[] = [
       "HTML, metadata, links, headings, images, scripts, and visible content",
       "Known limitations for login-only, blocked, client-rendered, and dynamic pages",
     ],
-    tone: "emerald",
   },
   {
     date: "Aug 21, 2026",
@@ -47,7 +67,6 @@ const UPDATES: Update[] = [
       "Optional analytics only loads after you allow it",
       "No credentials or form submissions are requested from analyzed sites",
     ],
-    tone: "amber",
   },
   {
     date: "Aug 21, 2026",
@@ -60,166 +79,66 @@ const UPDATES: Update[] = [
       "Saved audit history for signed-in users",
       "Shareable reports and a faster path back to a new audit",
     ],
-    tone: "violet",
   },
 ];
 
-const TONE: Record<UpdateTone, { dot: string; tag: string; tagBg: string; tagBorder: string }> = {
-  violet: {
-    dot: "bg-violet-400",
-    tag: "text-violet-300",
-    tagBg: "bg-violet-500/10",
-    tagBorder: "border-violet-500/25",
-  },
-  emerald: {
-    dot: "bg-emerald-400",
-    tag: "text-emerald-300",
-    tagBg: "bg-emerald-500/10",
-    tagBorder: "border-emerald-500/25",
-  },
-  amber: {
-    dot: "bg-amber-400",
-    tag: "text-amber-300",
-    tagBg: "bg-amber-500/10",
-    tagBorder: "border-amber-500/25",
-  },
-};
-
-function SpotlightCard({ update }: { update: Update }) {
-  const t = TONE[update.tone];
+// A changelog, set like one: a ruled list of dated entries, newest first.
+// Every entry shows in full. Same quiet language as the legal pages and the
+// landing page's findings list: hairlines, one mono column, no cards.
+function Entry({ update }: { update: Update }) {
   return (
-    <article className="relative overflow-hidden rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-violet-900/[0.04] p-6 sm:p-7">
-      <div
-        className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-violet-500/[0.07] blur-2xl"
-        aria-hidden="true"
-      />
-      <div className="relative">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span
-            className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
-          >
-            {update.label}
-          </span>
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
-            Latest
-          </span>
-          <time className="ml-auto text-[11px] text-zinc-600">{update.date}</time>
-        </div>
-
-        <h2 className="mb-3 text-2xl font-bold tracking-tight text-zinc-100 sm:text-[1.6rem]">
-          {update.title}
-        </h2>
-        <p className="mb-5 text-sm leading-7 text-zinc-400">{update.description}</p>
-
-        <ul className="grid grid-cols-2 gap-1.5">
-          {update.details.map((detail, i) => {
-            const isOddLast =
-              update.details.length % 2 !== 0 && i === update.details.length - 1;
-            return (
-              <li
-                key={detail}
-                className={`flex items-start gap-2 rounded-lg border border-violet-500/[0.12] bg-violet-500/[0.06] px-3 py-2 text-[11.5px] leading-snug text-violet-400 ${isOddLast ? "col-span-2" : ""}`}
-              >
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mt-0.5 shrink-0"
-                  aria-hidden="true"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {detail}
-              </li>
-            );
-          })}
-        </ul>
+    <li className="grid grid-cols-1 gap-x-8 gap-y-3 border-b border-zinc-800 py-8 sm:grid-cols-[112px_1fr]">
+      <div className="flex items-baseline gap-3 font-mono text-[11px] tracking-[0.06em] sm:flex-col sm:gap-1.5">
+        <time className="text-zinc-400">{update.date}</time>
+        <span className="uppercase text-zinc-500">{update.label}</span>
       </div>
-    </article>
-  );
-}
-
-function FeedRow({ update }: { update: Update }) {
-  const t = TONE[update.tone];
-  return (
-    <li className="flex items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900/60 px-3.5 py-2.5">
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${t.dot}`} aria-hidden="true" />
-      <span className="flex-1 truncate text-sm font-medium text-zinc-400">{update.title}</span>
-      <span
-        className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.1em] ${t.tag} ${t.tagBg} ${t.tagBorder}`}
-      >
-        {update.label}
-      </span>
-      <time className="shrink-0 text-[11px] text-zinc-600">{update.date}</time>
+      <article>
+        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">{update.title}</h2>
+        <p className="mt-2 text-sm leading-7 text-zinc-400">{update.description}</p>
+        <ul className="mt-3 list-disc space-y-1.5 pl-4 text-sm leading-6 text-zinc-300 marker:text-zinc-600">
+          {update.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+      </article>
     </li>
   );
 }
 
 export function WhatsNewPage() {
-  const [latest, ...rest] = UPDATES;
   return (
-    <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-100">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] hero-grid" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] hero-noise" aria-hidden="true" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Explain This Website</p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">What&apos;s new</h1>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">
+          The latest improvements to Explain This Website, written in plain English.
+        </p>
 
-      <div className="relative z-10">
-        <main className="mx-auto max-w-2xl px-4 sm:px-6">
-          <section className="pb-10 pt-14 fade-up sm:pb-12 sm:pt-20">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">
-              Product updates
-            </p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-              What&apos;s new
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">
-              The latest improvements to Explain This Website, written in plain English.
-            </p>
-          </section>
+        <ul className="mt-10 border-t border-zinc-700" role="list" aria-label="Product updates">
+          {UPDATES.map((update) => (
+            <Entry key={update.title} update={update} />
+          ))}
+        </ul>
 
-          <section className="fade-up" aria-label="Latest update">
-            <SpotlightCard update={latest} />
-          </section>
-
-          {rest.length > 0 && (
-            <section className="mt-5 fade-up" aria-labelledby="prev-updates-label">
-              <p
-                id="prev-updates-label"
-                className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-600"
-              >
-                Previous updates
-              </p>
-              <ul className="flex flex-col gap-1" role="list" aria-labelledby="prev-updates-label">
-                {rest.map((update) => (
-                  <FeedRow key={update.title} update={update} />
-                ))}
-              </ul>
-            </section>
-          )}
-
-          <section className="mt-8 border-t border-zinc-900 py-10 text-center">
-            <p className="text-sm text-zinc-500">Have an idea or found something that needs fixing?</p>
-            <a
-              href="mailto:support@explainthiswebsite.com"
-              className="mt-2 inline-block text-sm text-violet-400 underline decoration-violet-500/30 underline-offset-4 transition-colors hover:text-violet-300"
-            >
-              Send us a note
-            </a>
-            <div className="mt-5">
-              <a
-                href="/"
-                className="text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-200"
-              >
-                ← Back to the analyzer
-              </a>
-            </div>
-          </section>
-        </main>
-      </div>
+        <p className="pt-8 text-sm text-zinc-400">
+          Have an idea or found something that needs fixing?{" "}
+          <a
+            href="mailto:support@explainthiswebsite.com"
+            className="text-violet-400 underline decoration-violet-500/30 underline-offset-4 transition-colors hover:text-violet-300"
+          >
+            Send us a note
+          </a>
+          , or go{" "}
+          <a
+            href="/"
+            className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors hover:text-zinc-100"
+          >
+            back to the analyzer
+          </a>
+          .
+        </p>
+      </main>
     </div>
   );
 }

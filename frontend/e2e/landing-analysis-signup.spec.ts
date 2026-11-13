@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { declineConsent, installApiFallback, mockJson, testAuthResponse } from "./fixtures";
+import { declineConsent, installApiFallback, mockJson, testAuthResponse, testUser } from "./fixtures";
 
 test.describe("landing to analysis to signup", () => {
   test.beforeEach(async ({ page }) => {
@@ -11,8 +11,24 @@ test.describe("landing to analysis to signup", () => {
     await declineConsent(page);
   });
 
-  test("analyzes a URL and opens the report dashboard", async ({ page, isMobile }) => {
-    test.skip(isMobile, "The New Audit CTA is in the desktop sidebar.");
+  test("phones get a navigation menu and an Analyze button that stays inside its box", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "Desktop shows the links inline and has room to spare.");
+    const form = (await page.getByRole("form", { name: "Website analyzer" }).boundingBox())!;
+    const analyze = (await page.getByRole("button", { name: "Analyze", exact: true }).boundingBox())!;
+    expect(analyze.x + analyze.width).toBeLessThanOrEqual(form.x + form.width);
+
+    await page.getByRole("button", { name: "Open menu" }).click();
+    const menu = page.getByRole("navigation", { name: "Menu" });
+    await expect(menu.getByRole("link", { name: "Fix guides" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Compare two sites" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Built with" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+  });
+
+  // Runs on phones too: below md the sidebar is hidden and the header carries
+  // its own "New audit" button, so a report is never a dead end.
+  test("analyzes a URL and opens the report dashboard", async ({ page }) => {
     await page.getByLabel("Website URL to analyze").fill("example.com");
     await page.getByRole("button", { name: "Analyze", exact: true }).click();
 
@@ -37,11 +53,21 @@ test.describe("landing to analysis to signup", () => {
     await page.getByRole("button", { name: "Analyze", exact: true }).click();
     await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page.getByRole("button", { name: "Sign up", exact: true }).click();
+    // Sign-up is its own page now; afterwards the visitor is back on the report.
+    await page.getByRole("link", { name: "Sign in", exact: true }).click();
+    await page.getByRole("link", { name: "Create an account" }).click();
+    await expect(page).toHaveURL(/\/signup$/);
     await page.getByLabel("Email").fill("tester@example.com");
     await page.getByLabel("Password").fill("correct-horse-battery");
+    await mockJson(page, "/api/auth/me", testUser);
     await page.getByRole("button", { name: "Create account", exact: true }).click();
+
+    // The page first says a verification email is on its way, then lets them carry on.
+    await expect(page.getByRole("heading", { name: "Check your inbox" })).toBeVisible();
+    await expect(page.getByText("tester@example.com")).toBeVisible();
+    await page.getByRole("link", { name: "Continue" }).click();
+
+    await expect(page.getByText("Example Store — Best Widgets Online")).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByRole("button", { name: "Account menu" })).toBeVisible();
     await page.getByRole("button", { name: "Account menu" }).click();
@@ -70,6 +96,6 @@ test.describe("landing to analysis to signup", () => {
     }));
     expect(mobileWidths.scrollWidth).toBeLessThanOrEqual(mobileWidths.clientWidth);
     await expect(page.getByRole("button", { name: "Report actions" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
   });
 });

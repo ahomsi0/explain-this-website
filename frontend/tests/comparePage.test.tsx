@@ -5,7 +5,6 @@ import { compareLive, type AuditComparison } from "../src/services/authApi";
 
 vi.mock("../src/context/useAuth", () => ({ useAuth: () => ({ user: { id: 7 } }) }));
 vi.mock("../src/services/authApi", () => ({ compareLive: vi.fn() }));
-vi.mock("../src/components/auth/AuthModal", () => ({ AuthModal: () => null }));
 vi.mock("../src/components/auth/AuditComparison", () => ({
   AuditComparison: ({ comparison }: { comparison: AuditComparison }) => <div>{comparison.before.url}</div>,
 }));

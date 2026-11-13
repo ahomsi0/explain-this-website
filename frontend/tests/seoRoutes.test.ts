@@ -23,7 +23,7 @@ describe("publicPaths", () => {
 
   it("never lists private pages", () => {
     const paths = publicPaths();
-    for (const p of ["/history", "/dashboard", "/go-pro", "/verify-email"]) {
+    for (const p of ["/history", "/dashboard", "/go-pro", "/verify-email", "/login", "/signup"]) {
       expect(paths).not.toContain(p);
     }
   });
@@ -73,6 +73,8 @@ describe("metaForPath (noindex pages)", () => {
     "/dashboard",
     "/go-pro",
     "/verify-email",
+    "/login",
+    "/signup",
     `/report/${"a".repeat(32)}`,
     "/guides/does-not-exist",
     "/guides/constructor",

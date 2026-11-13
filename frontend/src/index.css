@@ -24,6 +24,12 @@
   mask-composite: add;
   -webkit-mask-composite: source-over;
 }
+/* Unfilled part of a score meter. It needs its own class: the light theme
+   maps bg-zinc-800 to the same lavender as the card the meter sits on, which
+   made the track vanish and left the fill with no scale. */
+.score-track { background-color: #27272a; }
+html.light .score-track { background-color: #c4b5fd; }
+
 html.light .hero-grid {
   background-image:
     linear-gradient(to right, rgba(30,27,75,0.12) 1px, transparent 1px),
@@ -109,6 +115,44 @@ html.light body {
   color: #1e1b4b;
 }
 
+/* Family fallbacks for dark tints. Tailwind emits one class per opacity
+   (bg-red-950/20, /30, /50 ...), and listing each by hand kept missing some,
+   which then showed as muddy dark panels and dark borders on the light page.
+   These match the whole family; the specific entries further down still win
+   because they come later with the same specificity. The leading space (or
+   start of attribute) keeps them from matching "hover:" variants. */
+html.light [class*=" bg-red-950/"],     html.light [class^="bg-red-950/"],
+html.light [class*=" bg-red-900/"],     html.light [class^="bg-red-900/"]     { background-color: rgba(254,226,226,0.6) !important; }
+html.light [class*=" bg-emerald-950/"], html.light [class^="bg-emerald-950/"],
+html.light [class*=" bg-emerald-900/"], html.light [class^="bg-emerald-900/"] { background-color: rgba(220,252,231,0.65) !important; }
+html.light [class*=" bg-amber-950/"],   html.light [class^="bg-amber-950/"],
+html.light [class*=" bg-amber-900/"],   html.light [class^="bg-amber-900/"]   { background-color: rgba(254,243,199,0.65) !important; }
+html.light [class*=" bg-violet-950/"],  html.light [class^="bg-violet-950/"],
+html.light [class*=" bg-violet-900/"],  html.light [class^="bg-violet-900/"]  { background-color: rgba(221,214,254,0.45) !important; }
+html.light [class*=" bg-orange-950"],   html.light [class^="bg-orange-950"]   { background-color: #ffedd5 !important; }
+html.light [class*=" border-red-9"],     html.light [class^="border-red-9"],
+html.light [class*=" border-red-8"],     html.light [class^="border-red-8"]     { border-color: #fca5a5 !important; }
+html.light [class*=" border-emerald-9"], html.light [class^="border-emerald-9"],
+html.light [class*=" border-emerald-8"], html.light [class^="border-emerald-8"] { border-color: #6ee7b7 !important; }
+html.light [class*=" border-amber-9"],   html.light [class^="border-amber-9"],
+html.light [class*=" border-amber-8"],   html.light [class^="border-amber-8"],
+html.light [class*=" border-amber-7"],   html.light [class^="border-amber-7"]   { border-color: #fcd34d !important; }
+html.light [class*=" border-violet-9"],  html.light [class^="border-violet-9"],
+html.light [class*=" border-violet-8"],  html.light [class^="border-violet-8"]  { border-color: #c4b5fd !important; }
+html.light [class*=" border-orange-9"],  html.light [class^="border-orange-9"],
+html.light [class*=" border-orange-8"],  html.light [class^="border-orange-8"]  { border-color: #fdba74 !important; }
+/* The shadcn separator's slate line, and the gauge track drawn in SVG. */
+html.light .bg-slate-700\/50 { background-color: #ddd6fe !important; }
+.gauge-track { stroke: #27272a; }
+html.light .gauge-track { stroke: #ddd6fe; }
+/* Menus and popovers cast a near-black shadow that is right on a dark page
+   and heavy on a light one. */
+html.light .shadow-black\/50,
+html.light .shadow-black\/40 {
+  --tw-shadow-color: rgba(76, 29, 149, 0.16) !important;
+  --tw-shadow: var(--tw-shadow-colored) !important;
+}
+
 /* Page and card backgrounds */
 html.light .bg-zinc-950   { background-color: #ede9fe !important; }
 html.light .bg-zinc-900   { background-color: #ffffff !important; }
@@ -129,6 +173,26 @@ html.light .bg-zinc-800\/70 { background-color: rgba(237,233,254,0.75) !importan
 /* Borders */
 html.light .border-zinc-800 { border-color: #ddd6fe !important; }
 html.light .border-zinc-700 { border-color: #c4b5fd !important; }
+/* Translucent and near-black hairlines. Tailwind's opacity variants are
+   separate classes, so each needs its own entry: without one the dark value
+   shows through in light mode as a grey-black line (collapsible card headers,
+   the site header and footer rules, list and table rows). */
+html.light .border-zinc-900,
+html.light .border-zinc-900\/80,
+html.light .border-zinc-800\/80,
+html.light .border-zinc-800\/70,
+html.light .border-zinc-800\/60,
+html.light .border-zinc-700\/40 { border-color: #ddd6fe !important; }
+html.light .border-zinc-800\/50,
+html.light .border-zinc-800\/40 { border-color: #e4defd !important; }
+html.light .border-zinc-600 { border-color: #a78bfa !important; }
+html.light .lg\:border-zinc-800 { border-color: #ddd6fe !important; }
+html.light .divide-zinc-800 > :not([hidden]) ~ :not([hidden]),
+html.light .divide-zinc-800\/60 > :not([hidden]) ~ :not([hidden]) { border-color: #ddd6fe !important; }
+/* Translucent dark fills that had no light value. */
+html.light .bg-zinc-800\/80 { background-color: rgba(237,233,254,0.85) !important; }
+html.light .bg-zinc-700\/40 { background-color: rgba(221,214,254,0.6) !important; }
+html.light .bg-zinc-950\/50 { background-color: rgba(245,243,255,0.6) !important; }
 
 /* Text */
 html.light .text-zinc-100 { color: #1e1b4b !important; }
@@ -226,6 +290,35 @@ html.light .border-violet-500\/30 { border-color: rgba(124,58,237,0.25) !importa
 /* Hover states — flip dark zinc hovers to light violet tints */
 html.light .hover\:bg-zinc-900:hover { background-color: #ede9fe !important; }
 html.light .hover\:bg-zinc-800:hover { background-color: #ddd6fe !important; }
+/* Hover and focus states with no light value turned dark grey on hover. */
+html.light .hover\:bg-zinc-800\/60:hover,
+html.light .hover\:bg-zinc-800\/50:hover,
+html.light .hover\:bg-zinc-800\/40:hover { background-color: rgba(221,214,254,0.5) !important; }
+html.light .hover\:bg-zinc-900\/60:hover { background-color: rgba(237,233,254,0.8) !important; }
+html.light .hover\:bg-zinc-700:hover,
+html.light .hover\:bg-zinc-600:hover { background-color: #c4b5fd !important; }
+html.light .hover\:border-zinc-700:hover,
+html.light .focus\:border-zinc-700:focus { border-color: #a78bfa !important; }
+html.light .hover\:border-zinc-500:hover,
+html.light .focus-within\:border-zinc-500:focus-within { border-color: #8b5cf6 !important; }
+html.light .hover\:text-zinc-100:hover { color: #1e1b4b !important; }
+html.light .group:hover .group-hover\:text-zinc-400 { color: #4b5563 !important; }
+html.light .group:hover .group-hover\:text-zinc-300 { color: #4338ca !important; }
+/* Coloured hover states. The base colours are remapped with !important, so
+   without these a hover either did nothing or (where the base colour is
+   inherited) turned the text to a pale tint that vanishes on white. */
+html.light .hover\:text-violet-300:hover,
+html.light .group:hover .group-hover\:text-violet-300 { color: #6d28d9 !important; }
+html.light .hover\:text-violet-200:hover,
+html.light .group:hover .group-hover\:text-violet-400 { color: #5b21b6 !important; }
+html.light .hover\:text-red-400:hover,
+html.light .hover\:text-red-300:hover { color: #991b1b !important; }
+html.light .hover\:text-amber-400:hover,
+html.light .hover\:text-amber-300:hover,
+html.light .hover\:text-amber-100:hover { color: #78350f !important; }
+html.light .hover\:bg-red-900\/30:hover     { background-color: rgba(254,226,226,0.9) !important; }
+html.light .hover\:bg-emerald-900\/30:hover { background-color: rgba(220,252,231,0.9) !important; }
+html.light .hover\:bg-violet-900\/30:hover  { background-color: rgba(221,214,254,0.7) !important; }
 html.light .hover\:text-zinc-200:hover { color: #312e81 !important; }
 html.light .hover\:text-zinc-300:hover { color: #4338ca !important; }
 html.light .hover\:text-zinc-400:hover { color: #4b5563 !important; }

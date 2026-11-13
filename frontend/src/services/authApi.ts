@@ -439,6 +439,11 @@ export async function adminBroadcastEmail(subject: string, body: string): Promis
   });
 }
 
+/** Sends the signed-in user a fresh verification link. "verified" means none was needed. */
+export async function resendVerification(): Promise<{ status: "sent" | "verified" }> {
+  return jsonFetch<{ status: "sent" | "verified" }>("/api/auth/resend-verification", { method: "POST" });
+}
+
 export async function requestPasswordReset(email: string): Promise<void> {
   await jsonFetch<{ ok: boolean }>("/api/auth/forgot-password", {
     method: "POST",

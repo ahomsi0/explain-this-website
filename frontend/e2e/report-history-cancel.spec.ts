@@ -16,8 +16,7 @@ test.describe("report, history, and cancellation flows", () => {
     await expect(page.getByLabel("Website URL to analyze")).toBeVisible();
   });
 
-  test("loads a shared report and starts a new audit", async ({ page, isMobile }) => {
-    test.skip(isMobile, "The New Audit CTA is in the desktop sidebar.");
+  test("loads a shared report and starts a new audit", async ({ page }) => {
     await installApiFallback(page);
     await mockJson(page, `/api/report/${reportId}`, mockAnalysisResult);
     await page.goto(`/report/${reportId}`);
@@ -27,7 +26,7 @@ test.describe("report, history, and cancellation flows", () => {
     await expect(page.getByLabel("Website URL to analyze")).toBeVisible();
   });
 
-  test("opens history and compares two saved audits", async ({ page }) => {
+  test("opens history and compares two saved audits", async ({ page, isMobile }) => {
     await installApiFallback(page);
     await mockJson(page, "/api/auth/me", testUser);
     await mockJson(page, "/api/usage", testUser.usage);
@@ -50,7 +49,13 @@ test.describe("report, history, and cancellation flows", () => {
     }));
     await page.goto("/");
     await declineConsent(page);
-    await page.getByRole("button", { name: "History", exact: true }).click();
+    if (isMobile) {
+      // Phones have no room for the header button, so History is in the menu.
+      await page.getByRole("button", { name: "Open menu" }).click();
+      await page.getByRole("navigation", { name: "Menu" }).getByRole("link", { name: "History" }).click();
+    } else {
+      await page.getByRole("button", { name: "History", exact: true }).click();
+    }
     await expect(page.getByRole("heading", { name: "Audit history" })).toBeVisible();
     await expect(page.getByText("Before report")).toBeVisible();
     await expect(page.getByText("After report")).toBeVisible();

@@ -1,20 +1,21 @@
 import { CardShell } from "../ui/CardShell";
 
+// Same ruled list as RecommendationsCard, without numbers: weak points are
+// observations, not a sequence to work through.
 export function WeakPointsCard({ weakPoints }: { weakPoints: string[] }) {
   return (
     <CardShell collapsible defaultOpen={false} title="Weak Points">
-      <div className="p-5">
+      <div className="px-5 py-2">
         {weakPoints.length === 0 ? (
-          <p className="text-xs text-emerald-400">No significant weak points detected.</p>
+          <p className="py-3 text-xs text-emerald-400">No significant weak points detected.</p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <ul>
             {weakPoints.map((point, i) => (
-              <div key={i} className="flex items-start gap-2.5 rounded-lg bg-red-950/15 border border-red-900/25 px-3 py-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 mt-1.5" />
-                <span className="text-xs text-zinc-300 leading-relaxed">{point}</span>
-              </div>
+              <li key={i} className="border-b border-zinc-800 py-3 text-[13px] leading-relaxed text-zinc-200 last:border-b-0">
+                {point}
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </CardShell>

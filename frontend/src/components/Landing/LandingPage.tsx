@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { authHref } from "../../lib/authLinks";
 import { URLInput } from "../UrlInput/UrlInput";
 import { fetchAudits, type AuthUser, type UsageSummary } from "../../services/authApi";
 import type { AnalyzeOptions } from "../../services/analyzeApi";
@@ -27,12 +28,10 @@ export function LandingPage({
   user,
   usage,
   onAnalyze,
-  setAuthOpen,
 }: {
   user: AuthUser | null;
   usage: UsageSummary | null;
   onAnalyze: (url: string, source?: "landing" | "example" | "report", opts?: AnalyzeOptions) => void;
-  setAuthOpen: (v: boolean) => void;
 }) {
   const [deepScan, setDeepScan] = useState(false);
   // Local recents render immediately; signed-in users get their authoritative
@@ -160,9 +159,9 @@ export function LandingPage({
               </p>
             ) : (
               <p className="mt-8 text-center text-xs text-zinc-500">
-                <button onClick={() => setAuthOpen(true)} className="text-violet-400 hover:text-violet-300 font-medium">
+                <a href={authHref("signup")} className="text-violet-400 hover:text-violet-300 font-medium">
                   Create an account
-                </button>{" "}
+                </a>{" "}
                 to save your audit history.
               </p>
             )}

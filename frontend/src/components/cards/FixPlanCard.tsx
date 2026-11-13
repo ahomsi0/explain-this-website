@@ -11,9 +11,9 @@ interface FixPlanCardProps {
 type TabId = "fixfirst" | "quickwins" | "all";
 
 const tabs: Array<{ id: TabId; label: string }> = [
-  { id: "fixfirst",  label: "Fix First" },
-  { id: "quickwins", label: "Quick Wins" },
-  { id: "all",       label: "All Issues" },
+  { id: "fixfirst",  label: "Fix first" },
+  { id: "quickwins", label: "Quick wins" },
+  { id: "all",       label: "All issues" },
 ];
 
 const CATEGORIES: Array<{ value: IssueCategory | "all"; label: string }> = [
@@ -26,56 +26,29 @@ const CATEGORIES: Array<{ value: IssueCategory | "all"; label: string }> = [
   { value: "content",     label: "Content" },
 ];
 
-function priorityStyles(priority: PriorityIssue["priority"]) {
-  switch (priority) {
-    case "fix-now":
-      return "bg-red-500/15 text-red-400 border border-red-500/25";
-    case "fix-soon":
-      return "bg-amber-500/15 text-amber-400 border border-amber-500/25";
-    case "optional":
-      return "bg-zinc-800 text-zinc-500 border border-zinc-700";
-  }
-}
+// One mono tag per row carries the priority. Impact and effort are a plain
+// line of text under the issue, so a row is no longer three coloured pills.
+const PRIORITY: Record<PriorityIssue["priority"], { tag: string; color: string }> = {
+  "fix-now":  { tag: "NOW",   color: "text-red-400" },
+  "fix-soon": { tag: "SOON",  color: "text-amber-400" },
+  optional:   { tag: "LATER", color: "text-zinc-500" },
+};
 
-function priorityLabel(priority: PriorityIssue["priority"]) {
-  switch (priority) {
-    case "fix-now":  return "Fix Now";
-    case "fix-soon": return "Fix Soon";
-    case "optional": return "Optional";
-  }
-}
+const IMPACT: Record<PriorityIssue["impact"], string> = {
+  high: "High impact",
+  medium: "Medium impact",
+  low: "Low impact",
+};
 
-function impactStyles(impact: PriorityIssue["impact"]) {
-  switch (impact) {
-    case "high":   return "text-red-400 bg-red-500/10 border border-red-500/20";
-    case "medium": return "text-amber-400 bg-amber-500/10 border border-amber-500/20";
-    case "low":    return "text-zinc-500 bg-zinc-800 border border-zinc-700";
-  }
-}
+const EFFORT: Record<PriorityIssue["effort"], string> = {
+  easy: "easy fix",
+  medium: "moderate effort",
+  hard: "hard to fix",
+};
 
-function effortStyles(effort: PriorityIssue["effort"]) {
-  switch (effort) {
-    case "easy":   return "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20";
-    case "medium": return "text-zinc-400 bg-zinc-800 border border-zinc-700";
-    case "hard":   return "text-zinc-500 bg-zinc-800/50 border border-zinc-700";
-  }
-}
-
-function effortLabel(effort: PriorityIssue["effort"]) {
-  switch (effort) {
-    case "easy":   return "Easy";
-    case "medium": return "Medium";
-    case "hard":   return "Hard";
-  }
-}
-
-function impactLabel(impact: PriorityIssue["impact"]) {
-  switch (impact) {
-    case "high":   return "High";
-    case "medium": return "Medium";
-    case "low":    return "Low";
-  }
-}
+// Tag column, body, chevron. The expanded panel reuses it so the fix lines up
+// under the issue it belongs to.
+const ROW_GRID = "grid grid-cols-[40px_1fr_14px] gap-x-3";
 
 function IssueRow({
   issue,
@@ -86,59 +59,44 @@ function IssueRow({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const priority = PRIORITY[issue.priority];
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden">
-      {/* Summary row */}
+    <li className="border-b border-zinc-800 last:border-b-0">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={expanded}
-        className="w-full text-left p-3 flex items-start gap-3 cursor-pointer"
+        className={`${ROW_GRID} w-full items-baseline py-3.5 text-left`}
       >
-        {/* Priority badge */}
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${priorityStyles(issue.priority)}`}>
-          {priorityLabel(issue.priority)}
+        <span className={`font-mono text-[11px] tracking-[0.08em] ${priority.color}`}>{priority.tag}</span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-medium text-zinc-100">{issue.title}</span>
+          <span className="mt-0.5 block text-[13px] leading-relaxed text-zinc-400">{issue.whyItMatters}</span>
+          <span className="mt-1.5 block text-[11px] text-zinc-500">
+            {IMPACT[issue.impact]}, {EFFORT[issue.effort]}
+          </span>
         </span>
-
-        {/* Body */}
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-zinc-100 leading-snug">{issue.title}</p>
-          <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">{issue.whyItMatters}</p>
-        </div>
-
-        {/* Right side */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${impactStyles(issue.impact)}`}>
-            {impactLabel(issue.impact)}
-          </span>
-          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${effortStyles(issue.effort)}`}>
-            {effortLabel(issue.effort)}
-          </span>
-          <span className={`text-zinc-500 transition-colors ${expanded ? "text-zinc-300" : ""}`}>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className={`transition-transform ${expanded ? "rotate-180" : ""}`}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </span>
-        </div>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className={`self-center transition-transform ${expanded ? "rotate-180 text-zinc-300" : "text-zinc-500"}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
 
-      {/* Expanded panel */}
       {expanded && (
-        <div className="border-t border-zinc-800/80">
-          <div className="p-3 bg-zinc-950">
-            <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">How to Fix</p>
-            <p className="text-xs text-zinc-300 leading-relaxed">{issue.howToFix}</p>
+        <div className={`${ROW_GRID} pb-4`}>
+          <div className="col-start-2 border-l border-zinc-700 pl-3">
+            <p className="text-[11px] font-medium text-zinc-500">How to fix</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-zinc-200">{issue.howToFix}</p>
             {issue.links && issue.links.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {issue.links.map((l) => (
@@ -159,7 +117,7 @@ function IssueRow({
           </div>
         </div>
       )}
-    </div>
+    </li>
   );
 }
 
@@ -191,64 +149,51 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
 
   return (
     <CardShell variant="primary">
-      {/* Header */}
-      <div className="p-5 pb-0 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-[0.2em]">
-            Your Fix Plan
-          </p>
-          <p className="text-xs text-zinc-500 mt-0.5">Issues ranked by impact × severity</p>
-        </div>
-        <span className="rounded-full bg-zinc-800 text-zinc-300 text-[11px] px-2 py-0.5">
-          {issues.length} {issues.length === 1 ? "issue" : "issues"}
-        </span>
-      </div>
-
-      {/* Tab row */}
-      <div className="px-5 pt-3 pb-3 flex gap-1.5">
+      {/* The section heading above the card already says "Your Fix Plan" and
+          how issues are ranked, so the card opens straight on the views. */}
+      <div className="flex gap-5 border-b border-zinc-800 px-5">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
+              aria-pressed={active}
               onClick={() => {
                 setActiveTab(tab.id);
                 setExpandedId(null);
-                // Reset category filter to 'all' whenever leaving the 'All Issues' tab.
+                // Reset category filter to 'all' whenever leaving the 'All issues' view.
                 if (tab.id !== "all") setCategoryFilter("all");
               }}
-              className={`flex items-center gap-1.5 text-xs font-medium transition-colors rounded-md px-2.5 py-1.5 ${
+              className={`-mb-px border-b-2 py-3 text-[13px] font-medium transition-colors ${
                 active
-                  ? "bg-violet-500/10 text-violet-300"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "border-violet-500 text-zinc-100"
+                  : "border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
               {tab.label}
-              <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${
-                active ? "bg-violet-500/20 text-violet-300" : "bg-zinc-800 text-zinc-500"
-              }`}>
-                {tabCounts[tab.id]}
-              </span>
+              <span className="ml-1.5 font-normal tabular-nums text-zinc-500">{tabCounts[tab.id]}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Issue list */}
-      <div className="p-5 flex flex-col gap-3">
-        {/* Category filter (All Issues tab only) */}
+      <div className="px-5">
+        {/* Category filter (All issues view only) */}
         {activeTab === "all" && (
-          <div className="flex flex-wrap gap-1.5 mb-1">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 border-b border-zinc-800 py-3">
             {CATEGORIES.map((cat) => {
               const active = categoryFilter === cat.value;
               return (
                 <button
                   key={cat.value}
+                  type="button"
+                  aria-pressed={active}
                   onClick={() => setCategoryFilter(cat.value)}
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border transition-colors ${
+                  className={`text-xs transition-colors ${
                     active
-                      ? "text-violet-400 bg-violet-500/10 border-violet-500/25"
-                      : "text-zinc-500 bg-zinc-900 border-zinc-800 hover:text-zinc-300"
+                      ? "font-medium text-zinc-100 underline decoration-violet-500 decoration-2 underline-offset-4"
+                      : "text-zinc-500 hover:text-zinc-300"
                   }`}
                 >
                   {cat.label}
@@ -258,20 +203,19 @@ export function FixPlanCard({ issues }: FixPlanCardProps) {
           </div>
         )}
 
-        {/* Issues */}
         {visibleIssues.length === 0 ? (
-          <p className="text-xs text-emerald-400/80 py-4 text-center">
-            ✓ No issues in this category
-          </p>
+          <p className="py-6 text-xs text-zinc-500">No issues in this view.</p>
         ) : (
-          visibleIssues.map((issue) => (
-            <IssueRow
-              key={issue.id}
-              issue={issue}
-              expanded={expandedId === issue.id}
-              onToggle={() => toggleExpand(issue.id)}
-            />
-          ))
+          <ul>
+            {visibleIssues.map((issue) => (
+              <IssueRow
+                key={issue.id}
+                issue={issue}
+                expanded={expandedId === issue.id}
+                onToggle={() => toggleExpand(issue.id)}
+              />
+            ))}
+          </ul>
         )}
       </div>
     </CardShell>

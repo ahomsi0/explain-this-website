@@ -7,11 +7,9 @@ import { ShareButton } from "../ui/ShareButton";
 
 export function ReportActionsMenu({
   result,
-  canShare,
   onRerun,
 }: {
   result: AnalysisResult;
-  canShare: boolean;
   onRerun?: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -64,7 +62,7 @@ export function ReportActionsMenu({
             <CopyButton result={result} inMenu />
             <DownloadButton result={result} inMenu />
             <BadgeButton url={result.url} reportId={result.reportId} inMenu />
-            <ShareButton reportId={result.reportId} canShare={canShare} inMenu />
+            <ShareButton reportId={result.reportId} inMenu />
             {onRerun && <button type="button" onClick={onRerun} className="sm:hidden min-h-11 w-full rounded-md px-3 py-2.5 text-left text-xs text-zinc-300 hover:bg-zinc-800">Re-run fresh</button>}
           </div>
         </div>

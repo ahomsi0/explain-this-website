@@ -123,7 +123,7 @@ describe("hosting config", () => {
       expect(r.destination).toBe("/_spa.html");
       return r.source;
     });
-    expect(sources).toEqual(["/report/:id([a-f0-9]{32})", "/(history|dashboard|go-pro|verify-email)"]);
+    expect(sources).toEqual(["/report/:id([a-f0-9]{32})", "/(history|dashboard|go-pro|verify-email|login|signup)"]);
     expect(sources).not.toContain("/(.*)");
     expect(metaForPath("/__spa__").robots).toBe("noindex, nofollow");
     expect(metaForPath("/404").robots).toBe("noindex, nofollow");
@@ -142,7 +142,7 @@ describe("hosting config", () => {
     const sources = vercel.headers
       .filter((h: { headers: { key: string }[] }) => h.headers.some((x) => x.key === "X-Robots-Tag"))
       .map((h: { source: string }) => h.source);
-    for (const s of ["/report/:path*", "/history", "/dashboard", "/go-pro", "/verify-email"]) expect(sources).toContain(s);
+    for (const s of ["/report/:path*", "/history", "/dashboard", "/go-pro", "/verify-email", "/login", "/signup"]) expect(sources).toContain(s);
     // A Disallow would stop crawlers from ever seeing the noindex.
     expect(read("public/robots.txt")).not.toMatch(/^Disallow:\s*\S/m);
   });
