@@ -142,6 +142,16 @@ UPDATE audits
    SET share_expires_at = created_at + INTERVAL '30 days'
  WHERE is_shareable AND share_expires_at IS NULL;
 
+-- Links to reports run without an account. Account reports live in audits.
+CREATE TABLE IF NOT EXISTS shared_reports (
+    id          TEXT PRIMARY KEY,
+    result      JSONB NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at  TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS shared_reports_expires_at_idx ON shared_reports (expires_at);
+
 CREATE TABLE IF NOT EXISTS api_keys (
     id            TEXT PRIMARY KEY,
     user_id       BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

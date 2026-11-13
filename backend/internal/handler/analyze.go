@@ -174,7 +174,6 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 		result.Usage = &usage
-		shareable := uid != 0 && usage.Plan == planPro
 		perfAvailable := result.Performance != nil && result.Performance.Available
 
 		// Persist a copy without the caller's usage snapshot: shared reports
@@ -185,19 +184,21 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		persisted.Usage = nil
 		persisted.CachedAgeSeconds = 0
 
-		// Persist result so it can be retrieved via history and, for Pro users,
-		// via public shared links.
-		reportID := globalStore.save(persisted, uid, shareable)
-		if shareable {
-			result.ReportID = reportID
-		}
+		// Every report gets a public link on every plan, account or not: the ID
+		// is the report's own address in the app (/report/<id>) and what
+		// visitors send to someone else. It is unguessable and expires after
+		// shareTTL; signed-in owners can revoke it from their history.
+		reportID := globalStore.save(persisted, uid, true)
+		result.ReportID = reportID
 
-		// If the user is logged in, also save to their permanent history.
+		// Signed-in reports go to the owner's permanent history; account-less
+		// ones are kept only as a link.
 		if uid != 0 {
-			saveAuditForUser(r.Context(), uid, reportID, persisted, shareable, parseDurationMs, perfAvailable)
+			saveAuditForUser(r.Context(), uid, reportID, persisted, true, parseDurationMs, perfAvailable)
 			dispatchAnalysisCompleted(uid, reportID, persisted)
 		} else {
 			recordAnonymousAnalysis(r.Context(), persisted.URL, persisted.Overview.Title, cacheHit, parseDurationMs, perfAvailable)
+			saveAnonymousReport(r.Context(), reportID, persisted)
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -287,6 +288,16 @@ func ReportHandler() http.HandlerFunc {
 					return
 				}
 				writeError(w, http.StatusNotFound, "report not found or expired")
+				return
+			}
+			// Not in anyone's history: it may be a report run without an account.
+			if raw, ok := loadAnonymousReport(ctx, id); ok {
+				w.WriteHeader(http.StatusOK)
+				if encoded, ok := encodeStoredReport(raw, id, true); ok {
+					w.Write(encoded)
+					return
+				}
+				w.Write(raw)
 				return
 			}
 		}
