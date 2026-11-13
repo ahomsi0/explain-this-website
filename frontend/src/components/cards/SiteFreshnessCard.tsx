@@ -7,8 +7,13 @@ const ratingConfig = {
   fresh:   { label: "Fresh",   cls: "text-emerald-400 bg-emerald-950 border-emerald-800", bar: "bg-emerald-500" },
   aging:   { label: "Aging",   cls: "text-amber-400  bg-amber-950  border-amber-800",  bar: "bg-amber-500"  },
   stale:   { label: "Stale",   cls: "text-red-400    bg-red-950    border-red-800",    bar: "bg-red-500"    },
-  unknown: { label: "Unknown", cls: "text-zinc-400   bg-zinc-800   border-zinc-700",   bar: "bg-zinc-600"   },
+  // A neutral that still stands out from the empty track in both themes
+  // (see .freshness-unknown in index.css). Plain zinc-600 was nearly the same
+  // grey as the inactive segments on a dark card.
+  unknown: { label: "Unknown", cls: "text-zinc-400   bg-zinc-800   border-zinc-700",   bar: "freshness-unknown" },
 };
+
+const RATINGS = ["fresh", "aging", "stale", "unknown"] as const;
 
 export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
   const displayDate = freshness.latestDate
@@ -30,22 +35,22 @@ export function SiteFreshnessCard({ freshness }: { freshness: SiteFreshness }) {
         }
       />
       <div className="p-5">
-        {/* Rating steps */}
+        {/* Rating steps: each label sits under its own segment, and the
+            current one is marked by a filled segment and a brighter label. */}
         <div className="mb-4">
-          <div className="flex gap-1 mb-2">
-            {(["fresh","aging","stale","unknown"] as const).map((r) => (
-              <div
-                key={r}
-                className={`h-2 flex-1 rounded-full ${freshness.rating === r ? ratingConfig[r].bar : "bg-zinc-800"}`}
-              />
-            ))}
-          </div>
-          <div className="flex justify-between text-[11px] text-zinc-600 px-0.5 mb-2">
-            <span>Fresh</span>
-            <span>Aging</span>
-            <span>Stale</span>
-            <span>Unknown</span>
-          </div>
+          <ol className="grid grid-cols-4 gap-1 mb-3">
+            {RATINGS.map((r) => {
+              const active = freshness.rating === r;
+              return (
+                <li key={r} aria-current={active ? "true" : undefined}>
+                  <div className={`h-2 rounded-full ${active ? ratingConfig[r].bar : "score-track"}`} />
+                  <p className={`mt-1.5 text-[11px] ${active ? "font-semibold text-zinc-100" : "text-zinc-500"}`}>
+                    {ratingConfig[r].label}
+                  </p>
+                </li>
+              );
+            })}
+          </ol>
           {displayDate && (
             <p className="text-[11px] text-zinc-500">
               Most recent content detected: <span className="text-zinc-300 font-medium">{displayDate}</span>

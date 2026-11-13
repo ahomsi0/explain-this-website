@@ -29,6 +29,10 @@
    made the track vanish and left the fill with no scale. */
 .score-track { background-color: #27272a; }
 html.light .score-track { background-color: #c4b5fd; }
+/* The "unknown" step of the freshness scale: neutral, but clearly not the
+   empty track. Light on the dark theme, dark on the light one. */
+.freshness-unknown { background-color: #d4d4d8; }
+html.light .freshness-unknown { background-color: #3f3f46; }
 
 html.light .hero-grid {
   background-image:
