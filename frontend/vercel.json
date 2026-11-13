@@ -27,6 +27,17 @@
   "rewrites": [
     {
       "source": "/report/:id([a-f0-9]{32})",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bot|Bot|BOT|crawler|Crawler|spider|Spider|facebookexternalhit|Facebot|WhatsApp|Slack|Telegram|Discord|Twitter|LinkedIn|Skype|Pinterest|Embedly|Iframely|preview|Preview).*"
+        }
+      ],
+      "destination": "/api/report-preview?id=:id"
+    },
+    {
+      "source": "/report/:id([a-f0-9]{32})",
       "destination": "/_report.html"
     },
     {

@@ -1,6 +1,7 @@
 import type { AnalysisResult } from "../types/analysis";
 import { computePriorityIssues, getFixFirst, getQuickWins } from "./priorityIssues";
 import type { PriorityIssue } from "./priorityIssues";
+import { computeScoreParts } from "./overallScore";
 
 export interface InsightItem {
   id: string;
@@ -26,49 +27,11 @@ export interface Insights {
   allIssues: PriorityIssue[];
 }
 
-function clamp(n: number) {
-  return Math.max(0, Math.min(100, Math.round(n)));
-}
-
-function computeSeoScore(result: AnalysisResult): number {
-  const requiredChecks = result.seoChecks.filter((c) => !c.optional);
-  const pass = requiredChecks.filter((c) => c.status === "pass").length;
-  return requiredChecks.length ? clamp((pass / requiredChecks.length) * 100) : 0;
-}
-
-/** Returns the Lighthouse performance score, or -1 when no data is available. */
-function computePerfScore(result: AnalysisResult): number {
-  return result.performance?.mobile?.lighthouse?.performance
-    ?? result.performance?.desktop?.lighthouse?.performance
-    ?? -1;
-}
-
-function computeUxScore(result: AnalysisResult): number {
-  // Conversion-relevant signals only (hasCookieBanner, hasLiveChat, etc. excluded)
-  const sigs = [
-    result.ux.hasCTA,
-    result.ux.hasForms,
-    result.ux.hasSocialProof,
-    result.ux.hasTrustSignals,
-    result.ux.hasContactInfo,
-    result.ux.mobileReady,
-  ];
-  return clamp((sigs.filter(Boolean).length / sigs.length) * 100);
-}
-
 export function computeInsights(result: AnalysisResult): Insights {
-  const seoScore        = computeSeoScore(result);
-  const perfScore       = computePerfScore(result);
-  const uxScore         = computeUxScore(result);
-  // Legacy saved audits may predate conversionScores — treat as neutral 50.
-  const conversionScore = result.conversionScores?.overall ?? 50;
-
-  // When perfScore is -1 (no data), exclude it from the weighted average
-  const perfAvailable = perfScore >= 0;
-  const perfUnavailable = !perfAvailable;
-  const overallScore = perfAvailable
-    ? clamp(seoScore * 0.25 + perfScore * 0.25 + uxScore * 0.25 + conversionScore * 0.25)
-    : clamp((seoScore + uxScore + conversionScore) / 3);
+  // The formula lives in overallScore.ts so link previews show the same numbers.
+  const { overall: overallScore, seo: seoScore, performance: perfScore, ux: uxScore, conversion: conversionScore } =
+    computeScoreParts(result);
+  const perfUnavailable = perfScore < 0;
 
   const allIssues = computePriorityIssues(result);
   const fixFirst  = getFixFirst(allIssues);

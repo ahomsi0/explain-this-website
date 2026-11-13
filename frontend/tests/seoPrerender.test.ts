@@ -119,7 +119,36 @@ describe("hosting config", () => {
 
   it("rewrites only client-side routes to the noindex SPA shell; everything else falls through to 404.html", () => {
     const vercel = JSON.parse(read("vercel.json"));
-    const sources = vercel.rewrites.map((r: { source: string; destination: string }) => {
+    type Rewrite = { source: string; destination: string; has?: { type: string; key: string; value: string }[] };
+    const [crawlers, ...rest] = vercel.rewrites as Rewrite[];
+
+    // First rule: link-preview crawlers get the per-report preview function.
+    // It must be conditional on the user agent, or every visitor would wait
+    // on the API before the report page loads.
+    expect(crawlers.source).toBe("/report/:id([a-f0-9]{32})");
+    expect(crawlers.destination).toBe("/api/report-preview?id=:id");
+    expect(crawlers.has).toHaveLength(1);
+    expect(crawlers.has![0]).toMatchObject({ type: "header", key: "user-agent" });
+    const crawlerUa = new RegExp(`^${crawlers.has![0].value}$`);
+    for (const ua of [
+      "WhatsApp/2.23.20.0",
+      "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+      "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+      "Twitterbot/1.0",
+      "LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)",
+      "TelegramBot (like TwitterBot)",
+      "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)",
+      // iMessage previews identify as the Facebook and Twitter crawlers.
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.4 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.4 facebookexternalhit/1.1 Facebot Twitterbot/1.0",
+    ]) expect(ua, ua).toMatch(crawlerUa);
+    for (const ua of [
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+      "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0",
+    ]) expect(ua, ua).not.toMatch(crawlerUa);
+
+    const sources = rest.map((r) => {
+      expect(r.has).toBeUndefined();
       // Reports have their own shell so a shared link previews as a report.
       expect(r.destination).toBe(r.source.startsWith("/report/") ? "/_report.html" : "/_spa.html");
       return r.source;
