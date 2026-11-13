@@ -65,7 +65,7 @@ const STATIC_PAGES: Record<string, StaticPage> = {
   "/behind-login": {
     title: "Analyze a Page Behind a Login: Dashboards & Staging Sites",
     description:
-      "Audit a dashboard, account page or password-protected staging site from your own browser. No install, and your password never leaves your browser.",
+      "Audit a dashboard, account page or password-protected staging site by pasting its source. Nothing to install, and your password never leaves your browser.",
     indexable: true,
   },
   "/whats-new": {

@@ -12,11 +12,11 @@ const UPDATES: Update[] = [
     label: "Private pages",
     title: "Analyze a page behind a login",
     description:
-      "Dashboards, account pages and password-protected staging sites can now be audited from your own browser. Your password never leaves it.",
+      "Dashboards, account pages and password-protected staging sites can now be audited by pasting the page's source. Your password never leaves your browser.",
     details: [
-      "Drag one button to your bookmarks bar, then click it on any page you are signed in to",
+      "Copy the page source while signed in, paste it, and confirm what you are sending",
       "The report is saved to your account and only you can open it",
-      "Speed comes from your browser's own load timings, since Google cannot reach the page",
+      "Links inside the page are never requested, and the page is not sent to an AI provider",
       "Reports now say so when a URL turned out to be a sign-in page",
     ],
   },

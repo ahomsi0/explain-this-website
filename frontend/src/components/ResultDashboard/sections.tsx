@@ -84,7 +84,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <SEOAuditCard seoChecks={result.seoChecks} />
           <SecurityHeadersCard
             checks={result.securityHeaders ?? []}
-            unavailableReason={result.capture ? "Pasted page source carries no response headers. Send the page with the bookmark button to include them." : undefined}
+            unavailableReason={result.capture ? "Pasted page source carries no response headers, so they cannot be audited." : undefined}
           />
           <div id="report-broken-links" tabIndex={-1} className="scroll-mt-32">
             <LinkCheckCard

@@ -36,7 +36,7 @@ export function BrowserTimingsCard({ timings }: { timings?: BrowserTimings }) {
       <div className="px-5 pb-4 pt-2">
         {rows.length === 0 ? (
           <p className="py-3 text-xs text-zinc-500">
-            Speed was not measured. Timings come with pages sent by the bookmark button, not with pasted source.
+            Speed was not measured. Pasted page source carries no load timings.
           </p>
         ) : (
           <dl>

@@ -9,6 +9,7 @@ import type { ContentSection } from "./compareContent.ts";
 import { TECH_COVERAGE } from "./facts.ts";
 import {
   BEHIND_LOGIN_INTRO,
+  BEHIND_LOGIN_JS_TIP,
   BEHIND_LOGIN_LIMITS,
   BEHIND_LOGIN_PRIVACY,
   BEHIND_LOGIN_REPORT,
@@ -165,9 +166,10 @@ export function behindLoginBodyHtml(): string {
     `<nav aria-label="Breadcrumb"><a href="/">Home</a> › Behind a login</nav>` +
       `<h1>${escapeHtml(BEHIND_LOGIN_TITLE)}</h1>` +
       `<p>${escapeHtml(BEHIND_LOGIN_INTRO)}</p>` +
-      `<h2>How to do it</h2><ol>${li(BEHIND_LOGIN_STEPS)}</ol>` +
+      `<p><a href="/capture">Paste a page</a></p>` +
+      `<h2>How to do it</h2><ol>${li(BEHIND_LOGIN_STEPS)}</ol><p>${escapeHtml(BEHIND_LOGIN_JS_TIP)}</p>` +
       `<h2>What the report covers</h2><ul>${li(BEHIND_LOGIN_REPORT.map((r) => `${r.label}: ${r.text}`))}</ul>` +
-      `<h2>What leaves your browser</h2><ul>${li(BEHIND_LOGIN_PRIVACY)}</ul>` +
+      `<h2>What you send</h2><ul>${li(BEHIND_LOGIN_PRIVACY)}</ul>` +
       `<h2>Good to know</h2><ul>${li(BEHIND_LOGIN_LIMITS)}</ul>` +
       `<p>For a page anyone can open, <a href="/">use the analyzer</a>.</p>`,
   );

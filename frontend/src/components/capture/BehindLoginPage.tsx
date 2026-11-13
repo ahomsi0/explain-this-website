@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { bookmarkletHref } from "../../lib/bookmarklet";
 import {
   BEHIND_LOGIN_INTRO,
+  BEHIND_LOGIN_JS_TIP,
   BEHIND_LOGIN_LIMITS,
   BEHIND_LOGIN_PRIVACY,
   BEHIND_LOGIN_REPORT,
@@ -11,38 +10,6 @@ import {
 
 const eyebrow = "text-[11px] font-bold uppercase tracking-widest text-zinc-600";
 const link = "text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors";
-
-// The button people drag to their bookmarks bar. React refuses to render a
-// `javascript:` href, so it is set on the element after it mounts. That also
-// keeps the script out of the prerendered HTML.
-function BookmarkButton() {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const [clicked, setClicked] = useState(false);
-
-  useEffect(() => {
-    ref.current?.setAttribute("href", bookmarkletHref(window.location.origin));
-  }, []);
-
-  return (
-    <span className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-      <a
-        ref={ref}
-        // Clicking it here would run it on this page, which has nothing to analyze.
-        onClick={(e) => { e.preventDefault(); setClicked(true); }}
-        draggable
-        title="Drag me to your bookmarks bar"
-        className="inline-flex cursor-grab items-center rounded-md border border-dashed border-violet-500/60 px-3.5 py-2 text-[13px] font-semibold text-violet-300 transition-colors hover:border-violet-400 hover:text-violet-200 active:cursor-grabbing"
-      >
-        Explain this page
-      </a>
-      <span role="status" className="text-[12.5px] text-zinc-500">
-        {clicked
-          ? "Drag it up to the bookmarks bar. Clicking only works once it is there."
-          : "Bookmarks bar hidden? Press Ctrl+Shift+B, or Cmd+Shift+B on a Mac."}
-      </span>
-    </span>
-  );
-}
 
 function RuledList({ items }: { items: string[] }) {
   return (
@@ -66,6 +33,14 @@ export function BehindLoginPage() {
 
         <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-zinc-100">{BEHIND_LOGIN_TITLE}</h1>
         <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-zinc-400">{BEHIND_LOGIN_INTRO}</p>
+        <div className="mt-6">
+          <a
+            href="/capture"
+            className="inline-flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-500 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors"
+          >
+            Paste a page
+          </a>
+        </div>
 
         <section className="mt-10" aria-labelledby="bl-steps">
           <h2 id="bl-steps" className={`${eyebrow} mb-3`}>How to do it</h2>
@@ -75,13 +50,11 @@ export function BehindLoginPage() {
                 <span className="font-mono text-[11px] tabular-nums tracking-[0.06em] text-zinc-500" aria-hidden="true">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="text-[14px] leading-relaxed text-zinc-200">
-                  {step}
-                  {i === 0 && <BookmarkButton />}
-                </span>
+                <span className="text-[14px] leading-relaxed text-zinc-200">{step}</span>
               </li>
             ))}
           </ol>
+          <p className="mt-3 text-[13px] leading-relaxed text-zinc-500">{BEHIND_LOGIN_JS_TIP}</p>
         </section>
 
         <section className="mt-10" aria-labelledby="bl-report">
@@ -97,7 +70,7 @@ export function BehindLoginPage() {
         </section>
 
         <section className="mt-10" aria-labelledby="bl-privacy">
-          <h2 id="bl-privacy" className={`${eyebrow} mb-3`}>What leaves your browser</h2>
+          <h2 id="bl-privacy" className={`${eyebrow} mb-3`}>What you send</h2>
           <RuledList items={BEHIND_LOGIN_PRIVACY} />
         </section>
 
@@ -107,9 +80,7 @@ export function BehindLoginPage() {
         </section>
 
         <p className="mt-10 text-[13.5px] leading-relaxed text-zinc-500">
-          Clicked the bookmark and nothing arrived?{" "}
-          <a href="/capture" className={link}>Paste the page source instead</a>. For a page anyone can open,{" "}
-          <a href="/" className={link}>use the analyzer</a>.
+          For a page anyone can open, <a href="/" className={link}>use the analyzer</a>.
         </p>
       </div>
     </main>

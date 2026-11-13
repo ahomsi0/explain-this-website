@@ -1,20 +1,13 @@
-// Where the "Explain this page" bookmark button lands. The page that opened
-// this tab hands over its HTML with postMessage; the visitor confirms, and the
-// page is analysed and saved to their account.
-//
-// The confirm step is not decoration. Any website can open this tab and post
-// a page to it, so nothing is sent to the API until the signed-in visitor
-// has seen what arrived and pressed the button themselves.
+// Where a page from behind a login is handed over: the visitor pastes the
+// page's source and address, checks what they are about to send, and the page
+// is analysed and saved to their account. Nothing reaches the API until they
+// press the button on the confirm step.
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useAuth } from "../../context/useAuth";
 import { authHref } from "../../lib/authLinks";
 import { analyzeCapture } from "../../services/analyzeApi";
-import { CAPTURE_READY_MESSAGE, readCaptureMessage } from "../../lib/bookmarklet";
 import { clearPendingCapture, loadPendingCapture, savePendingCapture, type PendingCapture } from "../../lib/pendingCapture";
-
-const WAIT_FOR_PAGE_MS = 12_000;
-const READY_PING_MS = 300;
 
 type Pending = PendingCapture;
 
@@ -55,53 +48,10 @@ function displayAddress(url: string): string {
 
 export function CapturePage() {
   const { user, loading: authLoading } = useAuth();
+  // A page already pasted survives the trip to the sign-in page and back.
   const [pending, setPending] = useState<Pending | null>(loadPendingCapture);
-  // Only a tab opened by the bookmark button has a page on its way.
-  const [waiting, setWaiting] = useState(() => pending === null && Boolean(window.opener));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const received = useRef(Boolean(pending));
-
-  // Tell the page that opened this tab that it can send, and keep saying so
-  // until the page arrives: the opener may still be collecting its timings.
-  useEffect(() => {
-    if (received.current || !window.opener) return;
-    const opener = window.opener as Window;
-
-    const onMessage = (event: MessageEvent) => {
-      if (event.source !== opener) return;
-      const message = readCaptureMessage(event.data, event.origin);
-      if (!message) return;
-      received.current = true;
-      const next: Pending = {
-        url: message.url,
-        title: message.title,
-        html: message.html,
-        source: "browser",
-        headers: message.headers,
-        timings: message.timings,
-      };
-      savePendingCapture(next);
-      setPending(next);
-      setWaiting(false);
-    };
-    window.addEventListener("message", onMessage);
-
-    const ping = () => {
-      // The opener's origin is unknown here, and the message carries nothing
-      // but "ready", so any origin may receive it.
-      try { opener.postMessage({ type: CAPTURE_READY_MESSAGE }, "*"); } catch { /* opener gone */ }
-    };
-    ping();
-    const pinger = window.setInterval(() => { if (!received.current) ping(); }, READY_PING_MS);
-    const giveUp = window.setTimeout(() => { if (!received.current) setWaiting(false); }, WAIT_FOR_PAGE_MS);
-
-    return () => {
-      window.removeEventListener("message", onMessage);
-      window.clearInterval(pinger);
-      window.clearTimeout(giveUp);
-    };
-  }, []);
 
   const discard = () => {
     clearPendingCapture();
@@ -136,25 +86,14 @@ export function CapturePage() {
   return (
     <main className="flex-1 px-4 sm:px-6 py-12 sm:py-16">
       <div className="mx-auto max-w-xl">
-        {waiting && (
-          <div role="status">
-            <h1 className="text-2xl font-semibold text-zinc-100">Waiting for your page</h1>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-              The page you clicked the bookmark on is being handed over. This takes a second or two.
-            </p>
-          </div>
-        )}
-
-        {!waiting && pending && (
+        {pending && (
           <div>
             <h1 className="text-2xl font-semibold text-zinc-100">Analyze this page?</h1>
             <dl className="mt-6 border-t border-zinc-800">
               {pending.title && <Row label="Page">{pending.title}</Row>}
               <Row label="Address"><span className="break-all">{displayAddress(pending.url)}</span></Row>
               <Row label="Size">{formatSize(pending.html.length)}</Row>
-              <Row label="Sent as">
-                {pending.source === "browser" ? "The page as your browser shows it now" : "Page source you pasted"}
-              </Row>
+              <Row label="Sent as">Page source you pasted</Row>
             </dl>
             <p className="mt-5 text-[13px] leading-relaxed text-zinc-500">
               The report is saved to your account and only you can open it. It counts as one of today&rsquo;s analyses.
@@ -187,7 +126,7 @@ export function CapturePage() {
           </div>
         )}
 
-        {!waiting && !pending && <PasteForm onReady={(next) => { savePendingCapture(next); setPending(next); }} />}
+        {!pending && <PasteForm onReady={(next) => { savePendingCapture(next); setPending(next); }} />}
       </div>
     </main>
   );
@@ -202,8 +141,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-// The fallback for when no page arrived: the tab was opened directly, or the
-// site blocks bookmark buttons or cuts the link between the two tabs.
 function PasteForm({ onReady }: { onReady: (pending: Pending) => void }) {
   const [address, setAddress] = useState("");
   const [source, setSource] = useState("");
@@ -220,11 +157,10 @@ function PasteForm({ onReady }: { onReady: (pending: Pending) => void }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">No page arrived</h1>
+      <h1 className="text-2xl font-semibold text-zinc-100">Analyze a page behind a login</h1>
       <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-        This tab is where the Explain this page bookmark sends a page.{" "}
-        <a href="/behind-login" className={quietLink}>Set up the bookmark</a>, or, if you clicked it and ended up here, the site
-        blocks it. In that case paste the page source below.
+        Paste the page&rsquo;s source and its address. You will see what you are sending before anything is analyzed.{" "}
+        <a href="/behind-login" className={quietLink}>How this works</a>
       </p>
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-4" noValidate>
@@ -254,6 +190,8 @@ function PasteForm({ onReady }: { onReady: (pending: Pending) => void }) {
           />
           <p id="capture-source-hint" className="text-[12px] leading-relaxed text-zinc-500">
             On the page, right-click and choose View Page Source, select everything, copy it and paste it here.
+            For an app that builds its pages with JavaScript, copy the finished page instead: open developer tools,
+            right-click the html element and choose Copy, then Copy outerHTML.
           </p>
         </div>
         {error && <p role="alert" className="text-[13px] text-red-400">{error}</p>}
