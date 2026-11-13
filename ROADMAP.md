@@ -19,10 +19,6 @@ Designed, not started. Waiting on a go-ahead.
 - **Site work.** A receiver on `/capture` for the handover, the speed and security sections back in those reports, an "Add to Chrome" link on `/behind-login` once a store address exists.
 - **Owner tasks.** Create a Chrome Web Store developer account (one-time $5), upload the zip, pass review. Try it once by hand on a logged-in page before submitting.
 
-### Push the bookmark removal
-
-Done locally. Goes out with the next push.
-
 ## Next
 
 - **Detect server frameworks from cookies and headers.** Django is found today only when the page contains its form token or debug markers. Laravel and Flask are not detected at all. Reading cookie names (`csrftoken`, `laravel_session`, `_rails_session`, `PHPSESSID` and similar) would catch most of them. Raise the "370+" number if the catalog grows enough.

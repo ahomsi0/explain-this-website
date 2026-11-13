@@ -8,10 +8,7 @@ Last updated: 2026-11-13
 
 **Live** at [www.explainthiswebsite.com](https://www.explainthiswebsite.com/). Frontend on Vercel, API on Render, database on Neon.
 
-**Done locally, not pushed yet**
-
-- The bookmark button for pages behind a login is removed. Pasting the page source is the only way in until the Chrome extension exists. The live site still shows the bookmark button until this is pushed.
-- Reports made from pasted source say plainly that speed and response headers were not measured.
+**Nothing is waiting to be pushed.**
 
 **Not checked yet**
 
@@ -111,6 +108,7 @@ Newest first. One line per thing a visitor or the owner would notice. Git histor
 ### November 2026
 
 - **Pages behind a login.** A signed-in user can analyze a page the analyzer cannot reach (dashboards, staging sites, intranets) by sending it from their own browser. The server never fetches the page, the report is private to its owner, and link checks, Lighthouse, the AI summary and the domain lookup are skipped. New public page `/behind-login`, private page `/capture`, new endpoint `POST /api/analyze-capture`.
+- **Bookmark button removed** the same day it shipped. Pasting the page source is the one way in until the Chrome extension exists. Reports from pasted source say that speed and response headers were not measured.
 - **Login wall notice.** When a fetched page turns out to be a login form, the report says so and points to the behind-login route.
 - **Cached result age keeps counting.** The "Cached result from N minutes ago" notice now updates while the report stays open.
 - **"370+ technologies"** claim on the landing page and built-with pages, backed by a test that fails if the catalog drops below the advertised number.
