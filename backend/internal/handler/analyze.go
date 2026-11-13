@@ -71,17 +71,9 @@ func AnalyzeHandler(cfg Config) http.HandlerFunc {
 		}
 
 		// Block suspended users before wasting resources on a fetch.
-		if uid != 0 && db.IsAvailable() {
-			var suspendedAt *time.Time
-			suspendCtx, suspendCancel := context.WithTimeout(r.Context(), 3*time.Second)
-			_ = db.Pool.QueryRow(suspendCtx,
-				`SELECT suspended_at FROM users WHERE id = $1`, uid,
-			).Scan(&suspendedAt)
-			suspendCancel()
-			if suspendedAt != nil {
-				writeError(w, http.StatusForbidden, "Your account has been suspended. Please contact support.")
-				return
-			}
+		if isSuspended(r.Context(), uid) {
+			writeError(w, http.StatusForbidden, "Your account has been suspended. Please contact support.")
+			return
 		}
 
 		// Cache lookup — skips the fetch + parse + PageSpeed call when the

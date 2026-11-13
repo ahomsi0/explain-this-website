@@ -94,6 +94,7 @@ func NewHandlerWithAnalyzeConfig(cfg config.Config, handlerCfg handler.Config) h
 	}
 
 	mux.HandleFunc("POST /api/analyze", handler.AnalyzeHandler(handlerCfg))
+	mux.HandleFunc("POST /api/analyze-capture", auth.RequireSessionAuth(handler.CaptureHandler(handlerCfg)))
 	mux.HandleFunc("GET /api/badge", handler.BadgeHandler())
 	mux.HandleFunc("POST /api/compare-live", auth.RequireSessionAuth(handler.CompareLiveHandler(handlerCfg)))
 	mux.HandleFunc("POST /api/events", handler.ConversionEventHandler())
@@ -294,7 +295,7 @@ func warnIfUntrustedProxy() {
 
 func rateLimitMiddleware(rl *rateLimiter, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost && r.URL.Path == "/api/analyze" {
+		if r.Method == http.MethodPost && (r.URL.Path == "/api/analyze" || r.URL.Path == "/api/analyze-capture") {
 			// Logged-in users get a separate, higher bucket keyed by user ID.
 			key := "ip:" + realIP(r)
 			max := rlMax

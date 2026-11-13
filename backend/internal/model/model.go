@@ -392,6 +392,36 @@ type AnalysisResult struct {
 	// Empty when the Groq integration is disabled (no GROQ_API_KEY) or the call
 	// failed — UI should hide the section in that case.
 	AISummary string `json:"aiSummary,omitempty"`
+	// LoginWall is true when a fetched page looks like a sign-in screen, which
+	// usually means the page the user wanted is behind it.
+	LoginWall bool `json:"loginWall,omitempty"`
+	// Capture is set when the page came from the user's own browser (a page
+	// behind a login) and was never fetched by the server.
+	Capture *CaptureInfo `json:"capture,omitempty"`
+}
+
+// CaptureInfo describes a page handed over by the user's browser.
+type CaptureInfo struct {
+	// Source is "browser" (the bookmark button) or "paste" (pasted source).
+	Source string `json:"source"`
+	// HasHeaders is true when the browser supplied the page's response
+	// headers, so the security header audit is real and not all "missing".
+	HasHeaders bool            `json:"hasHeaders"`
+	Timings    *BrowserTimings `json:"timings,omitempty"`
+}
+
+// BrowserTimings are load measurements taken in the user's browser. They stand
+// in for Lighthouse, which cannot reach a page behind a login. Zero means the
+// browser did not report that value.
+type BrowserTimings struct {
+	TTFBMs             int     `json:"ttfbMs,omitempty"`
+	DOMContentLoadedMs int     `json:"domContentLoadedMs,omitempty"`
+	LoadMs             int     `json:"loadMs,omitempty"`
+	LCPMs              int     `json:"lcpMs,omitempty"`
+	CLS                float64 `json:"cls"`
+	HasCLS             bool    `json:"hasCls,omitempty"`
+	Requests           int     `json:"requests,omitempty"`
+	TransferBytes      int64   `json:"transferBytes,omitempty"`
 }
 
 // ErrorResponse is returned on any failure.

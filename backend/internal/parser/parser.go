@@ -24,6 +24,31 @@ func Parse(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey s
 // too) and optional HTTP response headers, whose explicit server signals make
 // tech-stack detection more reliable.
 func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pageSpeedKey string, deep bool, respHeaders http.Header) (model.AnalysisResult, error) {
+	return parse(ctx, rawHTML, sourceURL, parseOptions{pageSpeedKey: pageSpeedKey, deep: deep, headers: respHeaders})
+}
+
+// ParseCaptured analyses a page the user's own browser handed over, typically
+// one behind a login. Nothing here may reach out on the page's behalf: the
+// server cannot see the page, and its links and hostname can be private. So
+// there is no PageSpeed run, no subpage crawl, no link probing (a one-time
+// link inside an account must never be followed) and no domain lookup.
+func ParseCaptured(ctx context.Context, rawHTML string, sourceURL string, respHeaders http.Header) (model.AnalysisResult, error) {
+	return parse(ctx, rawHTML, sourceURL, parseOptions{headers: respHeaders, captured: true})
+}
+
+type parseOptions struct {
+	pageSpeedKey string
+	deep         bool
+	headers      http.Header
+	// captured marks HTML supplied by the user's browser, not fetched by us.
+	captured bool
+}
+
+func parse(ctx context.Context, rawHTML string, sourceURL string, opts parseOptions) (model.AnalysisResult, error) {
+	pageSpeedKey, deep, respHeaders := opts.pageSpeedKey, opts.deep, opts.headers
+	if opts.captured {
+		pageSpeedKey, deep = "", false
+	}
 	if strings.TrimSpace(rawHTML) == "" {
 		return model.AnalysisResult{}, fmt.Errorf("empty HTML response")
 	}
@@ -45,7 +70,13 @@ func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pag
 	}()
 
 	domainCh := make(chan *model.DomainInfo, 1)
-	go func() { domainCh <- FetchDomainInfo(ctx, sourceURL) }()
+	go func() {
+		if opts.captured {
+			domainCh <- nil
+			return
+		}
+		domainCh <- FetchDomainInfo(ctx, sourceURL)
+	}()
 
 	doc, err := html.Parse(strings.NewReader(rawHTML))
 	if err != nil {
@@ -67,7 +98,10 @@ func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pag
 	freshness := auditFreshness(doc, rawHTML)
 	colorPalette := ExtractColorPalette(doc, rawHTML)
 	fontAudit := ExtractFontAudit(doc, rawHTML)
-	linkCheck := CheckLinks(ctx, doc, sourceURL)
+	linkCheck := model.LinkCheckResult{Items: []model.LinkCheckItem{}}
+	if !opts.captured {
+		linkCheck = CheckLinks(ctx, doc, sourceURL)
+	}
 	weakPoints, recommendations := generateRecommendations(seoChecks, ux)
 
 	if tech == nil {
@@ -172,6 +206,9 @@ func ParseWithOptions(ctx context.Context, rawHTML string, sourceURL string, pag
 		FontAudit:          fontAudit,
 		LinkCheck:          linkCheck,
 		DomainInfo:         domainInfo,
+		// A captured page is the page the user meant, even when it has a
+		// password field, so only fetched pages are checked for a login wall.
+		LoginWall: !opts.captured && DetectLoginWall(doc, visibleText, sourceURL),
 	}
 
 	if deep {
