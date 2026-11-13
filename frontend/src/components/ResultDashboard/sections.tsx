@@ -14,6 +14,7 @@ import { InsightCard }           from "../cards/InsightCard";
 import { CustomerViewCard }      from "../cards/CustomerViewCard";
 import { ELI5Card }              from "../cards/ELI5Card";
 import { PerformanceCard }       from "../cards/PerformanceCard";
+import { BrowserTimingsCard }    from "../cards/BrowserTimingsCard";
 import { ActionableOpportunitiesCard } from "../cards/ActionableOpportunitiesCard";
 import { ImageAuditCard }        from "../cards/ImageAuditCard";
 import { SiteFreshnessCard }     from "../cards/SiteFreshnessCard";
@@ -81,9 +82,15 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-2">
           <SEOAuditCard seoChecks={result.seoChecks} />
-          <SecurityHeadersCard checks={result.securityHeaders} />
+          <SecurityHeadersCard
+            checks={result.securityHeaders ?? []}
+            unavailableReason={result.capture ? "Pasted page source carries no response headers. Send the page with the bookmark button to include them." : undefined}
+          />
           <div id="report-broken-links" tabIndex={-1} className="scroll-mt-32">
-            <LinkCheckCard linkCheck={result.linkCheck} />
+            <LinkCheckCard
+              linkCheck={result.linkCheck}
+              skippedReason={result.capture ? "Links are not checked on a page from behind a login. They can be one-time or private, so none of them is requested." : undefined}
+            />
           </div>
           <IntentAlignmentCard intentAlignment={result.intentAlignment} />
         </div>
@@ -103,6 +110,7 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
       return (
         <div className="flex flex-col gap-2">
           {result.performance?.available && <PerformanceCard performance={result.performance} />}
+          {result.capture && <BrowserTimingsCard timings={result.capture.timings} />}
           {result.pageStats && <PagePerfCard pageStats={result.pageStats} />}
           <ImageAuditCard audit={result.imageAudit} />
           {result.pageStats && <PageStatsCard pageStats={result.pageStats} />}

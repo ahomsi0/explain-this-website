@@ -41,7 +41,7 @@
       "destination": "/_report.html"
     },
     {
-      "source": "/(history|dashboard|go-pro|verify-email|login|signup)",
+      "source": "/(history|dashboard|go-pro|verify-email|login|signup|capture)",
       "destination": "/_spa.html"
     }
   ],
@@ -127,6 +127,15 @@
     },
     {
       "source": "/signup",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/capture",
       "headers": [
         {
           "key": "X-Robots-Tag",

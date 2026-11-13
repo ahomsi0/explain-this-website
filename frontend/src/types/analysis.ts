@@ -297,6 +297,24 @@ export interface ImageFormatAudit {
   modernPct: number;
 }
 
+/** Load measurements taken in the user's browser, standing in for Lighthouse. */
+export interface BrowserTimings {
+  ttfbMs?: number;
+  domContentLoadedMs?: number;
+  loadMs?: number;
+  lcpMs?: number;
+  cls?: number;
+  hasCls?: boolean;
+  requests?: number;
+  transferBytes?: number;
+}
+
+export interface CaptureInfo {
+  source: "browser" | "paste";
+  hasHeaders: boolean;
+  timings?: BrowserTimings;
+}
+
 export interface AnalysisResult {
   url: string;
   fetchedAt: string;
@@ -324,6 +342,12 @@ export interface AnalysisResult {
   cachedAgeSeconds?: number;
   // Set by the app, not the API: when this response arrived (ms since epoch).
   receivedAt?: number;
+  // True when a fetched page looks like a sign-in screen standing in for the
+  // page the user asked for.
+  loginWall?: boolean;
+  // Present when the page came from the user's own browser (a page behind a
+  // login) and was never fetched by the server.
+  capture?: CaptureInfo;
   imageAudit: ImageFormatAudit;
   siteFreshness: SiteFreshness;
   securityHeaders: SecurityHeaderCheck[];

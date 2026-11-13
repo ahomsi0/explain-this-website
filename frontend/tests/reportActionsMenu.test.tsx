@@ -45,3 +45,16 @@ it("puts the same actions in the header as buttons, and reports the outcome next
   expect(await within(toolbar).findByRole("status")).toHaveTextContent("Link copied");
   expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/report/${reportId}`);
 });
+
+it("offers no share link or public badge for a page captured from behind a login", () => {
+  render(<ReportActionsMenu result={{ ...mockAnalysisResult, capture: { source: "browser", hasHeaders: true } }} />);
+
+  const toolbar = screen.getByRole("group", { name: "Report actions" });
+  expect(within(toolbar).queryByRole("button", { name: "Share report" })).not.toBeInTheDocument();
+  expect(within(toolbar).queryByRole("button", { name: "Copy embeddable score badge" })).not.toBeInTheDocument();
+  // The owner can still keep a copy for themselves.
+  expect(within(toolbar).getByRole("button", { name: "Download report as PDF" })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Report actions" }));
+  expect(screen.queryByRole("menuitem", { name: "Share report" })).not.toBeInTheDocument();
+});

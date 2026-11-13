@@ -44,6 +44,8 @@ export function ErrorBanner({ message, isBotProtectionError, onTryAgain, onTryAn
     );
   }
 
+  const needsLogin = !isBotProtectionError && /requires? a login|require authentication/i.test(message);
+
   return (
     <div role="alert" aria-live="assertive" className="flex flex-col items-center justify-center min-h-screen px-4 gap-4">
       <p className="text-sm font-medium text-zinc-200">Analysis failed</p>
@@ -53,6 +55,16 @@ export function ErrorBanner({ message, isBotProtectionError, onTryAgain, onTryAn
         </p>
       ) : (
         <p className="text-sm text-zinc-600 max-w-sm text-center leading-relaxed">{message}</p>
+      )}
+      {/* The server cannot sign in to a site, but the visitor's browser already
+          has: point at the way to analyze the page from there. */}
+      {needsLogin && (
+        <p className="text-sm text-zinc-500 max-w-sm text-center leading-relaxed">
+          You can still audit it from your own browser:{" "}
+          <a href="/behind-login" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
+            analyze a page behind a login
+          </a>.
+        </p>
       )}
       <div className="mt-2 flex items-center gap-2">
         {onTryAgain && (

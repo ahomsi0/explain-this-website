@@ -15,8 +15,25 @@ function statusLabel(status: string) {
   return "MISSING";
 }
 
-export function SecurityHeadersCard({ checks }: { checks: SecurityHeaderCheck[] }) {
+export function SecurityHeadersCard({ checks, unavailableReason }: {
+  checks: SecurityHeaderCheck[];
+  /** Shown in place of the audit when the page's headers were never seen. */
+  unavailableReason?: string;
+}) {
   const pass = checks.filter(c => c.status === "pass").length;
+
+  // Reporting every header as "missing" without having seen them would be a
+  // guess presented as a finding.
+  if (checks.length === 0) {
+    return (
+      <CardShell>
+        <CardHeader title="Security Headers" />
+        <div className="p-5">
+          <p className="text-xs text-zinc-500">{unavailableReason ?? "Security headers were not available for this page."}</p>
+        </div>
+      </CardShell>
+    );
+  }
 
   return (
     <CardShell>

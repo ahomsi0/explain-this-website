@@ -23,7 +23,7 @@ describe("publicPaths", () => {
 
   it("never lists private pages", () => {
     const paths = publicPaths();
-    for (const p of ["/history", "/dashboard", "/go-pro", "/verify-email", "/login", "/signup"]) {
+    for (const p of ["/history", "/dashboard", "/go-pro", "/verify-email", "/login", "/signup", "/capture"]) {
       expect(paths).not.toContain(p);
     }
   });

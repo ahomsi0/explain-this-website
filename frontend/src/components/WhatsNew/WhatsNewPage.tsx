@@ -9,6 +9,19 @@ type Update = {
 const UPDATES: Update[] = [
   {
     date: "Nov 13, 2026",
+    label: "Private pages",
+    title: "Analyze a page behind a login",
+    description:
+      "Dashboards, account pages and password-protected staging sites can now be audited from your own browser. Your password never leaves it.",
+    details: [
+      "Drag one button to your bookmarks bar, then click it on any page you are signed in to",
+      "The report is saved to your account and only you can open it",
+      "Speed comes from your browser's own load timings, since Google cannot reach the page",
+      "Reports now say so when a URL turned out to be a sign-in page",
+    ],
+  },
+  {
+    date: "Nov 13, 2026",
     label: "Reports",
     title: "Every report has its own link",
     description:

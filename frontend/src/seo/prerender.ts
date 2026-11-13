@@ -8,6 +8,14 @@ import { COMPARE_CONTENT, COMPARE_INTRO } from "./compareContent.ts";
 import type { ContentSection } from "./compareContent.ts";
 import { TECH_COVERAGE } from "./facts.ts";
 import {
+  BEHIND_LOGIN_INTRO,
+  BEHIND_LOGIN_LIMITS,
+  BEHIND_LOGIN_PRIVACY,
+  BEHIND_LOGIN_REPORT,
+  BEHIND_LOGIN_STEPS,
+  BEHIND_LOGIN_TITLE,
+} from "./behindLoginContent.ts";
+import {
   OG_IMAGE,
   SITE_NAME,
   SITE_URL,
@@ -152,6 +160,19 @@ export function builtWithHubBodyHtml(): string {
   );
 }
 
+export function behindLoginBodyHtml(): string {
+  return main(
+    `<nav aria-label="Breadcrumb"><a href="/">Home</a> › Behind a login</nav>` +
+      `<h1>${escapeHtml(BEHIND_LOGIN_TITLE)}</h1>` +
+      `<p>${escapeHtml(BEHIND_LOGIN_INTRO)}</p>` +
+      `<h2>How to do it</h2><ol>${li(BEHIND_LOGIN_STEPS)}</ol>` +
+      `<h2>What the report covers</h2><ul>${li(BEHIND_LOGIN_REPORT.map((r) => `${r.label}: ${r.text}`))}</ul>` +
+      `<h2>What leaves your browser</h2><ul>${li(BEHIND_LOGIN_PRIVACY)}</ul>` +
+      `<h2>Good to know</h2><ul>${li(BEHIND_LOGIN_LIMITS)}</ul>` +
+      `<p>For a page anyone can open, <a href="/">use the analyzer</a>.</p>`,
+  );
+}
+
 export function builderBodyHtml(builder: Builder): string {
   const name = displayName(builder);
   const related = relatedBuilders(builder)
@@ -207,6 +228,7 @@ export function bodyHtmlForPath(path: string): string {
   }
   if (path === "/built-with") return builtWithHubBodyHtml();
   if (path === "/compare") return compareBodyHtml();
+  if (path === "/behind-login") return behindLoginBodyHtml();
   if (path === "/404") {
     return main(
       `<h1>Page not found</h1><p>The page you’re looking for doesn’t exist or has moved.</p>` +

@@ -28,7 +28,11 @@ function LinkRow({ item, dotClass, statusClass, status }: {
   );
 }
 
-export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
+export function LinkCheckCard({ linkCheck, skippedReason }: {
+  linkCheck: LinkCheckResult;
+  /** Set when links were deliberately not checked, as opposed to none found. */
+  skippedReason?: string;
+}) {
   if (linkCheck.checked === 0) {
     return (
       <CardShell>
@@ -38,7 +42,7 @@ export function LinkCheckCard({ linkCheck }: { linkCheck: LinkCheckResult }) {
           badgeColor={linkCheck.broken === 0 ? "green" : linkCheck.broken <= 2 ? "amber" : "red"}
         />
         <div className="p-5">
-          <p className="text-xs text-zinc-500">No external links found on this page.</p>
+          <p className="text-xs text-zinc-500">{skippedReason ?? "No external links found on this page."}</p>
         </div>
       </CardShell>
     );

@@ -15,6 +15,9 @@ export function ReportActionsMenu({
 }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  // A page captured from behind a login belongs to its owner alone: it has no
+  // public link to share and no public score to put on a badge.
+  const isPrivate = Boolean(result.capture);
 
   useEffect(() => {
     if (!open) return;
@@ -37,10 +40,10 @@ export function ReportActionsMenu({
     <>
       {/* From sm up the actions sit in the header itself: one click, no menu. */}
       <div className="hidden sm:flex items-center gap-1.5" role="group" aria-label="Report actions">
-        <ShareButton reportId={result.reportId} variant="toolbar" />
+        {!isPrivate && <ShareButton reportId={result.reportId} variant="toolbar" />}
         <DownloadButton result={result} variant="toolbar" />
         <CopyButton result={result} variant="toolbar" />
-        <BadgeButton url={result.url} reportId={result.reportId} variant="toolbar" />
+        {!isPrivate && <BadgeButton url={result.url} reportId={result.reportId} variant="toolbar" />}
       </div>
 
       {/* Phones have no room for four buttons, so they keep a menu. */}
@@ -66,10 +69,10 @@ export function ReportActionsMenu({
             role="menu"
             aria-label="Report actions menu"
           >
-            <ShareButton reportId={result.reportId} />
+            {!isPrivate && <ShareButton reportId={result.reportId} />}
             <CopyButton result={result} />
             <DownloadButton result={result} />
-            <BadgeButton url={result.url} reportId={result.reportId} />
+            {!isPrivate && <BadgeButton url={result.url} reportId={result.reportId} />}
             {onRerun && (
               <MenuAction
                 label="Re-run fresh"

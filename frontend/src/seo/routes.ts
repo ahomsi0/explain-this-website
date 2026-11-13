@@ -62,6 +62,12 @@ const STATIC_PAGES: Record<string, StaticPage> = {
       "Find out if a website was built with Lovable, Bolt, v0, Framer, Replit or 17 other AI and no-code builders, how detection works, and how to check it yourself.",
     indexable: true,
   },
+  "/behind-login": {
+    title: "Analyze a Page Behind a Login: Dashboards & Staging Sites",
+    description:
+      "Audit a dashboard, account page or password-protected staging site from your own browser. No install, and your password never leaves your browser.",
+    indexable: true,
+  },
   "/whats-new": {
     title: withSite("What’s New"),
     description: "The latest features, fixes and improvements to the Explain This Website analyzer.",
@@ -86,6 +92,7 @@ const STATIC_PAGES: Record<string, StaticPage> = {
   "/go-pro": { title: withSite("Go Pro"), description: "Upgrade to Pro for higher analysis limits.", indexable: false },
   "/dashboard": { title: withSite("Dashboard"), description: "Your account dashboard.", indexable: false },
   "/verify-email": { title: withSite("Verify Email"), description: "Confirm your email address.", indexable: false },
+  "/capture": { title: withSite("Analyze This Page"), description: "Confirm the page your browser sent for analysis.", indexable: false },
   "/login": { title: withSite("Sign In"), description: "Sign in to your Explain This Website account.", indexable: false },
   "/signup": { title: withSite("Create Account"), description: "Create a free Explain This Website account.", indexable: false },
 };
@@ -242,6 +249,7 @@ function staticMeta(path: string, page: StaticPage): PageMeta {
   if (path === "/") jsonLd = homeJsonLd();
   if (path === "/guides") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Fix Guides", path: "/guides" }])];
   if (path === "/built-with") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Built with", path: "/built-with" }])];
+  if (path === "/behind-login") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Behind a login", path: "/behind-login" }])];
   return {
     title: page.title,
     description: page.description,

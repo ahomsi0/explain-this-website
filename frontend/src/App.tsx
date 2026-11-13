@@ -37,6 +37,8 @@ const AuthPage = lazy(() => import("./components/auth/AuthPage").then((m) => ({ 
 const VerifyEmailPage = lazy(() => import("./components/auth/VerifyEmailPage").then((m) => ({ default: m.VerifyEmailPage })));
 const StatusPage = lazy(() => import("./components/status/StatusPage").then((m) => ({ default: m.StatusPage })));
 const BuiltWithHubPage = lazy(() => import("./components/builtwith/BuiltWithPages").then((m) => ({ default: m.BuiltWithHubPage })));
+const BehindLoginPage = lazy(() => import("./components/capture/BehindLoginPage").then((m) => ({ default: m.BehindLoginPage })));
+const CapturePage = lazy(() => import("./components/capture/CapturePage").then((m) => ({ default: m.CapturePage })));
 const BuilderDetailPage = lazy(() => import("./components/builtwith/BuiltWithPages").then((m) => ({ default: m.BuilderDetailPage })));
 
 type AnalysisSource = "landing" | "example" | "report";
@@ -276,6 +278,8 @@ function AppInner() {
     const guideSlug = pathname.match(/^\/guides\/([a-z0-9-]+)$/)?.[1];
     if (guideSlug) return <PageShell header={chrome}><GuideDetailPage slug={guideSlug} /></PageShell>;
   }
+  if (pathname === "/behind-login") return <PageShell header={chrome}><BehindLoginPage /></PageShell>;
+  if (pathname === "/capture") return <PageShell header={chrome}><CapturePage /></PageShell>;
   if (pathname === "/built-with") return <PageShell header={chrome}><BuiltWithHubPage /></PageShell>;
   {
     const builderSlug = pathname.match(/^\/built-with\/([a-z0-9-]+)$/)?.[1];

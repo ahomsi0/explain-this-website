@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { CachedResultNotice } from "./CachedResultNotice";
+import { CaptureNotice, LoginWallNotice } from "./ReportNotices";
+import { formatDuration } from "../../lib/browserTimings";
 import { useTheme } from "../../context/useTheme";
 import { Separator } from "@/components/ui/separator";
 import { LogoWordmark } from "../ui/Logo";
@@ -140,6 +142,12 @@ export function ResultDashboard({
   const hostname = (() => { try { return new URL(result.url).hostname; } catch { return result.url; } })();
   const currentMeta = SECTIONS.find((s) => s.id === activeSection)!;
   const usage = usageOverride ?? result.usage ?? user?.usage;
+  // A captured page cannot be fetched again by the server, so there is
+  // nothing to re-run: the visitor captures it again from their browser.
+  const captured = Boolean(result.capture);
+  const rerun = onAnalyze && !captured
+    ? () => onAnalyze(result.url, "report", { refresh: true })
+    : undefined;
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,11 +257,10 @@ export function ResultDashboard({
               </svg>
               New
             </button>
-            <ReportActionsMenu result={result}
-              onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined} />
-            {onAnalyze && (
+            <ReportActionsMenu result={result} onRerun={rerun} />
+            {rerun && (
               <button
-                onClick={() => onAnalyze(result.url, "report", { refresh: true })}
+                onClick={rerun}
                 title="Re-fetch and re-analyze this page, bypassing the recent-results cache"
                 aria-label="Re-run fresh"
                 className="hidden sm:flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-colors"
@@ -309,8 +316,10 @@ export function ResultDashboard({
       <CachedResultNotice
         ageSeconds={result.cachedAgeSeconds}
         receivedAt={result.receivedAt}
-        onRerun={onAnalyze ? () => onAnalyze(result.url, "report", { refresh: true }) : undefined}
+        onRerun={rerun}
       />
+      {result.capture && <CaptureNotice source={result.capture.source} />}
+      {result.loginWall && !captured && <LoginWallNotice />}
 
       {/* Metrics strip: the report's headline numbers. It belongs to the
           Overview; on the other tabs it only pushed their content down.
@@ -345,6 +354,10 @@ export function ResultDashboard({
             const lcp = splitMeasure(result.performance.mobile.lcp.displayValue);
             return <MetricTile label="LCP" value={lcp.value} suffix={lcp.unit} valueClass={lcpColor(result.performance.mobile.lcp.rating)} />;
           })()}
+          {result.capture?.timings?.loadMs ? (() => {
+            const load = splitMeasure(formatDuration(result.capture.timings.loadMs));
+            return <MetricTile label="Load time" value={load.value} suffix={load.unit} valueClass="text-zinc-100" />;
+          })() : null}
           <MetricTile label="UX score"          value={uxScore}                                           suffix="/ 100" valueClass={scoreColor(uxScore)} />
           <MetricTile label="First impression"  value={result.firstImpression?.score ?? 0}               suffix="/ 10"  valueClass={impressionColor(result.firstImpression?.score ?? 0)} />
           <MetricTile label="Conversion"        value={result.conversionScores?.overall ?? 0}            suffix="/ 100" valueClass={scoreColor(result.conversionScores?.overall ?? 0)} />
@@ -362,7 +375,11 @@ export function ResultDashboard({
       <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 max-w-[1800px]">
         <div className="mb-5">
           <h2 className="text-lg sm:text-xl font-bold text-zinc-100">{currentMeta.title}</h2>
-          <p className="text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">{currentMeta.description}</p>
+          <p className="text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+            {captured && activeSection === "performance"
+              ? "Load timings measured in your browser, plus load efficiency and content stats."
+              : currentMeta.description}
+          </p>
         </div>
 
         <ErrorBoundary key={activeSection}>

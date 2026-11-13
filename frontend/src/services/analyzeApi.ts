@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "../types/analysis";
+import type { AnalysisResult, BrowserTimings } from "../types/analysis";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 const REPORT_TIMEOUT_MS = 180_000;
@@ -18,6 +18,50 @@ export async function fetchReport(id: string): Promise<AnalysisResult> {
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
       throw new Error("The report server did not respond in time. Please try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** A page handed over by the user's browser, usually one behind a login. */
+export interface CapturePayload {
+  url: string;
+  html: string;
+  source: "browser" | "paste";
+  headers?: Record<string, string>;
+  timings?: BrowserTimings;
+}
+
+const CAPTURE_TIMEOUT_MS = 120_000;
+
+/**
+ * Analyse a captured page. The server never requests the page itself: it works
+ * from the HTML sent here, and saves the report to the signed-in account only.
+ */
+export async function analyzeCapture(payload: CapturePayload): Promise<AnalysisResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CAPTURE_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${API_URL}/api/analyze-capture`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      credentials: "include",
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => null);
+    if (res.status === 401) throw new Error("Sign in to analyze this page.");
+    if (!res.ok) throw new Error(data?.error ?? `Server error (${res.status})`);
+    if (!data) throw new Error("The server sent an empty answer. Please try again.");
+    return data as AnalysisResult;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("The server did not respond in time. Please try again.");
+    }
+    if (err instanceof TypeError) {
+      throw new Error("Could not reach the server. Check your connection and try again.");
     }
     throw err;
   } finally {
