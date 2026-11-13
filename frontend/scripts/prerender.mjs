@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { metaForPath, publicPaths } from "../src/seo/routes.ts";
+import { metaForPath, publicPaths, shellMeta } from "../src/seo/routes.ts";
 import { bodyHtmlForPath, buildSitemap, outFileFor, renderPage } from "../src/seo/prerender.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -32,10 +32,12 @@ for (const path of paths) {
   writeFileSync(file, renderPage(template, metaForPath(path), bodyHtmlForPath(path)));
 }
 
-// Rewrite target for every non-prerendered URL (/history, /report/:id, junk):
-// the same shell with a noindex head, so crawlers that skip JS never see a
-// duplicate-of-home page. React's usePageMeta sets the real tags at runtime.
-writeFileSync(resolve(dist, "_spa.html"), renderPage(template, metaForPath("/__spa__"), ""));
+// Rewrite targets for the client-only routes: the app shell with a noindex
+// head, so crawlers that skip JS never see a duplicate-of-home page. React's
+// usePageMeta sets the real tags at runtime. Reports get their own shell
+// because their links are shared, and link previews show whatever this says.
+writeFileSync(resolve(dist, "_spa.html"), renderPage(template, shellMeta("app"), ""));
+writeFileSync(resolve(dist, "_report.html"), renderPage(template, shellMeta("report"), ""));
 
 // Vercel serves 404.html from the output directory, with a real 404 status,
 // for any path the rewrites in vercel.json don't claim.

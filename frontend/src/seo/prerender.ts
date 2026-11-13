@@ -31,15 +31,17 @@ export function seoHeadHtml(meta: PageMeta): string {
   const t = escapeHtml(meta.title);
   const d = escapeHtml(meta.description);
   const c = escapeHtml(meta.canonical);
+  // A shell page serves many URLs and has no canonical of its own.
+  const whenCanonical = (line: string) => (meta.canonical ? [line] : []);
   return [
     `<title>${t}</title>`,
     `<meta name="description" content="${d}" />`,
     `<meta name="robots" content="${meta.robots}" />`,
-    `<link rel="canonical" href="${c}" />`,
-    `<link rel="alternate" hreflang="en" href="${c}" />`,
-    `<link rel="alternate" hreflang="x-default" href="${c}" />`,
+    ...whenCanonical(`<link rel="canonical" href="${c}" />`),
+    ...whenCanonical(`<link rel="alternate" hreflang="en" href="${c}" />`),
+    ...whenCanonical(`<link rel="alternate" hreflang="x-default" href="${c}" />`),
     `<meta property="og:type" content="${meta.ogType}" />`,
-    `<meta property="og:url" content="${c}" />`,
+    ...whenCanonical(`<meta property="og:url" content="${c}" />`),
     `<meta property="og:locale" content="en_US" />`,
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
     `<meta property="og:title" content="${t}" />`,

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { GUIDES } from "../src/guides/guides";
-import { metaForPath, publicPaths, serializeJsonLd } from "../src/seo/routes";
+import { metaForPath, publicPaths, serializeJsonLd, shellMeta } from "../src/seo/routes";
 import {
   bodyHtmlForPath,
   buildSitemap,
@@ -120,13 +120,42 @@ describe("hosting config", () => {
   it("rewrites only client-side routes to the noindex SPA shell; everything else falls through to 404.html", () => {
     const vercel = JSON.parse(read("vercel.json"));
     const sources = vercel.rewrites.map((r: { source: string; destination: string }) => {
-      expect(r.destination).toBe("/_spa.html");
+      // Reports have their own shell so a shared link previews as a report.
+      expect(r.destination).toBe(r.source.startsWith("/report/") ? "/_report.html" : "/_spa.html");
       return r.source;
     });
     expect(sources).toEqual(["/report/:id([a-f0-9]{32})", "/(history|dashboard|go-pro|verify-email|login|signup)"]);
     expect(sources).not.toContain("/(.*)");
     expect(metaForPath("/__spa__").robots).toBe("noindex, nofollow");
     expect(metaForPath("/404").robots).toBe("noindex, nofollow");
+  });
+
+  it("gives shared report links a real preview instead of 'Page not found'", () => {
+    // Link-preview crawlers do not run JavaScript, so the shell's head is
+    // the preview. It is one file for every report, so it carries no URL.
+    const html = renderPage(read("index.html"), shellMeta("report"), "");
+    expect(html).toContain("<title>Website audit report · Explain This Website</title>");
+    expect(html).toContain('property="og:title" content="Website audit report · Explain This Website"');
+    expect(html).toMatch(/property="og:description" content="A website audit from Explain This Website/);
+    expect(html).toContain('property="og:image"');
+    expect(html).toContain('name="robots" content="noindex, nofollow"');
+    expect(html).not.toContain("Page not found");
+    expect(html).not.toContain('rel="canonical"');
+    expect(html).not.toContain('property="og:url"');
+  });
+
+  it("keeps the general app shell neutral and unindexed", () => {
+    const html = renderPage(read("index.html"), shellMeta("app"), "");
+    expect(html).toContain("<title>Explain This Website</title>");
+    expect(html).toContain('name="robots" content="noindex, nofollow"');
+    expect(html).not.toContain("Page not found");
+    expect(html).not.toContain('rel="canonical"');
+  });
+
+  it("still gives a report its own canonical once the app is running", () => {
+    const id = "a".repeat(32);
+    expect(metaForPath(`/report/${id}`).canonical).toBe(`https://www.explainthiswebsite.com/report/${id}`);
+    expect(metaForPath(`/report/${id}`).robots).toBe("noindex, nofollow");
   });
 
   it("308-redirects the apex and the vercel.app host to the canonical www host", () => {

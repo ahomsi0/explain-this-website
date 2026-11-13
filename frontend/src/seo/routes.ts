@@ -263,6 +263,30 @@ function privateMeta(path: string, title: string): PageMeta {
   };
 }
 
+const REPORT_TITLE = "Website audit report";
+const REPORT_DESCRIPTION =
+  "A website audit from Explain This Website: tech stack, SEO, performance, conversion signals and what to fix first.";
+
+function reportMeta(path: string): PageMeta {
+  return { ...privateMeta(path, REPORT_TITLE), description: REPORT_DESCRIPTION };
+}
+
+/**
+ * Head for the two static shells that client-only routes are served from.
+ * This is what a link preview (WhatsApp, Slack, iMessage) shows, because
+ * those crawlers do not run JavaScript, so it must read as a real page:
+ * the shells used to say "Page not found" for every shared report.
+ *
+ * A shell is one file for many URLs, so it has no canonical of its own
+ * (`canonical: ""` leaves the tags out); the app sets the real one at runtime.
+ */
+export function shellMeta(kind: "report" | "app"): PageMeta {
+  const base = kind === "report"
+    ? reportMeta("/report")
+    : { ...privateMeta("/", SITE_NAME), title: SITE_NAME, description: HOME_DESCRIPTION };
+  return { ...base, canonical: "" };
+}
+
 export function metaForPath(rawPath: string): PageMeta {
   const path = normalisePath(rawPath);
   if (Object.hasOwn(STATIC_PAGES, path)) return staticMeta(path, STATIC_PAGES[path]);
@@ -270,7 +294,7 @@ export function metaForPath(rawPath: string): PageMeta {
   if (slug && Object.hasOwn(GUIDES, slug)) return guideMeta(GUIDES[slug]);
   const builderSlug = path.match(/^\/built-with\/([a-z0-9-]+)$/)?.[1];
   if (builderSlug && Object.hasOwn(BUILDERS, builderSlug)) return builderMeta(BUILDERS[builderSlug]);
-  if (path.startsWith("/report/")) return privateMeta(path, "Shared website report");
+  if (path.startsWith("/report/")) return reportMeta(path);
   return privateMeta(path, slug ? "Guide not found" : builderSlug ? "Builder not found" : "Page not found");
 }
 
