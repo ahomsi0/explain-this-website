@@ -26,7 +26,7 @@ import type { AnalyzeOptions } from "./services/analyzeApi";
 // other view loads on demand so the homepage ships less JavaScript.
 const ResultDashboard = lazy(() => import("./components/ResultDashboard/ResultDashboard").then((m) => ({ default: m.ResultDashboard })));
 const AdminDashboard = lazy(() => import("./components/admin/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
-const GoProPage = lazy(() => import("./components/billing/GoProPage").then((m) => ({ default: m.GoProPage })));
+const PricingPage = lazy(() => import("./components/billing/PricingPage").then((m) => ({ default: m.PricingPage })));
 const ComparePage = lazy(() => import("./components/compare/ComparePage").then((m) => ({ default: m.ComparePage })));
 const LegalPage = lazy(() => import("./components/privacy/LegalPage").then((m) => ({ default: m.LegalPage })));
 const WhatsNewPage = lazy(() => import("./components/WhatsNew/WhatsNewPage").then((m) => ({ default: m.WhatsNewPage })));
@@ -268,7 +268,9 @@ function AppInner() {
 
   if (pathname === "/privacy") return <PageShell header={chrome}><LegalPage kind="privacy" /></PageShell>;
   if (pathname === "/terms") return <PageShell header={chrome}><LegalPage kind="terms" /></PageShell>;
-  if (pathname === "/go-pro") return <PageShell header={chrome}><GoProPage /></PageShell>;
+  if (pathname === "/refunds") return <PageShell header={chrome}><LegalPage kind="refunds" /></PageShell>;
+  // "/go-pro" is the old address of the pricing page and is still linked from outside.
+  if (pathname === "/pricing" || pathname === "/go-pro") return <PageShell header={chrome}><PricingPage /></PageShell>;
   if (pathname === "/whats-new") return <PageShell header={chrome}><WhatsNewPage /></PageShell>;
   if (pathname === "/history") return <PageShell header={chrome}><HistoryPage /></PageShell>;
   if (pathname === "/status") return <PageShell header={chrome}><StatusPage /></PageShell>;

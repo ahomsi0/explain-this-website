@@ -68,6 +68,12 @@ const STATIC_PAGES: Record<string, StaticPage> = {
       "Audit a dashboard, account page or password-protected staging site by pasting its source. Nothing to install, and your password never leaves your browser.",
     indexable: true,
   },
+  "/pricing": {
+    title: withSite("Pricing"),
+    description:
+      "Explain This Website is free for 5 analyses a day. Pro is $7 a month or $59 a year for 50 a day, full history, API access and reports that stay shared.",
+    indexable: true,
+  },
   "/whats-new": {
     title: withSite("What’s New"),
     description: "The latest features, fixes and improvements to the Explain This Website analyzer.",
@@ -88,8 +94,13 @@ const STATIC_PAGES: Record<string, StaticPage> = {
     description: "The terms that apply when you use the Explain This Website analyzer and its reports.",
     indexable: true,
   },
+  "/refunds": {
+    title: withSite("Refund Policy"),
+    description: "A full refund within 7 days of any payment for Explain This Website Pro, and how to ask for one.",
+    indexable: true,
+  },
   "/history": { title: withSite("Audit History"), description: "Your past website audits.", indexable: false },
-  "/go-pro": { title: withSite("Go Pro"), description: "Upgrade to Pro for higher analysis limits.", indexable: false },
+  "/go-pro": { title: withSite("Pricing"), description: "Plans and prices.", indexable: false },
   "/dashboard": { title: withSite("Dashboard"), description: "Your account dashboard.", indexable: false },
   "/verify-email": { title: withSite("Verify Email"), description: "Confirm your email address.", indexable: false },
   "/capture": { title: withSite("Analyze This Page"), description: "Confirm the page your browser sent for analysis.", indexable: false },
@@ -249,6 +260,7 @@ function staticMeta(path: string, page: StaticPage): PageMeta {
   if (path === "/") jsonLd = homeJsonLd();
   if (path === "/guides") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Fix Guides", path: "/guides" }])];
   if (path === "/built-with") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Built with", path: "/built-with" }])];
+  if (path === "/pricing") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Pricing", path: "/pricing" }])];
   if (path === "/behind-login") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Behind a login", path: "/behind-login" }])];
   return {
     title: page.title,

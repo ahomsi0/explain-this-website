@@ -58,7 +58,7 @@ export function UserMenu() {
             Usage & API keys
           </button>
           <button
-            onClick={() => { setOpen(false); window.location.href = "/go-pro"; }}
+            onClick={() => { setOpen(false); window.location.href = "/pricing"; }}
             className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
           >
             Plans & Pro

@@ -17,6 +17,19 @@ import {
   BEHIND_LOGIN_TITLE,
 } from "./behindLoginContent.ts";
 import {
+  FREE_SUMMARY,
+  PRICING_COMING,
+  PRICING_INTRO,
+  PRICING_NOTES,
+  PRICING_NO_ACCOUNT,
+  PRICING_ROWS,
+  PRICING_TITLE,
+  PRO_MONTHLY_PRICE,
+  PRO_NOT_ON_SALE,
+  PRO_SUMMARY,
+  PRO_YEARLY_PRICE,
+} from "./pricingContent.ts";
+import {
   OG_IMAGE,
   SITE_NAME,
   SITE_URL,
@@ -175,6 +188,25 @@ export function behindLoginBodyHtml(): string {
   );
 }
 
+export function pricingBodyHtml(): string {
+  const rows = PRICING_ROWS.map(
+    (r) => `<tr><th scope="row">${escapeHtml(r.label)}</th><td>${escapeHtml(r.free)}</td><td>${escapeHtml(r.pro)}</td></tr>`,
+  ).join("");
+  return main(
+    `<nav aria-label="Breadcrumb"><a href="/">Home</a> › Pricing</nav>` +
+      `<h1>${escapeHtml(PRICING_TITLE)}</h1>` +
+      `<p>${escapeHtml(PRICING_INTRO)}</p>` +
+      `<h2>Free</h2><p>$0. No card, no time limit. ${escapeHtml(FREE_SUMMARY)} <a href="/">Analyze a website</a></p>` +
+      `<h2>Pro</h2><p>${escapeHtml(PRO_YEARLY_PRICE)} a year, or ${escapeHtml(PRO_MONTHLY_PRICE)} a month. ${escapeHtml(PRO_SUMMARY)} ${escapeHtml(PRO_NOT_ON_SALE)}</p>` +
+      `<h2>What each plan includes</h2>` +
+      `<table><thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead><tbody>${rows}</tbody></table>` +
+      `<p>${escapeHtml(PRICING_NO_ACCOUNT)}</p>` +
+      `<h2>Coming to Pro</h2><ul>${li(PRICING_COMING.map((c) => `${c.label}: ${c.text}`))}</ul>` +
+      `<h2>Paying and cancelling</h2><ul>${li(PRICING_NOTES)}</ul>` +
+      `<p><a href="/refunds">Refund policy</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></p>`,
+  );
+}
+
 export function builderBodyHtml(builder: Builder): string {
   const name = displayName(builder);
   const related = relatedBuilders(builder)
@@ -231,6 +263,7 @@ export function bodyHtmlForPath(path: string): string {
   if (path === "/built-with") return builtWithHubBodyHtml();
   if (path === "/compare") return compareBodyHtml();
   if (path === "/behind-login") return behindLoginBodyHtml();
+  if (path === "/pricing") return pricingBodyHtml();
   if (path === "/404") {
     return main(
       `<h1>Page not found</h1><p>The page you’re looking for doesn’t exist or has moved.</p>` +

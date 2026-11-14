@@ -30,7 +30,7 @@ export function ErrorBanner({ message, isBotProtectionError, onTryAgain, onTryAn
             </button>
           )}
           {quota === "free" && (
-            <a href="/go-pro" className={primaryButton}>
+            <a href="/pricing" className={primaryButton}>
               See Pro plans
             </a>
           )}

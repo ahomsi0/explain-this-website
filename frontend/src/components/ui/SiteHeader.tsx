@@ -66,6 +66,12 @@ export function SiteHeader({
           >
             Built with
           </a>
+          <a
+            href="/pricing"
+            className="px-2.5 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+          >
+            Pricing
+          </a>
         </nav>
         <div className="hidden sm:block w-px h-4 bg-zinc-800" aria-hidden="true" />
         <button
@@ -135,6 +141,7 @@ export function SiteHeader({
               <a href="/guides" className={menuLink}>Fix guides</a>
               <a href="/compare" className={menuLink}>Compare two sites</a>
               <a href="/built-with" className={menuLink}>Built with</a>
+              <a href="/pricing" className={menuLink}>Pricing</a>
               {user && <a href="/history" className={menuLink}>History</a>}
             </nav>
           )}

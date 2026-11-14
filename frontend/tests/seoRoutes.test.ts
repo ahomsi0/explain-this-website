@@ -16,7 +16,7 @@ describe("publicPaths", () => {
     const paths = publicPaths();
     expect(new Set(paths).size).toBe(paths.length);
     for (const slug of Object.keys(GUIDES)) expect(paths).toContain(`/guides/${slug}`);
-    for (const p of ["/", "/guides", "/compare", "/whats-new", "/status", "/privacy", "/terms"]) {
+    for (const p of ["/", "/guides", "/compare", "/pricing", "/refunds", "/whats-new", "/status", "/privacy", "/terms"]) {
       expect(paths).toContain(p);
     }
   });
