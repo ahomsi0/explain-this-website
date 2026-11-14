@@ -1,70 +1,97 @@
-import { describe, expect, it } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { HeroWindow } from "../src/components/Landing/HeroWindow";
-import { nearestBox, type Box } from "../src/lib/nearestRect";
 
-const box = (left: number, top: number, width: number, height = 1): Box => ({ left, top, right: left + width, bottom: top + height });
+const address = () => screen.getByTestId("hero-window-address").textContent;
+const control = (container: HTMLElement, name: string) => container.querySelector<HTMLButtonElement>(`[data-control="${name}"]`)!;
+const stateOf = (container: HTMLElement) => container.querySelector(".hero-window")!.getAttribute("data-state");
 
-describe("nearestBox", () => {
-  const lines = [box(100, 100, 120), box(100, 130, 80), box(1000, 100, 120)];
+// Each step schedules the next one from an effect, so every step needs its
+// own act() for the following timer to exist.
+function steps(count: number, ms: number) {
+  for (let i = 0; i < count; i++) act(() => { vi.advanceTimersByTime(ms); });
+}
 
-  it("picks the line the point is closest to", () => {
-    expect(nearestBox(lines, 150, 104, 150)).toBe(0);
-    expect(nearestBox(lines, 150, 128, 150)).toBe(1);
-    expect(nearestBox(lines, 1090, 90, 150)).toBe(2);
+describe("HeroWindow address bar", () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  it("types an example address by itself while the URL field is empty", () => {
+    render(<HeroWindow address="" />);
+    expect(address()).toBe("");
+
+    steps(4, 70);
+    expect(address()).toBe("your");
+
+    steps(9, 70);
+    expect(address()).toBe("your-site.com");
   });
 
-  it("treats a point beside a line as close as one above its middle", () => {
-    // 30px to the right of the first line's end, level with it.
-    expect(nearestBox([lines[0]], 250, 100, 40)).toBe(0);
+  it("erases the example and moves on to the next one", () => {
+    render(<HeroWindow address="" />);
+    // Type it, hold it, erase it, pause, then start the next.
+    steps(13, 70);
+    expect(address()).toBe("your-site.com");
+    steps(1, 1800);
+    steps(13, 35);
+    expect(address()).toBe("");
+    steps(1, 400);
+    steps(3, 70);
+    expect(address()).toBe("a-c");
   });
 
-  it("returns -1 when nothing is within reach", () => {
-    expect(nearestBox(lines, 600, 400, 150)).toBe(-1);
-  });
+  it("shows the visitor's own text as soon as they type, and stops typing examples", () => {
+    const { rerender } = render(<HeroWindow address="" />);
+    steps(5, 70);
 
-  it("ignores hidden lines, which have no width", () => {
-    expect(nearestBox([box(100, 100, 0), null], 100, 100, 150)).toBe(-1);
+    rerender(<HeroWindow address="  stripe.com/pricing " />);
+    expect(address()).toBe("stripe.com/pricing");
+
+    act(() => { vi.advanceTimersByTime(5000); });
+    expect(address()).toBe("stripe.com/pricing");
   });
 });
 
-describe("HeroWindow", () => {
-  it("shows the typed address in its address bar", () => {
-    const { rerender } = render(<HeroWindow address="" />);
-    expect(screen.getByTestId("hero-window-address")).toHaveTextContent("");
+describe("HeroWindow controls", () => {
+  it("closes on red and comes back from the reopen link", () => {
+    const { container } = render(<HeroWindow address="" />);
+    expect(stateOf(container)).toBe("open");
 
-    rerender(<HeroWindow address="  stripe.com/pricing " />);
-    expect(screen.getByTestId("hero-window-address")).toHaveTextContent("stripe.com/pricing");
+    fireEvent.click(control(container, "close"));
+    expect(stateOf(container)).toBe("closed");
+    expect(control(container, "close")).toBeNull();
+
+    fireEvent.click(screen.getByText("Reopen window"));
+    expect(stateOf(container)).toBe("open");
+    expect(control(container, "close")).not.toBeNull();
   });
 
-  it("is hidden from assistive tech and never takes a click", () => {
+  it("minimizes on yellow, and yellow again restores it", () => {
+    const { container } = render(<HeroWindow address="" />);
+    fireEvent.click(control(container, "minimize"));
+    expect(stateOf(container)).toBe("minimized");
+    expect(container.querySelectorAll(".hero-window-line")).toHaveLength(0);
+
+    fireEvent.click(control(container, "minimize"));
+    expect(stateOf(container)).toBe("open");
+    expect(container.querySelectorAll(".hero-window-line").length).toBeGreaterThan(0);
+  });
+
+  it("fills the page on green, and green again restores it", () => {
+    const { container } = render(<HeroWindow address="" />);
+    fireEvent.click(control(container, "zoom"));
+    expect(stateOf(container)).toBe("full");
+    fireEvent.click(control(container, "zoom"));
+    expect(stateOf(container)).toBe("open");
+  });
+
+  it("is decoration: hidden from assistive tech and out of the tab order", () => {
     const { container } = render(<HeroWindow address="example.com" />);
-    const root = container.firstElementChild!;
-    expect(root).toHaveAttribute("aria-hidden", "true");
-    expect(root.className).toContain("pointer-events-none");
-  });
-
-  it("runs one scan when typing starts, and another only after the field is cleared", () => {
-    const { container, rerender } = render(<HeroWindow address="" />);
-    const scans = () => container.querySelectorAll(".hero-window-scan").length;
-    expect(scans()).toBe(0);
-
-    act(() => rerender(<HeroWindow address="s" />));
-    expect(scans()).toBe(1);
-    const first = container.querySelector(".hero-window-scan");
-
-    act(() => rerender(<HeroWindow address="stripe.com" />));
-    expect(container.querySelector(".hero-window-scan")).toBe(first);
-
-    act(() => rerender(<HeroWindow address="" />));
-    act(() => rerender(<HeroWindow address="a" />));
-    expect(container.querySelector(".hero-window-scan")).not.toBe(first);
-  });
-
-  it("names the parts of a page the analyzer reads", () => {
-    render(<HeroWindow address="" />);
-    for (const label of ["Title", "Meta description", "Headings", "Links", "Call to action", "Tech stack", "Scripts", "Images", "Security headers"]) {
-      expect(screen.getByText(label)).toBeInTheDocument();
+    for (const layer of Array.from(container.children)) {
+      expect(layer).toHaveAttribute("aria-hidden", "true");
+    }
+    for (const button of Array.from(container.querySelectorAll("button"))) {
+      expect(button).toHaveAttribute("tabindex", "-1");
     }
   });
 });

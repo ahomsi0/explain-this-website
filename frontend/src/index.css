@@ -7,59 +7,66 @@
    a first-paint layout shift when the swap landed. */
 
 /* Landing page backdrop: the outline of a browser window (HeroWindow.tsx).
-   Every stroke takes its colour from these three variables so the light
-   theme only has to restate them. The mask fades the window out before the
-   content below the hero begins. */
-.hero-window {
+   Every stroke takes its colour from these variables so the light theme only
+   has to restate them. The mask fades the window out before the content
+   below the hero begins; a minimized window is only its title bar, so it is
+   left unmasked. */
+.hero-window,
+.hero-window-reopen {
   --hw-line: rgba(255, 255, 255, 0.11);
   --hw-accent: rgba(167, 139, 250, 0.75);
   --hw-text: #a1a1aa;
-  mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 584px);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 584px);
 }
-html.light .hero-window {
+html.light .hero-window,
+html.light .hero-window-reopen {
   --hw-line: rgba(30, 27, 75, 0.16);
   --hw-accent: #6d28d9;
   --hw-text: #52525b;
 }
+.hero-window:not([data-state="minimized"]) {
+  mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 584px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 584px);
+}
+.hero-window-frame {
+  transition: width 300ms ease, height 300ms ease, opacity 220ms ease, transform 220ms ease;
+}
+.hero-window-controls { transition: width 300ms ease; }
 .hero-window-frame,
 .hero-window-bar,
 .hero-window-address { border-color: var(--hw-line); }
+.hero-window-address { color: var(--hw-text); }
+.hero-window-line { height: 1px; background: var(--hw-line); }
+.hero-window-line.is-accent { height: 3px; margin-top: -1px; background: var(--hw-accent); }
+/* The caret after the address the window types by itself. */
+.hero-window-caret {
+  width: 1px;
+  height: 11px;
+  background: var(--hw-text);
+  animation: heroWindowCaret 1s steps(1) infinite;
+}
+@keyframes heroWindowCaret {
+  50% { opacity: 0; }
+}
 /* The window controls, in the colours every Mac window uses: close,
-   minimize, zoom. */
+   minimize, zoom. They are real buttons. */
+.hero-window-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+.hero-window-dot:hover { filter: brightness(1.2); transform: scale(1.15); }
 .hero-window-dot.is-close { background: #ff5f57; }
 .hero-window-dot.is-minimize { background: #febc2e; }
 .hero-window-dot.is-zoom { background: #28c840; }
-.hero-window-address { color: var(--hw-text); }
-.hero-window-line {
-  height: 1px;
-  background: var(--hw-line);
-  transition: background-color 180ms ease, height 180ms ease, margin-top 180ms ease;
-}
-.hero-window-line.is-active {
-  height: 3px;
-  margin-top: -1px;
-  background: var(--hw-accent);
-}
-.hero-window-label {
-  color: var(--hw-accent);
-  transition: opacity 180ms ease;
-}
-/* One pass of a scan line down the window when typing starts. */
-.hero-window-scan {
-  height: 1px;
-  background: var(--hw-accent);
-  animation: heroWindowScan 900ms cubic-bezier(0.3, 0, 0.2, 1) both;
-}
-@keyframes heroWindowScan {
-  0% { transform: translateY(0); opacity: 0; }
-  12% { opacity: 0.9; }
-  100% { transform: translateY(494px); opacity: 0; }
-}
+.hero-window-reopen { color: var(--hw-text); cursor: pointer; }
+.hero-window-reopen:hover { color: var(--hw-accent); }
 @media (prefers-reduced-motion: reduce) {
-  .hero-window-scan { display: none; }
-  .hero-window-line,
-  .hero-window-label { transition: none; }
+  .hero-window-frame,
+  .hero-window-controls,
+  .hero-window-dot { transition: none; }
+  .hero-window-caret { animation: none; }
 }
 /* Unfilled part of a score meter. It needs its own class: the light theme
    maps bg-zinc-800 to the same lavender as the card the meter sits on, which
