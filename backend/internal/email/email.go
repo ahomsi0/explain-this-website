@@ -19,13 +19,19 @@ import (
 	"github.com/ahomsi/explain-website/internal/adminstate"
 )
 
+// defaultFromAddress is on the site's own domain, which is verified with
+// Resend. It must never be Resend's shared "onboarding@resend.dev" sender:
+// Resend only delivers mail from that address to the Resend account owner and
+// rejects every other recipient with a 403, so with it as the default no
+// customer ever received a verification link or a password reset code.
+const defaultFromAddress = "Explain This Website <noreply@explainthiswebsite.com>"
+
 // fromAddress is what shows up in the recipient's inbox. Override via FROM_EMAIL.
-// Resend's "onboarding@resend.dev" is the verified default for unverified domains.
 func fromAddress() string {
-	if v := os.Getenv("FROM_EMAIL"); v != "" {
+	if v := strings.TrimSpace(os.Getenv("FROM_EMAIL")); v != "" {
 		return v
 	}
-	return "Explain The Website <onboarding@resend.dev>"
+	return defaultFromAddress
 }
 
 // SendBroadcast sends a plain-text admin announcement to a single recipient.

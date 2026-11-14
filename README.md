@@ -323,7 +323,7 @@ The dashboard lives at `/dashboard` and is restricted to the `ADMIN_EMAIL` accou
 | `WEBHOOK_ENCRYPTION_KEY` | — | 32-byte hex or base64 key used to encrypt webhook signing secrets at rest |
 | `PAGESPEED_API_KEY` | — | Google PageSpeed Insights API key. Without this key, PageSpeed requests are unauthenticated and rate-limited to ~1 QPS |
 | `RESEND_API_KEY` | — | Enables email delivery via Resend. Without it, reset codes are logged to stdout only |
-| `FROM_EMAIL` | `Explain The Website <onboarding@resend.dev>` | Sender address shown on outbound emails |
+| `FROM_EMAIL` | `Explain This Website <noreply@explainthiswebsite.com>` | Sender address shown on outbound emails. Must be on a domain verified with Resend, or Resend rejects every recipient except the account owner |
 | `TAP_SECRET_KEY` | — | Tap Payments secret key. Without this key, billing endpoints return 503. Optional while self-serve checkout is paused |
 | `TAP_MONTHLY_PLAN_ID` | — | Tap plan ID for the monthly Pro plan. Optional while self-serve checkout is paused |
 | `TAP_YEARLY_PLAN_ID` | — | Tap plan ID for the yearly Pro plan. Optional while self-serve checkout is paused |
