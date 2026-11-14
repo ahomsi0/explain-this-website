@@ -24,8 +24,12 @@ html.light .hero-window {
 }
 .hero-window-frame,
 .hero-window-bar,
-.hero-window-dot,
 .hero-window-address { border-color: var(--hw-line); }
+/* The window controls, in the colours every Mac window uses: close,
+   minimize, zoom. */
+.hero-window-dot.is-close { background: #ff5f57; }
+.hero-window-dot.is-minimize { background: #febc2e; }
+.hero-window-dot.is-zoom { background: #28c840; }
 .hero-window-address { color: var(--hw-text); }
 .hero-window-line {
   height: 1px;

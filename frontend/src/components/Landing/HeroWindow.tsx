@@ -84,9 +84,9 @@ export function HeroWindow({ address }: { address: string }) {
       <div className="hero-window-frame relative h-[620px] w-[min(1240px,calc(100%-48px))] overflow-hidden rounded-t-[14px] border border-b-0">
         <div className="hero-window-bar flex h-10 items-center border-b px-5">
           <span className="flex gap-2">
-            <span className="hero-window-dot h-[9px] w-[9px] rounded-full border" />
-            <span className="hero-window-dot h-[9px] w-[9px] rounded-full border" />
-            <span className="hero-window-dot h-[9px] w-[9px] rounded-full border" />
+            <span className="hero-window-dot is-close h-[9px] w-[9px] rounded-full" />
+            <span className="hero-window-dot is-minimize h-[9px] w-[9px] rounded-full" />
+            <span className="hero-window-dot is-zoom h-[9px] w-[9px] rounded-full" />
           </span>
           <span className="hero-window-address absolute left-1/2 flex h-[20px] w-[min(440px,42%)] -translate-x-1/2 items-center justify-center rounded-full border px-4">
             <span data-testid="hero-window-address" className="truncate font-mono text-[11px] leading-none">{shown}</span>
