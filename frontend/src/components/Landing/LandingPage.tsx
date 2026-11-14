@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { authHref } from "../../lib/authLinks";
 import { TECH_COUNT_LABEL } from "../../seo/facts";
 import { URLInput } from "../UrlInput/UrlInput";
+import { HeroWindow } from "./HeroWindow";
 import { fetchAudits, type AuthUser, type UsageSummary } from "../../services/authApi";
 import type { AnalyzeOptions } from "../../services/analyzeApi";
 import { getRecentUrls } from "../../lib/recentUrls";
@@ -35,6 +36,8 @@ export function LandingPage({
   onAnalyze: (url: string, source?: "landing" | "example" | "report", opts?: AnalyzeOptions) => void;
 }) {
   const [deepScan, setDeepScan] = useState(false);
+  // What is being typed in the URL field, mirrored in the backdrop's address bar.
+  const [typedUrl, setTypedUrl] = useState("");
   // Local recents render immediately; signed-in users get their authoritative
   // server history merged in below.
   const [recents, setRecents] = useState<string[]>(() => getRecentUrls().slice(0, 4));
@@ -74,10 +77,9 @@ export function LandingPage({
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Grid backdrop + film-grain noise over the whole landing page, with a
-          brighter patch behind the hero. Covering the full height avoids the
-          hard change from grid to flat colour halfway down the page. */}
-      <div className="pointer-events-none absolute inset-0 hero-grid" aria-hidden="true" />
+      {/* Backdrop: the outline of a browser window around the hero, plus
+          film-grain noise over the whole page. */}
+      <HeroWindow address={typedUrl} />
       <div className="pointer-events-none absolute inset-0 hero-noise" aria-hidden="true" />
 
       <main className="relative z-10">
@@ -127,6 +129,7 @@ export function LandingPage({
                 isLoading={false}
                 deepScan={deepScan}
                 onDeepScanToggle={() => setDeepScan((v) => !v)}
+                onValueChange={setTypedUrl}
               />
             </div>
 

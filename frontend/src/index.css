@@ -6,23 +6,56 @@
    font download starts immediately — a CSS @import here delayed it and caused
    a first-paint layout shift when the swap landed. */
 
-/* Grid backdrop for the landing page. The grid runs the full page height at a
-   constant low strength; a radial layer in the mask only brightens the patch
-   behind the hero, so there is no visible edge where the grid "stops". */
-.hero-grid {
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 64px 64px;
-  background-position: -1px -1px;
-  mask-image:
-    radial-gradient(ellipse 70% 520px at 50% 300px, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%),
-    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45));
-  -webkit-mask-image:
-    radial-gradient(ellipse 70% 520px at 50% 300px, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%),
-    linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45));
-  mask-composite: add;
-  -webkit-mask-composite: source-over;
+/* Landing page backdrop: the outline of a browser window (HeroWindow.tsx).
+   Every stroke takes its colour from these three variables so the light
+   theme only has to restate them. The mask fades the window out before the
+   content below the hero begins. */
+.hero-window {
+  --hw-line: rgba(255, 255, 255, 0.11);
+  --hw-accent: rgba(167, 139, 250, 0.75);
+  --hw-text: #a1a1aa;
+  mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 584px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 584px);
+}
+html.light .hero-window {
+  --hw-line: rgba(30, 27, 75, 0.16);
+  --hw-accent: #6d28d9;
+  --hw-text: #52525b;
+}
+.hero-window-frame,
+.hero-window-bar,
+.hero-window-dot,
+.hero-window-address { border-color: var(--hw-line); }
+.hero-window-address { color: var(--hw-text); }
+.hero-window-line {
+  height: 1px;
+  background: var(--hw-line);
+  transition: background-color 180ms ease, height 180ms ease, margin-top 180ms ease;
+}
+.hero-window-line.is-active {
+  height: 3px;
+  margin-top: -1px;
+  background: var(--hw-accent);
+}
+.hero-window-label {
+  color: var(--hw-accent);
+  transition: opacity 180ms ease;
+}
+/* One pass of a scan line down the window when typing starts. */
+.hero-window-scan {
+  height: 1px;
+  background: var(--hw-accent);
+  animation: heroWindowScan 900ms cubic-bezier(0.3, 0, 0.2, 1) both;
+}
+@keyframes heroWindowScan {
+  0% { transform: translateY(0); opacity: 0; }
+  12% { opacity: 0.9; }
+  100% { transform: translateY(494px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-window-scan { display: none; }
+  .hero-window-line,
+  .hero-window-label { transition: none; }
 }
 /* Unfilled part of a score meter. It needs its own class: the light theme
    maps bg-zinc-800 to the same lavender as the card the meter sits on, which
@@ -33,12 +66,6 @@ html.light .score-track { background-color: #c4b5fd; }
    empty track. Light on the dark theme, dark on the light one. */
 .freshness-unknown { background-color: #d4d4d8; }
 html.light .freshness-unknown { background-color: #3f3f46; }
-
-html.light .hero-grid {
-  background-image:
-    linear-gradient(to right, rgba(30,27,75,0.12) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(30,27,75,0.12) 1px, transparent 1px);
-}
 
 /* Film-grain noise — adds organic texture */
 .hero-noise {

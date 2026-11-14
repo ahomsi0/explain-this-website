@@ -6,11 +6,14 @@ export function URLInput({
   isLoading,
   deepScan,
   onDeepScanToggle,
+  onValueChange,
 }: {
   onAnalyze: (url: string) => void;
   isLoading: boolean;
   deepScan?: boolean;
   onDeepScanToggle?: () => void;
+  /** Called with the text in the field as it is typed. */
+  onValueChange?: (value: string) => void;
 }) {
   const [value, setValue]   = useState("");
   const [error, setError]   = useState("");
@@ -40,7 +43,7 @@ export function URLInput({
           id="url-input"
           type="text"
           value={value}
-          onChange={(e) => { setValue(e.target.value); setError(""); }}
+          onChange={(e) => { setValue(e.target.value); setError(""); onValueChange?.(e.target.value); }}
           placeholder="Enter a URL to analyze..."
           disabled={isLoading}
           aria-invalid={!!error}
