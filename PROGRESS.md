@@ -2,7 +2,7 @@
 
 What has been built, and where things stand right now. For what comes next, see [ROADMAP.md](ROADMAP.md).
 
-Last updated: 2026-11-13
+Last updated: 2026-11-14
 
 ## Where things stand
 
@@ -21,6 +21,10 @@ Last updated: 2026-11-13
 - Getting a few links to the site: Product Hunt, tool directories, one community post. Owner task.
 - Strengthening `/guides/lcp` and `/compare`, the two pages Google already shows.
 - The Chrome extension for pages behind a login.
+
+**Planned, not started**
+
+- A paid plan. The provider analysis for a Lebanon-based owner and the list of what to lock are in [ROADMAP.md](ROADMAP.md) under Paid plan (2026-11-14). Recommendation: Paddle.
 
 ## Search (SEO)
 
