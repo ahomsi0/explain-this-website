@@ -119,6 +119,8 @@ Newest first. One line per thing a visitor or the owner would notice. Git histor
 
 ### November 2026
 
+- **New landing page background.** The grid, which every developer tool uses, is replaced by a faint outline of a browser window around the hero. It reacts: the address bar shows the URL being typed, the highlighted line follows the cursor and names what the analyzer reads there, and a scan line runs once when typing starts. Phones get the plain page.
+- **Plan badge redesigned** as a small violet mono tag in the report header and account menu.
 - **Pricing page and refund policy.** A public `/pricing` page shows the Free and Pro plans ($7 a month or $59 a year) and says plainly that Pro is not on sale yet. A `/refunds` page gives a full refund within 7 days of any payment. The terms name Paddle as the seller, and the privacy policy says what Paddle handles. These are the pages Paddle checks before it approves the site. Nothing is locked and nothing can be bought yet.
 - **Fixed: verification and password reset emails were not reaching anyone.** The server had no sender address set, so it fell back to Resend's shared test sender, which Resend only delivers to the account owner. Every other recipient was rejected. The default sender is now `noreply@explainthiswebsite.com`, on the site's verified domain. Found on 2026-11-14 from the admin dashboard's System tab.
 - **Email on the domain.** `support@` and `ahmad-homsi@explainthiswebsite.com` now receive mail, forwarded through Cloudflare. Before this the domain had no mail records, so the support address in the privacy policy and terms was bouncing.
