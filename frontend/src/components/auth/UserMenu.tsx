@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../../context/useAuth";
 import { AccountDashboard } from "./AccountDashboard";
+import { PlanTag } from "../ui/PlanTag";
 
 export function UserMenu() {
   const { user, logout, refreshUser } = useAuth();
@@ -21,7 +22,6 @@ export function UserMenu() {
 
   if (!user) return null;
   const initial = user.email.charAt(0).toUpperCase();
-  const isPro = user.plan === "pro" || user.plan === "owner";
 
   return (
     <div className="relative" ref={ref}>
@@ -39,13 +39,7 @@ export function UserMenu() {
             <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Signed in as</p>
             <p className="text-xs text-zinc-200 truncate" title={user.email}>{user.email}</p>
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
-                isPro
-                  ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
-                  : "text-zinc-300 bg-zinc-800/80 border-zinc-700"
-              }`}>
-                {isPro ? "Pro" : "Free"}
-              </span>
+              <PlanTag plan={user.plan} />
               <span className="text-[11px] text-zinc-500">
                 {user.plan === "owner" ? "∞" : `${user.usage.dailyRemaining}/${user.usage.dailyLimit}`} left today
               </span>

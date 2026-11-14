@@ -19,6 +19,7 @@ import { UserMenu } from "../auth/UserMenu";
 import { type UsageSummary } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 import { useNow } from "../../hooks/useNow";
+import { PlanTag } from "../ui/PlanTag";
 
 function FaviconOrInitial({ src, hostname }: { src: string; hostname: string }) {
   const [failed, setFailed] = useState(false);
@@ -187,13 +188,8 @@ export function ResultDashboard({
             <span className="hidden sm:inline lg:hidden text-xs font-medium text-zinc-300 truncate">{hostname}</span>
             {usage && (
               <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 shrink-0">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
-                  usage.plan === "pro" || usage.plan === "owner"
-                    ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/25"
-                    : "text-zinc-300 bg-zinc-800 border-zinc-700"
-                }`}>
-                  {usage.plan === "owner" ? "Owner" : usage.plan === "pro" ? "Pro" : "Free"}
-                </span>
+                <PlanTag plan={usage.plan} />
+                <span className="h-3 w-px bg-zinc-700" aria-hidden="true" />
                 <span className="text-[11px] text-zinc-400">
                   {usage.plan === "owner" ? "∞" : `${usage.dailyRemaining}/${usage.dailyLimit}`} left today
                 </span>
