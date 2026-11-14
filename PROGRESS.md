@@ -21,6 +21,7 @@ Last updated: 2026-11-14
 - Getting a few links to the site: Product Hunt, tool directories, one community post. Owner task.
 - Strengthening `/guides/lcp` and `/compare`, the two pages Google already shows.
 - The Chrome extension for pages behind a login.
+- An MCP server so the analyzer can be used inside AI assistants. Planned for after the paid plan.
 
 **Planned, not started**
 

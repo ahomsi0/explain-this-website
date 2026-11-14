@@ -138,6 +138,7 @@ The rule: **a single report stays free.** It is what Google indexes, what people
 - **Monitoring:** re-check saved sites every week and email when a score drops or something breaks. This is the feature that gives people a reason to keep paying every month, so it is first in line after launch.
 - **PDF with your own logo**, for freelancers and agencies.
 - **Bulk:** analyze a list of addresses in one go.
+- **Use it inside AI assistants** through an MCP server. See Later.
 
 ### Order of work
 
@@ -173,6 +174,23 @@ The rule: **a single report stays free.** It is what Google indexes, what people
 - [BBAC fresh money account](https://www.bbacbank.com/banking/personal/account/fresh-money-account-lebanon), as one example of a fresh dollar account
 
 ## Later
+
+### MCP server, so the analyzer works inside AI assistants
+
+Added on 2026-11-14. Not designed in detail and not started. To be built after the paid plan, because it belongs to Pro.
+
+MCP (Model Context Protocol) is the standard way to plug a service into an AI assistant. With it, someone types "analyze stripe.com and tell me what to fix first" in Claude, Cursor or ChatGPT, and the assistant calls this site and answers from the real report.
+
+- **Actions it offers.** Analyze a website, compare two websites, get a saved report, list recent audits.
+- **Shape.** One new address on the existing API server, for example `/mcp`. No new hosting. It reuses the analysis code, so every call counts against the same daily limit.
+- **Who can use it.** People connect with an API key from their account. API keys are Pro only, so MCP access comes with Pro.
+- **Why.** It is a clearer selling point for Pro than "API keys and webhooks". MCP servers are listed in public directories, which is the kind of link the site needs. Few audit tools have one.
+- **Things to get right.**
+  - Return a trimmed summary, not the whole report. A full report is too large for an assistant to take in.
+  - Key-based setup works in Claude Code and Cursor. One-click connection inside Claude or ChatGPT needs a sign-in flow, which would be a second step later.
+  - The standard changes often, so read the current documentation before building.
+- **Size.** About a day of work once the plan rules exist.
+- **After it.** Submit it to the MCP directories, add a page explaining how to connect it, and mention it on the pricing page.
 
 ### Chrome extension for pages behind a login
 
