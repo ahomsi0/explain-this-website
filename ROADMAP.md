@@ -45,7 +45,28 @@ Best done before or alongside item 2, so the new links land on pages worth ranki
 
 ## Paid plan
 
-Analysis done on 2026-11-14. Nothing is built yet. The owner is based in Lebanon, which rules out most of the usual payment providers, so the provider choice comes first.
+Analysis and decisions made on 2026-11-14. Nothing is built yet. The owner is based in Lebanon, which rules out most of the usual payment providers, so the provider choice came first.
+
+**Status:** Paddle is chosen and the live account is created. The pricing page and refund policy that Paddle checks are built. The account is not verified yet, the site has not been submitted for review, and nothing can be bought.
+
+### Decisions
+
+Settled by the owner on 2026-11-14.
+
+| | Decision |
+|---|---|
+| Provider | Paddle |
+| Price | $7 a month or $59 a year, yearly shown first |
+| Free trial | None. The free plan and the refund window cover it |
+| Refunds | Full refund within 7 days of a payment |
+| Visitors without an account | Stay at 5 analyses a day |
+| Free accounts | Stay at 5 analyses a day |
+| Pro | 50 analyses a day |
+| Launch | Pro goes on sale with what exists today. Monitoring, logo PDF and bulk are added afterwards and shown as coming soon |
+| API keys and webhooks on free accounts | Switched off the day Pro launches. No grace period |
+| Seller name on the terms and refund policy | "Explainthiswebsite.com team" |
+
+**One risk in these choices:** Paddle prefers a full legal name for an individual seller. If the site review asks for it, the name on the two pages has to change. It is a one-line edit.
 
 ### Where things are today
 
@@ -87,56 +108,57 @@ Paddle is a merchant of record: it is the legal seller, so it collects the money
 
 ### Price
 
-The fixed $0.50 makes cheap monthly plans a bad deal:
+The fixed $0.50 makes cheap monthly plans a bad deal, which is why the old $2.99 price was dropped:
 
 | Price | Paddle takes | Share |
 |---|---|---|
-| $2.99 a month | $0.65 | 22% |
-| $5 a month | $0.75 | 15% |
-| $9 a month | $0.95 | 11% |
-| $69 a year | $3.95 | 6% |
+| $2.99 a month (old page) | $0.65 | 22% |
+| **$7 a month (chosen)** | $0.85 | 12% |
+| **$59 a year (chosen)** | $3.45 | 6% |
 
-The old pricing page showed $2.99 a month and $24.99 a year. Suggested instead: **around $8 to $9 a month, or around $69 a year, with the yearly plan shown first.** Paddle also offers custom pricing for products under $10, which is worth asking for.
+Paddle also offers custom pricing for products under $10, which is worth asking for once there are sales.
 
-### What to lock
+### What is locked
 
-The rule: **a single report stays free.** It is what Google indexes, what people share, and what brings visitors, and the site has almost no traffic yet. Charge for volume, automation and output that people use for work.
+The rule: **a single report stays free.** It is what Google indexes, what people share, and what brings visitors. Pro is for volume, automation and output that people use for work.
 
-| | Free | Pro |
-|---|---|---|
-| Analyses a day | 5 | 50 |
-| Full report, share link, fix guides | Yes | Yes |
-| Compare two sites | Yes | Yes |
-| History | Last 30 days | Unlimited, with trends |
-| Share links | Expire after 30 days | Do not expire |
-| Deep scan (several pages of a site) | 1 a day | Within the daily limit |
-| Pages behind a login | 1 a day | Within the daily limit |
-| API keys and webhooks | No | Yes |
-| **Monitoring** (new): re-check saved sites every week and email when a score drops or something breaks | No | Yes |
-| **PDF with your own logo** (new), for freelancers and agencies | Standard PDF | Yes |
-| **Bulk** (new): analyze a list of addresses in one go | No | Yes |
+| | Visitor | Free account | Pro |
+|---|---|---|---|
+| Analyses a day | 5 | 5 | 50 |
+| Full report, share link, fix guides | Yes | Yes | Yes |
+| Compare two sites | No (needs an account, as today) | Yes | Yes |
+| History | None | Last 30 days | Unlimited, with trends |
+| Share links | Expire after 30 days | Expire after 30 days | Do not expire |
+| Deep scan (several pages of a site) | 1 a day | 1 a day | Within the daily limit |
+| Pages behind a login | No (needs an account, as today) | 1 a day | Within the daily limit |
+| API keys and webhooks | No | No | Yes |
 
-**Monitoring is the feature that matters.** A report is something people need once. A weekly check with an email when something breaks is a reason to keep paying every month. Without it, most people would subscribe for one month and cancel.
+**Coming after launch, Pro only**
 
-Things already free (API keys, webhooks, unlimited history) would move behind Pro. Accounts that use them today keep them.
+- **Monitoring:** re-check saved sites every week and email when a score drops or something breaks. This is the feature that gives people a reason to keep paying every month, so it is first in line after launch.
+- **PDF with your own logo**, for freelancers and agencies.
+- **Bulk:** analyze a list of addresses in one go.
 
 ### Order of work
 
-1. **Owner, before any code.** Ask the bank about a fresh dollar account for incoming wires. Then create the Paddle account and start the identity check. The sandbox works straight away, so building does not wait for approval.
-2. **Site pages Paddle needs.** A public pricing page and a refund policy, and the owner's legal name in the terms.
+1. **Owner.** The Paddle account exists. Finish the identity check and payout details, and ask the bank about a fresh dollar account for incoming wires. Building does not wait for this, because the sandbox works straight away.
+2. **Site pages Paddle needs.** Done on 2026-11-14: `/pricing`, `/refunds`, the seller name and Paddle wording in the terms. Next, the owner submits `www.explainthiswebsite.com` for review in the Paddle dashboard.
 3. **One place that decides what each plan can do.** Today the plan only changes the daily limit. Every lock in the table should read from a single list on the server, so the app and the API can never disagree.
 4. **Swap Tap for Paddle.** Replace `billing.go`: checkout through Paddle's overlay, a webhook for subscription created, updated and cancelled, and a link to Paddle's customer portal for cancelling and changing cards. The database already has the plan, status and period-end columns. Remove the Tap columns and settings afterwards.
-5. **Turn on the locks** for things that exist: limits, deep scan, behind-login, API keys and webhooks, history length, share link expiry.
+5. **Turn on the locks** from the table above: deep scan and behind-login once a day on free, API keys and webhooks Pro only, 30 days of history on free, share links that last on Pro.
 6. **Build monitoring**, then the logo PDF, then bulk.
 7. **Privacy policy and terms** updated to name Paddle as the seller.
 
 **When to start:** steps 1 and 2 are cheap and slow, so they are worth doing early. The rest pays off only once there are visitors, and right now the site gets a handful of clicks a month. Getting links and traffic (see Next) will earn more than a checkout page will.
 
-### Open questions for the owner
+### Still open
 
-- Is there already an approved Tap account from when the billing code was written? Tap stopped taking new Lebanese merchants, but an existing account may still work, which would make Tap a second option.
-- Monthly and yearly, or yearly only?
-- Should accounts that already use API keys and webhooks keep them for free?
+- Paddle verification: identity check and payout details, both in the Paddle dashboard under Business account. Owner task.
+- Submitting the site to Paddle for review, now that the pricing page and refund policy exist. Owner task.
+- The site's content security policy has to allow Paddle's checkout script before checkout can work. Part of step 4.
+- Replying from the domain address. Mail to `support@` arrives in a personal inbox, so replies go out from that personal address until "send mail as" is set up.
+- The bank: confirm a fresh dollar account accepts incoming business wires, and what it charges. Owner task.
+- How many free accounts use API keys or webhooks today. Worth checking before launch, since they are switched off without notice.
 
 ### Sources
 
