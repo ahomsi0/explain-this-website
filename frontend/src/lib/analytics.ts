@@ -36,7 +36,13 @@ export function enableAnalytics(): void {
   if (typeof window === "undefined" || !MEASUREMENT_ID || !hasAnalyticsConsent()) return;
   if (!window.gtag) {
     window.dataLayer = window.dataLayer ?? [];
-    window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);
+    // Google's script only acts on the `arguments` object itself. An array
+    // holding the same values is silently ignored, so nothing would ever be
+    // sent. This has to be a plain function, not an arrow with rest params.
+    window.gtag = function gtag() {
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer?.push(arguments);
+    };
     const script = document.createElement("script");
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(MEASUREMENT_ID)}`;
