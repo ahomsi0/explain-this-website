@@ -84,7 +84,11 @@ export function SectionView({ id, result }: { id: SectionId; result: AnalysisRes
           <SEOAuditCard seoChecks={result.seoChecks} />
           <SecurityHeadersCard
             checks={result.securityHeaders ?? []}
-            unavailableReason={result.capture ? "Pasted page source carries no response headers, so they cannot be audited." : undefined}
+            unavailableReason={
+              !result.capture ? undefined
+                : result.capture.source === "paste" ? "Pasted page source carries no response headers, so they cannot be audited."
+                : "This page's server did not share its response headers with your browser, so they cannot be audited."
+            }
           />
           <div id="report-broken-links" tabIndex={-1} className="scroll-mt-32">
             <LinkCheckCard

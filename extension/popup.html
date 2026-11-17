@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Explain This Website</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <svg width="20" height="20" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <rect width="64" height="64" rx="14" fill="#0f0f12" />
+        <polygon points="9,24 56,21 57,38 10,41" fill="#7c3aed" />
+        <rect x="14" y="13" width="31" height="7" rx="3.5" fill="#fff" />
+        <rect x="14" y="28.5" width="38" height="7" rx="3.5" fill="#fff" />
+        <rect x="14" y="44" width="24" height="7" rx="3.5" fill="#fff" />
+      </svg>
+      <span>Explain This Website</span>
+    </header>
+
+    <main>
+      <section id="ready" hidden>
+        <p class="label">This page</p>
+        <p id="page-title" class="title"></p>
+        <p id="page-address" class="address"></p>
+
+        <button id="explain" type="button" class="primary">Explain this page</button>
+        <p class="hint">
+          Sends the page as you see it now, signed in. Your password and cookies are not sent, and only you can open
+          the report.
+        </p>
+        <p id="error" class="error" role="alert" hidden></p>
+
+        <hr />
+
+        <button id="public" type="button" class="secondary">Analyze the public address</button>
+        <p class="hint">For a page anyone can open. Adds speed scores and link checks.</p>
+      </section>
+
+      <section id="blocked" hidden>
+        <p id="blocked-title" class="title"></p>
+        <p id="blocked-text" class="hint"></p>
+      </section>
+    </main>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

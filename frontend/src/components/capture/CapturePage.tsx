@@ -1,15 +1,23 @@
-// Where a page from behind a login is handed over: the visitor pastes the
-// page's source and address, checks what they are about to send, and the page
-// is analysed and saved to their account. Nothing reaches the API until they
-// press the button on the confirm step.
+// Where a page from behind a login is handed over, in one of two ways.
+//
+// The Chrome extension: the visitor clicks "Explain this page" on the page
+// itself, this tab opens, and the extension passes the page in. That click is
+// the go-ahead, so a signed-in visitor goes straight to the report.
+//
+// Pasting: the visitor pastes the page's source and address, checks what they
+// are about to send, and nothing reaches the API until they press the button.
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "../../context/useAuth";
 import { authHref } from "../../lib/authLinks";
 import { analyzeCapture } from "../../services/analyzeApi";
+import { CAPTURE_REQUEST_MESSAGE, openedByExtension, readExtensionCapture } from "../../lib/extensionHandover";
 import { clearPendingCapture, loadPendingCapture, savePendingCapture, type PendingCapture } from "../../lib/pendingCapture";
 
 type Pending = PendingCapture;
+
+// The extension answers in well under a second. Past this, it is not there.
+const WAIT_FOR_EXTENSION_MS = 4000;
 
 const primaryButton =
   "inline-flex items-center justify-center rounded-md bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60";
@@ -48,10 +56,56 @@ function displayAddress(url: string): string {
 
 export function CapturePage() {
   const { user, loading: authLoading } = useAuth();
-  // A page already pasted survives the trip to the sign-in page and back.
-  const [pending, setPending] = useState<Pending | null>(loadPendingCapture);
+  const [fromExtension] = useState(() => openedByExtension(window.location.search));
+  // A page already handed over survives the trip to the sign-in page and back.
+  // A tab the extension just opened waits for the new page instead.
+  const [pending, setPending] = useState<Pending | null>(() => (fromExtension ? null : loadPendingCapture()));
+  const [waiting, setWaiting] = useState(fromExtension);
+  const [missed, setMissed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Set when the extension has just handed a page over: the click in the
+  // extension was the go-ahead, so the analysis starts without a second one.
+  const startWhenReady = useRef(false);
+
+  // Ask the extension for the page, and take its answer.
+  useEffect(() => {
+    if (!fromExtension) return;
+    // Drop "?from=extension" so a refresh does not ask a second time.
+    window.history.replaceState({}, "", window.location.pathname);
+
+    let settled = false;
+    let giveUp = 0;
+    const settle = (capture: Pending | null) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(giveUp);
+      if (capture) {
+        savePendingCapture(capture);
+        startWhenReady.current = true;
+        setPending(capture);
+      } else {
+        setPending(loadPendingCapture());
+        setMissed(true);
+      }
+      setWaiting(false);
+    };
+
+    const onMessage = (event: MessageEvent) => {
+      // Only this tab's own extension script may hand a page over.
+      if (event.source !== window || event.origin !== window.location.origin) return;
+      const capture = readExtensionCapture(event.data);
+      if (capture !== undefined) settle(capture);
+    };
+    window.addEventListener("message", onMessage);
+    giveUp = window.setTimeout(() => settle(null), WAIT_FOR_EXTENSION_MS);
+    window.postMessage({ type: CAPTURE_REQUEST_MESSAGE }, window.location.origin);
+
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.clearTimeout(giveUp);
+    };
+  }, [fromExtension]);
 
   const discard = () => {
     clearPendingCapture();
@@ -83,17 +137,30 @@ export function CapturePage() {
     setBusy(false);
   };
 
+  // A page fresh from the extension is analyzed as soon as the account is
+  // known. A signed-out visitor gets the confirm step and its sign-in link.
+  useEffect(() => {
+    if (!startWhenReady.current || !pending || authLoading || !user) return;
+    startWhenReady.current = false;
+    void analyze();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending, authLoading, user]);
+
   return (
     <main className="flex-1 px-4 sm:px-6 py-12 sm:py-16">
       <div className="mx-auto max-w-xl">
+        {waiting && (
+          <p role="status" className="text-sm text-zinc-400">Getting the page from the extension&hellip;</p>
+        )}
+
         {pending && (
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-100">Analyze this page?</h1>
+            <h1 className="text-2xl font-semibold text-zinc-100">{busy ? "Analyzing this page" : "Analyze this page?"}</h1>
             <dl className="mt-6 border-t border-zinc-800">
               {pending.title && <Row label="Page">{pending.title}</Row>}
               <Row label="Address"><span className="break-all">{displayAddress(pending.url)}</span></Row>
               <Row label="Size">{formatSize(pending.html.length)}</Row>
-              <Row label="Sent as">Page source you pasted</Row>
+              <Row label="Sent as">{pending.source === "paste" ? "Page source you pasted" : "The page as your browser shows it"}</Row>
             </dl>
             <p className="mt-5 text-[13px] leading-relaxed text-zinc-500">
               The report is saved to your account and only you can open it. It counts as one of today&rsquo;s analyses.
@@ -126,7 +193,16 @@ export function CapturePage() {
           </div>
         )}
 
-        {!pending && <PasteForm onReady={(next) => { savePendingCapture(next); setPending(next); }} />}
+        {!pending && !waiting && (
+          <>
+            {missed && (
+              <p role="alert" className="mb-8 rounded-md border border-amber-500/20 bg-amber-500/[0.07] px-4 py-3 text-[13px] leading-relaxed text-amber-200/90">
+                Nothing arrived from the extension. Go back to the page and click Explain this page again, or paste the page below.
+              </p>
+            )}
+            <PasteForm onReady={(next) => { savePendingCapture(next); setPending(next); }} />
+          </>
+        )}
       </div>
     </main>
   );

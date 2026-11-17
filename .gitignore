@@ -16,3 +16,6 @@ frontend/dist/
 .claude/
 .worktrees/
 .vercel
+
+# Extension
+extension/dist/

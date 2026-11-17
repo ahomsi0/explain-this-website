@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Explain This Website",
+  "version": "1.0.0",
+  "description": "Get a plain-English report on the page you are looking at, including pages behind a login.",
+  "minimum_chrome_version": "112",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Explain this page",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.explainthiswebsite.com/capture*"],
+      "js": ["handover.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

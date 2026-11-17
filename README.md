@@ -102,10 +102,30 @@ Vitest covers utilities, API behavior, and component rendering/interactions. Pla
 
 ---
 
+## Chrome extension
+
+`extension/` holds a small Chrome extension (Manifest V3, plain JavaScript, no build step) for pages the analyzer cannot fetch: dashboards, account pages, staging sites behind a password. One click on its toolbar icon reads the page the user is looking at and hands it to `/capture` on the site, which analyzes it for the signed-in account. A second button starts the normal analysis of the page's public address.
+
+- It asks for the current tab only (`activeTab`), never for every website, and reads a page only when its button is clicked there.
+- It sends the page's HTML, its address, the load timings the browser recorded and nine response headers. No passwords, cookies or tokens.
+- It holds no account logic. Sign-in, the daily limit and the report stay on the site, and it never calls the API itself.
+
+Try it without the store: open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the `extension/` folder.
+
+```bash
+node extension/pack.mjs                                            # extension/dist/…zip for the Chrome Web Store
+node extension/pack.mjs --site http://localhost:5173 --out /tmp/x  # unpacked copy that talks to a local site
+```
+
+`frontend/e2e/extension.spec.ts` loads the extension into Chromium and runs the whole path from the popup to the report. The text for the store listing is in `extension/STORE_LISTING.md`.
+
+---
+
 ## Project Structure
 
 ```
 .
+├── extension/         # Chrome extension for pages behind a login
 ├── backend/
 │   ├── main.go
 │   ├── go.mod
