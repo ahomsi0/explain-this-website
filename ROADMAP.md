@@ -2,13 +2,26 @@
 
 What is planned, in rough order. For what is already built, see [PROGRESS.md](PROGRESS.md).
 
-Last updated: 2026-11-14
+Last updated: 2026-11-15
 
 Nothing here is a promise or a date. Items move up when they are ready to be built and get deleted when they ship.
 
 ## Now
 
-Nothing is being built right now.
+### Chrome extension for pages behind a login
+
+Built on 2026-11-15, not published yet. The owner did not like pasting page source as the way in, so this moved ahead of the paid plan.
+
+- **What it does.** Open the page, click the toolbar icon, click "Explain this page". A new tab opens on the site and, for a signed-in account, goes straight to the report. A second button starts the normal analysis of the page's public address.
+- **What exists.** The extension in `extension/` (Manifest V3, current tab only, no account logic), the receiver on `/capture`, a browser test that runs the whole path, the store listing text in `extension/STORE_LISTING.md`, and the privacy policy wording.
+- **Not tried yet.** A real click on the toolbar icon in the owner's own Chrome. Automation cannot click that icon, so the test opens the popup another way.
+
+What is left, in order:
+
+1. **Try it by hand.** Owner task, 5 minutes. Open `chrome://extensions`, turn on Developer mode, choose Load unpacked and pick the `extension/` folder. Sign in on the site, open a page behind a login, click the icon and then "Explain this page".
+2. **Publish it.** Owner task. Create a Chrome Web Store developer account (one-time $5), run `node extension/pack.mjs`, upload the zip, fill in the listing from `extension/STORE_LISTING.md`, add screenshots, submit. Review usually takes a few days.
+3. **Switch the site over.** Build task, once the store address exists. `/behind-login` leads with an "Add to Chrome" button and is rewritten around the extension, the paste form is removed (owner's decision on 2026-11-15), and What's New gets an entry.
+4. **After it.** Edge takes the Chrome build as is. Firefox needs small manifest changes. Safari is skipped.
 
 ## Next
 
@@ -19,7 +32,7 @@ All three were set aside for later by the owner on 2026-11-13. They do not depen
 Owner task, about 10 minutes.
 
 - Sign up with a new email, confirm it, sign out and sign back in.
-- Open `/capture`, paste the source of one page that sits behind a login, and confirm the report opens.
+- Send one page that sits behind a login with the Chrome extension (see Now), and confirm the report opens.
 - Check that the report says it is private and has no share button.
 
 This is the one part of the November work that nobody has tried for real.
@@ -192,18 +205,6 @@ MCP (Model Context Protocol) is the standard way to plug a service into an AI as
 - **Size.** About a day of work once the plan rules exist.
 - **After it.** Submit it to the MCP directories, add a page explaining how to connect it, and mention it on the pricing page.
 
-### Chrome extension for pages behind a login
-
-Designed, not started. Set aside for later by the owner on 2026-11-13. The design below is ready to build from when the time comes.
-
-- **What it does.** One click on the toolbar icon sends the page the user is looking at to the existing confirm step on the site. A second button opens the normal public analysis for the current address.
-- **Why.** Pasting page source works but loses speed timings and security headers, and JavaScript apps need a trip into developer tools. The extension reads the finished page, so all three come back.
-- **Shape.** Manifest V3, in an `extension/` folder. Permissions are `activeTab`, `scripting`, and the site's own domain only. It never asks for access to all websites. No account logic inside it: sign-in, quota and the private report stay on the site.
-- **Server work.** None. `POST /api/analyze-capture` already accepts `source: "browser"`, headers and timings.
-- **Site work.** A receiver on `/capture` for the handover, the speed and security sections back in those reports, an "Add to Chrome" link on `/behind-login` once a store address exists.
-- **Owner tasks.** Create a Chrome Web Store developer account (one-time $5), upload the zip, pass review. Try it once by hand on a logged-in page before submitting.
-- **After it.** Edge takes the Chrome build as is. Firefox needs small manifest changes. Safari is skipped.
-
 ### Smaller items
 
 - **En dashes in number ranges** across site copy.
@@ -216,5 +217,5 @@ Designed, not started. Set aside for later by the owner on 2026-11-13. The desig
 
 ## Decided against
 
-- **Bookmark button for pages behind a login.** Built and shipped on 2026-11-13, then removed. The owner did not like it, and sites with a strict content security policy can block bookmark buttons. Pasting the page source covers it for now, and the extension is the planned replacement.
+- **Bookmark button for pages behind a login.** Built and shipped on 2026-11-13, then removed. The owner did not like it, and sites with a strict content security policy can block bookmark buttons. The Chrome extension replaces it, and pasting the page source stays only until the extension is in the store.
 - **Asking users for their login details** so the server can sign in for them. Never. The server does not fetch pages behind a login at all.

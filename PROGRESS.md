@@ -2,7 +2,7 @@
 
 What has been built, and where things stand right now. For what comes next, see [ROADMAP.md](ROADMAP.md).
 
-Last updated: 2026-11-14
+Last updated: 2026-11-17
 
 ## Where things stand
 
@@ -14,13 +14,17 @@ Last updated: 2026-11-14
 
 - A real sign-up and sign-in on the live site after the auth page changes.
 - A real behind-login analysis on the live site with a signed-in account. It was tested locally against the real API code with a throwaway account token, and the live API correctly refuses requests without a session.
+- A real click on the Chrome extension's toolbar icon. A browser test loads the extension and runs everything from its popup to the report, but automation cannot click the icon itself. Steps are in [ROADMAP.md](ROADMAP.md) under Now.
+
+**In progress**
+
+- The Chrome extension for pages behind a login is built and sits in `extension/`. It is not in the Chrome Web Store yet, so the site still offers pasting. Publishing it is an owner task, in [ROADMAP.md](ROADMAP.md) under Now.
 
 **Set aside for later** (on 2026-11-13, details in [ROADMAP.md](ROADMAP.md))
 
 - The live-site check above. Owner task.
 - Getting a few links to the site: Product Hunt, tool directories, one community post. Owner task.
 - Strengthening `/guides/lcp` and `/compare`, the two pages Google already shows.
-- The Chrome extension for pages behind a login.
 - An MCP server so the analyzer can be used inside AI assistants. Planned for after the paid plan.
 
 **Planned, not started**
@@ -32,6 +36,8 @@ Last updated: 2026-11-14
 Numbers from Google Search Console for the whole domain, web search only. Search Console data runs about three days behind, so this snapshot covers **August 31 to November 10, 2026**, which is everything Google has recorded for the site so far.
 
 Snapshot taken: 2026-11-13
+
+**Update on 2026-11-17** (data through November 15): 9 clicks and 577 impressions in total, up from 7 and 488 five days of data earlier. November 1 to 15 alone brought 7 clicks and 267 impressions. Two built-with pages now bring clicks: `/built-with/replit` (2 clicks, position 3.3) and `/built-with/godaddy-website-builder` (1 click, position 5.0). `/compare` is at 214 impressions and still no clicks, at position 90.6. "explain this page" moved from position 9.7 to 9.1, with 65 impressions and no click yet. Indexing: 62 indexed, 9 not, of which 5 are now "Crawled, currently not indexed". The sitemap was last read on November 13, before `/pricing` and `/refunds` were added. The tables below are the November 13 snapshot.
 
 ### Totals so far
 
@@ -119,6 +125,8 @@ Newest first. One line per thing a visitor or the owner would notice. Git histor
 
 ### November 2026
 
+- **Fixed: Google Analytics had never recorded a visit.** Since it was added on August 21, the site queued every analytics command in a form Google's script silently ignores, so even visitors who allowed analytics were never counted. Found on 2026-11-17 when both Analytics properties showed "No data received". Visits from people who allow analytics are counted from the next deploy on. Nothing before that can be recovered.
+- **Chrome extension built** (not in the store yet). On any page, the toolbar icon opens a small panel with two buttons. "Explain this page" sends the page as the browser shows it, signed in, and a signed-in account lands straight on a private report with no confirm step in between. "Analyze the public address" starts the normal analysis. It can read the current tab only, and only after a click, and it sends no passwords or cookies. Reports made this way get their load timings and security headers back, which pasted source could not carry. Pasting stays on the site until the extension is published.
 - **New landing page background.** The grid, which every developer tool uses, is replaced by a faint outline of a browser window around the hero. Its three dots work like a real window's: red closes it, yellow minimizes it, green makes it fill the page. Its address bar types example addresses by itself and shows the visitor's own text once they type. Phones get the plain page. A first version with hover labels and a scan line was dropped the same day because it only reacted to people who went looking for it.
 - **Plan badge redesigned** as a small violet mono tag in the report header and account menu.
 - **Pricing page and refund policy.** A public `/pricing` page shows the Free and Pro plans ($7 a month or $59 a year) and says plainly that Pro is not on sale yet. A `/refunds` page gives a full refund within 7 days of any payment. The terms name Paddle as the seller, and the privacy policy says what Paddle handles. These are the pages Paddle checks before it approves the site. Nothing is locked and nothing can be bought yet.
