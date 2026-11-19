@@ -118,7 +118,7 @@ export function OverviewCard({ overview, rendering, url, fetchedAt, aiDetection 
         <p className="mt-3 text-[11px] text-zinc-500">
           {new Date(fetchedAt).toLocaleString()}
         </p>
-        <p className="mt-2 text-[11px] text-zinc-600">Page preview provided by Microlink. It may be unavailable for blocked or private pages.</p>
+        <p className="mt-2 text-[11px] text-zinc-600">The page preview may be unavailable for blocked or private pages.</p>
 
         {rendering?.likelyClientRendered && (
           <div className="mt-3 rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-[11px] leading-relaxed text-amber-300">

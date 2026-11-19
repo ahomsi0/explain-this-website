@@ -126,10 +126,12 @@ func StatusHandler() http.HandlerFunc {
 			checks["database"] = "down"
 		}
 
-		checks["groq"] = healthState(adminstate.SnapshotGroqHealth())
+		// Generic names on purpose: this response is public, and it should
+		// not say which providers the site runs on.
+		checks["ai"] = healthState(adminstate.SnapshotGroqHealth())
 		psHealth, resendHealth := adminstate.SnapshotHealth()
-		checks["pagespeed"] = healthState(psHealth)
-		checks["resend"] = healthState(resendHealth)
+		checks["performance"] = healthState(psHealth)
+		checks["email"] = healthState(resendHealth)
 
 		status := "ok"
 		for _, v := range checks {

@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { fetchSiteStatus, type SiteStatus } from "../../services/authApi";
 
+// The old keys stay mapped so the page reads right while the frontend and
+// the backend deploy at different times.
 const LABELS: Record<string, string> = {
   database: "Database",
-  groq: "AI summaries (Groq)",
-  pagespeed: "Performance data (PageSpeed)",
-  resend: "Email delivery (Resend)",
+  ai: "AI summaries",
+  performance: "Performance data",
+  email: "Email delivery",
+  groq: "AI summaries",
+  pagespeed: "Performance data",
+  resend: "Email delivery",
 };
 
 function dotTone(state?: string): string {
