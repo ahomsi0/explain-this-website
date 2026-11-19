@@ -44,9 +44,9 @@ const GROUPS: { title: string; links: FooterLink[] }[] = [
 export function SiteFooter() {
   return (
     <footer className="px-4 sm:px-6 pt-12 pb-8 border-t border-zinc-900/80">
-      {/* Full width with the header's side padding, so the footer's edges
-          line up with the logo and the Sign in button above. */}
-      <div className="text-[12px] text-zinc-600">
+      {/* Same width as the widest page content (the guides), so the footer
+          lines up with the page above it instead of hugging the screen edges. */}
+      <div className="max-w-6xl mx-auto text-[12px] text-zinc-600">
         <div className="flex flex-col md:flex-row md:justify-between gap-10">
           <div className="max-w-xs">
             {/* Not a link: the header logo is the home link, and the button
