@@ -4,8 +4,8 @@ import { CATEGORY_ORDER, GUIDES, relatedGuides } from "../guides/guides.ts";
 import type { Guide } from "../guides/guides.ts";
 import { BUILDERS, buildersOfKind, displayName, relatedBuilders } from "../builders/builders.ts";
 import type { Builder } from "../builders/builders.ts";
-import { COMPARE_CONTENT, COMPARE_INTRO } from "./compareContent.ts";
-import type { ContentSection } from "./compareContent.ts";
+import { COMPARE_CONTENT, COMPARE_INTRO, COMPARE_TITLE } from "./compareContent.ts";
+import type { ContentSection, FaqItem } from "./compareContent.ts";
 import { TECH_COVERAGE } from "./facts.ts";
 import {
   BEHIND_LOGIN_INTRO,
@@ -119,6 +119,8 @@ export function guideBodyHtml(guide: Guide): string {
     ? `<h2>Common mistakes</h2><ul>${guide.commonMistakes.map((m) => `<li>${escapeHtml(m)}</li>`).join("")}</ul>`
     : "";
   const verify = guide.howToVerify ? `<h2>How to check it worked</h2><p>${escapeHtml(guide.howToVerify)}</p>` : "";
+  const deepDive = contentSectionsHtml(guide.deepDive ?? []);
+  const faq = faqHtml(guide.faq ?? []);
   return main(
     `<nav aria-label="Breadcrumb"><a href="/">Home</a> › <a href="/guides">Fix guides</a></nav>` +
       `<h1>${escapeHtml(guide.title)}</h1>` +
@@ -128,6 +130,8 @@ export function guideBodyHtml(guide: Guide): string {
       `<h2>How to fix it</h2><ol>${steps}</ol>` +
       mistakes +
       verify +
+      deepDive +
+      faq +
       tools +
       `<p>Not sure if this affects your site? <a href="/">Analyze your website for free</a> or <a href="/compare">compare it with a competitor</a>.</p>` +
       (related ? `<h2>Related guides</h2><ul>${related}</ul>` : "") +
@@ -229,22 +233,29 @@ export function builderBodyHtml(builder: Builder): string {
   );
 }
 
+function faqHtml(items: FaqItem[]): string {
+  if (!items.length) return "";
+  return `<h2>Common questions</h2>${items.map((f) => `<h3>${escapeHtml(f.q)}</h3><p>${escapeHtml(f.a)}</p>`).join("")}`;
+}
+
 function contentSectionsHtml(sections: ContentSection[]): string {
   return sections
     .map((sec) => {
       const paras = (sec.paragraphs ?? []).map((t) => `<p>${escapeHtml(t)}</p>`).join("");
-      const bullets = sec.bullets?.length ? `<ul>${li(sec.bullets)}</ul>` : "";
+      const tag = sec.ordered ? "ol" : "ul";
+      const bullets = sec.bullets?.length ? `<${tag}>${li(sec.bullets)}</${tag}>` : "";
       const links = sec.links?.length
         ? `<ul>${sec.links.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`).join("")}</ul>`
         : "";
-      return `<h2>${escapeHtml(sec.heading)}</h2>${paras}${bullets}${links}`;
+      const faq = (sec.faq ?? []).map((f) => `<h3>${escapeHtml(f.q)}</h3><p>${escapeHtml(f.a)}</p>`).join("");
+      return `<h2>${escapeHtml(sec.heading)}</h2>${paras}${bullets}${links}${faq}`;
     })
     .join("");
 }
 
 export function compareBodyHtml(): string {
   return main(
-    `<h1>Compare two websites side by side</h1>` +
+    `<h1>${escapeHtml(COMPARE_TITLE)}</h1>` +
       `<p>${escapeHtml(COMPARE_INTRO)}</p>` +
       contentSectionsHtml(COMPARE_CONTENT) +
       `<p>Want to see what a site was built with first? <a href="/built-with">AI and no-code builder detection</a>.</p>`,

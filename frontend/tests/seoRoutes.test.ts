@@ -88,9 +88,26 @@ describe("metaForPath (noindex pages)", () => {
 describe("JSON-LD", () => {
   it("emits Article, HowTo and BreadcrumbList for a guide", () => {
     const types = metaForPath("/guides/lcp").jsonLd.map((o) => o["@type"]);
-    expect(types).toEqual(["Article", "HowTo", "BreadcrumbList"]);
+    expect(types).toEqual(["Article", "HowTo", "BreadcrumbList", "FAQPage"]);
     const howTo = metaForPath("/guides/lcp").jsonLd[1] as { step: unknown[] };
     expect(howTo.step).toHaveLength(GUIDES["lcp"].steps.length);
+  });
+
+  it("adds FAQPage only to guides that have questions", () => {
+    const faq = metaForPath("/guides/lcp").jsonLd[3] as { mainEntity: { name: string; acceptedAnswer: { text: string } }[] };
+    expect(faq.mainEntity.map((q) => q.name)).toEqual((GUIDES["lcp"].faq ?? []).map((f) => f.q));
+    const types = metaForPath("/guides/cls").jsonLd.map((o) => o["@type"]);
+    expect(types).toEqual(["Article", "HowTo", "BreadcrumbList"]);
+  });
+
+  it("emits BreadcrumbList and FAQPage for the compare page", () => {
+    const types = metaForPath("/compare").jsonLd.map((o) => o["@type"]);
+    expect(types).toEqual(["BreadcrumbList", "FAQPage"]);
+  });
+
+  it("keeps the compare title within 60 characters", () => {
+    expect(metaForPath("/compare").title.length).toBeLessThanOrEqual(60);
+    expect(metaForPath("/compare").description.length).toBeLessThanOrEqual(160);
   });
 
   it("emits WebApplication, WebSite and Organization for the home page", () => {

@@ -2,7 +2,8 @@
 // (usePageMeta) AND by the build-time prerender script (Node imports this file
 // directly), so: relative imports with `.ts` extensions only, no `@/` alias.
 import { GUIDES } from "../guides/guides.ts";
-import type { Guide } from "../guides/guides.ts";
+import type { Guide, GuideFaq } from "../guides/guides.ts";
+import { COMPARE_CONTENT } from "./compareContent.ts";
 import { BUILDERS, displayName } from "../builders/builders.ts";
 import type { Builder } from "../builders/builders.ts";
 
@@ -51,9 +52,9 @@ const STATIC_PAGES: Record<string, StaticPage> = {
     indexable: true,
   },
   "/compare": {
-    title: "Compare Two Websites Side by Side: SEO, Speed & Tech Stack",
+    title: "Website SEO Comparison: Compare Two Sites Side by Side",
     description:
-      "Run a live head-to-head audit of two websites and compare SEO, Core Web Vitals, tech stack, conversion signals and security side by side. Free account.",
+      "Compare two websites' SEO side by side: titles, headings, structured data, Core Web Vitals, tech stack and trust signals, with the gap on every metric. Free.",
     indexable: true,
   },
   "/built-with": {
@@ -178,6 +179,21 @@ function homeJsonLd(): JsonLd[] {
   ];
 }
 
+function faqPage(items: GuideFaq[]): JsonLd[] {
+  if (!items.length) return [];
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: items.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ];
+}
+
 function guideMeta(guide: Guide): PageMeta {
   const path = `/guides/${guide.slug}`;
   const canonical = canonicalFor(path);
@@ -211,6 +227,7 @@ function guideMeta(guide: Guide): PageMeta {
         { name: "Fix Guides", path: "/guides" },
         { name: guide.title, path },
       ]),
+      ...faqPage(guide.faq ?? []),
     ],
   };
 }
@@ -261,6 +278,12 @@ function staticMeta(path: string, page: StaticPage): PageMeta {
   if (path === "/guides") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Fix Guides", path: "/guides" }])];
   if (path === "/built-with") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Built with", path: "/built-with" }])];
   if (path === "/pricing") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Pricing", path: "/pricing" }])];
+  if (path === "/compare") {
+    jsonLd = [
+      breadcrumb([{ name: "Home", path: "/" }, { name: "Compare", path: "/compare" }]),
+      ...faqPage(COMPARE_CONTENT.flatMap((sec) => sec.faq ?? [])),
+    ];
+  }
   if (path === "/behind-login") jsonLd = [breadcrumb([{ name: "Home", path: "/" }, { name: "Behind a login", path: "/behind-login" }])];
   return {
     title: page.title,

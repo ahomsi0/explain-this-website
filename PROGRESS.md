@@ -2,7 +2,7 @@
 
 What has been built, and where things stand right now. For what comes next, see [ROADMAP.md](ROADMAP.md).
 
-Last updated: 2026-11-17
+Last updated: 2026-11-19
 
 ## Where things stand
 
@@ -24,7 +24,6 @@ Last updated: 2026-11-17
 
 - The live-site check above. Owner task.
 - Getting a few links to the site: Product Hunt, tool directories, one community post. Owner task.
-- Strengthening `/guides/lcp` and `/compare`, the two pages Google already shows.
 - An MCP server so the analyzer can be used inside AI assistants. Planned for after the paid plan.
 
 **Planned, not started**
@@ -36,6 +35,8 @@ Last updated: 2026-11-17
 Numbers from Google Search Console for the whole domain, web search only. Search Console data runs about three days behind, so this snapshot covers **August 31 to November 10, 2026**, which is everything Google has recorded for the site so far.
 
 Snapshot taken: 2026-11-13
+
+**Update on 2026-11-19** (data through November 17): 9 clicks and 626 impressions in total. The last 7 days brought 2 clicks and 138 impressions, against 5 clicks and 114 impressions the 7 days before. `/compare` is at 238 impressions and still no clicks. Indexing improved: 67 pages indexed and 4 not, of which 3 are the expected redirects and 1 is "Discovered, currently not indexed". The 5 "Crawled, currently not indexed" pages from November 17 are all indexed now. The sitemap was still last read on November 13. The same day, `/compare` and `/guides/lcp` were rewritten for the searches they already appear in (see the Log).
 
 **Update on 2026-11-17** (data through November 15): 9 clicks and 577 impressions in total, up from 7 and 488 five days of data earlier. November 1 to 15 alone brought 7 clicks and 267 impressions. Two built-with pages now bring clicks: `/built-with/replit` (2 clicks, position 3.3) and `/built-with/godaddy-website-builder` (1 click, position 5.0). `/compare` is at 214 impressions and still no clicks, at position 90.6. "explain this page" moved from position 9.7 to 9.1, with 65 impressions and no click yet. Indexing: 62 indexed, 9 not, of which 5 are now "Crawled, currently not indexed". The sitemap was last read on November 13, before `/pricing` and `/refunds` were added. The tables below are the November 13 snapshot.
 
@@ -125,6 +126,7 @@ Newest first. One line per thing a visitor or the owner would notice. Git histor
 
 ### November 2026
 
+- **`/compare` and the LCP guide rewritten for search.** `/compare` is now titled "Website SEO Comparison: Compare Two Sites Side by Side" and gained a step-by-step way to compare a site with a competitor, which SEO factors count most, an honest answer on comparing rankings, and common questions (about 1,080 words, up from about 535). The LCP guide is now "Largest Contentful Paint (LCP): What It Is and How to Fix It", with nine fix steps, the score thresholds, which element counts, the four parts of LCP, common mistakes and common questions (about 1,250 words, up from about 340). Both pages now tell Google about their questions in structured data.
 - **Fixed: Google Analytics had never recorded a visit.** Since it was added on August 21, the site queued every analytics command in a form Google's script silently ignores, so even visitors who allowed analytics were never counted. Found on 2026-11-17 when both Analytics properties showed "No data received". Visits from people who allow analytics are counted from the next deploy on. Nothing before that can be recovered.
 - **Chrome extension built** (not in the store yet). On any page, the toolbar icon opens a small panel with two buttons. "Explain this page" sends the page as the browser shows it, signed in, and a signed-in account lands straight on a private report with no confirm step in between. "Analyze the public address" starts the normal analysis. It can read the current tab only, and only after a click, and it sends no passwords or cookies. Reports made this way get their load timings and security headers back, which pasted source could not carry. Pasting stays on the site until the extension is published.
 - **New landing page background.** The grid, which every developer tool uses, is replaced by a faint outline of a browser window around the hero. Its three dots work like a real window's: red closes it, yellow minimizes it, green makes it fill the page. Its address bar types example addresses by itself and shows the visitor's own text once they type. Phones get the plain page. A first version with hover labels and a scan line was dropped the same day because it only reacted to people who went looking for it.

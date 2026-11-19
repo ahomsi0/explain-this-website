@@ -33,29 +33,118 @@ export interface Guide {
   howToVerify?: string;
   /** Hand-picked related slugs (any category), shown before same-category guides. */
   relatedSlugs?: string[];
+  /** Longer explanation sections, shown after the fix steps. */
+  deepDive?: GuideSection[];
+  /** Questions people search for, answered in a sentence or three. */
+  faq?: GuideFaq[];
+}
+
+export interface GuideSection {
+  heading: string;
+  paragraphs?: string[];
+  bullets?: string[];
+}
+
+export interface GuideFaq {
+  q: string;
+  a: string;
 }
 
 export const GUIDES: Record<string, Guide> = {
   // ── Performance ──────────────────────────────────────────────────────────
   "lcp": {
     slug: "lcp",
-    title: "Fix slow Largest Contentful Paint (LCP)",
+    title: "Largest Contentful Paint (LCP): What It Is and How to Fix It",
     category: "Performance",
     summary: "Make the biggest visible element on your page load in under 2.5 seconds.",
     whatItMeans:
-      "LCP measures how long it takes for the largest element a visitor sees, usually a hero image or headline, to appear on screen. Google considers anything over 4 seconds poor and under 2.5 seconds good.",
+      "Largest Contentful Paint (LCP) measures how long the largest element in the first screen of a page, usually a hero image, a video poster or the main headline, takes to appear. It is one of Google's three Core Web Vitals, alongside Interaction to Next Paint (INP) and Cumulative Layout Shift (CLS).",
     whyItMatters:
-      "Visitors decide within seconds whether a page is worth waiting for, and Google ranks slow pages lower. Every extra second of LCP measurably increases the share of people who leave before seeing your offer.",
+      "LCP is the moment a visitor sees that the page has really loaded. Until then they are looking at a blank or half-built screen, and many leave before your offer appears. Google also uses Core Web Vitals as a ranking signal, so a slow LCP can cost you both the visit and the position.",
     steps: [
-      "Find the exact element in PageSpeed Insights (the 'Largest Contentful Paint' audit names it). In most sites it's the hero image or an H1.",
-      "If it's an image: compress it (TinyPNG or Squoosh), resize it to the largest size actually displayed, and serve it in WebP or AVIF format.",
-      "Add fetchpriority=\"high\" and a preload link for the hero image so the browser starts downloading it immediately.",
-      "Serve the page through a CDN so the image travels a short physical distance to the visitor.",
-      "Remove render-blocking scripts and fonts in the page head so the browser can start painting sooner (see our render-blocking guide).",
-      "Re-run your audit after each change: LCP improvements are cumulative and easy to verify.",
+      "Find the exact element. Run the page through PageSpeed Insights and open the Largest Contentful Paint element audit, which names it. On most sites it is the hero image or the main heading, and it is often a different element on mobile than on desktop.",
+      "Find which part of LCP is slow. The LCP breakdown in PageSpeed Insights, or the Performance panel in Chrome DevTools, splits the time into server response, load delay, load time and render delay (explained below). Fix the part that is actually slow instead of guessing.",
+      "If the server is slow (Time to First Byte above about 0.8 seconds), turn on full-page caching at your host or a CDN, and remove the plugins, redirects or database queries that run before the HTML is sent.",
+      "Make the LCP image easy to find. Use a normal <img> tag in the HTML rather than a CSS background or an image added by JavaScript, remove loading=\"lazy\" from it, and add fetchpriority=\"high\" so the browser downloads it first.",
+      "If the image can only be found late, for example in a CSS file or on another domain, add <link rel=\"preload\" as=\"image\"> for it in the page head so the download starts straight away.",
+      "Make the image smaller: resize it to the largest size actually displayed, serve WebP or AVIF, compress it with Squoosh or TinyPNG, and use srcset so phones get a smaller file than desktops.",
+      "Remove what blocks the first paint: defer scripts that are not needed for the first screen, load non-critical CSS later, and drop third-party tags you do not use (see the render-blocking guide).",
+      "If the LCP element is text, make sure it is not waiting for a web font. Preload the font file and use font-display: swap so the heading shows in a fallback font immediately.",
+      "Re-run the audit after each change. Improvements add up, and checking each one shows which change actually helped.",
     ],
-    tools: ["PageSpeed Insights", "Squoosh (image compression)", "WebPageTest (waterfall view)"],
+    tools: [
+      "PageSpeed Insights",
+      "Chrome DevTools → Performance panel",
+      "Google Search Console → Core Web Vitals report",
+      "Squoosh (image compression)",
+      "WebPageTest (waterfall view)",
+    ],
     aiPrompt: "My website's Largest Contentful Paint (LCP) is too slow: the main content takes over 2.5 seconds to appear. Can you identify the likely causes (hero image size, render-blocking resources, or slow server response) and give me specific, prioritised steps to bring LCP under 2.5 seconds?",
+    commonMistakes: [
+      "Lazy-loading the hero image. loading=\"lazy\" tells the browser to wait, which is the opposite of what the largest element on the first screen needs.",
+      "Fixing the desktop LCP element when the mobile one is different. Check both in PageSpeed Insights.",
+      "Preloading many images. Preload only the one LCP image; preloading everything makes the files compete for the same bandwidth.",
+      "Fading or sliding the hero in from opacity 0. The browser only counts the element once it is visible, so the animation adds its full length to LCP.",
+      "Judging a fix by a single lab run. Lighthouse scores vary from run to run, so run it two or three times before and after.",
+    ],
+    howToVerify:
+      "Re-run PageSpeed Insights on mobile and desktop. The lab result from Lighthouse changes straight away. The field data at the top of the report comes from real Chrome users over the last 28 days, so it takes up to four weeks to fully reflect a fix. Once the fix is live, open the Core Web Vitals report in Google Search Console and start validation for the affected pages.",
+    relatedSlugs: ["image-formats", "render-blocking-resources", "font-loading", "caching"],
+    deepDive: [
+      {
+        heading: "What counts as a good LCP score",
+        bullets: [
+          "Good: 2.5 seconds or less.",
+          "Needs improvement: between 2.5 and 4 seconds.",
+          "Poor: more than 4 seconds.",
+        ],
+        paragraphs: [
+          "Google judges the 75th percentile of real visits, measured separately for mobile and desktop. Three out of four visits need to reach the target, so slow phones and slow connections count in full and a fast average is not enough.",
+        ],
+      },
+      {
+        heading: "Which element is the LCP element",
+        paragraphs: [
+          "While the page loads, the browser keeps track of the largest image or text block visible in the first screen and updates its choice as bigger elements appear. It stops once the visitor scrolls, taps or types.",
+        ],
+        bullets: [
+          "Images, including an <image> inside an SVG.",
+          "The poster image or first frame of a video.",
+          "An element with a background image set in CSS.",
+          "A block of text, such as a heading or a paragraph.",
+        ],
+      },
+      {
+        heading: "The four parts of LCP",
+        paragraphs: [
+          "Every LCP time is made of four parts in a row. Knowing which one is long tells you which fix to use.",
+        ],
+        bullets: [
+          "Time to First Byte: from the click until the first byte of the HTML arrives. Slow hosting, no caching and redirects make it long.",
+          "Load delay: from the first byte until the browser starts downloading the LCP image. A long delay means the image was found late, for example because it is lazy-loaded, set in CSS or added by JavaScript.",
+          "Load time: how long the image takes to download. Large files and slow connections make it long.",
+          "Render delay: from the end of the download until the element appears. Render-blocking CSS and scripts, web fonts and animations make it long.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Is LCP a Google ranking factor?",
+        a: "Yes. LCP is one of the Core Web Vitals, which are part of Google's page experience signals. It works more like a tie-breaker than a main factor: a fast page will not outrank a much more relevant one, but between two similar pages the faster one has an edge.",
+      },
+      {
+        q: "What is the difference between LCP and First Contentful Paint (FCP)?",
+        a: "FCP is the moment anything first appears, even a logo or a background colour. LCP is the moment the main content appears. A page can have a fast FCP and still a slow LCP if the hero image arrives late.",
+      },
+      {
+        q: "Why is my LCP different in PageSpeed Insights and Search Console?",
+        a: "Lighthouse in PageSpeed Insights loads the page once in a lab, on a simulated device and network. Search Console reports real visits over 28 days and groups similar pages together. The real-visit numbers are the ones Google uses for ranking.",
+      },
+      {
+        q: "Why is LCP so much worse on mobile?",
+        a: "The mobile test simulates a mid-range phone on a slow 4G connection, so large images and heavy scripts cost far more time. Real phone visitors are often in the same position, which is why the mobile score usually matters most.",
+      },
+    ],
   },
   "cls": {
     slug: "cls",

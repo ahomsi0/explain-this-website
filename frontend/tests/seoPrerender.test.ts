@@ -21,7 +21,7 @@ describe("renderPage", () => {
   it("replaces the marked head block and keeps the rest of the template", () => {
     expect(html).not.toContain("OLD");
     expect(html).toContain('<script src="/a.js"></script>');
-    expect(html).toContain("<title>Fix slow Largest Contentful Paint (LCP)</title>");
+    expect(html).toContain("<title>Largest Contentful Paint (LCP): What It Is and How to Fix It</title>");
     expect(html).toContain('<link rel="canonical" href="https://www.explainthiswebsite.com/guides/lcp" />');
     expect(html).toContain('<meta name="robots" content="index, follow" />');
     expect(html).toContain('<meta property="og:type" content="article" />');
@@ -34,14 +34,24 @@ describe("renderPage", () => {
     expect(html).toContain('<meta property="og:locale" content="en_US" />');
   });
 
-  it("embeds the three JSON-LD blocks", () => {
-    expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(3);
+  it("embeds the four JSON-LD blocks, FAQ included", () => {
+    expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(4);
   });
 
   it("puts the guide content inside #root", () => {
     const root = html.split('<div id="root">')[1].split("</div></body>")[0];
-    expect(root).toContain("<h1>Fix slow Largest Contentful Paint (LCP)</h1>");
+    expect(root).toContain("<h1>Largest Contentful Paint (LCP): What It Is and How to Fix It</h1>");
     for (const step of GUIDES["lcp"].steps) expect(root).toContain(escapeHtml(step));
+  });
+
+  it("puts the deep-dive sections and questions in the static copy", () => {
+    const root = html.split('<div id="root">')[1].split("</div></body>")[0];
+    for (const sec of GUIDES["lcp"].deepDive ?? []) expect(root).toContain(`<h2>${escapeHtml(sec.heading)}</h2>`);
+    expect(root).toContain("<h2>Common questions</h2>");
+    for (const f of GUIDES["lcp"].faq ?? []) {
+      expect(root).toContain(`<h3>${escapeHtml(f.q)}</h3>`);
+      expect(root).toContain(escapeHtml(f.a));
+    }
   });
 
   it("throws when the template lacks the markers or the root", () => {

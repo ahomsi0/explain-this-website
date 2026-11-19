@@ -4,7 +4,7 @@ import { compareLive, type AuditComparison } from "../../services/authApi";
 import { normalizeInputUrl } from "../../lib/urls";
 import { authHref } from "../../lib/authLinks";
 import { AuditComparison as AuditComparisonView } from "../auth/AuditComparison";
-import { COMPARE_CONTENT, COMPARE_INTRO } from "../../seo/compareContent";
+import { COMPARE_CONTENT, COMPARE_INTRO, COMPARE_TITLE } from "../../seo/compareContent";
 
 function SiteField({
   id,
@@ -101,7 +101,7 @@ export function ComparePage() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Head to head</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Compare two websites side by side</h1>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{COMPARE_TITLE}</h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">{COMPARE_INTRO}</p>
 
         {!user && (
@@ -173,15 +173,25 @@ export function ComparePage() {
         </section>
 
         <section className="mt-14 border-t border-zinc-800 pt-10" aria-labelledby="compare-guide-heading">
-          <h2 id="compare-guide-heading" className="text-lg font-semibold text-zinc-100">How the comparison works</h2>
-          <div className="mt-6 grid gap-8 md:grid-cols-2">
+          <h2 id="compare-guide-heading" className="text-lg font-semibold text-zinc-100">How to compare two websites</h2>
+          <div className="mt-6 flex flex-col gap-10">
             {COMPARE_CONTENT.map((sec) => (
               <div key={sec.heading}>
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">{sec.heading}</h3>
                 {sec.paragraphs?.map((p) => (
                   <p key={p} className="text-[13.5px] text-zinc-400 leading-relaxed mb-3">{p}</p>
                 ))}
-                {sec.bullets && (
+                {sec.bullets && sec.ordered && (
+                  <ol className="flex flex-col gap-2">
+                    {sec.bullets.map((b, i) => (
+                      <li key={b} className="flex gap-3 text-[13.5px] text-zinc-400 leading-relaxed">
+                        <span className="shrink-0 w-4 text-[11px] font-bold tabular-nums text-zinc-600 pt-0.5" aria-hidden="true">{i + 1}</span>
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                {sec.bullets && !sec.ordered && (
                   <ul className="flex flex-col gap-2">
                     {sec.bullets.map((b) => (
                       <li key={b} className="flex gap-2 text-[13px] text-zinc-400 leading-relaxed">
@@ -190,6 +200,16 @@ export function ComparePage() {
                       </li>
                     ))}
                   </ul>
+                )}
+                {sec.faq && (
+                  <div className="flex flex-col gap-2">
+                    {sec.faq.map((f) => (
+                      <div key={f.q} className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 px-4 py-3">
+                        <h4 className="text-[13.5px] font-medium text-zinc-200">{f.q}</h4>
+                        <p className="mt-1.5 text-[13px] text-zinc-400 leading-relaxed">{f.a}</p>
+                      </div>
+                    ))}
+                  </div>
                 )}
                 {sec.links && (
                   <ul className="flex flex-col gap-1.5">

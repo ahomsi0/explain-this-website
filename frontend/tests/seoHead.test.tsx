@@ -17,14 +17,14 @@ beforeEach(() => {
 describe("usePageMeta", () => {
   it("writes title, description, canonical, social tags and JSON-LD for a guide", () => {
     renderHook(() => usePageMeta("/guides/lcp", null));
-    expect(document.title).toBe("Fix slow Largest Contentful Paint (LCP)");
+    expect(document.title).toBe("Largest Contentful Paint (LCP): What It Is and How to Fix It");
     expect(meta('meta[name="description"]')).toContain("LCP");
     expect(meta('meta[name="robots"]')).toBe("index, follow");
     expect(canonical()).toBe("https://www.explainthiswebsite.com/guides/lcp");
     expect(meta('meta[property="og:url"]')).toBe("https://www.explainthiswebsite.com/guides/lcp");
     expect(meta('meta[property="og:type"]')).toBe("article");
     expect(meta('meta[name="twitter:title"]')).toBe(document.title);
-    expect(ldTypes()).toEqual(["Article", "HowTo", "BreadcrumbList"]);
+    expect(ldTypes()).toEqual(["Article", "HowTo", "BreadcrumbList", "FAQPage"]);
     expect(meta('meta[property="og:locale"]')).toBe("en_US");
     expect(document.head.querySelector('link[hreflang="en"]')?.getAttribute("href")).toBe(canonical());
     expect(document.head.querySelector('link[hreflang="x-default"]')?.getAttribute("href")).toBe(canonical());

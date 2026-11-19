@@ -394,6 +394,39 @@ export function GuideDetailPage({ slug }: { slug: string }) {
               </section>
             )}
 
+            {guide.deepDive?.map((sec) => (
+              <section key={sec.heading} className="mt-8">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">{sec.heading}</h2>
+                {sec.paragraphs?.map((p) => (
+                  <p key={p} className="text-[13.5px] text-zinc-400 leading-relaxed mb-3">{p}</p>
+                ))}
+                {sec.bullets && (
+                  <ul className="flex flex-col gap-2">
+                    {sec.bullets.map((b) => (
+                      <li key={b} className="flex gap-2 text-[13.5px] text-zinc-400 leading-relaxed">
+                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-zinc-700 shrink-0" aria-hidden="true" />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ))}
+
+            {guide.faq && guide.faq.length > 0 && (
+              <section className="mt-8">
+                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Common questions</h2>
+                <div className="flex flex-col gap-2">
+                  {guide.faq.map((item) => (
+                    <div key={item.q} className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
+                      <h3 className="text-[14px] font-medium text-zinc-200">{item.q}</h3>
+                      <p className="mt-1.5 text-[13.5px] text-zinc-400 leading-relaxed">{item.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <p className="mt-8 text-[13.5px] text-zinc-500 leading-relaxed">
               Not sure if this affects your site?{" "}
               <a href="/" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">Analyze your website for free</a>{" "}

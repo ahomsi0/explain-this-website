@@ -2,7 +2,7 @@
 
 What is planned, in rough order. For what is already built, see [PROGRESS.md](PROGRESS.md).
 
-Last updated: 2026-11-15
+Last updated: 2026-11-19
 
 Nothing here is a promise or a date. Items move up when they are ready to be built and get deleted when they ship.
 
@@ -25,7 +25,7 @@ What is left, in order:
 
 ## Next
 
-All three were set aside for later by the owner on 2026-11-13. They do not depend on each other, so they can be picked up in any order.
+Both were set aside for later by the owner on 2026-11-13. They do not depend on each other, so they can be picked up in either order.
 
 ### 1. Check the live site by hand
 
@@ -46,15 +46,6 @@ Owner task, about 20 minutes. This moves search rankings more than any on-site c
 - Post it once where developers or site owners gather.
 
 The listing text and a short launch post can be drafted on request.
-
-### 3. Strengthen the two pages Google already shows
-
-Build task.
-
-- **`/guides/lcp`** is about 340 words and ranks around position 50 for "largest contentful paint". It needs a full explanation, examples, and answers to the questions people search for.
-- **`/compare`** gets a third of all impressions but ranks past position 90, with about 535 words. It needs content that matches searches like "compare two websites seo".
-
-Best done before or alongside item 2, so the new links land on pages worth ranking.
 
 ## Paid plan
 

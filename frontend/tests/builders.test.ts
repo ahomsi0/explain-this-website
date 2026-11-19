@@ -106,8 +106,11 @@ describe("built-with pages (SEO)", () => {
 
   it("gives the compare page real content and a link to the hub", () => {
     const body = bodyHtmlForPath("/compare");
-    expect(body).toContain("<h1>Compare two websites side by side</h1>");
+    expect(body).toContain("<h1>Compare two websites’ SEO side by side</h1>");
     expect(body).toContain("<h2>What gets compared</h2>");
+    expect(body).toContain("<h2>How to compare your website with a competitor</h2><ol>");
+    expect(body).toContain("<h2>Can it compare search rankings?</h2>");
+    expect(body).toContain("<h3>Is the website comparison free?</h3>");
     expect(body).toContain('href="/guides/lcp"');
     expect(body).toContain('href="/built-with"');
     expect(body.length).toBeGreaterThan(3000);
