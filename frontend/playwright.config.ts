@@ -25,6 +25,9 @@ export default defineConfig({
     env: {
       VITE_API_URL: "http://localhost:8080",
       VITE_USE_MOCK: "true",
+      // A fake property, so a test that allows analytics can never count as
+      // a visitor on the live one. The consent test also stubs Google's script.
+      VITE_GA_MEASUREMENT_ID: "G-E2ETEST000",
     },
   },
 });

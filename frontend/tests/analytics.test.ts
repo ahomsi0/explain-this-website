@@ -12,7 +12,7 @@ describe("Google Analytics", () => {
     delete window.dataLayer;
     document.head.querySelectorAll('script[src*="googletagmanager"]').forEach((s) => s.remove());
   });
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 
   it("loads nothing and queues nothing without consent", async () => {
     const { enableAnalytics, track } = await import("../src/lib/analytics");
@@ -23,9 +23,22 @@ describe("Google Analytics", () => {
     expect(document.head.querySelector('script[src*="googletagmanager"]')).toBeNull();
   });
 
+  // Dev servers and browser tests have no ID unless one is set on purpose,
+  // so they can never count as visitors on the live property.
+  it("sends nothing outside production when no ID is set, even with consent", async () => {
+    vi.stubEnv("VITE_GA_MEASUREMENT_ID", undefined);
+    const { setAnalyticsConsent, track } = await import("../src/lib/analytics");
+    setAnalyticsConsent("granted");
+    track("analysis_started");
+
+    expect(document.head.querySelector('script[src*="googletagmanager"]')).toBeNull();
+    expect(window.gtag).toBeUndefined();
+  });
+
   // Google's script ignores plain arrays. Every command used to be queued as
   // an array, so the site never sent a single visit.
   it("queues commands in the form Google's script accepts", async () => {
+    vi.stubEnv("VITE_GA_MEASUREMENT_ID", "G-UNITTEST00");
     const { setAnalyticsConsent, track } = await import("../src/lib/analytics");
     setAnalyticsConsent("granted");
     track("analysis_started", { source: "landing" });

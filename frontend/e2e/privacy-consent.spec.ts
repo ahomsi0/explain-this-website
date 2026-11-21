@@ -4,6 +4,11 @@ import { installApiFallback } from "./fixtures";
 test.describe("privacy and analytics consent", () => {
   test.beforeEach(async ({ page }) => {
     await installApiFallback(page);
+    // Serve an empty stand-in for Google's script: the tests only check
+    // whether it is requested, and nothing should reach Google.
+    await page.route("**/googletagmanager.com/**", (route) =>
+      route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
+    );
   });
 
   test("does not load analytics when consent is declined", async ({ page }) => {

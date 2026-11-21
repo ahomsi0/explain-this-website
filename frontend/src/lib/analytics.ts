@@ -1,6 +1,10 @@
 import { recordServerEvent } from "./serverEvents";
 
-const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID ?? "G-7GDKBRCPKM";
+// The live property ID is only the default in production builds. Local dev
+// servers and browser tests used to load it too, and every test that clicked
+// "Allow analytics" was counted as a real visitor. Set VITE_GA_MEASUREMENT_ID
+// to send from anywhere else on purpose.
+const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID ?? (import.meta.env.PROD ? "G-7GDKBRCPKM" : "");
 const CONSENT_KEY = "etw_analytics_consent";
 const CONSENT_EVENT = "etw-analytics-consent-change";
 
