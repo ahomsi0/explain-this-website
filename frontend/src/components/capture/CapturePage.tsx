@@ -13,17 +13,15 @@ import { authHref } from "../../lib/authLinks";
 import { analyzeCapture } from "../../services/analyzeApi";
 import { CAPTURE_REQUEST_MESSAGE, openedByExtension, readExtensionCapture } from "../../lib/extensionHandover";
 import { clearPendingCapture, loadPendingCapture, savePendingCapture, type PendingCapture } from "../../lib/pendingCapture";
+import { IconBadge, IconList, Panel, PanelTitle, inputCls, linkCls, primaryBtn } from "../ui/Panel";
 
 type Pending = PendingCapture;
 
 // The extension answers in well under a second. Past this, it is not there.
 const WAIT_FOR_EXTENSION_MS = 4000;
 
-const primaryButton =
-  "inline-flex items-center justify-center rounded-md bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60";
-const quietLink = "text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors";
-const inputCls =
-  "w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none";
+const primaryButton = primaryBtn;
+const quietLink = linkCls;
 
 function formatSize(chars: number): string {
   const kb = chars / 1024;
@@ -147,16 +145,22 @@ export function CapturePage() {
   }, [pending, authLoading, user]);
 
   return (
-    <main className="flex-1 px-4 sm:px-6 py-12 sm:py-16">
-      <div className="mx-auto max-w-xl">
+    <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <div className={`mx-auto ${pending || waiting ? "max-w-xl" : "max-w-6xl"}`}>
         {waiting && (
-          <p role="status" className="text-sm text-zinc-400">Getting the page from the extension&hellip;</p>
+          <Panel className="flex items-center gap-4">
+            <span className="w-5 h-5 shrink-0 rounded-full border-2 border-violet-500/30 border-t-violet-400 animate-spin" aria-hidden="true" />
+            <p role="status" className="text-sm text-zinc-300">Getting the page from the extension&hellip;</p>
+          </Panel>
         )}
 
         {pending && (
-          <div>
-            <h1 className="text-2xl font-semibold text-zinc-100">{busy ? "Analyzing this page" : "Analyze this page?"}</h1>
-            <dl className="mt-6 border-t border-zinc-800">
+          <Panel className="shadow-xl shadow-black/20">
+            <div className="flex items-center gap-3">
+              <IconBadge icon={busy ? "clock" : "file"} />
+              <h1 className="text-xl sm:text-2xl font-semibold text-zinc-100">{busy ? "Analyzing this page" : "Analyze this page?"}</h1>
+            </div>
+            <dl className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950/40 px-4">
               {pending.title && <Row label="Page">{pending.title}</Row>}
               <Row label="Address"><span className="break-all">{displayAddress(pending.url)}</span></Row>
               <Row label="Size">{formatSize(pending.html.length)}</Row>
@@ -190,7 +194,7 @@ export function CapturePage() {
                 <a href={authHref("signup", "/capture")} className={quietLink}>create one</a>.
               </p>
             )}
-          </div>
+          </Panel>
         )}
 
         {!pending && !waiting && (
@@ -210,7 +214,7 @@ export function CapturePage() {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[84px_1fr] items-baseline gap-x-4 border-b border-zinc-800 py-3">
+    <div className="grid grid-cols-[84px_1fr] items-baseline gap-x-4 border-b border-zinc-800 last:border-b-0 py-3">
       <dt className="font-mono text-[11px] uppercase tracking-[0.08em] text-zinc-500">{label}</dt>
       <dd className="min-w-0 text-[13px] text-zinc-200">{children}</dd>
     </div>
@@ -232,49 +236,72 @@ function PasteForm({ onReady }: { onReady: (pending: Pending) => void }) {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-zinc-100">Analyze a page behind a login</h1>
-      <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-        Paste the page&rsquo;s source and its address. You will see what you are sending before anything is analyzed.{" "}
-        <a href="/behind-login" className={quietLink}>How this works</a>
-      </p>
+    <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
+      <Panel className="shadow-xl shadow-black/20">
+        <div className="flex items-center gap-3">
+          <IconBadge icon="lock" />
+          <h1 className="text-xl sm:text-2xl font-semibold text-zinc-100">Analyze a page behind a login</h1>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+          Paste the page&rsquo;s source and its address. You will see what you are sending before anything is analyzed.{" "}
+          <a href="/behind-login" className={quietLink}>How this works</a>
+        </p>
 
-      <form onSubmit={submit} className="mt-8 flex flex-col gap-4" noValidate>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-medium text-zinc-300">Page address</span>
-          <input
-            type="text"
-            inputMode="url"
-            autoComplete="off"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="app.example.com/dashboard"
-            className={inputCls}
-          />
-        </label>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="capture-source" className="text-[13px] font-medium text-zinc-300">Page source</label>
-          <textarea
-            id="capture-source"
-            aria-describedby="capture-source-hint"
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-            rows={8}
-            spellCheck={false}
-            placeholder="<!doctype html>&#10;<html>&hellip;"
-            className={`${inputCls} font-mono text-[12px] leading-relaxed`}
-          />
-          <p id="capture-source-hint" className="text-[12px] leading-relaxed text-zinc-500">
-            On the page, right-click and choose View Page Source, select everything, copy it and paste it here.
-            For an app that builds its pages with JavaScript, copy the finished page instead: open developer tools,
-            right-click the html element and choose Copy, then Copy outerHTML.
-          </p>
-        </div>
-        {error && <p role="alert" className="text-[13px] text-red-400">{error}</p>}
-        <div>
-          <button type="submit" className={primaryButton}>Continue</button>
-        </div>
-      </form>
+        <form onSubmit={submit} className="mt-6 flex flex-col gap-4" noValidate>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-medium text-zinc-300">Page address</span>
+            <input
+              type="text"
+              inputMode="url"
+              autoComplete="off"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="app.example.com/dashboard"
+              className={inputCls}
+            />
+          </label>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="capture-source" className="text-[13px] font-medium text-zinc-300">Page source</label>
+            <textarea
+              id="capture-source"
+              aria-describedby="capture-source-hint"
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              rows={10}
+              spellCheck={false}
+              placeholder="<!doctype html>&#10;<html>&hellip;"
+              className={`${inputCls} font-mono text-[12px] leading-relaxed`}
+            />
+            <p id="capture-source-hint" className="text-[12px] leading-relaxed text-zinc-500">
+              On the page, right-click and choose View Page Source, select everything, copy it and paste it here.
+              For an app that builds its pages with JavaScript, copy the finished page instead: open developer tools,
+              right-click the html element and choose Copy, then Copy outerHTML.
+            </p>
+          </div>
+          {error && <p role="alert" className="text-[13px] text-red-400">{error}</p>}
+          <div>
+            <button type="submit" className={primaryButton}>Continue</button>
+          </div>
+        </form>
+      </Panel>
+
+      <aside className="flex flex-col gap-6">
+        <Panel>
+          <PanelTitle>What happens next</PanelTitle>
+          <ol className="mt-4 flex flex-col gap-3">
+            {["You check the address and size of what you are sending.", "You confirm, and the page is analyzed.", "The report opens, saved to your account."].map((t, i) => (
+              <li key={t} className="flex gap-3 text-[13px] leading-relaxed text-zinc-400">
+                <span className="flex w-5 h-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-zinc-300">{i + 1}</span>
+                {t}
+              </li>
+            ))}
+          </ol>
+        </Panel>
+        <Panel>
+          <PanelTitle>What you send</PanelTitle>
+          <IconList items={["The page's HTML and its address. No password, cookies or session.", "Only you can open the report. It has no public link.", "The HTML is discarded once it has been analyzed."]} icon="lock" tone="emerald" />
+        </Panel>
+      </aside>
     </div>
   );
 }

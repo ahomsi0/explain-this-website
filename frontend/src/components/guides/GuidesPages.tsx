@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { CATEGORY_ORDER, GUIDES, guideForIssue, relatedGuides, type Guide, type GuideCategory } from "../../guides/guides";
+import { Callout, Chip, FaqGrid, IconList, PageHero, PageMain, Panel, PanelTitle, SectionLabel, inputCls, linkCls, primaryBtn, secondaryBtn, type Tone } from "../ui/Panel";
+import { Icon } from "../ui/icons";
 
 // Tool name → URL for clickable links
 const TOOL_URLS: Record<string, string> = {
@@ -35,44 +37,6 @@ function toolUrl(name: string): string | null {
   return null;
 }
 
-// Per-category accent color (hex) used for dots and dividers
-function categoryColor(c: GuideCategory): string {
-  switch (c) {
-    case "Performance":     return "#f59e0b";
-    case "SEO":             return "#22c55e";
-    case "UX & Conversion": return "#a855f7";
-    case "Security":        return "#ef4444";
-    case "Content":         return "#3b82f6";
-  }
-}
-
-// Accent as *text* needs a darker shade on the light theme (hex above is for
-// dots/dividers and the dark theme). Applied through the .guide-accent class.
-function categoryTextColorLight(c: GuideCategory): string {
-  switch (c) {
-    case "Performance":     return "#92400e";
-    case "SEO":             return "#166534";
-    case "UX & Conversion": return "#6d28d9";
-    case "Security":        return "#b91c1c";
-    case "Content":         return "#1d4ed8";
-  }
-}
-
-function accentStyle(c: GuideCategory): React.CSSProperties {
-  return { "--accent": categoryColor(c), "--accent-light": categoryTextColorLight(c) } as React.CSSProperties;
-}
-
-// Badge classes — solid dark pattern matching app convention
-function categoryBadge(c: GuideCategory): string {
-  switch (c) {
-    case "Performance":     return "text-amber-400 bg-amber-950 border-amber-800";
-    case "SEO":             return "text-emerald-400 bg-emerald-950 border-emerald-800";
-    case "UX & Conversion": return "text-violet-400 bg-violet-950 border-violet-800";
-    case "Security":        return "text-red-400 bg-red-950 border-red-800";
-    case "Content":         return "text-blue-400 bg-blue-950 border-blue-800";
-  }
-}
-
 function CategoryIcon({ category, className = "w-3.5 h-3.5" }: { category: GuideCategory; className?: string }) {
   switch (category) {
     case "Performance":
@@ -88,23 +52,52 @@ function CategoryIcon({ category, className = "w-3.5 h-3.5" }: { category: Guide
   }
 }
 
-// ── Index page card ───────────────────────────────────────────────────────────
+// ── Shared bits ────────────────────────────────────────────────────────────────
 
-function GuideCard({ guide }: { guide: Guide }) {
+const CATEGORY_TONE: Record<GuideCategory, Tone> = {
+  "Performance": "amber",
+  "SEO": "emerald",
+  "UX & Conversion": "violet",
+  "Security": "red",
+  "Content": "blue",
+};
+
+const CATEGORY_BLURB: Record<GuideCategory, string> = {
+  "Performance": "Load faster on phones and desktops.",
+  "SEO": "Help search engines find and rank the page.",
+  "UX & Conversion": "Turn more visits into sign-ups and sales.",
+  "Security": "Protect visitors and earn their trust.",
+  "Content": "Copy that is current, clear and specific.",
+};
+
+function CategoryBadge({ category, size = "md" }: { category: GuideCategory; size?: "sm" | "md" }) {
+  const tone = CATEGORY_TONE[category];
+  const box = size === "sm" ? "w-7 h-7 rounded-md" : "w-9 h-9 rounded-lg";
+  const glyph = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
+  const colors = { amber: "bg-amber-500/10 text-amber-300", emerald: "bg-emerald-500/10 text-emerald-300", violet: "bg-violet-500/10 text-violet-300", red: "bg-red-500/10 text-red-300", blue: "bg-blue-500/10 text-blue-300", zinc: "bg-zinc-800 text-zinc-300" }[tone];
+  return (
+    <span className={`inline-flex shrink-0 items-center justify-center ${box} ${colors}`} aria-hidden="true">
+      <CategoryIcon category={category} className={glyph} />
+    </span>
+  );
+}
+
+function GuideCard({ guide, headingLevel = "h3" }: { guide: Guide; headingLevel?: "h2" | "h3" }) {
+  const H = headingLevel;
   return (
     <a
       href={`/guides/${guide.slug}`}
-      className="group block rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 hover:border-zinc-700 hover:bg-zinc-900 transition-all duration-150"
+      className="group flex h-full flex-col rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 hover:border-zinc-700 hover:bg-zinc-900/70 transition-colors"
     >
-      <h3 className="text-[13.5px] font-medium text-zinc-100 group-hover:text-white leading-snug mb-2 transition-colors">
-        {guide.title}
-      </h3>
-      <p className="text-[12px] text-zinc-500 leading-relaxed mb-3 line-clamp-2">{guide.summary}</p>
-      <span className="guide-accent inline-flex items-center gap-1 text-[11.5px] font-medium transition-colors" style={accentStyle(guide.category)}>
+      <div className="flex items-center justify-between gap-3">
+        <CategoryBadge category={guide.category} size="sm" />
+        <span className="text-[11px] text-zinc-500">{guide.steps.length} steps</span>
+      </div>
+      <H className="mt-4 text-[14px] font-semibold leading-snug text-zinc-100">{guide.title}</H>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-500 line-clamp-2">{guide.summary}</p>
+      <span className="mt-auto pt-4 inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-400 group-hover:text-violet-300 transition-colors">
         Read guide
-        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-        </svg>
+        <Icon name="arrowRight" className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
       </span>
     </a>
   );
@@ -114,99 +107,102 @@ function GuideCard({ guide }: { guide: Guide }) {
 
 export function GuidesIndexPage() {
   const [query, setQuery] = useState("");
+  const [only, setOnly] = useState<GuideCategory | null>(null);
+  const all = Object.values(GUIDES);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
-    if (!q) return Object.values(GUIDES);
-    return Object.values(GUIDES).filter((g) =>
+    if (!q) return all;
+    return all.filter((g) =>
       g.title.toLowerCase().includes(q) ||
       g.summary.toLowerCase().includes(q) ||
       g.category.toLowerCase().includes(q) ||
       g.steps.some((s) => s.toLowerCase().includes(q))
     );
-  }, [query]);
+  }, [query, all]);
 
   const grouped = CATEGORY_ORDER
+    .filter((c) => !only || c === only)
     .map((c) => ({ category: c, guides: filtered.filter((g) => g.category === c) }))
     .filter((g) => g.guides.length > 0);
 
-  return (
-    <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-      <div className="max-w-6xl mx-auto">
+  const filterChip = (active: boolean) =>
+    `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors ${active ? "border-violet-500/40 bg-violet-500/10 text-violet-300" : "border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"}`;
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-zinc-800">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-semibold text-zinc-100 leading-tight">
-              Fix guides
-            </h1>
-            <p className="mt-2 text-sm text-zinc-500">
-              {Object.keys(GUIDES).length} step-by-step repair guides, grouped by topic
-            </p>
-          </div>
-
-          {/* Search */}
-          <div className="relative shrink-0 w-full sm:w-56">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search guides…"
-              aria-label="Search guides"
-              className="w-full pl-9 pr-8 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/60 text-[12.5px] text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
-            />
-            {query && (
-              <button
-                onClick={() => setQuery("")}
-                aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {filtered.length === 0 && (
-          <p className="mt-10 text-sm text-zinc-500">No guides match "{query}". Try a different search.</p>
+  const search = (
+    <Panel>
+      <label htmlFor="guide-search" className="text-[13px] font-semibold text-zinc-200">Find a guide</label>
+      <div className="relative mt-3">
+        <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+        <input
+          id="guide-search"
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search guides, e.g. canonical"
+          aria-label="Search guides"
+          className={`${inputCls} pl-9 pr-9`}
+        />
+        {query && (
+          <button onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+            <Icon name="x" className="w-4 h-4" />
+          </button>
         )}
-
-        {/* Category sections */}
-        <div className="mt-10 flex flex-col gap-12">
-          {grouped.map(({ category, guides }) => {
-            const color = categoryColor(category);
-            return (
-              <section key={category}>
-                {/* Section header */}
-                <div className="flex items-center gap-3 pb-3 mb-5" style={{ borderBottom: `1.5px solid ${color}22` }}>
-                  <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
-                  <h2 className="guide-accent text-[13px] font-semibold" style={accentStyle(category)}>
-                    {category}
-                  </h2>
-                  <span className="text-[11px] text-zinc-600">{guides.length} guide{guides.length !== 1 ? "s" : ""}</span>
-                </div>
-
-                {/* Cards */}
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {guides.map((g) => <GuideCard key={g.slug} guide={g} />)}
-                </div>
-              </section>
-            );
-          })}
-        </div>
       </div>
-    </main>
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by topic">
+        <button type="button" onClick={() => setOnly(null)} aria-pressed={!only} className={filterChip(!only)}>
+          All <span className="text-zinc-500">{all.length}</span>
+        </button>
+        {CATEGORY_ORDER.map((c) => (
+          <button key={c} type="button" onClick={() => setOnly(only === c ? null : c)} aria-pressed={only === c} className={filterChip(only === c)}>
+            {c} <span className="text-zinc-500">{all.filter((g) => g.category === c).length}</span>
+          </button>
+        ))}
+      </div>
+    </Panel>
+  );
+
+  return (
+    <PageMain>
+      <PageHero
+        eyebrow="Fix guides"
+        title="Fix what the audit found"
+        intro={`${all.length} plain-English, step-by-step repair guides, grouped by topic. Each one says what the problem is, why it matters and exactly how to fix it.`}
+        aside={search}
+      />
+
+      {grouped.length === 0 && (
+        <Panel className="mt-12 text-center">
+          <p className="text-[14px] text-zinc-300">No guides match “{query}”.</p>
+          <p className="mt-1 text-[13px] text-zinc-500">Try a different word, or clear the search.</p>
+        </Panel>
+      )}
+
+      <div className="mt-14 flex flex-col gap-12">
+        {grouped.map(({ category, guides }) => (
+          <section key={category} aria-labelledby={`cat-${CATEGORY_TONE[category]}`}>
+            <div className="mb-5 flex items-center gap-3">
+              <CategoryBadge category={category} />
+              <div>
+                <h2 id={`cat-${CATEGORY_TONE[category]}`} className="text-[15px] font-semibold text-zinc-100">
+                  {category} <span className="ml-1 text-[12px] font-normal text-zinc-500">{guides.length} guide{guides.length !== 1 ? "s" : ""}</span>
+                </h2>
+                <p className="text-[13px] text-zinc-500">{CATEGORY_BLURB[category]}</p>
+              </div>
+            </div>
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {guides.map((g) => <li key={g.slug}><GuideCard guide={g} /></li>)}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </PageMain>
   );
 }
 
 // ── AI Prompt card ─────────────────────────────────────────────────────────────
 
-function AiPromptCard({ prompt }: { prompt: string }) {
+function AiPromptButton({ prompt }: { prompt: string }) {
   const [copied, setCopied] = useState(false);
   function copy() {
     navigator.clipboard.writeText(prompt).then(() => {
@@ -215,21 +211,14 @@ function AiPromptCard({ prompt }: { prompt: string }) {
     });
   }
   return (
-    <div className="rounded-xl border border-violet-500/30 bg-violet-500/8 px-5 py-4 flex items-center justify-between gap-4 mb-6">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <svg className="w-4 h-4 text-violet-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-        </svg>
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-violet-400 leading-none mb-0.5">Fix this with AI</p>
-          <p className="text-[12px] text-zinc-500 truncate">Copy a ready-made prompt and paste it into ChatGPT or Claude</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={copy}
-        className="shrink-0 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-violet-500/30 bg-violet-500/15 text-violet-300 hover:bg-violet-500/25 transition-colors"
-      >
+    <div className="rounded-xl border border-violet-500/30 bg-violet-500/10 p-4">
+      <p className="flex items-center gap-2 text-[13px] font-semibold text-zinc-100">
+        <Icon name="sparkle" className="w-4 h-4 text-violet-300" />
+        Fix this with AI
+      </p>
+      <p className="mt-1 text-[12px] leading-relaxed text-zinc-400">Copy a ready-made prompt and paste it into ChatGPT or Claude.</p>
+      <button type="button" onClick={copy} className={`${primaryBtn} mt-3 w-full !py-2 text-[13px]`}>
+        <Icon name="clipboard" className="w-3.5 h-3.5" />
         {copied ? "Copied!" : "Copy prompt"}
       </button>
     </div>
@@ -247,209 +236,160 @@ export function GuideDetailPage({ slug }: { slug: string }) {
 
   if (!guide) {
     return (
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-6xl mx-auto text-center py-20">
-          <p className="text-lg text-zinc-300">Guide not found</p>
+      <PageMain width="max-w-xl">
+        <Panel className="text-center">
+          <h1 className="text-lg font-semibold text-zinc-100">Guide not found</h1>
           <p className="mt-2 text-sm text-zinc-500">It may have been renamed.</p>
-          <a href="/guides" className="mt-6 inline-flex text-sm text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
-            Browse all guides
-          </a>
-        </div>
-      </main>
+          <a href="/guides" className={`${secondaryBtn} mt-5`}>Browse all guides</a>
+        </Panel>
+      </PageMain>
     );
   }
 
   const related = relatedGuides(guide);
+  const tone = CATEGORY_TONE[guide.category];
+
+  const glance = (
+    <Panel>
+      <p className="text-[13px] font-semibold text-zinc-200">At a glance</p>
+      <dl className="mt-3 divide-y divide-zinc-800 text-[13px]">
+        <div className="flex justify-between gap-3 py-2.5"><dt className="text-zinc-500">Topic</dt><dd className="text-zinc-200">{guide.category}</dd></div>
+        <div className="flex justify-between gap-3 py-2.5"><dt className="text-zinc-500">Steps</dt><dd className="text-zinc-200">{guide.steps.length}</dd></div>
+        {guide.tools && guide.tools.length > 0 && (
+          <div className="flex justify-between gap-3 py-2.5"><dt className="text-zinc-500">Free tools</dt><dd className="text-zinc-200">{guide.tools.length}</dd></div>
+        )}
+      </dl>
+      {guide.aiPrompt && <div className="mt-3"><AiPromptButton prompt={guide.aiPrompt} /></div>}
+    </Panel>
+  );
 
   return (
-    <main className="flex-1">
-      {/* ── Hero header ── */}
-      <div className="border-b border-zinc-800 bg-zinc-950/60 px-4 sm:px-6 lg:px-8 pt-8 pb-0">
-        <div className="max-w-6xl mx-auto">
-          <a href="/guides" className="inline-flex items-center gap-1.5 text-[12px] text-zinc-500 hover:text-zinc-300 transition-colors mb-5">
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            All guides
-          </a>
+    <PageMain>
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-[12px] text-zinc-500">
+        <a href="/" className="hover:text-zinc-300 transition-colors">Home</a>
+        <span aria-hidden="true">›</span>
+        <a href="/guides" className="hover:text-zinc-300 transition-colors">Fix guides</a>
+        <span aria-hidden="true">›</span>
+        <span className="text-zinc-400">{guide.category}</span>
+      </nav>
 
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-            <div className="min-w-0">
-              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border mb-3 ${categoryBadge(guide.category)}`}>
-                <CategoryIcon category={guide.category} className="w-3 h-3" />
-                {guide.category}
-              </span>
-              <h1 className="text-2xl sm:text-[28px] font-semibold text-zinc-100 leading-snug mb-2">
-                {guide.title}
-              </h1>
-              <p className="text-[13.5px] text-zinc-500 leading-relaxed max-w-xl">
-                {guide.summary}
-              </p>
-            </div>
-
-          </div>
-
-          {/* Spacer so border-b appears below the content */}
-          <div className="mt-7" />
+      <PageHero title={guide.title} intro={guide.summary} aside={glance}>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Chip tone={tone}><CategoryIcon category={guide.category} className="w-3 h-3" />{guide.category}</Chip>
+          <Chip>{guide.steps.length} steps</Chip>
         </div>
-      </div>
+      </PageHero>
 
-      {/* ── Body: left info / right timeline ── */}
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-0">
-
-          {/* Left column */}
-          <div className="w-full lg:w-72 flex-shrink-0 lg:border-r lg:border-zinc-800 lg:pr-8 lg:mr-8 flex flex-col gap-4 mb-8 lg:mb-0">
-            {/* What this means */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">What this means</p>
-              <p className="text-[13px] text-zinc-400 leading-relaxed">{guide.whatItMeans}</p>
-            </div>
-
-            {/* Why it matters */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-2">Why it matters</p>
-              <p className="text-[13px] text-zinc-400 leading-relaxed">{guide.whyItMatters}</p>
-            </div>
-
-            {/* Tools */}
-            {guide.tools && guide.tools.length > 0 && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Helpful tools</p>
-                <div className="flex flex-col gap-0 divide-y divide-zinc-800">
-                  {guide.tools.map((tool) => {
-                    const url = toolUrl(tool);
-                    return url ? (
-                      <a
-                        key={tool}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-between py-2 group"
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
-                          <span className="text-[12.5px] text-zinc-500 group-hover:text-zinc-300 transition-colors leading-snug">{tool}</span>
-                        </span>
-                        <svg className="w-3 h-3 text-zinc-700 group-hover:text-violet-400 transition-colors flex-shrink-0 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                        </svg>
-                      </a>
-                    ) : (
-                      <div key={tool} className="flex items-center gap-2 py-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 flex-shrink-0" />
-                        <span className="text-[12.5px] text-zinc-500 leading-snug">{tool}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-          </div>
-
-          {/* Right column — timeline */}
-          <div className="flex-1 min-w-0">
-            {guide.aiPrompt && <AiPromptCard prompt={guide.aiPrompt} />}
-            <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-5">
-              How to fix it: {guide.steps.length} step{guide.steps.length !== 1 ? "s" : ""}
-            </p>
-
-            {/* Steps */}
-            <div className="flex flex-col gap-3">
+      <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
+        {/* Main column */}
+        <div className="flex flex-col gap-6 min-w-0">
+          <Panel>
+            <PanelTitle>How to fix it</PanelTitle>
+            <ol className="mt-4 flex flex-col">
               {guide.steps.map((step, i) => {
                 const image = guide.stepImages?.[i];
                 return (
-                  <div key={i} className="flex gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                    <span className="shrink-0 text-[11px] font-bold tabular-nums text-zinc-600 w-5 pt-0.5">{i + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] text-zinc-300 leading-relaxed">{step}</p>
+                  <li key={i} className="flex gap-3 py-3.5 border-t border-zinc-800 first:border-t-0 first:pt-0">
+                    <span className="flex w-6 h-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[11px] font-semibold tabular-nums text-zinc-300">{i + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] leading-relaxed text-zinc-400">{step}</p>
                       {image && (
                         <figure className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 overflow-hidden">
                           <img src={image.src} alt={image.caption} loading="lazy" className="w-full" />
-                          {image.caption && (
-                            <figcaption className="px-3 py-2 text-[11px] text-zinc-500 border-t border-zinc-800/70">{image.caption}</figcaption>
-                          )}
+                          {image.caption && <figcaption className="px-3 py-2 text-[11px] text-zinc-500 border-t border-zinc-800/70">{image.caption}</figcaption>}
                         </figure>
                       )}
                     </div>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ol>
+          </Panel>
 
-            {guide.commonMistakes && guide.commonMistakes.length > 0 && (
-              <section className="mt-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Common mistakes</h2>
-                <ul className="flex flex-col gap-2">
-                  {guide.commonMistakes.map((m) => (
-                    <li key={m} className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-[13.5px] text-zinc-400 leading-relaxed">{m}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
+          {guide.commonMistakes && guide.commonMistakes.length > 0 && (
+            <Panel>
+              <PanelTitle>Common mistakes</PanelTitle>
+              <IconList items={guide.commonMistakes} icon="x" tone="red" />
+            </Panel>
+          )}
 
-            {guide.howToVerify && (
-              <section className="mt-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">How to check it worked</h2>
-                <p className="text-[13.5px] text-zinc-400 leading-relaxed">{guide.howToVerify}</p>
-              </section>
-            )}
+          {guide.howToVerify && (
+            <Callout tone="emerald" icon="check" title={<h2>How to check it worked</h2>}>
+              {guide.howToVerify}
+            </Callout>
+          )}
 
-            {guide.deepDive?.map((sec) => (
-              <section key={sec.heading} className="mt-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">{sec.heading}</h2>
-                {sec.paragraphs?.map((p) => (
-                  <p key={p} className="text-[13.5px] text-zinc-400 leading-relaxed mb-3">{p}</p>
-                ))}
-                {sec.bullets && (
-                  <ul className="flex flex-col gap-2">
-                    {sec.bullets.map((b) => (
-                      <li key={b} className="flex gap-2 text-[13.5px] text-zinc-400 leading-relaxed">
-                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-zinc-700 shrink-0" aria-hidden="true" />
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            ))}
+          {guide.deepDive?.map((sec) => (
+            <Panel key={sec.heading}>
+              <PanelTitle>{sec.heading}</PanelTitle>
+              {sec.paragraphs?.map((p) => <p key={p} className="mt-3 text-[13.5px] leading-relaxed text-zinc-400">{p}</p>)}
+              {sec.bullets && <IconList items={sec.bullets} icon="arrowRight" tone="violet" />}
+            </Panel>
+          ))}
 
-            {guide.faq && guide.faq.length > 0 && (
-              <section className="mt-8">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Common questions</h2>
-                <div className="flex flex-col gap-2">
-                  {guide.faq.map((item) => (
-                    <div key={item.q} className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
-                      <h3 className="text-[14px] font-medium text-zinc-200">{item.q}</h3>
-                      <p className="mt-1.5 text-[13.5px] text-zinc-400 leading-relaxed">{item.a}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <p className="mt-8 text-[13.5px] text-zinc-500 leading-relaxed">
-              Not sure if this affects your site?{" "}
-              <a href="/" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">Analyze your website for free</a>{" "}
-              or{" "}
-              <a href="/compare" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">compare it with a competitor</a>.
-            </p>
-
-            {/* Related guides */}
-            {related.length > 0 && (
-              <div className="mt-10 pt-8 border-t border-zinc-800">
-                <h2 className="text-[11px] font-bold uppercase tracking-widest text-zinc-600 mb-4">Related guides</h2>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {related.map((g) => <GuideCard key={g.slug} guide={g} />)}
-                </div>
-                <a href="/guides" className="mt-5 inline-flex text-[12.5px] text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">
-                  Browse all {Object.keys(GUIDES).length} fix guides
-                </a>
-              </div>
-            )}
-          </div>
+          {guide.faq && guide.faq.length > 0 && (
+            <section aria-labelledby="guide-faq">
+              <SectionLabel id="guide-faq">Common questions</SectionLabel>
+              <FaqGrid items={guide.faq} />
+            </section>
+          )}
         </div>
+
+        {/* Side column */}
+        <aside className="flex flex-col gap-6 lg:sticky lg:top-20">
+          <Panel>
+            <h2 className="text-[13px] font-semibold text-zinc-200">What this means</h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">{guide.whatItMeans}</p>
+          </Panel>
+          <Panel>
+            <h2 className="text-[13px] font-semibold text-zinc-200">Why it matters</h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">{guide.whyItMatters}</p>
+          </Panel>
+          {guide.tools && guide.tools.length > 0 && (
+            <Panel>
+              <h2 className="text-[13px] font-semibold text-zinc-200">Helpful tools</h2>
+              <ul className="mt-2 divide-y divide-zinc-800">
+                {guide.tools.map((tool) => {
+                  const url = toolUrl(tool);
+                  return (
+                    <li key={tool}>
+                      {url ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between gap-2 py-2.5 text-[13px] text-zinc-400 hover:text-zinc-100 transition-colors">
+                          {tool}
+                          <Icon name="arrowRight" className="w-3.5 h-3.5 shrink-0 -rotate-45 text-zinc-600 group-hover:text-violet-300 transition-colors" />
+                        </a>
+                      ) : (
+                        <span className="block py-2.5 text-[13px] text-zinc-400">{tool}</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Panel>
+          )}
+          <Panel>
+            <h2 className="text-[13px] font-semibold text-zinc-200">Does your site have this?</h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">Run a free audit to find out, or see how you compare with a competitor.</p>
+            <div className="mt-4 flex flex-col gap-2">
+              <a href="/" className={`${primaryBtn} !py-2 text-[13px]`}>Analyze your website</a>
+              <a href="/compare" className={`${secondaryBtn} !py-2 text-[13px]`}>Compare with a competitor</a>
+            </div>
+          </Panel>
+        </aside>
       </div>
-    </main>
+
+      {related.length > 0 && (
+        <section className="mt-14" aria-labelledby="guide-related">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <SectionLabel id="guide-related">Related guides</SectionLabel>
+            <a href="/guides" className={`mb-4 text-[12.5px] ${linkCls}`}>Browse all {Object.keys(GUIDES).length} fix guides</a>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((g) => <li key={g.slug}><GuideCard guide={g} /></li>)}
+          </ul>
+        </section>
+      )}
+    </PageMain>
   );
 }
 

@@ -1,3 +1,6 @@
+import { Chip, IconBadge, IconList, PageHero, PageMain, Panel, primaryBtn, secondaryBtn } from "../ui/Panel";
+import type { IconName } from "../ui/icons";
+
 type Update = {
   date: string;
   label: string;
@@ -95,24 +98,36 @@ const UPDATES: Update[] = [
   },
 ];
 
-// A changelog, set like one: a ruled list of dated entries, newest first.
-// Every entry shows in full. Same quiet language as the legal pages and the
-// landing page's findings list: hairlines, one mono column, no cards.
-function Entry({ update }: { update: Update }) {
+// Map each entry's label to an icon, so the timeline is scannable at a glance.
+const LABEL_ICONS: Record<string, IconName> = {
+  "Private pages": "lock",
+  "Reports": "file",
+  "Detection": "code",
+  "Reliability": "check",
+  "Transparency": "eye",
+  "Privacy": "shield",
+  "Product flow": "layers",
+};
+
+// A changelog as a timeline of panels, newest first. Every entry shows in full.
+function Entry({ update, last }: { update: Update; last: boolean }) {
   return (
-    <li className="grid grid-cols-1 gap-x-8 gap-y-3 border-b border-zinc-800 py-8 sm:grid-cols-[112px_1fr]">
-      <div className="flex items-baseline gap-3 font-mono text-[11px] tracking-[0.06em] sm:flex-col sm:gap-1.5">
-        <time className="text-zinc-400">{update.date}</time>
-        <span className="uppercase text-zinc-500">{update.label}</span>
+    <li className="relative grid grid-cols-[2.25rem_1fr] gap-x-4 sm:gap-x-5">
+      {/* The rail: an icon per entry, joined by a line */}
+      <div className="flex flex-col items-center">
+        <IconBadge icon={LABEL_ICONS[update.label] ?? "sparkle"} />
+        {!last && <span className="mt-2 w-px flex-1 bg-zinc-800" aria-hidden="true" />}
       </div>
-      <article>
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">{update.title}</h2>
-        <p className="mt-2 text-sm leading-7 text-zinc-400">{update.description}</p>
-        <ul className="mt-3 list-disc space-y-1.5 pl-4 text-sm leading-6 text-zinc-300 marker:text-zinc-600">
-          {update.details.map((detail) => (
-            <li key={detail}>{detail}</li>
-          ))}
-        </ul>
+      <article className="pb-6 min-w-0">
+        <Panel>
+          <div className="flex flex-wrap items-center gap-2">
+            <Chip tone="violet">{update.label}</Chip>
+            <time className="text-[12px] text-zinc-500">{update.date}</time>
+          </div>
+          <h2 className="mt-3 text-lg font-semibold tracking-tight text-zinc-100">{update.title}</h2>
+          <p className="mt-2 text-[14px] leading-relaxed text-zinc-400">{update.description}</p>
+          <IconList items={update.details} icon="check" tone="emerald" />
+        </Panel>
       </article>
     </li>
   );
@@ -120,38 +135,25 @@ function Entry({ update }: { update: Update }) {
 
 export function WhatsNewPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-violet-400">Explain This Website</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">What&apos;s new</h1>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-400">
-          The latest improvements to Explain This Website, written in plain English.
-        </p>
+    <PageMain width="max-w-4xl">
+      <PageHero eyebrow="Changelog" title="What's new" intro="The latest improvements to Explain This Website, written in plain English." />
 
-        <ul className="mt-10 border-t border-zinc-700" role="list" aria-label="Product updates">
-          {UPDATES.map((update) => (
-            <Entry key={update.title} update={update} />
-          ))}
-        </ul>
+      <ul className="mt-12" role="list" aria-label="Product updates">
+        {UPDATES.map((update, i) => (
+          <Entry key={update.title} update={update} last={i === UPDATES.length - 1} />
+        ))}
+      </ul>
 
-        <p className="pt-8 text-sm text-zinc-400">
-          Have an idea or found something that needs fixing?{" "}
-          <a
-            href="mailto:support@explainthiswebsite.com"
-            className="text-violet-400 underline decoration-violet-500/30 underline-offset-4 transition-colors hover:text-violet-300"
-          >
-            Send us a note
-          </a>
-          , or go{" "}
-          <a
-            href="/"
-            className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors hover:text-zinc-100"
-          >
-            back to the analyzer
-          </a>
-          .
-        </p>
-      </main>
-    </div>
+      <Panel className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-[14px] font-semibold text-zinc-100">Have an idea or found something that needs fixing?</h2>
+          <p className="mt-1 text-[13px] text-zinc-500">Send us a note, or go back and analyze a site.</p>
+        </div>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <a href="mailto:support@explainthiswebsite.com" className={secondaryBtn}>Send us a note</a>
+          <a href="/" className={primaryBtn}>Back to the analyzer</a>
+        </div>
+      </Panel>
+    </PageMain>
   );
 }

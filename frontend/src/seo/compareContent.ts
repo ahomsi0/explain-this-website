@@ -61,9 +61,9 @@ export const COMPARE_CONTENT: ContentSection[] = [
     bullets: [
       "Relevance first. If the competitor's page answers the search better, with more depth, clearer headings and the words people actually search for, no technical fix closes that gap. Read both pages as a visitor before reading the numbers.",
       "Indexability next. A noindex tag, a canonical pointing elsewhere or a blocked page can keep a site out of results entirely. These rows are pass or fail, and a fail outweighs everything else.",
-      "Titles and descriptions decide whether people click once Google shows you.",
-      "Speed and Core Web Vitals work like a tie-breaker between pages that are equally relevant.",
-      "Structured data does not raise rankings by itself, but it can earn rich results that take up more space on the results page.",
+      "Titles and descriptions: they decide whether people click once Google shows you.",
+      "Speed and Core Web Vitals: they work like a tie-breaker between pages that are equally relevant.",
+      "Structured data: it does not raise rankings by itself, but it can earn rich results that take up more space on the results page.",
     ],
   },
   {

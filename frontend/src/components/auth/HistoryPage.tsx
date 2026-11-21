@@ -15,6 +15,8 @@ import { useAuth } from "../../context/useAuth";
 import { AuditComparison } from "./AuditComparison";
 import { authHref } from "../../lib/authLinks";
 import { RowSkeleton } from "../ui/Skeletons";
+import { IconBadge, Panel, primaryBtn, secondaryBtn } from "../ui/Panel";
+import { Icon } from "../ui/icons";
 
 type SortKey = "newest" | "oldest" | "score" | "url";
 type DayWindow = 0 | 7 | 30;
@@ -191,8 +193,8 @@ export function HistoryPage() {
 
   if (loading) {
     return (
-      <main className="flex-1 px-4 sm:px-6 py-10">
-        <div className="max-w-3xl mx-auto">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="max-w-5xl mx-auto">
           <RowSkeleton rows={5} />
         </div>
       </main>
@@ -201,17 +203,16 @@ export function HistoryPage() {
 
   if (!user) {
     return (
-      <main className="flex-1 px-4 sm:px-6 py-16">
-        <div className="max-w-md mx-auto rounded-xl border border-zinc-800 bg-zinc-900/40 p-6 text-center">
-          <h1 className="text-lg font-semibold text-zinc-100">Sign in to see your history</h1>
-          <p className="mt-2 text-sm text-zinc-400">Your saved audits, comparisons, and share links live here once you're signed in.</p>
-          <a
-            href={authHref("login")}
-            className="mt-5 inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors"
-          >
-            Sign in
-          </a>
-        </div>
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <Panel className="max-w-md mx-auto text-center !p-8">
+          <div className="flex justify-center"><IconBadge icon="clock" size="lg" /></div>
+          <h1 className="mt-5 text-xl font-semibold text-zinc-100">Sign in to see your history</h1>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-400">Your saved audits, comparisons, and share links live here once you're signed in.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <a href={authHref("login")} className={primaryBtn}>Sign in</a>
+            <a href={authHref("signup")} className={secondaryBtn}>Create a free account</a>
+          </div>
+        </Panel>
       </main>
     );
   }
@@ -220,27 +221,34 @@ export function HistoryPage() {
   const hasFilters = search !== "" || sort !== "newest" || sharedOnly || days !== 0;
 
   return (
-    <main className="flex-1 px-4 sm:px-6 py-8 sm:py-10">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-end justify-between gap-3 flex-wrap">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-100">Audit history</h1>
-            <p className="mt-1 text-xs text-zinc-500">
-              {data ? `${data.total} saved ${data.total === 1 ? "audit" : "audits"} · select two to compare changes over time` : "Loading…"}
-            </p>
+    <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <IconBadge icon="clock" size="lg" />
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-100">Audit history</h1>
+              <p className="mt-1 text-[13px] text-zinc-500">
+                {data ? `${data.total} saved ${data.total === 1 ? "audit" : "audits"} · select two to compare changes over time` : "Loading…"}
+              </p>
+            </div>
           </div>
           {data && data.total > 0 && (
-            <button onClick={() => void clearAll()} className="text-[11px] font-medium text-zinc-500 hover:text-red-400 transition-colors">
-              Clear history
-            </button>
+            <div className="flex items-center gap-2">
+              <ExportCsvButton />
+              <button onClick={() => void clearAll()} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-medium text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                <Icon name="trash" className="w-3.5 h-3.5" />
+                Clear history
+              </button>
+            </div>
           )}
         </div>
 
         {trends && trends.length > 0 && <TrendsPanel trends={trends} />}
 
         {(data || hasFilters) && (
-          <div className="mt-5 flex items-center gap-2 flex-wrap">
-            <div className="flex-1 min-w-[180px] flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-900 border border-zinc-800 focus-within:border-violet-500/40 transition-colors">
+          <div className="mt-6 flex items-center gap-2 flex-wrap rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3">
+            <div className="flex-1 min-w-[180px] flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 focus-within:border-violet-500/40 transition-colors">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 shrink-0">
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
@@ -261,7 +269,7 @@ export function HistoryPage() {
               value={sort}
               onChange={(e) => { setSort(e.target.value as SortKey); setPage(1); }}
               aria-label="Sort audits"
-              className="pl-2.5 pr-7 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
+              className="pl-2.5 pr-7 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
             >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
@@ -273,7 +281,7 @@ export function HistoryPage() {
               value={days}
               onChange={(e) => { setDays(Number(e.target.value) as DayWindow); setPage(1); }}
               aria-label="Filter by date range"
-              className="pl-2.5 pr-7 py-2 rounded-md bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
+              className="pl-2.5 pr-7 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-300 outline-none focus:border-violet-500/40 transition-colors"
             >
               <option value={0}>All time</option>
               <option value={7}>Last 7 days</option>
@@ -283,7 +291,7 @@ export function HistoryPage() {
             <button
               onClick={() => { setSharedOnly(!sharedOnly); setPage(1); }}
               aria-pressed={sharedOnly}
-              className={`px-3 py-2 rounded-md text-[11px] font-semibold border transition-colors ${sharedOnly ? "border-violet-500/50 bg-violet-500/15 text-violet-300" : "border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"}`}
+              className={`px-3 py-2 rounded-lg text-[11px] font-semibold border transition-colors ${sharedOnly ? "border-violet-500/50 bg-violet-500/15 text-violet-300" : "border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-700"}`}
             >
               Shared only
             </button>
@@ -291,7 +299,7 @@ export function HistoryPage() {
             <button
               onClick={() => void compareSelected()}
               disabled={selectedIds.length !== 2 || compareLoading}
-              className="px-3 py-2 rounded-md text-[11px] font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/30 hover:bg-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-2 rounded-lg text-[11px] font-semibold text-violet-300 bg-violet-500/10 border border-violet-500/30 hover:bg-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {compareLoading ? "Comparing…" : selectedIds.length === 2 ? "Compare selected" : `Compare (${selectedIds.length}/2)`}
             </button>
@@ -302,17 +310,18 @@ export function HistoryPage() {
           {!data && !error && <RowSkeleton rows={5} />}
           {error && <div className="text-xs text-red-400 bg-red-950/50 border border-red-800/40 rounded px-3 py-2">{error}</div>}
           {!fetching && data && data.total === 0 && (
-            <div className="text-center py-16">
-              <p className="text-sm text-zinc-400">{hasFilters ? "No audits match your filters" : "No audits yet"}</p>
-              <p className="mt-1 text-xs text-zinc-500">{hasFilters ? "Try clearing the search or filters." : "Run your first analysis to see it here."}</p>
-              {!hasFilters && <a href="/" className="mt-4 inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 transition-colors">Analyze a website</a>}
-            </div>
+            <Panel className="text-center !py-12">
+              <div className="flex justify-center"><IconBadge icon={hasFilters ? "search" : "file"} size="lg" /></div>
+              <p className="mt-4 text-[15px] font-medium text-zinc-200">{hasFilters ? "No audits match your filters" : "No audits yet"}</p>
+              <p className="mt-1 text-[13px] text-zinc-500">{hasFilters ? "Try clearing the search or filters." : "Run your first analysis to see it here."}</p>
+              {!hasFilters && <a href="/" className={`${primaryBtn} mt-5`}>Analyze a website</a>}
+            </Panel>
           )}
           {!fetching && data && data.items.length === 0 && data.total > 0 && (
             <p className="text-xs text-zinc-500 text-center py-10">This page is empty. Go back a page.</p>
           )}
           {!fetching && items.length > 0 && (
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-2">
               {items.map((a) => (
                 <HistoryRow
                   key={a.id}
@@ -326,11 +335,6 @@ export function HistoryPage() {
             </ul>
           )}
 
-          {data && data.items.length > 0 && (
-            <div className="mt-4 flex justify-end">
-              <ExportCsvButton />
-            </div>
-          )}
         </div>
 
         {data && data.total > PAGE_SIZE && (
@@ -400,13 +404,16 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
   }
 
   return (
-    <li className="group flex items-center gap-2 px-3 py-2.5 rounded-lg border border-zinc-800/70 hover:border-zinc-700 hover:bg-zinc-900/60 transition-colors">
-      <button type="button" onClick={onToggle} aria-pressed={selected} className={`shrink-0 w-16 rounded border px-2 py-1 text-[11px] font-semibold transition-colors ${selected ? "border-violet-500/50 bg-violet-500/15 text-violet-300" : "border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}`}>
+    <li className={`group flex flex-wrap sm:flex-nowrap items-center gap-3 rounded-2xl border p-3 sm:p-4 transition-colors ${selected ? "border-violet-500/40 bg-violet-500/5" : "border-zinc-800 bg-zinc-900/40 hover:border-zinc-700"}`}>
+      <button type="button" onClick={onToggle} aria-pressed={selected} className={`shrink-0 w-[4.5rem] rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${selected ? "border-violet-500/50 bg-violet-500/15 text-violet-300" : "border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"}`}>
         {selected ? "Selected" : "Compare"}
       </button>
-      <a href={`/report/${audit.id}`} className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-zinc-100 truncate">{audit.title || host}</p>
-        <p className="text-[11px] text-zinc-500 truncate">{host} · {new Date(audit.createdAt).toLocaleString()}</p>
+      <a href={`/report/${audit.id}`} className="flex-1 min-w-0 flex items-center gap-3">
+        <span className="hidden sm:inline-flex w-9 h-9 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-[13px] font-semibold uppercase text-zinc-300" aria-hidden="true">{host.replace(/^www\./, "").charAt(0)}</span>
+        <span className="min-w-0">
+          <span className="block text-[14px] font-medium text-zinc-100 truncate group-hover:text-white">{audit.title || host}</span>
+          <span className="block text-[12px] text-zinc-500 truncate">{host} · {new Date(audit.createdAt).toLocaleString()}</span>
+        </span>
       </a>
       {s && (
         <div className="hidden sm:flex items-center gap-1.5 shrink-0" title="Overall · SEO · UX · Performance · Conversion">
@@ -419,28 +426,33 @@ function HistoryRow({ audit, selected, onToggle, onRevoke, onDelete }: {
           </span>
         </div>
       )}
-      <button
-        onClick={() => { window.location.href = `/?url=${encodeURIComponent(audit.url)}`; }}
-        title={`Re-run analysis for ${host}`}
-        aria-label={`Re-run analysis for ${host}`}
-        className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-500 hover:text-violet-300 transition-opacity px-1"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 4 23 10 17 10"/>
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-        </svg>
-      </button>
-      {audit.shareable && (
+      {/* On phones the buttons drop to their own line so the title keeps its room. */}
+      <div className="flex w-full sm:w-auto items-center justify-end gap-1 shrink-0">
         <button
-          onClick={() => void copyShareLink()}
-          title="Copy public share link"
-          className={`shrink-0 text-[11px] font-medium px-2 py-1 transition-colors ${copied ? "text-emerald-400" : "text-violet-400 hover:text-violet-300"}`}
+          onClick={() => { window.location.href = `/?url=${encodeURIComponent(audit.url)}`; }}
+          title={`Re-run analysis for ${host}`}
+          aria-label={`Re-run analysis for ${host}`}
+          className="shrink-0 rounded-lg p-2 text-zinc-500 hover:text-violet-300 hover:bg-zinc-800/60 transition-colors"
         >
-          {copied ? "Copied!" : "Copy link"}
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
         </button>
-      )}
-      {audit.shareable && <button onClick={onRevoke} className="shrink-0 text-[11px] text-amber-400 hover:text-amber-300 px-2 py-1">Revoke share</button>}
-      <button onClick={onDelete} className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-500 hover:text-red-400 text-xs px-2 py-1 transition-opacity" aria-label={`Delete audit for ${host}`}>Delete</button>
+        {audit.shareable && (
+          <button
+            onClick={() => void copyShareLink()}
+            title="Copy public share link"
+            className={`shrink-0 text-[11px] font-medium px-2 py-1 transition-colors ${copied ? "text-emerald-400" : "text-violet-400 hover:text-violet-300"}`}
+          >
+            {copied ? "Copied!" : "Copy link"}
+          </button>
+        )}
+        {audit.shareable && <button onClick={onRevoke} className="shrink-0 text-[11px] text-amber-400 hover:text-amber-300 px-2 py-1">Revoke share</button>}
+        <button onClick={onDelete} className="shrink-0 rounded-lg p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors" aria-label={`Delete audit for ${host}`} title="Delete">
+          <Icon name="trash" className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </li>
   );
 }
@@ -505,8 +517,9 @@ function ExportCsvButton() {
     <button
       onClick={() => void exportCsv()}
       disabled={busy}
-      className="text-[11px] font-medium text-zinc-500 hover:text-zinc-300 disabled:opacity-50 transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 px-3 py-2 text-[12px] font-medium text-zinc-300 hover:border-zinc-700 hover:text-zinc-100 disabled:opacity-50 transition-colors"
     >
+      <Icon name="file" className="w-3.5 h-3.5" />
       {busy ? "Preparing…" : "Export CSV"}
     </button>
   );
@@ -516,9 +529,9 @@ function ExportCsvButton() {
 // "72 → 81 in 3 months" retention hook.
 function TrendsPanel({ trends }: { trends: AuditTrend[] }) {
   return (
-    <section className="mt-5 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4" aria-label="Score trends">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Score trends</h2>
-      <ul className="mt-2 flex flex-col gap-1.5">
+    <section className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5" aria-label="Score trends">
+      <h2 className="flex items-center gap-2 text-[14px] font-semibold text-zinc-100"><Icon name="refresh" className="w-4 h-4 text-violet-300" />Score trends</h2>
+      <ul className="mt-3 flex flex-col gap-2">
         {trends.map((t) => {
           const delta = t.latest.score - t.first.score;
           const host = (() => { try { return new URL(t.url).hostname.replace(/^www\./, ""); } catch { return t.url; } })();

@@ -7,82 +7,94 @@ import {
   BEHIND_LOGIN_STEPS,
   BEHIND_LOGIN_TITLE,
 } from "../../seo/behindLoginContent";
+import { Callout, IconBadge, IconList, PageHero, PageMain, Panel, PanelTitle, SectionLabel, linkCls, primaryBtn, secondaryBtn } from "../ui/Panel";
+import type { IconName } from "../ui/icons";
 
-const eyebrow = "text-[11px] font-bold uppercase tracking-widest text-zinc-600";
-const link = "text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors";
-
-function RuledList({ items }: { items: string[] }) {
-  return (
-    <ul className="border-t border-zinc-800">
-      {items.map((text) => (
-        <li key={text} className="border-b border-zinc-800 py-3 text-[13.5px] leading-relaxed text-zinc-300">{text}</li>
-      ))}
-    </ul>
-  );
-}
+// One icon per privacy promise, in the order the copy lists them.
+const PRIVACY_ICONS: IconName[] = ["lock", "eye", "user", "trash"];
 
 export function BehindLoginPage() {
+  const included = BEHIND_LOGIN_REPORT.find((r) => r.label === "Included");
+  const leftOut = BEHIND_LOGIN_REPORT.find((r) => r.label === "Left out");
+
+  const howItWorks = (
+    <Panel className="shadow-xl shadow-black/20">
+      <PanelTitle>How to do it</PanelTitle>
+      <ol className="mt-4 flex flex-col">
+        {BEHIND_LOGIN_STEPS.map((step, i) => (
+          <li key={step} className="flex gap-3 py-3 border-t border-zinc-800 first:border-t-0 first:pt-0">
+            <span className="flex w-6 h-6 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-[11px] font-semibold tabular-nums text-violet-300">{i + 1}</span>
+            <p className="text-[13.5px] leading-relaxed text-zinc-300">{step}</p>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 text-[12.5px] leading-relaxed text-zinc-500">{BEHIND_LOGIN_JS_TIP}</p>
+    </Panel>
+  );
+
   return (
-    <main className="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-      <div className="mx-auto max-w-3xl">
-        <nav aria-label="Breadcrumb" className="mb-5 text-[12px] text-zinc-500">
-          <a href="/" className="hover:text-zinc-300 transition-colors">Home</a>
-          <span className="mx-1.5 text-zinc-700">›</span>
-          <span className="text-zinc-400">Behind a login</span>
-        </nav>
+    <PageMain>
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-[12px] text-zinc-500">
+        <a href="/" className="hover:text-zinc-300 transition-colors">Home</a>
+        <span aria-hidden="true">›</span>
+        <span className="text-zinc-400">Behind a login</span>
+      </nav>
 
-        <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-zinc-100">{BEHIND_LOGIN_TITLE}</h1>
-        <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-zinc-400">{BEHIND_LOGIN_INTRO}</p>
-        <div className="mt-6">
-          <a
-            href="/capture"
-            className="inline-flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-500 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors"
-          >
-            Paste a page
-          </a>
+      <PageHero eyebrow="Private pages" title={BEHIND_LOGIN_TITLE} intro={BEHIND_LOGIN_INTRO} aside={howItWorks}>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <a href="/capture" className={primaryBtn}>Paste a page</a>
+          <a href="/" className={secondaryBtn}>Analyze a public page instead</a>
         </div>
+      </PageHero>
 
-        <section className="mt-10" aria-labelledby="bl-steps">
-          <h2 id="bl-steps" className={`${eyebrow} mb-3`}>How to do it</h2>
-          <ol className="border-t border-zinc-800">
-            {BEHIND_LOGIN_STEPS.map((step, i) => (
-              <li key={step} className="grid grid-cols-[28px_1fr] items-baseline gap-x-3 border-b border-zinc-800 py-4">
-                <span className="font-mono text-[11px] tabular-nums tracking-[0.06em] text-zinc-500" aria-hidden="true">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="text-[14px] leading-relaxed text-zinc-200">{step}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-3 text-[13px] leading-relaxed text-zinc-500">{BEHIND_LOGIN_JS_TIP}</p>
-        </section>
-
-        <section className="mt-10" aria-labelledby="bl-report">
-          <h2 id="bl-report" className={`${eyebrow} mb-3`}>What the report covers</h2>
-          <dl className="border-t border-zinc-800">
-            {BEHIND_LOGIN_REPORT.map((row) => (
-              <div key={row.label} className="grid grid-cols-1 sm:grid-cols-[88px_1fr] items-baseline gap-x-4 gap-y-1 border-b border-zinc-800 py-3">
-                <dt className="font-mono text-[11px] uppercase tracking-[0.08em] text-zinc-500">{row.label}</dt>
-                <dd className="text-[13.5px] leading-relaxed text-zinc-300">{row.text}</dd>
+      <section className="mt-16 sm:mt-20" aria-labelledby="bl-report">
+        <SectionLabel id="bl-report">What the report covers</SectionLabel>
+        <div className="grid gap-6 md:grid-cols-2">
+          {included && (
+            <Panel>
+              <div className="flex items-center gap-3">
+                <IconBadge icon="check" tone="emerald" size="sm" />
+                <h3 className="text-[15px] font-semibold text-zinc-100">Included</h3>
               </div>
-            ))}
-          </dl>
-        </section>
+              <p className="mt-3 text-[13.5px] leading-relaxed text-zinc-400">{included.text}</p>
+            </Panel>
+          )}
+          {leftOut && (
+            <Panel>
+              <div className="flex items-center gap-3">
+                <IconBadge icon="minus" tone="amber" size="sm" />
+                <h3 className="text-[15px] font-semibold text-zinc-100">Left out</h3>
+              </div>
+              <p className="mt-3 text-[13.5px] leading-relaxed text-zinc-400">{leftOut.text}</p>
+            </Panel>
+          )}
+        </div>
+      </section>
 
-        <section className="mt-10" aria-labelledby="bl-privacy">
-          <h2 id="bl-privacy" className={`${eyebrow} mb-3`}>What you send</h2>
-          <RuledList items={BEHIND_LOGIN_PRIVACY} />
-        </section>
+      <section className="mt-14" aria-labelledby="bl-privacy">
+        <SectionLabel id="bl-privacy">What you send</SectionLabel>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {BEHIND_LOGIN_PRIVACY.map((text, i) => (
+            <li key={text}>
+              <Panel className="h-full !p-5">
+                <IconBadge icon={PRIVACY_ICONS[i] ?? "shield"} />
+                <p className="mt-4 text-[13.5px] leading-relaxed text-zinc-300">{text}</p>
+              </Panel>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        <section className="mt-10" aria-labelledby="bl-limits">
-          <h2 id="bl-limits" className={`${eyebrow} mb-3`}>Good to know</h2>
-          <RuledList items={BEHIND_LOGIN_LIMITS} />
-        </section>
-
-        <p className="mt-10 text-[13.5px] leading-relaxed text-zinc-500">
-          For a page anyone can open, <a href="/" className={link}>use the analyzer</a>.
-        </p>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <Panel>
+          <PanelTitle>Good to know</PanelTitle>
+          <IconList items={BEHIND_LOGIN_LIMITS} icon="info" tone="zinc" />
+        </Panel>
+        <Callout tone="violet" icon="search" title={<h2>Is the page public?</h2>}>
+          For a page anyone can open, the normal analyzer fetches it for you and adds speed scores and security headers.{" "}
+          <a href="/" className={linkCls}>Use the analyzer</a>.
+        </Callout>
       </div>
-    </main>
+    </PageMain>
   );
 }
